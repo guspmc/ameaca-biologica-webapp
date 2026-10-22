@@ -95,6 +95,7 @@ export default function FichasJogador({supabase,usuarioId,mesas,sinalAtualizacao
   useEffect(()=>{void carregar();},[carregar,sinalAtualizacao]);
   const minhasMesas=useMemo(()=>mesas.filter(m=>m.mestre_id!==usuarioId),[mesas,usuarioId]);
   const mesaEscolhida=minhasMesas.some(m=>m.id===mesaId)?mesaId:(minhasMesas[0]?.id??'');
+  const rascunhosNaMesa=personagens.filter(p=>p.mesa_id===mesaEscolhida&&p.jogador_id===usuarioId&&p.estado_ficha==='rascunho').length;
   const disponiveis=mesas.length>0;
   const pontos=7-(stats.forca+stats.agilidade+stats.vigor+stats.astucia);
   const zeros=Object.values(stats).filter(v=>v===0).length;
@@ -117,6 +118,7 @@ export default function FichasJogador({supabase,usuarioId,mesas,sinalAtualizacao
   async function criar(evento:FormEvent<HTMLFormElement>){
     evento.preventDefault();setErro('');setMensagem('');
     if(!mesaEscolhida){setErro('Selecione uma Mesa em que você seja jogador.');return;}
+    if(rascunhosNaMesa>=3){setErro('Você já possui três rascunhos nesta Mesa. Continue um dos existentes.');return;}
     if(pontos!==0||zeros>1){setErro('Distribua todos os 3 pontos iniciais (ou 4 com um atributo reduzido a 0).');return;}
     setCriando(true);
     const {data,error}=await supabase.rpc('criar_personagem_rascunho',{
@@ -203,7 +205,7 @@ export default function FichasJogador({supabase,usuarioId,mesas,sinalAtualizacao
         <p className="rotulo">NOVO SOBREVIVENTE</p>
         <h3>Criar rascunho de personagem</h3>
         <p className="secundario">Criação inicial por pontos do Arquivo do Jogador v1.0. Após criar, escolha a Origem e seu Treinamento gratuito na ficha. Demais pontos de Perícia e equipamentos ainda estão pendentes.</p>
-        {minhasMesas.length===0 ? <p className="dica">Você precisa ter sido aprovado como jogador em uma Mesa para criar um personagem. Mestres visualizam as fichas, mas não as editam.</p>:
+        {minhasMesas.length===0 ? <p className="dica">Você precisa ter sido aprovado como jogador em uma Mesa para criar um personagem.</p>:
           <form onSubmit={criar} className="formulario">
             <label>Mesa <select value={mesaEscolhida} onChange={e=>setMesaId(e.target.value)}>
               {minhasMesas.map(m=><option key={m.id} value={m.id}>{m.nome}</option>)}
@@ -225,11 +227,12 @@ export default function FichasJogador({supabase,usuarioId,mesas,sinalAtualizacao
                   <button type="button" aria-label={'Aumentar '+a.abreviacao} onClick={()=>mudarAtributo(a.chave,1)} disabled={stats[a.chave]===3||pontos===0}>+</button>
                 </div></div>)}</div>
             </div>
-            <button className="acao" type="submit" disabled={criando||pontos!==0}>
+            <p className="dica">Rascunhos nesta Mesa: {rascunhosNaMesa}/3. {rascunhosNaMesa>=3?'Continue um dos rascunhos existentes para prosseguir.':''}</p>
+            <button className="acao" type="submit" disabled={carregando||criando||pontos!==0||rascunhosNaMesa>=3}>
               {criando?'Salvando...':'+ Criar rascunho'} <span>→</span>
             </button>
           </form>}
-        <p className="aviso">Limite de dez personagens por Mesa. Uma ficha em rascunho ainda não representa uma personagem pronta para jogar.</p>
+        <p className="aviso">Até três rascunhos por jogador em cada Mesa. Rascunhos não ocupam vagas de personagens ativas. A finalização da ficha ainda não está disponível.</p>
       </section>
       <section className="cartao cartao-padrao">
         <div className="linha-titulo"><div><p className="rotulo">REGISTROS</p><h3>Personagens da Mesa</h3></div><button className="botao-claro" type="button" disabled={carregando} onClick={()=>{void carregar();}}>Atualizar</button></div>

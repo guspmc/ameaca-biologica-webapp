@@ -20,11 +20,19 @@ jobs:
         with:
           node-version: '22'
 
+      - name: Preparar pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: '11.25.0'
+
       - name: Instalar dependências
-        run: npm install --no-audit --no-fund
+        run: pnpm install --frozen-lockfile --ignore-scripts
+
+      - name: Testar regras e permissões em PostgreSQL local
+        run: pnpm test
 
       - name: Compilar aplicativo
-        run: npm run build
+        run: pnpm run build
         env:
           VITE_SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL }}
           VITE_SUPABASE_PUBLISHABLE_KEY: ${{ vars.VITE_SUPABASE_PUBLISHABLE_KEY }}

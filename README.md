@@ -10,8 +10,8 @@ WebApp gratuito e de código aberto para **Ameaça Biológica**, RPG de horror e
 
 Requisitos: Node.js 22 ou superior.
 
-1. Rode `npm install`.
-2. Rode `npm run dev`.
+1. Instale pnpm 11.25.0 e rode `pnpm install --frozen-lockfile --ignore-scripts`.
+2. Rode `pnpm run dev`.
 3. Abra o endereço indicado pelo Vite.
 
 No primeiro acesso, forneça a URL do projeto Supabase e **somente** uma chave pública `sb_publishable_...` (ou JWT público com role `anon`). Esses dados ficam no `localStorage` do navegador. Nunca use senha do banco nem `service_role`.
@@ -60,3 +60,11 @@ O projeto deve permitir exportar campanhas, migrar o banco PostgreSQL e utilizar
 - Em `personagens`, os valores de Origem e Treinamento ainda não são conhecidos, por isso Defesa e demais derivados exibidos são **valores básicos, não necessariamente os valores finais**.
 
 A Ficha v0.2.1 e o Painel do Mestre v0.2 continuam congelados como referências; esta implementação não altera aqueles protótipos.
+
+## Proposta de privacidade e limite de rascunhos (PR #1)
+
+A migração `20261022224633_privacidade_e_limite_rascunhos.sql` está somente preparada para revisão. Ela reserva rascunhos ao autor e limita novas criações a três por conta/Mesa, sem excluir excedentes legados. A interface desta branch acompanha essa proposta. **Não publicar antes de aprovar e aplicar a migração no ambiente de destino.** O limite de dez ativas será implementado na futura finalização, ainda indisponível.
+
+Execute `pnpm test` para recriar PostgreSQL em memória com fixtures fictícias e aplicar os arquivos SQL reais. Não usa Supabase remoto, contas, chaves ou rede. As verificações cobrem RLS e RPC; não substituem testes de Auth, PostgREST, Realtime e concorrência com conexões independentes. Execute `pnpm run build` para validar o aplicativo.
+
+Consulte [o checkpoint e roteiro humano](docs/checkpoint-privacidade-rascunhos.md). As seções antigas acima descrevem a Alfa anterior; o relatório de auditoria preserva o estado observado em produção, sem afirmar que esta proposta foi aplicada.
