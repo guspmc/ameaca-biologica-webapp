@@ -4,7 +4,7 @@ WebApp gratuito e de código aberto para **Ameaça Biológica**, RPG de horror e
 
 ## Estado atual
 
-**Alfa 0.3:** tudo da Alfa 0.2, mais lista de participantes por Mesa, apelidos recuperados dos pedidos aprovados, renomeação de campanhas pelo Mestre, remoção controlada de jogadores e atualizações ao vivo por Supabase Realtime (Postgres Changes). Há verificação periódica como contingência se o navegador suspender a conexão. Ainda não há sincronização de atributos/fichas nem gerenciamento de personagens. Os protótipos aprovados da **Ficha do Jogador v0.2.1** e do **Painel do Mestre v0.2** continuam referências visuais separadas.
+**Alfa 0.4 (primeiro módulo):** mantém a Alfa 0.3 e adiciona criação de rascunhos de personagem por jogadores aprovados, distribuição inicial de Atributos (FOR/AGI/VIG/AST), cálculo da base de PV/SA/BI/Defesa da Classe e sincronização dos recursos atuais PV, SA e BI. A Ficha do Jogador tem quatro seções e navegação móvel conforme o protótipo congelado v0.2.1, mas Origem, treinamento, habilidades, ataques e inventário ainda estão explicitamente pendentes. O Mestre tem acesso somente de consulta. **Não confundir este módulo com a ficha completa pronta para campanha.** Os protótipos aprovados da **Ficha do Jogador v0.2.1** e do **Painel do Mestre v0.2** continuam referências visuais separadas.
 
 ## Executar localmente
 
@@ -30,7 +30,7 @@ O serviço SMTP padrão do Supabase limita os e-mails e não é destinado a insc
 
 ## Banco e segurança
 
-As migrações PostgreSQL vivem em `supabase/migrations/`. As tabelas iniciais são `mesas`, `mesa_participantes` e `personagens`, com RLS. A migração 003 adiciona convites privados (somente hashes), pedidos protegidos por RLS e funções que validam Mestre/jogador no banco. A migração 004 adiciona apelidos nos participantes, restringe a leitura do elenco a membros da Mesa e habilita Realtime nas tabelas usadas no portal. Não faça inserções de teste pelo papel administrativo sem entender as políticas; vamos testar RLS com duas contas autenticadas e depois implementar transferência de mestragem e gestão de personagens.
+As migrações PostgreSQL vivem em `supabase/migrations/`. As tabelas iniciais são `mesas`, `mesa_participantes` e `personagens`, com RLS. A migração 003 adiciona convites privados (somente hashes), pedidos protegidos por RLS e funções que validam Mestre/jogador no banco. A migração 004 adiciona apelidos nos participantes, restringe a leitura do elenco a membros da Mesa e habilita Realtime nas tabelas usadas no portal. A migração 005 adiciona os campos básicos de personagem e o fluxo validado de criação de rascunhos, limitado a dez fichas por Mesa. Não faça inserções de teste pelo papel administrativo sem entender as políticas; vamos testar RLS com duas contas autenticadas e depois implementar transferência de mestragem e gestão de personagens.
 
 Os livros oficiais e imagens de terceiros não devem ser publicados neste repositório sem autorização.
 
@@ -49,3 +49,14 @@ O projeto deve permitir exportar campanhas, migrar o banco PostgreSQL e utilizar
 
 **Observação:** o indicador "ao vivo" mostra a assinatura Realtime ativa, não é uma certificação da regra RLS. Testar acesso de contas diferentes continua obrigatório. O contador de participantes refere-se a usuários vinculados, não ao limite futuro de personagens.
 
+
+## Verificação da Alfa 0.4
+
+- Conferir colunas `classe`, `forca`, `agilidade`, `vigor`, `astucia`, `sa_atual`, `bi_atual` e `estado_ficha` em `personagens`.
+- Entrar em Mesa como jogador aprovado. Distribuir exatamente +3 pontos e criar um rascunho.
+- Conferir o novo registro e abrir as quatro seções da ficha: Características, Atributos e Perícias, Combate, Inventário.
+- Alterar PV ou SA como proprietário; o Mestre deve ver a alteração, mas não dispor de controles de edição.
+- Validar persistência com F5; confirmar que outras Mesas e usuários não veem a ficha.
+- Em `personagens`, os valores de Origem e Treinamento ainda não são conhecidos, por isso Defesa e demais derivados exibidos são **valores básicos, não necessariamente os valores finais**.
+
+A Ficha v0.2.1 e o Painel do Mestre v0.2 continuam congelados como referências; esta implementação não altera aqueles protótipos.
