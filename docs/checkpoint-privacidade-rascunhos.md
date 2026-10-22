@@ -1,5 +1,7 @@
 # Checkpoint — privacidade e limite de rascunhos
 
+Atualização: o projeto gratuito separado foi autorizado e preparado; a proposta foi aplicada **somente nele**, com teste SQL aprovado em PostgreSQL 17.11. Veja [ambiente de teste e acesso local](ambiente-de-teste.md). Os limites de validação e o estado de produção descritos abaixo continuam válidos.
+
 Preparado em 22/10/2026. Branch do PR #1. Proposta não aplicada em produção; nenhum dado real foi alterado. A auditoria anterior é um registro histórico do estado observado, não o estado posterior à aplicação desta proposta.
 
 ## Mudança proposta

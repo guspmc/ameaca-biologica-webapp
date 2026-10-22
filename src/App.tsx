@@ -3,42 +3,22 @@ import { createClient, type Session, type SupabaseClient } from '@supabase/supab
 import Convites, { CONVITE_LOCAL } from './Convites';
 import Participantes from './Participantes';
 import FichasJogador from './FichasJogador';
+import { chavePublica, urlPermitida, escolherConexao, URL_PRODUCAO, type Conexao } from './conexao';
 
-type Conexao = { url: string; chave: string };
 type Mesa = { id: string; nome: string; mestre_id: string; criada_em: string };
 type Modo = 'entrar' | 'cadastrar';
 const CHAVE_LOCAL = 'ameaca-biologica:conexao-v1';
-const URL_INICIAL = 'https://pftuhqioutvwnmvlbtrt.supabase.co';
-
-function chavePublica(chave: string): boolean {
-  if (chave.startsWith('sb_publishable_')) return true;
-  if (!chave.startsWith('eyJ')) return false;
-  try {
-    const trecho = chave.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
-    const conteudo = JSON.parse(atob(trecho)) as { role?: string };
-    return conteudo.role === 'anon';
-  } catch { return false; }
-}
-
-function urlPermitida(valor: string): boolean {
-  try {
-    const url = new URL(valor);
-    return url.protocol === 'https:' ||
-      (url.protocol === 'http:' && ['localhost','127.0.0.1'].includes(url.hostname));
-  } catch { return false; }
-}
+const URL_INICIAL = URL_PRODUCAO;
+const AMBIENTE_TESTE = import.meta.env.VITE_AMBIENTE === 'teste';
 
 function carregarConexao(): Conexao | null {
+  let guardada: string | null = null;
   try {
-    const guardada = localStorage.getItem(CHAVE_LOCAL);
-    if (guardada) {
-      const dados = JSON.parse(guardada) as Conexao;
-      if (urlPermitida(dados.url) && chavePublica(dados.chave)) return dados;
-    }
+    if (!AMBIENTE_TESTE) guardada = localStorage.getItem(CHAVE_LOCAL);
   } catch { /* Navegador sem armazenamento local */ }
-  const chave = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string | undefined;
-  const url = (import.meta.env.VITE_SUPABASE_URL as string | undefined) || URL_INICIAL;
-  return chave && chavePublica(chave) && urlPermitida(url) ? { url, chave } : null;
+  return escolherConexao({ teste: AMBIENTE_TESTE, guardada,
+    url: import.meta.env.VITE_SUPABASE_URL,
+    chave: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY });
 }
 
 function cabecalho(identificacao: string) {
@@ -298,8 +278,9 @@ export default function App(){
   },[supabase]);
 
   return <div className="aplicativo">
+    {AMBIENTE_TESTE&&<p className="ambiente-teste" role="status">AMBIENTE DE TESTE · Dados separados da campanha. Use apenas personagens e Mesas fictícias.</p>}
     {cabecalho(sessao?'MESA ONLINE':'ACESSO CONTROLADO')}
-    {!conexao?<Configurar pronto={setConexao}/>:
+    {!conexao?(AMBIENTE_TESTE?<main className="central"><p role="alert">Conexão de teste indisponível. Configure o projeto de teste antes de continuar.</p></main>:<Configurar pronto={setConexao}/>):
       verificando?<main className="central"><p className="secundario">Verificando acesso...</p></main>:
       sessao && supabase?<Lobby supabase={supabase} sessao={sessao}/>:
       supabase?<Autenticacao supabase={supabase}/>:null}

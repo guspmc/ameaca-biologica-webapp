@@ -68,3 +68,5 @@ A migração `20261022224633_privacidade_e_limite_rascunhos.sql` está somente p
 Execute `pnpm test` para recriar PostgreSQL em memória com fixtures fictícias e aplicar os arquivos SQL reais. Não usa Supabase remoto, contas, chaves ou rede. As verificações cobrem RLS e RPC; não substituem testes de Auth, PostgREST, Realtime e concorrência com conexões independentes. Execute `pnpm run build` para validar o aplicativo.
 
 Consulte [o checkpoint e roteiro humano](docs/checkpoint-privacidade-rascunhos.md). As seções antigas acima descrevem a Alfa anterior; o relatório de auditoria preserva o estado observado em produção, sem afirmar que esta proposta foi aplicada.
+
+O [ambiente gratuito de teste](docs/ambiente-de-teste.md) já recebeu as sete migrações e passou no teste SQL com rollback. Para a prévia isolada, preencha `.env.teste` usando `.env.example` e execute `pnpm run dev:teste`. A faixa AMBIENTE DE TESTE identifica essa versão. Ela ignora conexão guardada no navegador e não aceita o projeto de produção como alternativa. Produção permanece sem a nova proposta.
