@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react';
 import { createClient, type Session, type SupabaseClient } from '@supabase/supabase-js';
+import Convites, { CONVITE_LOCAL } from './Convites';
 
 type Conexao = { url: string; chave: string };
 type Mesa = { id: string; nome: string; mestre_id: string; criada_em: string };
@@ -70,7 +71,7 @@ function Configurar({ pronto }: { pronto: (dados: Conexao) => void }) {
 
   return <main className="entrada">
     <section className="apresentacao">
-      <span className="sobretitulo"><i /> PORTAL DE ACESSO · ALFA 0.1</span>
+      <span className="sobretitulo"><i /> PORTAL DE ACESSO · ALFA 0.2</span>
       <h1>O incidente<br/><em>começa aqui.</em></h1>
       <p>A primeira central de Mesas do RPG Ameaça Biológica. Gratuita, acessível e independente de servidores proprietários.</p>
       <span className="nota-lateral">Um protocolo de cada vez. ☣</span>
@@ -124,7 +125,7 @@ function Autenticacao({ supabase }: { supabase: SupabaseClient }) {
 
   return <main className="entrada">
     <section className="apresentacao">
-      <span className="sobretitulo"><i /> ACESSO CONTROLADO · ALFA 0.1</span>
+      <span className="sobretitulo"><i /> ACESSO CONTROLADO · ALFA 0.2</span>
       <h1>Sobreviver é<br/><em>um trabalho em equipe.</em></h1>
       <p>Entre no sistema, crie uma Mesa e prepare a sua próxima história de horror.</p>
       <div className="modulos"><span>01 / MESAS ONLINE</span><span>02 / ACESSO INDIVIDUAL</span><span>03 / DADOS PROTEGIDOS</span></div>
@@ -213,6 +214,7 @@ function Lobby({ supabase, sessao }: { supabase: SupabaseClient; sessao: Session
           </li>)}</ul>}
       </section>
     </div>
+    <Convites supabase={supabase} usuarioId={sessao.user.id} mesas={mesas} aoAtualizarMesas={atualizar}/>
     {escolhida && <div className="modal-fundo" onClick={()=>setEscolhida(null)}>
       <div className="cartao modal" role="dialog" aria-modal="true" aria-labelledby="mesa-escolhida" onClick={evento=>evento.stopPropagation()}>
         <p className="rotulo">MESA ONLINE</p><h2 id="mesa-escolhida">{escolhida.nome}</h2>
@@ -221,11 +223,19 @@ function Lobby({ supabase, sessao }: { supabase: SupabaseClient; sessao: Session
         <button className="acao" type="button" onClick={()=>setEscolhida(null)}>Voltar às Mesas</button>
       </div>
     </div>}
-    <footer>AMEAÇA BIOLÓGICA RPG · TESTE ALFA 0.1 · GRATUITO</footer>
+    <footer>AMEAÇA BIOLÓGICA RPG · TESTE ALFA 0.2 · GRATUITO</footer>
   </main>;
 }
 
 export default function App(){
+  useEffect(() => {
+    const fragmento = new URLSearchParams(window.location.hash.replace(/^#/, ''));
+    const codigo = fragmento.get('convite')?.trim();
+    if (codigo && /^AB-[A-Fa-f0-9]{24}$/.test(codigo)) {
+      try { localStorage.setItem(CONVITE_LOCAL, codigo.toUpperCase()); } catch { /* Armazenamento indisponivel */ }
+      window.history.replaceState(window.history.state, '', window.location.pathname + window.location.search);
+    }
+  }, []);
   const [conexao, setConexao] = useState<Conexao|null>(carregarConexao);
   const [sessao, setSessao] = useState<Session|null>(null);
   const [verificando, setVerificando] = useState(true);

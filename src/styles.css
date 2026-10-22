@@ -77,3 +77,33 @@ h2 { font-size:25px; margin:0 0 15px; letter-spacing:-.03em; }
 footer { margin-top:45px; border-top:1px solid #dce2df; padding-top:19px; color:#879398; font-size:10px; letter-spacing:.13em; }
 @media(max-width:830px) {.entrada { grid-template-columns:1fr; align-items:start; gap:30px; padding-top:40px; } .modulos {display:none;} .grade {grid-template-columns:1fr;} .central{padding-top:35px;}}
 @media(max-width:520px) {.topo-interno{padding:14px 15px;min-height:72px;} .nome-marca strong{font-size:13px;} .nome-marca small{font-size:8px;} .tag{font-size:8px;padding:7px;} .entrada{padding:31px 15px 55px;} .apresentacao h1{font-size:42px;} .apresentacao p{font-size:14px;} .painel-entrada,.cartao-padrao{padding:23px 20px;} .central{padding-left:15px;padding-right:15px;} .cabecalho-central{flex-direction:column;} .cabecalho-central h1{font-size:42px;} .conta{text-align:left;} .link-botao{text-align:left;} .linha-mesa{padding:11px;}}
+
+/* ALFA 0.2 — Convites e solicitacoes */
+.area-convites{margin-top:48px}
+.titulo-area{margin-bottom:22px}
+.titulo-area h2{font-size:28px;margin:12px 0 4px}
+.titulo-area .secundario{margin:0}
+.grade-convites{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:22px;align-items:start}
+.grade-convites h3{font-size:21px;margin:0 0 8px;letter-spacing:-.02em}
+.grade-convites h4{font-size:13px;color:#2e4046;margin:0}
+.formulario select{background:#fbfcfb;border:1px solid #ccd5d3;min-height:48px;padding:12px 13px;border-radius:7px;width:100%;color:#1b282c}
+.convite-gerado{padding:14px;border:1px solid #d9e4dd;border-radius:8px;background:#f4f8f5;display:grid;gap:11px}
+.convite-gerado>span{font-size:10px;letter-spacing:.1em;font-weight:800;color:#517563}
+.convite-gerado>strong{font-size:17px;letter-spacing:.05em;overflow-wrap:anywhere;color:#2b4c3e}
+.link-convite{background:#fff;padding:10px;border:1px solid #dde5de;border-radius:5px;overflow-wrap:anywhere;color:#687c70;font-size:11px;line-height:1.6}
+.solicitacoes-topo{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:28px 0 16px;padding-top:20px;border-top:1px solid #e1e7e4}
+.lista-pedidos{margin:0;padding:0;display:grid;list-style:none;gap:10px}
+.pedido{padding:12px;border:1px solid #dce3e0;border-radius:7px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.pedido>div:first-child{display:flex;flex-direction:column;gap:5px;min-width:0}
+.pedido strong{font-size:14px;overflow-wrap:anywhere}
+.pedido small{color:#77858b;font-size:11px}
+.acoes-pedido{display:flex;gap:7px}
+.botao-aprovar{background:#a5263e;border:0;border-radius:6px;padding:9px 12px;font-size:12px;font-weight:800;color:white}
+.botao-aprovar:hover{background:#822037}
+.pedidos-meus{margin-top:27px;padding-top:18px;border-top:1px solid #e1e7e4}
+.pedido-compacto{display:flex;gap:12px;justify-content:space-between;align-items:center;padding:11px 0;border-bottom:1px solid #e6eae8;font-size:12px}
+.status-pedido{font-weight:800;font-size:10px;white-space:nowrap}
+.status-pendente{color:#946a19}.status-aprovada{color:#286547}.status-recusada{color:#9b2a3d}
+.area-convites>.erro,.area-convites>.sucesso{margin-top:15px}
+@media(max-width:830px){.grade-convites{grid-template-columns:1fr}.area-convites{margin-top:35px}}
+@media(max-width:520px){.titulo-area h2{font-size:25px}.pedido{flex-direction:column;align-items:stretch}.acoes-pedido{justify-content:flex-end}.pedido-compacto{flex-wrap:wrap}}

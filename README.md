@@ -4,7 +4,7 @@ WebApp gratuito e de código aberto para **Ameaça Biológica**, RPG de horror e
 
 ## Estado atual
 
-**Alfa 0.1 (portal inicial):** cadastro e login por e-mail via Supabase Auth, criação e listagem de Mesas por usuário e interface responsiva. Ainda não há convites, gerenciamento de personagens nem sincronização em tempo real na UI. Os protótipos aprovados da **Ficha do Jogador v0.2.1** e do **Painel do Mestre v0.2** continuam referências visuais separadas.
+**Alfa 0.2:** cadastro e login por e-mail via Supabase Auth, criação e listagem de Mesas, convites por código/link e solicitações de entrada aceitas ou recusadas pelo Mestre. Um convite expira em 7 dias, um novo código invalida o antigo e a entrada não é automática. Ainda não há gerenciamento de personagens nem sincronização em tempo real de fichas. A lista de solicitações é atualizada periodicamente. Os protótipos aprovados da **Ficha do Jogador v0.2.1** e do **Painel do Mestre v0.2** continuam referências visuais separadas.
 
 ## Executar localmente
 
@@ -30,7 +30,7 @@ O serviço SMTP padrão do Supabase limita os e-mails e não é destinado a insc
 
 ## Banco e segurança
 
-As migrações PostgreSQL vivem em `supabase/migrations/`. As tabelas iniciais são `mesas`, `mesa_participantes` e `personagens`, com RLS. O primeiro portal manipula apenas `mesas`. Não faça inserções de teste pelo papel administrativo sem entender as políticas; vamos testar RLS com duas contas autenticadas e depois implementar convites, transferência de mestragem e gestão de personagens.
+As migrações PostgreSQL vivem em `supabase/migrations/`. As tabelas iniciais são `mesas`, `mesa_participantes` e `personagens`, com RLS. A migração 003 adiciona convites privados (somente hashes), pedidos protegidos por RLS e funções que validam Mestre/jogador no banco. Não faça inserções de teste pelo papel administrativo sem entender as políticas; vamos testar RLS com duas contas autenticadas e depois implementar transferência de mestragem e gestão de personagens.
 
 Os livros oficiais e imagens de terceiros não devem ser publicados neste repositório sem autorização.
 
