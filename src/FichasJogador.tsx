@@ -43,15 +43,15 @@ const PERICIAS:{nome:string;atributo:Atributo}[]=[
 const ORIGENS:{nome:string;pericias:string[];beneficio:string}[]=[
   {nome:'Acadêmico',pericias:['Investigação','Medicina'],beneficio:'Saber é Poder: 1/Descanso Completo, Vantagem em Teste baseado em AST.'},
   {nome:'Agente de Saúde',pericias:['Medicina','Sobrevivência'],beneficio:'Ao curar aliado com item ou efeito, +1d4 de Cura; não se aplica a si.'},
-  {nome:'Amnésico',pericias:[],beneficio:'Vislumbres do Passado: 1/sessão, em local conhecido, AST DT 10; informação útil e Vantagem no próximo Teste relacionado de Sobrevivência.'},
+  {nome:'Amnésico',pericias:[],beneficio:'Vislumbres do Passado: 1/sessão, em local conhecido antes da amnésia, AST DT 10; informação útil e Vantagem no próximo Teste relacionado de Sobrevivência.'},
   {nome:'Atleta',pericias:['Acrobacia','Atletismo'],beneficio:'Por 1 SA, +5 em Teste de Perícia baseado em FOR ou AGI, exceto Luta e Pontaria.'},
   {nome:'Chef',pericias:['Fortitude','Sobrevivência'],beneficio:'Em Sala de Descanso, ao criar item, pode escolher 10 no d20.'},
   {nome:'Cobaia',pericias:['Reflexos','Vontade'],beneficio:'+2 BI Máxima e Vantagem em Reanimação durante Colapso Viral.'},
   {nome:'Criminoso',pericias:['Investigação','Furtividade'],beneficio:'1/Descanso Completo: Vantagem em Investigação ao procurar itens ou recursos.'},
   {nome:'Desgarrado',pericias:['Fortitude','Sobrevivência'],beneficio:'Ao aumentar BI, recebe PV Temporários iguais à metade da BI atual, arredondada para baixo.'},
   {nome:'Investigador',pericias:['Investigação','Percepção'],beneficio:'Por 1 SA, +5 no Teste de Investigação ao procurar uma pista.'},
-  {nome:'Lutador',pericias:['Luta','Reflexos'],beneficio:'Ataque Desarmado e Arma Improvisada sobem uma categoria de dado; não afeta Coronhada.'},
-  {nome:'Mercenário',pericias:['Pontaria','Fortitude'],beneficio:'1/Descanso Completo, Reação para sacar arma carregada e atacar hostil oculto que iria Surpreender; não fica Surpreendido.'},
+  {nome:'Lutador',pericias:['Luta','Reflexos'],beneficio:'Ataque Desarmado e Arma Improvisada sobem uma categoria de dado; acumula com Casca-Grossa e não afeta Coronhada.'},
+  {nome:'Mercenário',pericias:['Pontaria','Fortitude'],beneficio:'1/Descanso Completo, Reação para sacar arma de fogo carregada e atacar hostil oculto que iria Surpreender; não fica Surpreendido.'},
   {nome:'Militar',pericias:['Pontaria','Percepção'],beneficio:'Após matar inimigo com arma de fogo, Vantagem no primeiro Ataque com arma de fogo no próximo turno.'},
   {nome:'Mochileiro',pericias:['Sobrevivência','Atletismo'],beneficio:'+1 Espaço de Inventário.'},
   {nome:'Operário',pericias:['Fortitude','Atletismo'],beneficio:'Escolha uma Arma Corpo a Corpo semelhante a ferramenta: +1 no Teste de Ataque, Dano soma 2 × FOR em vez de FOR; bônus adicional não multiplica no Crítico.'},
@@ -125,9 +125,13 @@ export default function FichasJogador({supabase,usuarioId,mesas,sinalAtualizacao
     });
     if(error){setErro('Não foi possível criar o personagem: '+error.message);}
     else {
-      setMensagem('Rascunho criado e salvo! Vamos completar Origem, perícias, habilidades e inventário nos próximos passos.');
+      setMensagem('Rascunho criado e salvo! Escolha a Origem na ficha; os demais pontos de Perícia, Habilidades e equipamentos ainda estão pendentes.');
       setNome('');setStats({...INICIAIS});await carregar();
-      if(typeof data==='string')setAbertoId(data);
+      if(typeof data==='string'){
+        setOrigemEscolhida('');setPericiaTreinada('');setPericiaExtra('');
+        setErroOrigem('');setAvisoOrigem('');
+        setAbertoId(data);setRecursoAberto(null);setSecaoAtiva('perfil');
+      }
     }
     setCriando(false);
   }
@@ -198,7 +202,7 @@ export default function FichasJogador({supabase,usuarioId,mesas,sinalAtualizacao
       <section className="cartao cartao-padrao">
         <p className="rotulo">NOVO SOBREVIVENTE</p>
         <h3>Criar rascunho de personagem</h3>
-        <p className="secundario">Criação inicial por pontos do Arquivo do Jogador v1.0. Origem, Treinamento e equipamentos virão em seguida.</p>
+        <p className="secundario">Criação inicial por pontos do Arquivo do Jogador v1.0. Após criar, escolha a Origem e seu Treinamento gratuito na ficha. Demais pontos de Perícia e equipamentos ainda estão pendentes.</p>
         {minhasMesas.length===0 ? <p className="dica">Você precisa ter sido aprovado como jogador em uma Mesa para criar um personagem. Mestres visualizam as fichas, mas não as editam.</p>:
           <form onSubmit={criar} className="formulario">
             <label>Mesa <select value={mesaEscolhida} onChange={e=>setMesaId(e.target.value)}>
@@ -278,7 +282,7 @@ export default function FichasJogador({supabase,usuarioId,mesas,sinalAtualizacao
               <div className="ficha-contexto-topo"><strong>{recursoAberto==='DEF'?'Defesa':'Ajustar '+recursoAberto}</strong>
                 <button type="button" onClick={()=>setRecursoAberto(null)}>✕</button></div>
               {recursoAberto==='DEF'?
-                <p>Defesa base: 10 + AGI. Bônus de Origem, equipamento, Habilidades e Condições ainda não foram aplicados neste rascunho.</p>:
+                <p>Defesa: 10 + AGI{ficha.origem==='Policial'?' + 2 da Origem Policial':''}. Equipamento, Habilidades e Condições ainda não foram aplicados neste rascunho.</p>:
                 <><p>Alterações salvas no Supabase e visíveis na sessão do Mestre.</p>
                   {dona?<div className="ficha-ajustes">
                     <button type="button" disabled={salvando} onClick={()=>{void ajustar(recursoAberto,-1)}}>− 1 {recursoAberto}</button>
