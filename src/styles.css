@@ -1,0 +1,79 @@
+:root {
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  color: #1c292e; background: #f1f3f0; font-synthesis: none; text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+* { box-sizing: border-box; }
+body { margin: 0; min-width: 320px; }
+button, input { font: inherit; }
+button { cursor: pointer; }
+button:focus-visible, input:focus-visible { outline: 3px solid #b93f56; outline-offset: 2px; }
+button:disabled { opacity: .6; cursor: wait; }
+.aplicativo { min-height: 100vh; background: linear-gradient(180deg, #e9ece9, #f7f8f5); }
+.topo { background: #192027; border-bottom: 4px solid #aa2b41; color: white; }
+.topo-interno { max-width: 1180px; margin: auto; padding: 16px 24px; display:flex; align-items: center; gap: 14px; min-height: 80px; }
+.marca { display:grid; place-items:center; background:#a5273d; border: 2px solid #dd8290; border-radius: 9px; width: 42px; height: 42px; flex-shrink: 0; font-size: 17px; font-weight: 900; }
+.nome-marca { display:flex; flex-direction:column; gap:4px; line-height:1.1; }
+.nome-marca strong { letter-spacing:.08em; font-size:16px; }
+.nome-marca small { font-size:9px; letter-spacing:.16em; color:#b3bdc0; }
+.tag { margin-left:auto; border:1px solid #5d6972; border-radius:4px; padding:8px 11px; font-size:10px; font-weight:800; color:#dce2e5; letter-spacing:.08em; white-space:nowrap; }
+.entrada { max-width:1180px; margin:auto; min-height:calc(100vh - 84px); padding:55px 24px 78px; display:grid; grid-template-columns:minmax(0,1fr) 440px; gap:8vw; align-items:center; }
+.sobretitulo { color:#94283b; font-size:11px; font-weight:850; letter-spacing:.16em; display:block; }
+.sobretitulo i { display:inline-block; width:8px; height:8px; border-radius:50%; background:#a52b43; margin-right:8px; }
+.apresentacao h1 { font-size:clamp(41px,5.5vw,72px); letter-spacing:-.06em; line-height:1.09; margin:20px 0 24px; }
+.apresentacao h1 em { font-style:normal; color:#a5263e; }
+.apresentacao p { font-size:17px; color:#66757c; line-height:1.75; max-width:460px; }
+.nota-lateral { display:block; font-size:12px; margin-top:45px; color:#8b969b; }
+.modulos { display:flex; flex-direction:column; gap:12px; margin-top:50px; font-size:11px; letter-spacing:.13em; font-weight:800; color:#718187; }
+.cartao { background:#fff; border:1px solid #d7dedb; border-radius:12px; box-shadow: 0 18px 50px rgba(19,29,36,.04); }
+.painel-entrada { padding:34px; }
+.rotulo { font-size:11px; color:#a7273b; font-weight:850; letter-spacing:.14em; margin:0 0 10px; }
+h2 { font-size:25px; margin:0 0 15px; letter-spacing:-.03em; }
+.secundario { color:#697981; line-height:1.65; font-size:14px; }
+.formulario { display:grid; gap:18px; margin-top:26px; }
+.formulario label { display:grid; gap:8px; font-size:13px; color:#36454b; font-weight:750; }
+.formulario input { background:#fbfcfb; border:1px solid #ccd5d3; min-height:48px; padding:12px 13px; border-radius:7px; width:100%; color:#1b282c; font-weight:400; }
+.formulario input::placeholder { color:#8b989c; }
+.acao { min-height:48px; border:0; border-radius:7px; padding:12px 18px; color:#fff; background:#a5263e; font-weight:800; font-size:14px; display:flex; align-items:center; justify-content:space-between; gap:14px; }
+.acao:hover:not(:disabled) { background:#822037; }
+.dica { padding:12px; border-left:3px solid #a5263e; background:#f3f5f4; font-size:12px; color:#63747b; line-height:1.55; margin:0; }
+.erro,.sucesso { padding:12px; border-radius:6px; font-size:13px; line-height:1.5; margin:0; }
+.erro { color:#8f2035; background:#fff0f2; }
+.sucesso { color:#286547; background:#eaf7ee; }
+.abas { display:grid; grid-template-columns:1fr 1fr; margin-top:18px; border-bottom:1px solid #dce2e0; }
+.abas button { background:none; border:0; padding:14px; color:#6e7c83; font-weight:800; border-bottom:3px solid transparent; }
+.abas button.ativa { color:#a5263e; border-bottom-color:#a5263e; }
+.aviso { font-size:11px; line-height:1.6; color:#87949a; margin:20px 0 0; }
+.central { max-width:1180px; padding:56px 24px 38px; margin:auto; }
+.cabecalho-central { display:flex; gap:25px; align-items:start; justify-content:space-between; margin-bottom:33px; }
+.cabecalho-central h1 { font-size:clamp(36px,5vw,54px); letter-spacing:-.055em; margin:13px 0 0; }
+.cabecalho-central p { font-size:14px; color:#6d7e84; }
+.conta { max-width:275px; display:flex; flex-direction:column; text-align:right; gap:7px; overflow-wrap:anywhere; }
+.conta small { color:#78858a; font-size:10px; font-weight:850; letter-spacing:.1em; }
+.conta strong { font-size:13px; }
+.link-botao { border:0; padding:0; background:none; color:#a5263e; font-size:13px; font-weight:800; text-decoration:underline; text-align:right; }
+.grade { display:grid; grid-template-columns:minmax(270px,.85fr) minmax(0,1.4fr); gap:22px; align-items:start; }
+.cartao-padrao { padding:29px; min-width:0; }
+.nota-etapa { margin-top:30px; border:1px solid #e2e7e4; padding:15px; border-radius:7px; background:#f6f7f5; }
+.nota-etapa strong { font-size:10px; letter-spacing:.1em; color:#a5263e; }
+.nota-etapa p { margin:8px 0 0; color:#7b898c; font-size:12px; line-height:1.6; }
+.linha-titulo { display:flex; gap:10px; align-items:start; justify-content:space-between; }
+.botao-claro { border:1px solid #cdd5d6; background:#fff; border-radius:6px; padding:9px 13px; font-size:12px; font-weight:800; color:#35464b; }
+.vazio { text-align:center; padding:44px 15px; border:1px dashed #d9e0dc; margin-top:23px; border-radius:8px; color:#708085; font-size:13px; line-height:1.7; }
+.vazio h3 { color:#334248; margin:10px 0 4px; font-size:16px; }
+.vazio p { margin:0; }
+.simbolo-vazio { margin:0 auto; width:48px; height:48px; border-radius:50%; background:#f2e3e6; color:#a5263e; display:grid; place-items:center; font-size:28px; }
+.lista-mesas { display:grid; gap:9px; padding:0; list-style:none; margin:21px 0 0; }
+.linha-mesa { display:flex; width:100%; padding:14px; gap:14px; align-items:center; text-align:left; color:#233038; background:#fafbfa; border:1px solid #e0e6e3; border-radius:8px; }
+.linha-mesa:hover { background:#fff; border-color:#b65b6c; }
+.sigla { display:grid; place-items:center; width:42px; height:42px; flex:none; border-radius:7px; background:#f3e2e6; color:#a5263e; font-weight:900; font-size:12px; }
+.detalhes-mesa { display:flex; flex-direction:column; min-width:0; gap:6px; flex:1; }
+.detalhes-mesa strong { overflow-wrap:anywhere; }
+.detalhes-mesa small { color:#768489; font-size:10px; font-weight:750; letter-spacing:.07em; line-height:1.5; }
+.seta { font-size:22px; color:#a5263e; }
+.modal-fundo { position:fixed; inset:0; display:grid; place-items:center; z-index:10; padding:20px; background:#14242abe; }
+.modal { width:min(100%,520px); padding:32px; }
+.modal .acao { width:100%; margin-top:22px; justify-content:center; }
+footer { margin-top:45px; border-top:1px solid #dce2df; padding-top:19px; color:#879398; font-size:10px; letter-spacing:.13em; }
+@media(max-width:830px) {.entrada { grid-template-columns:1fr; align-items:start; gap:30px; padding-top:40px; } .modulos {display:none;} .grade {grid-template-columns:1fr;} .central{padding-top:35px;}}
+@media(max-width:520px) {.topo-interno{padding:14px 15px;min-height:72px;} .nome-marca strong{font-size:13px;} .nome-marca small{font-size:8px;} .tag{font-size:8px;padding:7px;} .entrada{padding:31px 15px 55px;} .apresentacao h1{font-size:42px;} .apresentacao p{font-size:14px;} .painel-entrada,.cartao-padrao{padding:23px 20px;} .central{padding-left:15px;padding-right:15px;} .cabecalho-central{flex-direction:column;} .cabecalho-central h1{font-size:42px;} .conta{text-align:left;} .link-botao{text-align:left;} .linha-mesa{padding:11px;}}
