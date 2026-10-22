@@ -18,9 +18,10 @@ type Props = {
   usuarioId: string;
   mesas: Mesa[];
   aoAtualizarMesas: () => Promise<void>;
+  sinalAtualizacao: number;
 };
 
-export default function Convites({ supabase, usuarioId, mesas, aoAtualizarMesas }: Props) {
+export default function Convites({ supabase, usuarioId, mesas, aoAtualizarMesas, sinalAtualizacao }: Props) {
   const [pedidos, setPedidos] = useState<Pedido[]>([]);
   const [codigo, setCodigo] = useState(() => localStorage.getItem(CONVITE_LOCAL) || '');
   const [apelido, setApelido] = useState('');
@@ -51,7 +52,7 @@ export default function Convites({ supabase, usuarioId, mesas, aoAtualizarMesas 
     void atualizarPedidos();
     const intervalo = window.setInterval(() => { void atualizarPedidos(); }, 20000);
     return () => window.clearInterval(intervalo);
-  }, [atualizarPedidos]);
+  }, [atualizarPedidos, sinalAtualizacao]);
 
   function nomeMesa(id: string) {
     return mesas.find(m => m.id === id)?.nome ?? 'Mesa';
@@ -180,6 +181,6 @@ export default function Convites({ supabase, usuarioId, mesas, aoAtualizarMesas 
     </div>
     {erro && <p className="erro" role="alert">{erro}</p>}
     {mensagem && <p className="sucesso" role="status">{mensagem}</p>}
-    <p className="aviso">Solicitações são atualizadas periodicamente. A sincronização completa de fichas entrará em outro marco.</p>
+    <p className="aviso">Solicitações recebem notificações ao vivo, com verificação periódica de contingência. A sincronização das fichas virá depois.</p>
   </section>;
 }

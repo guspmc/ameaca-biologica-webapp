@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react';
 import { createClient, type Session, type SupabaseClient } from '@supabase/supabase-js';
 import Convites, { CONVITE_LOCAL } from './Convites';
+import Participantes from './Participantes';
 
 type Conexao = { url: string; chave: string };
 type Mesa = { id: string; nome: string; mestre_id: string; criada_em: string };
@@ -71,7 +72,7 @@ function Configurar({ pronto }: { pronto: (dados: Conexao) => void }) {
 
   return <main className="entrada">
     <section className="apresentacao">
-      <span className="sobretitulo"><i /> PORTAL DE ACESSO · ALFA 0.2</span>
+      <span className="sobretitulo"><i /> PORTAL DE ACESSO · ALFA 0.3</span>
       <h1>O incidente<br/><em>começa aqui.</em></h1>
       <p>A primeira central de Mesas do RPG Ameaça Biológica. Gratuita, acessível e independente de servidores proprietários.</p>
       <span className="nota-lateral">Um protocolo de cada vez. ☣</span>
@@ -125,7 +126,7 @@ function Autenticacao({ supabase }: { supabase: SupabaseClient }) {
 
   return <main className="entrada">
     <section className="apresentacao">
-      <span className="sobretitulo"><i /> ACESSO CONTROLADO · ALFA 0.2</span>
+      <span className="sobretitulo"><i /> ACESSO CONTROLADO · ALFA 0.3</span>
       <h1>Sobreviver é<br/><em>um trabalho em equipe.</em></h1>
       <p>Entre no sistema, crie uma Mesa e prepare a sua próxima história de horror.</p>
       <div className="modulos"><span>01 / MESAS ONLINE</span><span>02 / ACESSO INDIVIDUAL</span><span>03 / DADOS PROTEGIDOS</span></div>
@@ -161,18 +162,47 @@ function Lobby({ supabase, sessao }: { supabase: SupabaseClient; sessao: Session
   const [erro, setErro] = useState('');
   const [aviso, setAviso] = useState('');
   const [escolhida, setEscolhida] = useState<Mesa | null>(null);
+  const [sinalAtualizacao, setSinalAtualizacao] = useState(0);
+  const [estadoRealtime, setEstadoRealtime] = useState<'conectando'|'ao-vivo'|'alternativo'>('conectando');
 
-  const atualizar = useCallback(async () => {
-    setCarregando(true);
+  const atualizar = useCallback(async (silencioso = false) => {
+    if (!silencioso) setCarregando(true);
     const {data,error} = await supabase.from('mesas')
       .select('id, nome, mestre_id, criada_em')
       .order('criada_em',{ascending:false});
     if (error) setErro('Erro ao carregar Mesas: ' + error.message);
     else {setMesas((data ?? []) as Mesa[]); setErro('');}
-    setCarregando(false);
+    if (!silencioso) setCarregando(false);
   },[supabase]);
 
   useEffect(()=>{void atualizar();},[atualizar]);
+
+  // Postgres Changes + RLS: cada conta recebe apenas eventos
+  // relativos a linhas que pode consultar. Polling e apenas
+  // contingencia quando a rede suspende a conexao do navegador.
+  useEffect(() => {
+    const notificar = () => {
+      void atualizar(true);
+      setSinalAtualizacao(valor => valor + 1);
+    };
+    const canal = supabase.channel('ab-mesas-' + sessao.user.id)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'mesas' }, notificar)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'mesa_participantes' }, notificar)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'solicitacoes_entrada' }, () => {
+        setSinalAtualizacao(valor => valor + 1);
+      })
+      .subscribe(status => {
+        if (status === 'SUBSCRIBED') setEstadoRealtime('ao-vivo');
+        else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT' || status === 'CLOSED')
+          setEstadoRealtime('alternativo');
+        else setEstadoRealtime('conectando');
+      });
+    const contingencia = window.setInterval(notificar, 30000);
+    return () => {
+      window.clearInterval(contingencia);
+      void supabase.removeChannel(canal);
+    };
+  }, [supabase, sessao.user.id, atualizar]);
 
   async function criar(evento:FormEvent<HTMLFormElement>) {
     evento.preventDefault();
@@ -187,7 +217,11 @@ function Lobby({ supabase, sessao }: { supabase: SupabaseClient; sessao: Session
 
   return <main className="central">
     <div className="cabecalho-central">
-      <div><span className="sobretitulo"><i/> CENTRO DE OPERAÇÕES</span><h1>Minhas Mesas</h1><p>Gerencie campanhas em um espaço compartilhado e protegido.</p></div>
+      <div><span className="sobretitulo"><i/> CENTRO DE OPERAÇÕES</span><h1>Minhas Mesas</h1><p>Gerencie campanhas em um espaço compartilhado e protegido.</p>
+        <span className={'indicador-sync '+(estadoRealtime==='ao-vivo'?'sync-ativo':'')}>
+          <i aria-hidden="true" /> {estadoRealtime==='ao-vivo' ? 'Atualizações ao vivo' :
+          estadoRealtime==='conectando' ? 'Conectando sincronização...' : 'Atualização automática de contingência'}
+        </span></div>
       <div className="conta"><small>USUÁRIO CONECTADO</small><strong>{sessao.user.email??'Conta autenticada'}</strong><button className="link-botao" type="button" onClick={()=>{void supabase.auth.signOut()}}>Sair da conta</button></div>
     </div>
     <div className="grade">
@@ -200,7 +234,7 @@ function Lobby({ supabase, sessao }: { supabase: SupabaseClient; sessao: Session
           {aviso && <p className="sucesso" role="status">{aviso}</p>}
           <button className="acao" type="submit" disabled={criando}>{criando?'Criando...':'+ Criar Mesa'}</button>
         </form>
-        <div className="nota-etapa"><strong>PRÓXIMAS ETAPAS</strong><p>Convites, personagens, sincronização e a integração dos painéis congelados estão em desenvolvimento.</p></div>
+        <div className="nota-etapa"><strong>PRÓXIMAS ETAPAS</strong><p>Convites, participantes e atualizações online estão disponíveis. Fichas, encontros e painéis congelados serão integrados em etapas futuras.</p></div>
       </section>
       <section className="cartao cartao-padrao">
         <div className="linha-titulo"><div><p className="rotulo">ARQUIVO DE CAMPANHAS</p><h2>Mesas cadastradas</h2></div><button className="botao-claro" type="button" disabled={carregando} onClick={()=>{void atualizar()}}>Atualizar</button></div>
@@ -214,16 +248,19 @@ function Lobby({ supabase, sessao }: { supabase: SupabaseClient; sessao: Session
           </li>)}</ul>}
       </section>
     </div>
-    <Convites supabase={supabase} usuarioId={sessao.user.id} mesas={mesas} aoAtualizarMesas={atualizar}/>
+    <Participantes supabase={supabase} usuarioId={sessao.user.id} mesas={mesas}
+      sinalAtualizacao={sinalAtualizacao} aoAtualizarMesas={() => atualizar(true)}/>
+    <Convites supabase={supabase} usuarioId={sessao.user.id} mesas={mesas}
+      sinalAtualizacao={sinalAtualizacao} aoAtualizarMesas={() => atualizar(true)}/>
     {escolhida && <div className="modal-fundo" onClick={()=>setEscolhida(null)}>
       <div className="cartao modal" role="dialog" aria-modal="true" aria-labelledby="mesa-escolhida" onClick={evento=>evento.stopPropagation()}>
         <p className="rotulo">MESA ONLINE</p><h2 id="mesa-escolhida">{escolhida.nome}</h2>
         <p className="secundario">Esta Mesa já está registrada no banco online, protegida pelas políticas de acesso.</p>
-        <p className="dica">Convites de jogadores e acesso aos painéis estarão disponíveis nas próximas etapas. Nenhum protótipo congelado foi alterado.</p>
+        <p className="dica">Gerencie os participantes e convites nas seções abaixo. Os painéis completos de Jogador e Mestre serão integrados depois, sem alterar os protótipos congelados.</p>
         <button className="acao" type="button" onClick={()=>setEscolhida(null)}>Voltar às Mesas</button>
       </div>
     </div>}
-    <footer>AMEAÇA BIOLÓGICA RPG · TESTE ALFA 0.2 · GRATUITO</footer>
+    <footer>AMEAÇA BIOLÓGICA RPG · TESTE ALFA 0.3 · GRATUITO</footer>
   </main>;
 }
 

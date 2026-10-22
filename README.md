@@ -4,7 +4,7 @@ WebApp gratuito e de código aberto para **Ameaça Biológica**, RPG de horror e
 
 ## Estado atual
 
-**Alfa 0.2:** cadastro e login por e-mail via Supabase Auth, criação e listagem de Mesas, convites por código/link e solicitações de entrada aceitas ou recusadas pelo Mestre. Um convite expira em 7 dias, um novo código invalida o antigo e a entrada não é automática. Ainda não há gerenciamento de personagens nem sincronização em tempo real de fichas. A lista de solicitações é atualizada periodicamente. Os protótipos aprovados da **Ficha do Jogador v0.2.1** e do **Painel do Mestre v0.2** continuam referências visuais separadas.
+**Alfa 0.3:** tudo da Alfa 0.2, mais lista de participantes por Mesa, apelidos recuperados dos pedidos aprovados, renomeação de campanhas pelo Mestre, remoção controlada de jogadores e atualizações ao vivo por Supabase Realtime (Postgres Changes). Há verificação periódica como contingência se o navegador suspender a conexão. Ainda não há sincronização de atributos/fichas nem gerenciamento de personagens. Os protótipos aprovados da **Ficha do Jogador v0.2.1** e do **Painel do Mestre v0.2** continuam referências visuais separadas.
 
 ## Executar localmente
 
@@ -30,10 +30,22 @@ O serviço SMTP padrão do Supabase limita os e-mails e não é destinado a insc
 
 ## Banco e segurança
 
-As migrações PostgreSQL vivem em `supabase/migrations/`. As tabelas iniciais são `mesas`, `mesa_participantes` e `personagens`, com RLS. A migração 003 adiciona convites privados (somente hashes), pedidos protegidos por RLS e funções que validam Mestre/jogador no banco. Não faça inserções de teste pelo papel administrativo sem entender as políticas; vamos testar RLS com duas contas autenticadas e depois implementar transferência de mestragem e gestão de personagens.
+As migrações PostgreSQL vivem em `supabase/migrations/`. As tabelas iniciais são `mesas`, `mesa_participantes` e `personagens`, com RLS. A migração 003 adiciona convites privados (somente hashes), pedidos protegidos por RLS e funções que validam Mestre/jogador no banco. A migração 004 adiciona apelidos nos participantes, restringe a leitura do elenco a membros da Mesa e habilita Realtime nas tabelas usadas no portal. Não faça inserções de teste pelo papel administrativo sem entender as políticas; vamos testar RLS com duas contas autenticadas e depois implementar transferência de mestragem e gestão de personagens.
 
 Os livros oficiais e imagens de terceiros não devem ser publicados neste repositório sem autorização.
 
 ## Portabilidade
 
 O projeto deve permitir exportar campanhas, migrar o banco PostgreSQL e utilizar servidor próprio. Backups completos e sincronização são objetivos planejados e **ainda não foram implementados**. A disponibilidade gratuita dos provedores depende de seus limites vigentes.
+
+## Testes recomendados para a Alfa 0.3
+
+1. Abrir o WebApp como Mestre e como Jogador em navegadores diferentes.
+2. Conferir se ambos visualizam apenas participantes da mesma Mesa, sem e-mails alheios.
+3. Renomear uma Mesa no Mestre e conferir se o Jogador vê a alteração sem F5.
+4. Enviar um novo pedido para outra Mesa e verificar o surgimento automático para o respectivo Mestre.
+5. Remover o Jogador, confirmar que sua lista de Mesas atualiza e que não consegue mais consultar aquela Mesa.
+6. Conferir se `Something Valentine`, o membro Claire e os dados anteriores continuam preservados.
+
+**Observação:** o indicador "ao vivo" mostra a assinatura Realtime ativa, não é uma certificação da regra RLS. Testar acesso de contas diferentes continua obrigatório. O contador de participantes refere-se a usuários vinculados, não ao limite futuro de personagens.
+
