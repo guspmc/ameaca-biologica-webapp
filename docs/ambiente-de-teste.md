@@ -57,6 +57,21 @@ Se o cadastro atingir limite de e-mail, pare e relate a mensagem, sem contratar 
 
 ## Capacidades aprovadas e pendências
 
+### Validação humana recebida em 22/10/2026
+
+Gus relatou funcionamento e forneceu cinco capturas de duas sessões de navegador no endereço local. Evidências visíveis:
+
+- Jogador admitido e Mestre na mesma Mesa de teste, em sessões separadas.
+- Três rascunhos de Classes diferentes, disponíveis ao jogador; painel do Mestre sem essas fichas.
+- Origens Policial/Pontaria, Cobaia/Vontade e Investigador/Investigação, com mensagens de salvamento e ficha mantida em rascunho.
+- Contador evoluindo de 2/3 para 3/3, orientação para continuar os existentes e botão de criação desabilitado.
+
+Os prints complementam os testes automatizados de limite e autorização. O botão também está sujeito à distribuição de Atributos; a recusa de um quarto rascunho com entrada válida foi comprovada nos testes SQL, não por uma tentativa humana visível nas capturas.
+
+Não foram copiados prints, e-mails, identificadores de conta ou conteúdo alheio ao teste para o repositório. As capturas não demonstram recarga com F5, fechamento/reabertura de sessão, entrega de eventos Realtime, concorrência ou todos os cálculos de Perícias. Esses itens não foram marcados como aprovados por inferência.
+
+Próximo teste humano curto: F5 nas duas sessões, reabrir cada ficha como jogador e conferir que Origem/Perícia/recursos continuam iguais e o Mestre permanece sem acesso aos rascunhos. Em 3/3, distribuir Atributos válidos e confirmar que criar continua bloqueado, sem apagar qualquer ficha.
+
 Planejamento aprovado: até 10 jogadores por Mesa, até 10 personagens ativas no total e até 3 rascunhos por conta/Mesa. Os três rascunhos não ocupam vagas ativas. Esta etapa implementa privacidade e limite de rascunhos; não certifica o teto de jogadores nem implementa finalização e seu teto de ativas.
 
 Exclusão automática dos rascunhos na saída/remoção permanece pendente, por envolver dados. Reconciliação da 006 em produção permanece pendente. Merge, publicação da Alfa e mudanças adicionais de produção continuam sujeitos ao checkpoint explícito do Gus.
