@@ -52,6 +52,13 @@ begin
     raise exception 'Rascunho indisponivel ou acesso negado.';
   end if;
 
+  -- Evita calcular recursos incorretamente para fichas legadas
+  -- que ainda nao possuem Classe definida.
+  if v_ficha.classe is null
+     or v_ficha.classe not in ('Agente','Autodidata','Operador') then
+    raise exception 'Defina uma Classe valida antes da Origem.';
+  end if;
+
   v_opcoes := case p_origem
     when 'Acadêmico' then array['Investigação','Medicina']
     when 'Agente de Saúde' then array['Medicina','Sobrevivência']
@@ -97,6 +104,12 @@ begin
   end + v_ficha.astucia
     + case when p_origem = 'Cobaia' then 2 else 0 end;
 
+  -- Ao trocar de Origem, nunca descartar BI acumulada silenciosamente.
+  -- Neste caso, a pessoa devera revisar a ficha antes de prosseguir.
+  if coalesce(v_ficha.bi_atual, 0) > v_bi_novo then
+    raise exception 'A BI atual excede a BI Maxima da nova Origem. Revise a ficha antes de mudar.';
+  end if;
+
   update public.personagens set
     origem = p_origem,
     pericia_origem_treinada = p_treinada,
@@ -107,7 +120,7 @@ begin
     sa_atual = least(v_sa_novo, greatest(0,
       coalesce(v_ficha.sa_atual, v_sa_ant) + v_sa_novo - v_sa_ant)),
     bi_maximo = v_bi_novo,
-    bi_atual = least(v_bi_novo, coalesce(v_ficha.bi_atual, 0))
+    bi_atual = v_ficha.bi_atual
   where id = v_ficha.id;
 end;
 $$;
