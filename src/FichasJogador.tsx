@@ -7,7 +7,7 @@ type Atributo = 'forca'|'agilidade'|'vigor'|'astucia';
 type Recurso = 'PV'|'SA'|'BI'|'DEF';
 type Personagem = {
   id:string; nome:string; mesa_id:string; jogador_id:string|null;
-  classe:Classe|null; origem:string|null; nivel:number;
+  classe:Classe|null; origem:string|null; pericia_origem_treinada:string|null; pericia_origem_extra:string|null; nivel:number;
   forca:number;agilidade:number;vigor:number;astucia:number;
   pv_atual:number|null;pv_maximo:number|null;
   sa_atual:number|null;sa_maximo:number|null;
@@ -40,6 +40,25 @@ const PERICIAS:{nome:string;atributo:Atributo}[]=[
   {nome:'Sobrevivência',atributo:'astucia'},
   {nome:'Vontade',atributo:'astucia'}
 ];
+const ORIGENS:{nome:string;pericias:string[];beneficio:string}[]=[
+  {nome:'Acadêmico',pericias:['Investigação','Medicina'],beneficio:'Saber é Poder: 1/Descanso Completo, Vantagem em Teste baseado em AST.'},
+  {nome:'Agente de Saúde',pericias:['Medicina','Sobrevivência'],beneficio:'Ao curar aliado com item ou efeito, +1d4 de Cura; não se aplica a si.'},
+  {nome:'Amnésico',pericias:[],beneficio:'Vislumbres do Passado: 1/sessão, em local conhecido, AST DT 10; informação útil e Vantagem no próximo Teste relacionado de Sobrevivência.'},
+  {nome:'Atleta',pericias:['Acrobacia','Atletismo'],beneficio:'Por 1 SA, +5 em Teste de Perícia baseado em FOR ou AGI, exceto Luta e Pontaria.'},
+  {nome:'Chef',pericias:['Fortitude','Sobrevivência'],beneficio:'Em Sala de Descanso, ao criar item, pode escolher 10 no d20.'},
+  {nome:'Cobaia',pericias:['Reflexos','Vontade'],beneficio:'+2 BI Máxima e Vantagem em Reanimação durante Colapso Viral.'},
+  {nome:'Criminoso',pericias:['Investigação','Furtividade'],beneficio:'1/Descanso Completo: Vantagem em Investigação ao procurar itens ou recursos.'},
+  {nome:'Desgarrado',pericias:['Fortitude','Sobrevivência'],beneficio:'Ao aumentar BI, recebe PV Temporários iguais à metade da BI atual, arredondada para baixo.'},
+  {nome:'Investigador',pericias:['Investigação','Percepção'],beneficio:'Por 1 SA, +5 no Teste de Investigação ao procurar uma pista.'},
+  {nome:'Lutador',pericias:['Luta','Reflexos'],beneficio:'Ataque Desarmado e Arma Improvisada sobem uma categoria de dado; não afeta Coronhada.'},
+  {nome:'Mercenário',pericias:['Pontaria','Fortitude'],beneficio:'1/Descanso Completo, Reação para sacar arma carregada e atacar hostil oculto que iria Surpreender; não fica Surpreendido.'},
+  {nome:'Militar',pericias:['Pontaria','Percepção'],beneficio:'Após matar inimigo com arma de fogo, Vantagem no primeiro Ataque com arma de fogo no próximo turno.'},
+  {nome:'Mochileiro',pericias:['Sobrevivência','Atletismo'],beneficio:'+1 Espaço de Inventário.'},
+  {nome:'Operário',pericias:['Fortitude','Atletismo'],beneficio:'Escolha uma Arma Corpo a Corpo semelhante a ferramenta: +1 no Teste de Ataque, Dano soma 2 × FOR em vez de FOR; bônus adicional não multiplica no Crítico.'},
+  {nome:'Policial',pericias:['Percepção','Pontaria'],beneficio:'+2 Defesa.'},
+  {nome:'Servidor Público',pericias:['Investigação','Vontade'],beneficio:'Ao Ajudar em Perícia Treinada ou Mestre, aliado recebe Vantagem e +2 no Teste.'},
+  {nome:'Universitária',pericias:['Medicina','Investigação'],beneficio:'+1 SA Máxima.'}
+];
 const CLASSES:Classe[]=['Agente','Autodidata','Operador'];
 const ABREV:Record<Atributo,string>={forca:'FOR',agilidade:'AGI',vigor:'VIG',astucia:'AST'};
 
@@ -57,10 +76,16 @@ export default function FichasJogador({supabase,usuarioId,mesas,sinalAtualizacao
   const [recursoAberto,setRecursoAberto]=useState<Recurso|null>(null);
   const [secaoAtiva,setSecaoAtiva]=useState('perfil');
   const [salvando,setSalvando]=useState(false);
+  const [origemEscolhida,setOrigemEscolhida]=useState('');
+  const [periciaTreinada,setPericiaTreinada]=useState('');
+  const [periciaExtra,setPericiaExtra]=useState('');
+  const [salvandoOrigem,setSalvandoOrigem]=useState(false);
+  const [erroOrigem,setErroOrigem]=useState('');
+  const [avisoOrigem,setAvisoOrigem]=useState('');
 
   const carregar=useCallback(async()=>{
     const {data,error}=await supabase.from('personagens')
-      .select('id,nome,mesa_id,jogador_id,classe,origem,nivel,forca,agilidade,vigor,astucia,pv_atual,pv_maximo,sa_atual,sa_maximo,bi_atual,bi_maximo,defesa,estado_ficha')
+      .select('id,nome,mesa_id,jogador_id,classe,origem,pericia_origem_treinada,pericia_origem_extra,nivel,forca,agilidade,vigor,astucia,pv_atual,pv_maximo,sa_atual,sa_maximo,bi_atual,bi_maximo,defesa,estado_ficha')
       .order('criado_em',{ascending:false});
     if(error)setErro('Erro ao carregar personagens: '+error.message);
     else{setPersonagens((data??[]) as Personagem[]);setErro('');}
@@ -75,6 +100,8 @@ export default function FichasJogador({supabase,usuarioId,mesas,sinalAtualizacao
   const zeros=Object.values(stats).filter(v=>v===0).length;
   const ficha=personagens.find(p=>p.id===abertoId)??null;
   const dona=ficha?.jogador_id===usuarioId;
+  const dadosOrigem=ORIGENS.find(o=>o.nome===origemEscolhida);
+  const opcoesOrigem=origemEscolhida==='Amnésico'?PERICIAS.map(p=>p.nome):(dadosOrigem?.pericias??[]);
   const nomeMesa=(id:string)=>mesas.find(m=>m.id===id)?.nome??'Mesa autorizada';
 
   function mudarAtributo(chave:Atributo,direcao:-1|1){
@@ -105,6 +132,26 @@ export default function FichasJogador({supabase,usuarioId,mesas,sinalAtualizacao
     setCriando(false);
   }
 
+  async function salvarOrigem(){
+    if(!ficha||!dona||ficha.estado_ficha!=='rascunho'||salvandoOrigem)return;
+    if(!dadosOrigem||!periciaTreinada||!opcoesOrigem.includes(periciaTreinada)||
+      (origemEscolhida==='Amnésico'&&(!periciaExtra||periciaExtra===periciaTreinada))){
+      setErroOrigem('Escolha Origem e Perícia Treinada; Amnésico exige duas Perícias distintas.');
+      return;
+    }
+    setErroOrigem('');setAvisoOrigem('');setSalvandoOrigem(true);
+    const {error}=await supabase.rpc('definir_origem_rascunho',{
+      p_personagem:ficha.id,p_origem:origemEscolhida,p_treinada:periciaTreinada,
+      p_extra:origemEscolhida==='Amnésico'?periciaExtra:null
+    });
+    if(error)setErroOrigem('Não foi possível salvar a Origem: '+error.message);
+    else {
+      await carregar();
+      setAvisoOrigem('Origem e Treinamento salvos no servidor. A ficha continua em rascunho.');
+    }
+    setSalvandoOrigem(false);
+  }
+
   async function ajustar(recurso:Recurso,delta:-1|1){
     if(recurso==='DEF')return;
     if(!ficha||!dona||salvando)return;
@@ -122,7 +169,14 @@ export default function FichasJogador({supabase,usuarioId,mesas,sinalAtualizacao
     setSalvando(false);
   }
 
-  function abrirFicha(id:string){setAbertoId(id);setRecursoAberto(null);setSecaoAtiva('perfil');}
+  function abrirFicha(id:string){
+    const registro=personagens.find(p=>p.id===id);
+    setOrigemEscolhida(registro?.origem??'');
+    setPericiaTreinada(registro?.pericia_origem_treinada??'');
+    setPericiaExtra(registro?.pericia_origem_extra??'');
+    setErroOrigem('');setAvisoOrigem('');
+    setAbertoId(id);setRecursoAberto(null);setSecaoAtiva('perfil');
+  }
   function irPara(secao:string){
     setSecaoAtiva(secao);
     document.getElementById('ficha-'+secao)?.scrollIntoView({behavior:'smooth',block:'start'});
@@ -203,7 +257,7 @@ export default function FichasJogador({supabase,usuarioId,mesas,sinalAtualizacao
           <header className="ficha-cab">
             <div className="ficha-metadados">REGISTRO DO SOBREVIVENTE <span>· {nomeMesa(ficha.mesa_id)}</span></div>
             <div className="ficha-identidade">
-              <div><h2>{ficha.nome}</h2><p>{(ficha.classe??'CLASSE PENDENTE').toUpperCase()} · NÍVEL {ficha.nivel} · ORIGEM PENDENTE</p></div>
+              <div><h2>{ficha.nome}</h2><p>{(ficha.classe??'CLASSE PENDENTE').toUpperCase()} · NÍVEL {ficha.nivel} · {ficha.origem??'ORIGEM PENDENTE'}</p></div>
               <div className="ficha-carimbo">ARQUIVO<br/>PESSOAL</div>
             </div>
             <p className="ficha-status"><i/> {ficha.estado_ficha==='rascunho'?'RASCUNHO EM CONSTRUÇÃO':'PERSONAGEM ATIVA'}
@@ -237,11 +291,42 @@ export default function FichasJogador({supabase,usuarioId,mesas,sinalAtualizacao
             <h3><span>01</span> Características <small>AB-01</small></h3>
             <div className="ficha-fatos">
               <div><small>CLASSE</small><strong>{ficha.classe??'A definir'}</strong></div>
-              <div><small>ORIGEM</small><strong>A definir</strong></div>
+              <div><small>ORIGEM</small><strong>{ficha.origem??'A definir'}</strong></div>
               <div><small>NÍVEL</small><strong>{ficha.nivel}</strong></div>
               <div><small>ESTADO</small><strong>Rascunho</strong></div>
             </div>
-            <details><summary>Origem e benefício</summary><p>A escolha da Origem e seus benefícios serão integrados à criação. Consulte o Arquivo do Jogador, capítulo 1.</p></details>
+            <details>
+              <summary>Origem e benefício {ficha.origem?'· '+ficha.origem:'· pendente'}</summary>
+              {ficha.origem&&<p><strong>Benefício:</strong> {ORIGENS.find(o=>o.nome===ficha.origem)?.beneficio}</p>}
+              {ficha.pericia_origem_treinada&&<p>Treinamento gratuito: <strong>{ficha.pericia_origem_treinada}</strong>. {ficha.origem==='Amnésico'&&ficha.pericia_origem_extra?'Outra Perícia escolhida: '+ficha.pericia_origem_extra+'.':''}</p>}
+              {dona&&ficha.estado_ficha==='rascunho'&&<div className="formulario">
+                <label>Escolher Origem
+                  <select value={origemEscolhida} onChange={e=>{setOrigemEscolhida(e.target.value);setPericiaTreinada('');setPericiaExtra('');setAvisoOrigem('');}}>
+                    <option value="">Selecione uma Origem</option>
+                    {ORIGENS.map(o=><option key={o.nome} value={o.nome}>{o.nome}</option>)}
+                  </select>
+                </label>
+                {dadosOrigem&&<p className="ficha-dica">{dadosOrigem.beneficio}</p>}
+                {dadosOrigem&&<label>Perícia Treinada gratuitamente
+                  <select value={periciaTreinada} onChange={e=>{setPericiaTreinada(e.target.value);if(e.target.value===periciaExtra)setPericiaExtra('');}}>
+                    <option value="">Escolha a Perícia</option>
+                    {opcoesOrigem.map(p=><option key={p} value={p}>{p}</option>)}
+                  </select>
+                </label>}
+                {origemEscolhida==='Amnésico'&&<label>Segunda Perícia da Origem (opção para a Classe)
+                  <select value={periciaExtra} onChange={e=>setPericiaExtra(e.target.value)}>
+                    <option value="">Escolha outra Perícia</option>
+                    {opcoesOrigem.filter(p=>p!==periciaTreinada).map(p=><option key={p} value={p}>{p}</option>)}
+                  </select>
+                </label>}
+                {erroOrigem&&<p role="alert" className="erro">{erroOrigem}</p>}
+                {avisoOrigem&&<p role="status" className="sucesso">{avisoOrigem}</p>}
+                <button type="button" className="acao" disabled={salvandoOrigem||!dadosOrigem||!periciaTreinada||(origemEscolhida==='Amnésico'&&!periciaExtra)} onClick={()=>{void salvarOrigem();}}>
+                  {salvandoOrigem?'Salvando...':'Confirmar Origem'}
+                </button>
+              </div>}
+              <p className="ficha-dica">A escolha da Origem é registrada no rascunho. Efeitos condicionais, Habilidades e Treinamento da Classe ainda serão integrados; nenhuma rolagem é feita automaticamente.</p>
+            </details>
             <details><summary>Habilidades de Classe</summary><p>O catálogo de Habilidades ainda não está vinculado. Nenhuma Habilidade é concedida automaticamente neste rascunho.</p></details>
             <details><summary>Identidade, aparência e história</summary><p>Campos narrativos serão adicionados numa próxima implementação da ficha.</p></details>
           </section>
@@ -250,10 +335,10 @@ export default function FichasJogador({supabase,usuarioId,mesas,sinalAtualizacao
             <div className="ficha-atributos">{ATRIBUTOS.map(a=><div key={a.chave}>
               <span>{a.abreviacao}</span><strong>{ficha[a.chave]}</strong>
             </div>)}</div>
-            <p className="ficha-dica">Valores abaixo são apenas a contribuição do Atributo. Treinamento (Não Treinada / Treinada / Mestre) e modificadores ainda não foram configurados.</p>
+            <p className="ficha-dica">A Perícia Treinada pela Origem recebe +2. Demais pontos de Treinamento, grau Mestre e modificadores ainda não foram configurados.</p>
             <div className="ficha-pericia-grid">{PERICIAS.map(p=><div key={p.nome} className="ficha-pericia">
-              <span>{p.nome}<small>{ABREV[p.atributo]} · TREINAMENTO PENDENTE</small></span>
-              <strong>+{ficha[p.atributo]}</strong>
+              <span>{p.nome}<small>{ABREV[p.atributo]} · {ficha.pericia_origem_treinada===p.nome?'TREINADA PELA ORIGEM':'TREINAMENTO PENDENTE'}</small></span>
+              <strong>+{ficha[p.atributo]+(ficha.pericia_origem_treinada===p.nome?2:0)}</strong>
             </div>)}</div>
           </section>
           <section className="ficha-secao" id="ficha-combate">
@@ -267,9 +352,9 @@ export default function FichasJogador({supabase,usuarioId,mesas,sinalAtualizacao
           </section>
           <section className="ficha-secao" id="ficha-itens">
             <h3><span>04</span> Inventário <small>AB-04</small></h3>
-            <div className="ficha-inventario-topo"><span>GRADE DE EQUIPAMENTOS</span><strong>0 / {4+ficha.forca} ESPAÇOS (BASE)</strong></div>
+            <div className="ficha-inventario-topo"><span>GRADE DE EQUIPAMENTOS</span><strong>0 / {4+ficha.forca+(ficha.origem==='Mochileiro'?1:0)} ESPAÇOS</strong></div>
             <div className="ficha-inventario">
-              {Array.from({length:4+ficha.forca},(_,i)=><div className="ficha-slot" key={i} aria-label={'Espaço vazio '+(i+1)} />)}
+              {Array.from({length:4+ficha.forca+(ficha.origem==='Mochileiro'?1:0)},(_,i)=><div className="ficha-slot" key={i} aria-label={'Espaço vazio '+(i+1)} />)}
             </div>
             <p className="ficha-dica">Itens Característicos não consomem Espaços. Equipamento Inicial, Expansões e itens de 2 Espaços ainda não estão configurados.</p>
           </section>
