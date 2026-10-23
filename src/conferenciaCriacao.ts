@@ -1,9 +1,10 @@
+import {simularCompras} from './comprasIniciais';
 import {classePersonagem,termoPersonagem} from './textoPersonagem';
 import {ORIGENS} from './origens';
 import {HABILIDADES_BASICAS} from './habilidades';
 import {PONTOS_CLASSE,PERICIAS_CLASSE} from './pericias';
 import {capacidadeInventario,equipamentoInicial,espacosOcupados,opcoesEquipamento} from './equipamento';
-export type FichaRevisao={identidade?:{genero?:string};nome:string;classe:string|null;nivel:number;forca:number;agilidade:number;vigor:number;astucia:number;origem:string|null;pericia_origem_treinada:string|null;pericia_origem_extra:string|null;pontos_pericia_classe:Record<string,number>;habilidade_basica:string|null;equipamento_inicial:string|null;pv_maximo:number|null;sa_maximo:number|null;bi_maximo:number|null;defesa:number|null};
+export type FichaRevisao={identidade?:{genero?:string};nome:string;classe:string|null;nivel:number;forca:number;agilidade:number;vigor:number;astucia:number;origem:string|null;pericia_origem_treinada:string|null;pericia_origem_extra:string|null;pontos_pericia_classe:Record<string,number>;habilidade_basica:string|null;equipamento_inicial:string|null;compras_iniciais?:Record<string,number>;revisao_compras?:number;pv_maximo:number|null;sa_maximo:number|null;bi_maximo:number|null;defesa:number|null};
 export type Conferencia={nome:string;estado:'conferido'|'pendente'|'revisar';detalhe:string;secao:string};
 export function revisarCriacao(f:FichaRevisao):Conferencia[]{
   const linhas:Conferencia[]=[];
@@ -30,10 +31,24 @@ export function revisarCriacao(f:FichaRevisao):Conferencia[]{
   const hab=HABILIDADES_BASICAS.find(h=>h.id===f.habilidade_basica&&h.classe===f.classe);
   add('Habilidade Básica',hab?'conferido':f.habilidade_basica?'revisar':'pendente',hab?`${termo(hab.nome)} · ${hab.referencia}`:'Escolha uma Básica da sua Classe.');
   const kit=opcoesEquipamento(f.classe).find(o=>o.id===f.equipamento_inicial);
-  const ocupados=espacosOcupados(equipamentoInicial(f.classe,f.equipamento_inicial));
+  let ocupados:number|null=espacosOcupados(equipamentoInicial(f.classe,f.equipamento_inicial));
   const capacidade=capacidadeInventario(f.forca,f.origem);
-  add('Equipamento inicial',kit?(ocupados<=capacidade?'conferido':'revisar'):f.equipamento_inicial?'revisar':'pendente',kit?`${kit.id} · ${kit.nome} · ${ocupados}/${capacidade} Espaços. Característicos: 0 Espaços.`:'Escolha o conjunto inicial.','itens');
-  if(kit?.id==='C')add('Compras do Personalizado','pendente','As três Moedas estão previstas; compras antes da primeira cena ainda não estão disponíveis.','itens');
+  if(kit?.id==='C'){
+    try{
+      const plano=simularCompras(f.compras_iniciais??{},capacidade);
+      ocupados=plano.espacos;
+      const revisao=f.revisao_compras??0;
+      const valido=plano.orcamentoValido&&plano.cabe&&Number.isInteger(revisao)&&revisao>=0;
+      add('Compras do Personalizado',!valido?'revisar':revisao>0?'conferido':'pendente',
+        `Plano salvo: ${plano.itens.length?plano.itens.map(i=>i.nome+' × '+i.quantidade).join(' · '):'sem compras'}. ${plano.saldo}/3 Moedas restantes · ${plano.espacos}/${capacidade} Espaços. ${revisao>0?'Versão '+revisao+'.':'Salve o plano para confirmar suas escolhas.'} Disponibilidade será validada pelo servidor ao salvar; bloqueios posteriores não removem itens já salvos.`,'itens');
+    }catch{
+      ocupados=null;
+      add('Compras do Personalizado','revisar','O plano salvo contém dados inválidos. Confira o Inventário; nenhuma escolha foi alterada.','itens');
+    }
+  }else if(Object.keys(f.compras_iniciais??{}).length){
+    add('Compras do Personalizado','revisar','Há compras salvas fora do kit C. Confira o Inventário; nenhuma escolha foi alterada.','itens');
+  }
+  add('Equipamento inicial',kit?(ocupados!==null&&ocupados<=capacidade?'conferido':'revisar'):f.equipamento_inicial?'revisar':'pendente',kit?`${kit.id} · ${kit.nome} · ${ocupados??'?'}/${capacidade} Espaços. Característicos: 0 Espaços.`:'Escolha o conjunto inicial.','itens');
   if(classeValida&&f.nivel===1&&attrsValidos){
     const pv=({Agente:10,Autodidata:8,Operador:12}[f.classe as 'Agente'|'Autodidata'|'Operador'])+f.vigor+(hab?.id==='parrudo'?5:0);
     const sa=f.agilidade+f.astucia+(f.origem==='Universitária'?1:0);

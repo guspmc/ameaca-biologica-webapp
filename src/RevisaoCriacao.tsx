@@ -8,6 +8,6 @@ export default function RevisaoCriacao({ficha,irPara}:{ficha:FichaRevisao;irPara
       <p>{l.detalhe}</p>{l.estado!=='conferido'&&<button type="button" className="botao-claro" onClick={()=>irPara(l.secao)}>Ver {l.secao==='itens'?'Inventário':l.secao==='pericias'?'Perícias':'Características'}</button>}
     </li>)}</ul>
     <p className="ficha-dica">Recursos atuais podem estar gastos; esta revisão confere os máximos sem restaurá-los. Efeitos condicionais continuam dependentes da situação de jogo.</p>
-    <p className="dica">Finalização ainda indisponível. Faltam compras iniciais, inventário ativo, configurações do modo Misto e validações de ativação. Mesmo com as escolhas conferidas, a personagem continua em rascunho.</p>
+    <p className="dica">Finalização ainda indisponível. Ainda faltam catálogo completo de compras, inventário ativo, configurações do modo Misto e validações de ativação. Mesmo com as escolhas conferidas, a personagem continua em rascunho.</p>
   </details>;
 }

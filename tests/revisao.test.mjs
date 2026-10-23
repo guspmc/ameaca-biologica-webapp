@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 import ts from 'typescript';
 // Compila os modulos reais juntos, sem duplicar regras no adaptador de teste.
-const files=['origens','habilidades','pericias','equipamento','textoPersonagem','conferenciaCriacao'];
+const files=['origens','habilidades','pericias','equipamento','textoPersonagem','comprasIniciais','conferenciaCriacao'];
 const source=(await Promise.all(files.map(f=>readFile(new URL('../src/'+f+'.ts',import.meta.url),'utf8')))).map(s=>s.replace(/^import .*;\r?$/gm,'')).join('\n');
 const {outputText}=ts.transpileModule(source,{compilerOptions:{module:ts.ModuleKind.ESNext,target:ts.ScriptTarget.ES2022}});
 const {revisarCriacao,classePersonagem}=await import('data:text/javascript;base64,'+Buffer.from(outputText).toString('base64'));
@@ -63,4 +63,30 @@ test('revisao combina bonus de Origem nos maximos e usa genero apenas na apresen
  assert.match(linha(universitaria,'SA máximo').detalhe,/Universitária 1 = 2/);
  const policial={...ficha,origem:'Policial',pericia_origem_treinada:'Pontaria',defesa:13};
  assert.equal(linha(policial,'Defesa básica').estado,'conferido');
+});
+
+test('revisao de compras salvas confere saldo e ocupacao sem consultar disponibilidade nem alterar ficha',()=>{
+ const f={...ficha,equipamento_inicial:'C',compras_iniciais:{faca:1},revisao_compras:1};
+ const antes=structuredClone(f);
+ assert.equal(linha(f,'Compras do Personalizado').estado,'conferido');
+ assert.ok(linha(f,'Compras do Personalizado').detalhe.includes('Faca × 1'));
+ assert.ok(linha(f,'Compras do Personalizado').detalhe.includes('2/3 Moedas'));
+ assert.ok(linha(f,'Equipamento inicial').detalhe.includes('4/7'));
+ assert.deepEqual(f,antes);
+ const muni={...f,forca:0,compras_iniciais:{'municao-9mm':3}};
+ assert.ok(linha(muni,'Equipamento inicial').detalhe.includes('4/4'));
+ assert.ok(linha(muni,'Compras do Personalizado').detalhe.includes('45'));
+ const vazio={...f,compras_iniciais:{},revisao_compras:2};
+ assert.equal(linha(vazio,'Compras do Personalizado').estado,'conferido');
+ assert.ok(linha(vazio,'Compras do Personalizado').detalhe.includes('3/3 Moedas'));
+});
+test('revisao de compras aponta capacidade, saldo, plano e versao invalidos sem quebrar a ficha',()=>{
+ const f={...ficha,equipamento_inicial:'C',revisao_compras:1};
+ for(const compras_iniciais of [{intruso:1},{faca:-1},{faca:4},{'colete-leve':2}]){
+  const input={...f,compras_iniciais};
+  assert.equal(linha(input,'Compras do Personalizado').estado,'revisar');
+ }
+ assert.equal(linha({...f,forca:0,compras_iniciais:{faca:2}},'Compras do Personalizado').estado,'revisar');
+ assert.equal(linha({...f,revisao_compras:-1},'Compras do Personalizado').estado,'revisar');
+ assert.equal(linha({...f,equipamento_inicial:'B',compras_iniciais:{faca:1}},'Compras do Personalizado').estado,'revisar');
 });

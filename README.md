@@ -93,3 +93,5 @@ Estado de compras persistidas no TESTE: [implementação, evidências e pendênc
 Disponibilidade por Mesa: [preparação local](docs/relatorio-disponibilidade-local.md) e [fila única de testes humanos](docs/fila-testes-humanos.md). Painel ainda isolado, sem nova aplicação remota.
 
 Disponibilidade integrada somente ao TESTE após checkpoint: [evidências e rodada humana](docs/relatorio-disponibilidade-integrada.md).
+
+Revisão da criação integrada às compras salvas: [resultado e pendência visual](docs/relatorio-revisao-compras.md).

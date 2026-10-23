@@ -31,3 +31,9 @@ Relatórios: relatorio-compras-integradas.md e relatorio-disponibilidade-local.m
 ## Atualização: checkpoint aplicado e painel conectado
 
 Gus confirmou o painel fictício com capturas: liberar/bloquear e falha simulada funcionaram. Esse teste está concluído. As duas funções já foram aplicadas e verificadas somente no TESTE, sem liberar itens. A seção 2 acima agora está disponível para execução humana. Abrir a prévia principal, selecionar uma Mesa fictícia em Participantes e usar o painel do Mestre. Nenhum acesso de celular pela rede foi aberto. Suíte atual: 52 testes aprovados. Relatório: relatorio-disponibilidade-integrada.md.
+
+
+## Atualização: rodada de compra e bloqueio confirmada
+
+Gus confirmou compra permitida e bloqueio de nova compra na mesma Mesa, com Faca salva preservada na grade (uma Faca, duas moedas, 4/5 Espaços). Mestre sem acesso ao rascunho também confirmado. Não repetir esses casos.
+Próxima conferência: F5, abrir Revisão da criação e comparar compras/saldo/espaços com a grade. Alterações ainda não salvas não devem mudar a revisão. Persistem conflito de duas sessões, limpeza/troca de kit e celular. Relatório: relatorio-revisao-compras.md.
