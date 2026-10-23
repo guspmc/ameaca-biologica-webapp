@@ -70,7 +70,21 @@ Os prints complementam os testes automatizados de limite e autorização. O bot�
 
 Não foram copiados prints, e-mails, identificadores de conta ou conteúdo alheio ao teste para o repositório. As capturas não demonstram recarga com F5, fechamento/reabertura de sessão, entrega de eventos Realtime, concorrência ou todos os cálculos de Perícias. Esses itens não foram marcados como aprovados por inferência.
 
-Próximo teste humano curto: F5 nas duas sessões, reabrir cada ficha como jogador e conferir que Origem/Perícia/recursos continuam iguais e o Mestre permanece sem acesso aos rascunhos. Em 3/3, distribuir Atributos válidos e confirmar que criar continua bloqueado, sem apagar qualquer ficha.
+Na mensagem seguinte, Gus confirmou que as verificações adicionais funcionaram exatamente como esperado: F5 nas duas sessões, escolhas/recursos preservados ao reabrir, Mestre sem acesso aos rascunhos e criação bloqueada em 3/3 mesmo com Atributos válidos. Registro baseado no relato explícito do usuário; não depende de inferência das capturas.
+
+### Verificações adicionais — 23/10/2026
+
+- CI da revisão `c259218` concluída com sucesso: https://github.com/guspmc/ameaca-biologica-webapp/actions/runs/39871299284 . Nenhuma alteração de código foi necessária nesta rodada.
+- `pnpm audit --prod --json`: zero avisos retornados para as 12 dependências de produção. `pnpm audit --json`: zero avisos retornados incluindo desenvolvimento, 131 dependências totais. Consulta ao serviço público de advisories, limitada ao banco de avisos disponível naquele momento; não certifica ausência de vulnerabilidades desconhecidas.
+- PostgREST sem login no projeto de teste: HEAD da tabela personagens = HTTP 401; RPC definir_origem_rascunho = HTTP 401, código 42501. HEAD não retorna linhas; a chamada RPC usou UUID fictício e foi recusada sem escrita. Não foram lidas fichas individuais.
+- Foram criadas duas séries isoladas de fixtures descartáveis, cada uma com identidades sem senha/e-mail, Mesa e dois rascunhos. Chamadas adicionais preservaram o máximo de três: uma criação aceita e outra recusada. Nenhuma fixture foi compartilhada com a Mesa usada pelo Gus.
+- Na segunda série, instrumentação com advisory lock e identificadores de backend mostrou conexões distintas, mas `sobreposicao_confirmada=false`. Logo, a execução não comprova contenção entre transações simultâneas. Corrige a conclusão preliminar da atualização de progresso: concorrência estrita continua pendente, apesar de o limite observado ter sido preservado.
+- Limpeza das duas séries conferida por identificadores exatos: zero contas, Mesas e fichas das fixtures restantes. Apenas os registros criados pelo agente foram removidos. Contas e registros do teste humano foram preservados.
+- Advisor de performance do projeto de teste: uma FK sem índice de cobertura em jogador_id e dois índices ainda sem uso observado. Nenhum índice foi criado ou removido. Referências: https://supabase.com/docs/guides/database/database-linter?lint=0001_unindexed_foreign_keys e https://supabase.com/docs/guides/database/database-linter?lint=0005_unused_index .
+
+Pendências de validação: entrega e isolamento de eventos Realtime em duas sessões autenticadas; concorrência com sobreposição efetivamente confirmada, inclusive ajustes simultâneos de recursos. Não foram extraídas sessões, tokens ou senhas dos navegadores para automatizar esses testes. A confirmação de F5 não foi tratada como prova de Realtime.
+
+Nenhum custo adicional, mudança de produção, merge ou publicação nesta rodada. Não houve alteração na proposta de SQL nem nas dependências.
 
 Planejamento aprovado: até 10 jogadores por Mesa, até 10 personagens ativas no total e até 3 rascunhos por conta/Mesa. Os três rascunhos não ocupam vagas ativas. Esta etapa implementa privacidade e limite de rascunhos; não certifica o teto de jogadores nem implementa finalização e seu teto de ativas.
 
