@@ -1,5 +1,7 @@
 # Fila única de testes humanos — 23/10/2026
 
+> Roteiro atual consolidado: [testes-humanos-pendentes.md](testes-humanos-pendentes.md). As seções abaixo preservam o histórico; instruções antigas podem já estar concluídas.
+
 As confirmações anteriores de Gus permanecem registradas: Origens, Perícias, Habilidades, kits, identidade, flexões, busca, simulação, privacidade dos rascunhos e janela estreita. Não repetir sem mudança relevante.
 
 ## 1. Disponível agora: painel fictício, sem banco
