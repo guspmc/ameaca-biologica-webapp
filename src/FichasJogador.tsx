@@ -23,6 +23,7 @@ type Personagem = {
   pontos_pericia_classe:Record<string,number>;
   habilidade_basica:string|null;
   equipamento_inicial:string|null;
+  compras_iniciais:Record<string,number>;revisao_compras:number;
   identidade:Record<string,string>;
 };
 type Props = {
@@ -86,7 +87,7 @@ export default function FichasJogador({supabase,usuarioId,mesas,sinalAtualizacao
 
   const carregar=useCallback(async()=>{
     const {data,error}=await supabase.from('personagens')
-      .select('id,nome,mesa_id,jogador_id,classe,origem,pericia_origem_treinada,pericia_origem_extra,pontos_pericia_classe,habilidade_basica,equipamento_inicial,identidade,nivel,forca,agilidade,vigor,astucia,pv_atual,pv_maximo,sa_atual,sa_maximo,bi_atual,bi_maximo,defesa,estado_ficha')
+      .select('id,nome,mesa_id,jogador_id,classe,origem,pericia_origem_treinada,pericia_origem_extra,pontos_pericia_classe,habilidade_basica,equipamento_inicial,compras_iniciais,revisao_compras,identidade,nivel,forca,agilidade,vigor,astucia,pv_atual,pv_maximo,sa_atual,sa_maximo,bi_atual,bi_maximo,defesa,estado_ficha')
       .order('criado_em',{ascending:false});
     if(error)setErro('Erro ao carregar personagens: '+error.message);
     else{setPersonagens((data??[]) as Personagem[]);setErro('');}

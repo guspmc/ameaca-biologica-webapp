@@ -1,8 +1,10 @@
+import {salvarPlanoCompras} from './servicoCompras';
+import {simularCompras} from './comprasIniciais';
 import PreviaCompras from './PreviaCompras';
 import {useEffect,useState} from 'react';
 import type {SupabaseClient} from '@supabase/supabase-js';
 import {capacidadeInventario,caracteristicos,equipamentoInicial,espacosOcupados,opcoesEquipamento} from './equipamento';
-type Props={supabase:SupabaseClient;ficha:{id:string;classe:string|null;forca:number;origem:string|null;nivel:number;estado_ficha:string;equipamento_inicial:string|null};dona:boolean;recarregar:()=>Promise<void>};
+type Props={supabase:SupabaseClient;ficha:{id:string;classe:string|null;forca:number;origem:string|null;nivel:number;estado_ficha:string;equipamento_inicial:string|null;compras_iniciais?:Record<string,number>;revisao_compras?:number};dona:boolean;recarregar:()=>Promise<void>};
 export default function EquipamentoRascunho({supabase,ficha,dona,recarregar}:Props){
   const [escolha,setEscolha]=useState(ficha.equipamento_inicial??'');
   const [salvando,setSalvando]=useState(false);
@@ -10,7 +12,11 @@ export default function EquipamentoRascunho({supabase,ficha,dona,recarregar}:Pro
   const [aviso,setAviso]=useState('');
   useEffect(()=>{setEscolha(ficha.equipamento_inicial??'');setErro('');setAviso('');},[ficha.id]);
   const capacidade=capacidadeInventario(ficha.forca,ficha.origem);
-  const itens=equipamentoInicial(ficha.classe,ficha.equipamento_inicial);
+  let itens=equipamentoInicial(ficha.classe,ficha.equipamento_inicial);
+  if(ficha.equipamento_inicial==='C'){
+    const plano=simularCompras(ficha.compras_iniciais??{},capacidade);
+    itens=[...itens.filter(i=>i.id!=='moedas'),...plano.itens.map(i=>({id:'compra-'+i.id,nome:i.nome,espacos:i.espacos,detalhe:i.quantidade+' unidade(s) · plano salvo'})),...(plano.saldo>0?[{id:'moedas',nome:'Moedas Antigas',espacos:1,detalhe:plano.saldo+' moeda(s) · plano salvo'}]:[])];
+  }
   const ocupados=espacosOcupados(itens);
   const previa=equipamentoInicial(ficha.classe,escolha);
   const cabe=espacosOcupados(previa)<=capacidade;
@@ -45,15 +51,15 @@ export default function EquipamentoRascunho({supabase,ficha,dona,recarregar}:Pro
         <button type="button" className="acao" disabled={salvando||!cabe} onClick={()=>{void salvar();}}>{salvando?'Salvando...':'Salvar Equipamento Inicial'}</button>
       </div>}
     </details>
-    {salvo?.id==='C'&&pode&&<PreviaCompras capacidade={capacidade}/>}
+    {salvo?.id==='C'&&pode&&<PreviaCompras capacidade={capacidade} planoSalvo={ficha.compras_iniciais} revisaoSalva={ficha.revisao_compras} aoSalvar={async(plano,rev)=>{const nova=await salvarPlanoCompras(supabase,ficha.id,plano,rev);await recarregar();return nova;}}/>}
     {salvo&&<>
       <div className="ficha-caracteristicos"><strong>ITENS CARACTERÍSTICOS · 0 ESPAÇOS</strong>
         {caracteristicos(ficha.classe).map(i=><details key={i.id}><summary>{i.nome}</summary><p>{i.detalhe}. Vinculado à Classe; não pode ser descartado voluntariamente.</p></details>)}
       </div>
-      <div className="ficha-inventario-topo"><span>EQUIPAMENTO DA CRIAÇÃO</span><strong>{ocupados} / {capacidade} ESPAÇOS</strong></div>
+      <div className="ficha-inventario-topo"><span>EQUIPAMENTO DA CRIAÇÃO · SALVO</span><strong>{ocupados} / {capacidade} ESPAÇOS</strong></div>
       {ocupados>capacidade&&<p role="alert" className="erro">A capacidade atual é menor que o conjunto salvo. Os itens foram preservados; revise a opção de criação.</p>}
       <div className="ficha-inventario">
-        {itens.map(i=><div className="ficha-slot ficha-slot-item" key={i.id}><strong>{i.nome}</strong><small>{i.detalhe}</small></div>)}
+        {itens.map(i=><div className="ficha-slot ficha-slot-item" style={{gridColumn:`span ${Math.min(i.espacos,4)}`}} key={i.id}><strong>{i.nome}</strong><small>{i.detalhe}</small></div>)}
         {Array.from({length:Math.max(0,capacidade-ocupados)},(_,i)=><div className="ficha-slot" key={'vazio'+i} aria-label={'Espaço vazio '+(i+1)}/>)}
       </div>
       <p className="ficha-dica">Expansão equipada: nenhuma. Esta é a preparação da criação; usar, equipar, comprar, recarregar, descartar e transferir itens serão habilitados na ficha ativa. Itens guardados continuam ocupando seus Espaços.</p>

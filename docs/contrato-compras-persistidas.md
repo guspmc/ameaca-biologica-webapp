@@ -43,3 +43,8 @@ A tabela de disponibilidade começará vazia: aplicar a estrutura não autoriza 
 Obter autorização para aplicar a estrutura somente no teste e executar verificação transacional com fixtures novas/ROLLBACK. Depois integrar o salvamento de forma explícita, respeitando disponibilidade administrativa aprovada por Mesa. Manter simulação atual enquanto não houver backend conferido. Sem merge/publicação, custo ou produção.
 
 Referências técnicas consultadas: https://supabase.com/docs/guides/database/functions e https://supabase.com/docs/guides/database/postgres/row-level-security .
+
+
+## Atualização após autorização específica
+
+O conteúdo acima registra a preparação anterior. A estrutura foi aplicada somente ao TESTE e a interface foi integrada; veja [relatório e testes atuais](relatorio-compras-integradas.md). Produção intacta e disponibilidade de itens continua vazia. Não há liberação global.

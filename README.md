@@ -86,3 +86,6 @@ Seguir o [fluxo autônomo autorizado](docs/fluxo-autonomo-supervisionado.md). A 
 [Flexões e prévia local de compras](docs/relatorio-flexoes-compras.md): Investigadora/Armeira e demais termos, simulador não salvo da opção C. Sem alteração de banco ou permissões.
 
 [Contrato local de compras persistidas](docs/contrato-compras-persistidas.md): proposta com 43 testes integrados, ainda NÃO aplicada em nenhum Supabase remoto. Não executar db push/reparação de histórico automaticamente. Prévia continua não salva.
+
+
+Estado de compras persistidas no TESTE: [implementação, evidências e pendências humanas](docs/relatorio-compras-integradas.md).
