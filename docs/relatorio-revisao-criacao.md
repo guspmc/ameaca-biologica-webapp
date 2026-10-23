@@ -45,3 +45,7 @@ Celular físico, teclado virtual e toque permanecem pendentes. A prévia usa loo
 Preparar compras do equipamento inicial localmente, conforme preços/acesso oficiais, validando saldo e capacidade sem modificar registros existentes. Antes de ativar gravações que ampliem permissões ou de alterar regras de ativação no ambiente remoto, apresentar operação concreta e obter autorização específica. Finalização deverá criar instâncias de itens uma única vez, configurar automações e revalidar nível/vagas na mesma transação, com autorização no servidor; não converter a revisão visual em autoridade.
 
 Permanecem pendentes concorrência estrita, teto de dez jogadores/dez ativas, readmissão que restaura rascunhos e acesso legado do Mestre à ficha completa além do futuro resumo. As decisões e limitações anteriores não foram removidas.
+
+## Retorno humano recebido
+
+Gus confirmou sessão normal restaurada, login solicitado na janela anônima, Operadora, janela mínima legível/funcional e Mestre sem rascunhos. Pediu completar flexões como Investigadora; atendido em relatorio-flexoes-compras.md. Não certifica celular físico ou todos os caminhos de Auth.

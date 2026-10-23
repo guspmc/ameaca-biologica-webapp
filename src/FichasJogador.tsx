@@ -6,7 +6,7 @@ import EquipamentoRascunho from './EquipamentoRascunho';
 import IdentidadeRascunho from './IdentidadeRascunho';
 import { ORIGENS } from './origens';
 import RevisaoCriacao from './RevisaoCriacao';
-import { classePersonagem } from './textoPersonagem';
+import { classePersonagem, termoPersonagem } from './textoPersonagem';
 
 type Mesa = { id: string; nome: string; mestre_id: string };
 type Classe = 'Agente' | 'Autodidata' | 'Operador';
@@ -113,6 +113,7 @@ export default function FichasJogador({supabase,usuarioId,mesas,sinalAtualizacao
   const habilidadesDaClasse=HABILIDADES_BASICAS.filter(h=>h.classe===ficha?.classe);
   const habilidadeSalva=HABILIDADES_BASICAS.find(h=>h.id===ficha?.habilidade_basica);
   const previaHabilidade=habilidadesDaClasse.find(h=>h.id===habilidadeEscolhida);
+  const termo=(nome:string)=>termoPersonagem(nome,ficha?.identidade?.genero);
   const nomeMesa=(id:string)=>mesas.find(m=>m.id===id)?.nome??'Mesa autorizada';
 
   function mudarAtributo(chave:Atributo,direcao:-1|1){
@@ -137,7 +138,7 @@ export default function FichasJogador({supabase,usuarioId,mesas,sinalAtualizacao
     });
     if(error){setErro('Não foi possível criar o personagem: '+error.message);}
     else {
-      setMensagem('Rascunho criado e salvo! Escolha Origem, Perícias e Habilidade Básica na ficha. Equipamento e finalização ainda estão pendentes.');
+      setMensagem('Rascunho criado e salvo! Escolha Origem, Perícias e Habilidade Básica na ficha. Uso de equipamento e finalização ainda estão pendentes.');
       setNome('');setStats({...INICIAIS});await carregar();
       if(typeof data==='string'){
         setOrigemEscolhida('');setPericiaTreinada('');setPericiaExtra('');
@@ -154,7 +155,7 @@ export default function FichasJogador({supabase,usuarioId,mesas,sinalAtualizacao
     if(!ficha||!dona||ficha.estado_ficha!=='rascunho'||salvandoOrigem||salvandoPericias||salvandoHabilidade||salvando)return;
     if(!dadosOrigem||!periciaTreinada||!opcoesOrigem.includes(periciaTreinada)||
       (origemEscolhida==='Amnésico'&&(!periciaExtra||periciaExtra===periciaTreinada))){
-      setErroOrigem('Escolha Origem e Perícia Treinada; Amnésico exige duas Perícias distintas.');
+      setErroOrigem('Escolha Origem e Perícia Treinada; '+termo('Amnésico')+' exige duas Perícias distintas.');
       return;
     }
     setErroOrigem('');setAvisoOrigem('');setSalvandoOrigem(true);
@@ -305,9 +306,9 @@ export default function FichasJogador({supabase,usuarioId,mesas,sinalAtualizacao
         </div>
         <div className="ficha-papel" id="ficha-inicio">
           <header className="ficha-cab">
-            <div className="ficha-metadados">REGISTRO DO SOBREVIVENTE <span>· {nomeMesa(ficha.mesa_id)}</span></div>
+            <div className="ficha-metadados">{termo('REGISTRO DO SOBREVIVENTE')} <span>· {nomeMesa(ficha.mesa_id)}</span></div>
             <div className="ficha-identidade">
-              <div><h2>{ficha.nome}</h2><p>{classePersonagem(ficha.classe,ficha.identidade?.genero).toUpperCase()} · NÍVEL {ficha.nivel} · {ficha.origem??'ORIGEM PENDENTE'}</p></div>
+              <div><h2>{ficha.nome}</h2><p>{classePersonagem(ficha.classe,ficha.identidade?.genero).toUpperCase()} · NÍVEL {ficha.nivel} · {termo(ficha.origem??'ORIGEM PENDENTE')}</p></div>
               <div className="ficha-carimbo">ARQUIVO<br/>PESSOAL</div>
             </div>
             <p className="ficha-status"><i/> {ficha.estado_ficha==='rascunho'?'RASCUNHO EM CONSTRUÇÃO':'PERSONAGEM ATIVA'}
@@ -328,8 +329,8 @@ export default function FichasJogador({supabase,usuarioId,mesas,sinalAtualizacao
               <div className="ficha-contexto-topo"><strong>{recursoAberto==='DEF'?'Defesa':'Ajustar '+recursoAberto}</strong>
                 <button type="button" onClick={()=>setRecursoAberto(null)}>✕</button></div>
               {recursoAberto==='DEF'?
-                <p>Defesa: 10 + AGI{ficha.origem==='Policial'?' + 2 da Origem Policial':''}. Equipamento, Habilidades e Condições ainda não foram aplicados neste rascunho.</p>:
-                <><p>Alterações salvas no Supabase e visíveis na sessão do Mestre.</p>
+                <p>Defesa: 10 + AGI{ficha.origem==='Policial'?' + 2 da Origem Policial':''}. Colete guardado e efeitos condicionais não acrescentam Defesa nesta etapa.</p>:
+                <><p>Alterações salvas. O rascunho continua privado; fichas ativas seguem as permissões da Mesa.</p>
                   {dona?<div className="ficha-ajustes">
                     <button type="button" disabled={salvando||salvandoHabilidade||salvandoOrigem} onClick={()=>{void ajustar(recursoAberto,-1)}}>− 1 {recursoAberto}</button>
                     <button type="button" disabled={salvando||salvandoHabilidade||salvandoOrigem} onClick={()=>{void ajustar(recursoAberto,1)}}>+ 1 {recursoAberto}</button>
@@ -341,19 +342,19 @@ export default function FichasJogador({supabase,usuarioId,mesas,sinalAtualizacao
             <h3><span>01</span> Características <small>AB-01</small></h3>
             <div className="ficha-fatos">
               <div><small>CLASSE</small><strong>{classePersonagem(ficha.classe,ficha.identidade?.genero)}</strong></div>
-              <div><small>ORIGEM</small><strong>{ficha.origem??'A definir'}</strong></div>
+              <div><small>ORIGEM</small><strong>{termo(ficha.origem??'A definir')}</strong></div>
               <div><small>NÍVEL</small><strong>{ficha.nivel}</strong></div>
               <div><small>ESTADO</small><strong>Rascunho</strong></div>
             </div>
             <details>
-              <summary>Origem e benefício {ficha.origem?'· '+ficha.origem:'· pendente'}</summary>
+              <summary>Origem e benefício {ficha.origem?'· '+termo(ficha.origem):'· pendente'}</summary>
               {ficha.origem&&<p><strong>Benefício:</strong> {ORIGENS.find(o=>o.nome===ficha.origem)?.beneficio}</p>}
               {ficha.pericia_origem_treinada&&<p>Treinamento gratuito: <strong>{ficha.pericia_origem_treinada}</strong>. {ficha.origem==='Amnésico'&&ficha.pericia_origem_extra?'Outra Perícia escolhida: '+ficha.pericia_origem_extra+'.':''}</p>}
               {dona&&ficha.estado_ficha==='rascunho'&&<div className="formulario">
                 <label>Escolher Origem
                   <select value={origemEscolhida} onChange={e=>{setOrigemEscolhida(e.target.value);setPericiaTreinada('');setPericiaExtra('');setAvisoOrigem('');}}>
                     <option value="">Selecione uma Origem</option>
-                    {ORIGENS.map(o=><option key={o.nome} value={o.nome}>{o.nome}</option>)}
+                    {ORIGENS.map(o=><option key={o.nome} value={o.nome}>{termo(o.nome)}</option>)}
                   </select>
                 </label>
                 {dadosOrigem&&<p className="ficha-dica">{dadosOrigem.beneficio}</p>}
@@ -377,24 +378,24 @@ export default function FichasJogador({supabase,usuarioId,mesas,sinalAtualizacao
               </div>}
               <p className="ficha-dica">A Origem concede um Treinamento gratuito. Distribua os pontos da Classe na seção Perícias. Para trocar escolhas de Origem após distribuir pontos, zere a distribuição e salve primeiro. Efeitos condicionais ainda serão integrados.</p>
             </details>
-            <details><summary>Habilidade Básica de Classe · {habilidadeSalva?.nome??'pendente'}</summary>
-              {habilidadeSalva&&<p><strong>{habilidadeSalva.nome} · {habilidadeSalva.ramo}</strong><br/>{habilidadeSalva.efeito} <small>({habilidadeSalva.referencia})</small></p>}
+            <details><summary>Habilidade Básica de Classe · {termo(habilidadeSalva?.nome??'pendente')}</summary>
+              {habilidadeSalva&&<p><strong>{termo(habilidadeSalva.nome)} · {termo(habilidadeSalva.ramo)}</strong><br/>{habilidadeSalva.efeito} <small>({habilidadeSalva.referencia})</small></p>}
               {dona&&ficha.estado_ficha==='rascunho'&&(ficha.nivel!==1?
                 <p className="ficha-dica">Escolha de Habilidade disponível nesta etapa apenas no nível 1.</p>:
                 <div className="formulario">
                   <label>Escolher Habilidade Básica
                     <select value={habilidadeEscolhida} disabled={salvandoHabilidade} onChange={e=>{setHabilidadeEscolhida(e.target.value);setAvisoHabilidade('');}}>
                       <option value="">Sem Habilidade escolhida</option>
-                      {habilidadesDaClasse.map(h=><option key={h.id} value={h.id}>{h.nome} · {h.ramo}</option>)}
+                      {habilidadesDaClasse.map(h=><option key={h.id} value={h.id}>{termo(h.nome)} · {termo(h.ramo)}</option>)}
                     </select>
                   </label>
                   {previaHabilidade&&<p><strong>Prévia da escolha:</strong> {previaHabilidade.efeito}</p>}
-                  <p className="ficha-dica">No nível 1, escolha uma Básica da sua Classe. É possível refazer a escolha no rascunho. Parrudo recalcula PV e BI máximos, preservando dano já sofrido; a troca é recusada se descartaria BI acumulada.</p>
+                  <p className="ficha-dica">No nível 1, escolha uma Básica da sua Classe. É possível refazer a escolha no rascunho. {termo('Parrudo')} recalcula PV e BI máximos, preservando dano já sofrido; a troca é recusada se descartaria BI acumulada.</p>
                   {erroHabilidade&&<p role="alert" className="erro">{erroHabilidade}</p>}
                   {avisoHabilidade&&<p role="status" className="sucesso">{avisoHabilidade}</p>}
                   <button type="button" className="acao" disabled={salvandoHabilidade||salvandoOrigem||salvandoPericias||salvando||habilidadesDaClasse.length===0} onClick={()=>{void salvarHabilidade();}}>{salvandoHabilidade?'Salvando...':'Salvar Habilidade Básica'}</button>
                 </div>)}
-              <p className="ficha-dica">Custos, Vantagens, curas e manobras condicionais são referências para declarar em jogo. Nenhuma rolagem, ataque ou consumo é disparado por escolher a Habilidade. Equipamento e finalização ainda estão pendentes.</p>
+              <p className="ficha-dica">Custos, Vantagens, curas e manobras condicionais são referências para declarar em jogo. Nenhuma rolagem, ataque ou consumo é disparado por escolher a Habilidade. Uso de equipamento e finalização ainda estão pendentes.</p>
             </details>
             <IdentidadeRascunho key={ficha.id} supabase={supabase} ficha={ficha} dona={dona} recarregar={carregar}/>
           </section>

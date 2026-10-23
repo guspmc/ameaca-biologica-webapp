@@ -82,3 +82,5 @@ Novo incremento: [equipamento inicial no rascunho](docs/equipamento-inicial.md),
 ## Desenvolvimento supervisionado
 
 Seguir o [fluxo autônomo autorizado](docs/fluxo-autonomo-supervisionado.md). A [rodada de revisão da criação](docs/relatorio-revisao-criacao.md) adiciona conferência de escolhas salvas, fórmulas e flexão de Classe, com 32 testes. Sem mudança no banco nesta rodada; finalização segue indisponível.
+
+[Flexões e prévia local de compras](docs/relatorio-flexoes-compras.md): Investigadora/Armeira e demais termos, simulador não salvo da opção C. Sem alteração de banco ou permissões.

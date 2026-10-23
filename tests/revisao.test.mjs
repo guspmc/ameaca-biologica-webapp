@@ -56,7 +56,7 @@ test('flexao depende apenas da declaracao explicita da personagem e preserva Cla
 test('revisao combina bonus de Origem nos maximos e usa genero apenas na apresentacao',()=>{
  const cobaia={...ficha,origem:'Cobaia',pericia_origem_treinada:'Reflexos',bi_maximo:11,identidade:{genero:'Feminino'}};
  assert.equal(linha(cobaia,'BI máxima').estado,'conferido');
- assert.match(linha(cobaia,'BI máxima').detalhe,/Cobaia 2.*Parrudo 3 = 11/);
+ assert.match(linha(cobaia,'BI máxima').detalhe,/Cobaia 2.*Parruda 3 = 11/);
  assert.match(linha(cobaia,'Classe e nível').detalhe,/Operadora/);
  const universitaria={...ficha,origem:'Universitária',pericia_origem_treinada:'Medicina',sa_maximo:2};
  assert.equal(linha(universitaria,'SA máximo').estado,'conferido');

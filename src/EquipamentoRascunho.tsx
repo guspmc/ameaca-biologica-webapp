@@ -1,3 +1,4 @@
+import PreviaCompras from './PreviaCompras';
 import {useEffect,useState} from 'react';
 import type {SupabaseClient} from '@supabase/supabase-js';
 import {capacidadeInventario,caracteristicos,equipamentoInicial,espacosOcupados,opcoesEquipamento} from './equipamento';
@@ -44,6 +45,7 @@ export default function EquipamentoRascunho({supabase,ficha,dona,recarregar}:Pro
         <button type="button" className="acao" disabled={salvando||!cabe} onClick={()=>{void salvar();}}>{salvando?'Salvando...':'Salvar Equipamento Inicial'}</button>
       </div>}
     </details>
+    {salvo?.id==='C'&&pode&&<PreviaCompras capacidade={capacidade}/>}
     {salvo&&<>
       <div className="ficha-caracteristicos"><strong>ITENS CARACTERÍSTICOS · 0 ESPAÇOS</strong>
         {caracteristicos(ficha.classe).map(i=><details key={i.id}><summary>{i.nome}</summary><p>{i.detalhe}. Vinculado à Classe; não pode ser descartado voluntariamente.</p></details>)}
