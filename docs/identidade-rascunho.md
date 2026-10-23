@@ -29,3 +29,7 @@ Gus confirmou equipamento funcional após F5. Capturas mostram opção B de Oper
 4. Mestre continua sem acesso ao rascunho. Não enviar dados pessoais, senhas ou história privada ao chat.
 
 Compras iniciais, inventário ativo, equipar, revisão, automações e finalização ainda pendentes. Nenhum botão de finalizar foi criado. Limites de dez jogadores/dez ativas, concorrência estrita, readmissão e reconciliação da 006 em produção seguem pendências conhecidas. Sem merge/publicação.
+
+## Confirmação humana recebida
+
+Gus confirmou “Tudo salvo e funcional” após o roteiro de identidade, persistência e limpeza em 23/10/2026. Registro baseado no relato, sem leitura da narrativa das personagens. A rodada seguinte integra flexão de Operador/Operadora e revisão de escolhas; ver relatorio-revisao-criacao.md.

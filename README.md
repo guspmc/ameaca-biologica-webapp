@@ -78,3 +78,7 @@ Incremento seguinte: [Habilidade Básica de nível 1](docs/habilidades-basicas.m
 Novo incremento: [equipamento inicial no rascunho](docs/equipamento-inicial.md), com kits A/B/C, Característicos e grade de criação. Onze migrações no teste; 24 testes passaram. Habilidades aprovadas pelo Gus; persistência humana do equipamento aguarda checkpoint. Compras, inventário ativo e finalização continuam pendentes.
 
 [Identidade narrativa](docs/identidade-rascunho.md) adicionada: campos opcionais e edição do nome no rascunho. Doze migrações no teste, 27 testes passaram. Gus confirmou equipamento persistente após F5; o checkpoint atual é a narrativa. Autosave geral, compras, inventário ativo e finalização seguem pendentes.
+
+## Desenvolvimento supervisionado
+
+Seguir o [fluxo autônomo autorizado](docs/fluxo-autonomo-supervisionado.md). A [rodada de revisão da criação](docs/relatorio-revisao-criacao.md) adiciona conferência de escolhas salvas, fórmulas e flexão de Classe, com 32 testes. Sem mudança no banco nesta rodada; finalização segue indisponível.

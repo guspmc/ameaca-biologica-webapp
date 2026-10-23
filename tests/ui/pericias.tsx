@@ -4,13 +4,15 @@ import { createRoot } from 'react-dom/client';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import FichasJogador from '../../src/FichasJogador';
 import '../../src/styles.css';
+const revisaoQA=location.pathname.endsWith('/revisao.html');
 const equipamentoQA=location.pathname.endsWith('/equipamento.html');
-const habilidadeQA=location.pathname.endsWith('/habilidades.html')||equipamentoQA;
+const habilidadeQA=location.pathname.endsWith('/habilidades.html')||equipamentoQA||revisaoQA;
 let ficha={id:'fixture-ficha',nome:'Sobrevivente fictício',mesa_id:'fixture-mesa',jogador_id:'fixture-jogador',
   classe:habilidadeQA?'Operador':'Agente',origem:'Policial',pericia_origem_treinada:'Pontaria',pericia_origem_extra:null,
   identidade:{} as Record<string,string>,habilidade_basica:null as string|null,equipamento_inicial:null as string|null,
   pontos_pericia_classe:{},nivel:1,forca:2,agilidade:2,vigor:2,astucia:1,
   pv_atual:habilidadeQA?14:12,pv_maximo:habilidadeQA?14:12,sa_atual:3,sa_maximo:3,bi_atual:0,bi_maximo:habilidadeQA?7:9,defesa:14,estado_ficha:'rascunho'};
+if(revisaoQA)ficha={...ficha,nome:'Sobrevivente fictícia',forca:3,agilidade:1,vigor:3,astucia:0,origem:'Investigador',pericia_origem_treinada:'Investigação',identidade:{genero:'Feminino'},pontos_pericia_classe:{Atletismo:1,Luta:2},habilidade_basica:'parrudo',equipamento_inicial:'B',pv_atual:20,pv_maximo:20,sa_atual:1,sa_maximo:1,bi_maximo:9,defesa:11};
 const mock={
   from:()=>({select:()=>({order:async()=>({data:[structuredClone(ficha)],error:null})})}),
   rpc:async(nome:string,args:{p_pontos:Record<string,number>;p_habilidade:string|null;p_opcao:string|null;p_nome:string;p_identidade:Record<string,string>})=>{

@@ -4,6 +4,9 @@ import { PONTOS_CLASSE, PERICIAS_CLASSE, grauPericia, bonusTreinamento, totalPon
 import { HABILIDADES_BASICAS } from './habilidades';
 import EquipamentoRascunho from './EquipamentoRascunho';
 import IdentidadeRascunho from './IdentidadeRascunho';
+import { ORIGENS } from './origens';
+import RevisaoCriacao from './RevisaoCriacao';
+import { classePersonagem } from './textoPersonagem';
 
 type Mesa = { id: string; nome: string; mestre_id: string };
 type Classe = 'Agente' | 'Autodidata' | 'Operador';
@@ -48,25 +51,7 @@ const PERICIAS:{nome:string;atributo:Atributo}[]=[
   {nome:'Sobrevivência',atributo:'astucia'},
   {nome:'Vontade',atributo:'astucia'}
 ];
-const ORIGENS:{nome:string;pericias:string[];beneficio:string}[]=[
-  {nome:'Acadêmico',pericias:['Investigação','Medicina'],beneficio:'Saber é Poder: 1/Descanso Completo, Vantagem em Teste baseado em AST.'},
-  {nome:'Agente de Saúde',pericias:['Medicina','Sobrevivência'],beneficio:'Ao curar aliado com item ou efeito, +1d4 de Cura; não se aplica a si.'},
-  {nome:'Amnésico',pericias:[],beneficio:'Vislumbres do Passado: 1/sessão, em local conhecido antes da amnésia, AST DT 10; informação útil e Vantagem no próximo Teste relacionado de Sobrevivência.'},
-  {nome:'Atleta',pericias:['Acrobacia','Atletismo'],beneficio:'Por 1 SA, +5 em Teste de Perícia baseado em FOR ou AGI, exceto Luta e Pontaria.'},
-  {nome:'Chef',pericias:['Fortitude','Sobrevivência'],beneficio:'Em Sala de Descanso, ao criar item, pode escolher 10 no d20.'},
-  {nome:'Cobaia',pericias:['Reflexos','Vontade'],beneficio:'+2 BI Máxima e Vantagem em Reanimação durante Colapso Viral.'},
-  {nome:'Criminoso',pericias:['Investigação','Furtividade'],beneficio:'1/Descanso Completo: Vantagem em Investigação ao procurar itens ou recursos.'},
-  {nome:'Desgarrado',pericias:['Fortitude','Sobrevivência'],beneficio:'Ao aumentar BI, recebe PV Temporários iguais à metade da BI atual, arredondada para baixo.'},
-  {nome:'Investigador',pericias:['Investigação','Percepção'],beneficio:'Por 1 SA, +5 no Teste de Investigação ao procurar uma pista.'},
-  {nome:'Lutador',pericias:['Luta','Reflexos'],beneficio:'Ataque Desarmado e Arma Improvisada sobem uma categoria de dado; acumula com Casca-Grossa e não afeta Coronhada.'},
-  {nome:'Mercenário',pericias:['Pontaria','Fortitude'],beneficio:'1/Descanso Completo, Reação para sacar arma de fogo carregada e atacar hostil oculto que iria Surpreender; não fica Surpreendido.'},
-  {nome:'Militar',pericias:['Pontaria','Percepção'],beneficio:'Após matar inimigo com arma de fogo, Vantagem no primeiro Ataque com arma de fogo no próximo turno.'},
-  {nome:'Mochileiro',pericias:['Sobrevivência','Atletismo'],beneficio:'+1 Espaço de Inventário.'},
-  {nome:'Operário',pericias:['Fortitude','Atletismo'],beneficio:'Escolha uma Arma Corpo a Corpo semelhante a ferramenta: +1 no Teste de Ataque, Dano soma 2 × FOR em vez de FOR; bônus adicional não multiplica no Crítico.'},
-  {nome:'Policial',pericias:['Percepção','Pontaria'],beneficio:'+2 Defesa.'},
-  {nome:'Servidor Público',pericias:['Investigação','Vontade'],beneficio:'Ao Ajudar em Perícia Treinada ou Mestre, aliado recebe Vantagem e +2 no Teste.'},
-  {nome:'Universitária',pericias:['Medicina','Investigação'],beneficio:'+1 SA Máxima.'}
-];
+
 const CLASSES:Classe[]=['Agente','Autodidata','Operador'];
 const ABREV:Record<Atributo,string>={forca:'FOR',agilidade:'AGI',vigor:'VIG',astucia:'AST'};
 
@@ -302,7 +287,7 @@ export default function FichasJogador({supabase,usuarioId,mesas,sinalAtualizacao
               <span className="ficha-mini-selo">{p.classe?.slice(0,1)??'?'}</span>
               <span className="ficha-mini-detalhes">
                 <strong>{p.nome}</strong>
-                <small>{p.classe??'Classe pendente'} · NÍVEL {p.nivel} · {nomeMesa(p.mesa_id)}</small>
+                <small>{classePersonagem(p.classe,p.identidade?.genero)} · NÍVEL {p.nivel} · {nomeMesa(p.mesa_id)}</small>
                 <span>{p.jogador_id===usuarioId?'SUA PERSONAGEM':'VISUALIZAÇÃO DO MESTRE'} · {p.estado_ficha==='rascunho'?'RASCUNHO':'ATIVA'}</span>
               </span><span className="seta">→</span>
             </button>
@@ -322,7 +307,7 @@ export default function FichasJogador({supabase,usuarioId,mesas,sinalAtualizacao
           <header className="ficha-cab">
             <div className="ficha-metadados">REGISTRO DO SOBREVIVENTE <span>· {nomeMesa(ficha.mesa_id)}</span></div>
             <div className="ficha-identidade">
-              <div><h2>{ficha.nome}</h2><p>{(ficha.classe??'CLASSE PENDENTE').toUpperCase()} · NÍVEL {ficha.nivel} · {ficha.origem??'ORIGEM PENDENTE'}</p></div>
+              <div><h2>{ficha.nome}</h2><p>{classePersonagem(ficha.classe,ficha.identidade?.genero).toUpperCase()} · NÍVEL {ficha.nivel} · {ficha.origem??'ORIGEM PENDENTE'}</p></div>
               <div className="ficha-carimbo">ARQUIVO<br/>PESSOAL</div>
             </div>
             <p className="ficha-status"><i/> {ficha.estado_ficha==='rascunho'?'RASCUNHO EM CONSTRUÇÃO':'PERSONAGEM ATIVA'}
@@ -355,7 +340,7 @@ export default function FichasJogador({supabase,usuarioId,mesas,sinalAtualizacao
           <section className="ficha-secao" id="ficha-perfil">
             <h3><span>01</span> Características <small>AB-01</small></h3>
             <div className="ficha-fatos">
-              <div><small>CLASSE</small><strong>{ficha.classe??'A definir'}</strong></div>
+              <div><small>CLASSE</small><strong>{classePersonagem(ficha.classe,ficha.identidade?.genero)}</strong></div>
               <div><small>ORIGEM</small><strong>{ficha.origem??'A definir'}</strong></div>
               <div><small>NÍVEL</small><strong>{ficha.nivel}</strong></div>
               <div><small>ESTADO</small><strong>Rascunho</strong></div>
@@ -431,7 +416,7 @@ export default function FichasJogador({supabase,usuarioId,mesas,sinalAtualizacao
               !ficha.origem||!ficha.pericia_origem_treinada?<p className="ficha-dica">Salve a Origem e o Treinamento gratuito antes de distribuir pontos.</p>:
               <details open><summary>Distribuir Pontos de Perícia da Classe</summary>
                 <div className="formulario">
-                  <p>{ficha.classe}: {gastosPericias}/{limitePericias} pontos usados · {limitePericias-gastosPericias} restantes.</p>
+                  <p>{classePersonagem(ficha.classe,ficha.identidade?.genero)}: {gastosPericias}/{limitePericias} pontos usados · {limitePericias-gastosPericias} restantes.</p>
                   <p className="ficha-dica">Cada ponto sobe um grau; Mestre é o máximo. O Treinamento da Origem é gratuito e apenas a outra opção amplia a lista da Classe. Você pode salvar uma distribuição parcial.</p>
                   {PERICIAS.filter(p=>permitidasPericia.has(p.nome)).map(p=>{
                     const gratis=p.nome===ficha.pericia_origem_treinada?1:0;
@@ -465,6 +450,7 @@ export default function FichasJogador({supabase,usuarioId,mesas,sinalAtualizacao
             <h3><span>04</span> Inventário <small>AB-04</small></h3>
             <EquipamentoRascunho key={ficha.id} supabase={supabase} ficha={ficha} dona={dona} recarregar={carregar}/>
           </section>
+          {dona&&ficha.estado_ficha==='rascunho'&&<RevisaoCriacao ficha={ficha} irPara={irPara}/>}
           <div className="ficha-rodape">FICHA DO JOGADOR · ALFA 0.4 · RASCUNHO SALVO NO BANCO</div>
         </div>
         <nav className="ficha-nav" aria-label="Atalhos da ficha">

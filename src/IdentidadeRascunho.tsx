@@ -32,7 +32,7 @@ export default function IdentidadeRascunho({supabase,ficha,dona,recarregar}:Prop
     finally{setSalvando(false);}
   }
   return <details><summary>Identidade, aparência e história</summary>
-    <p className="ficha-dica">Dados da personagem fictícia. Os campos narrativos são opcionais e não alteram Atributos ou recursos. Gênero se refere à personagem; a flexão dos textos será integrada depois.</p>
+    <p className="ficha-dica">Dados da personagem fictícia. Os campos narrativos são opcionais e não alteram Atributos ou recursos. Gênero se refere à personagem.</p>
     {pode?<form className="formulario formulario-identidade" onSubmit={e=>{e.preventDefault();void salvar();}}>
       <label>Nome da personagem na ficha<input value={nome} maxLength={60} minLength={2} required disabled={salvando} onChange={e=>{setNome(e.target.value);setAviso('');}}/></label>
       {CAMPOS.map(c=><label key={c.id}>{c.nome}
