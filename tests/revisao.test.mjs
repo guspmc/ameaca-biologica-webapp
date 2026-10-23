@@ -31,7 +31,7 @@ test('revisao aponta escolhas ausentes e invalidas; nao confunde parcial com com
   assert.equal(linha({...ficha,nivel:2},'Classe e nível').estado,'revisar');
   assert.equal(linha({...ficha,nivel:2},'PV máximos'),undefined);
 });
-test('revisao respeita lista ampliada, grau gratuito e capacidade; Personalizado continua pendente',()=>{
+test('revisao respeita lista ampliada, grau gratuito e capacidade; Personalizado inicial preserva moedas',()=>{
   const f={...ficha,origem:'Acadêmico',pericia_origem_treinada:'Investigação',pontos_pericia_classe:{Medicina:2,Luta:1}};
   assert.equal(linha(f,'Pontos de Perícia').estado,'conferido');
   assert.equal(linha({...f,pontos_pericia_classe:{Investigação:2,Luta:1}},'Pontos de Perícia').estado,'revisar');
@@ -41,7 +41,7 @@ test('revisao respeita lista ampliada, grau gratuito e capacidade; Personalizado
   const fraco={...ficha,forca:0,agilidade:3,vigor:3,astucia:1,equipamento_inicial:'A',origem:'Mochileiro',pericia_origem_treinada:'Atletismo'};
   assert.equal(linha(fraco,'Equipamento inicial').estado,'conferido');
   assert.equal(linha({...fraco,origem:'Policial',pericia_origem_treinada:'Pontaria'},'Equipamento inicial').estado,'revisar');
-  assert.equal(linha({...ficha,equipamento_inicial:'C'},'Compras do Personalizado').estado,'pendente');
+  assert.equal(linha({...ficha,equipamento_inicial:'C'},'Compras do Personalizado').estado,'conferido');
 });
 test('flexao depende apenas da declaracao explicita da personagem e preserva Classe mecanica',()=>{
   assert.equal(classePersonagem('Operador',' Feminino '),'Operadora');
@@ -88,5 +88,6 @@ test('revisao de compras aponta capacidade, saldo, plano e versao invalidos sem 
  }
  assert.equal(linha({...f,forca:0,compras_iniciais:{faca:2}},'Compras do Personalizado').estado,'revisar');
  assert.equal(linha({...f,revisao_compras:-1},'Compras do Personalizado').estado,'revisar');
+ assert.equal(linha({...f,revisao_compras:0,compras_iniciais:{faca:1}},'Compras do Personalizado').estado,'revisar');
  assert.equal(linha({...f,equipamento_inicial:'B',compras_iniciais:{faca:1}},'Compras do Personalizado').estado,'revisar');
 });

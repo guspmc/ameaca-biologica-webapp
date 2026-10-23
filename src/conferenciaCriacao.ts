@@ -38,9 +38,9 @@ export function revisarCriacao(f:FichaRevisao):Conferencia[]{
       const plano=simularCompras(f.compras_iniciais??{},capacidade);
       ocupados=plano.espacos;
       const revisao=f.revisao_compras??0;
-      const valido=plano.orcamentoValido&&plano.cabe&&Number.isInteger(revisao)&&revisao>=0;
-      add('Compras do Personalizado',!valido?'revisar':revisao>0?'conferido':'pendente',
-        `Plano salvo: ${plano.itens.length?plano.itens.map(i=>i.nome+' × '+i.quantidade).join(' · '):'sem compras'}. ${plano.saldo}/3 Moedas restantes · ${plano.espacos}/${capacidade} Espaços. ${revisao>0?'Versão '+revisao+'.':'Salve o plano para confirmar suas escolhas.'} Disponibilidade será validada pelo servidor ao salvar; bloqueios posteriores não removem itens já salvos.`,'itens');
+      const valido=plano.orcamentoValido&&plano.cabe&&Number.isInteger(revisao)&&revisao>=0&&(revisao>0||plano.itens.length===0);
+      add('Compras do Personalizado',valido?'conferido':'revisar',
+        `Plano salvo: ${plano.itens.length?plano.itens.map(i=>i.nome+' × '+i.quantidade).join(' · '):'sem compras'}. ${plano.saldo}/3 Moedas restantes · ${plano.espacos}/${capacidade} Espaços. ${revisao>0?'Versão '+revisao+'.':'Plano inicial sem compras; as três Moedas estão preservadas.'} Disponibilidade será validada pelo servidor ao salvar; bloqueios posteriores não removem itens já salvos.`,'itens');
     }catch{
       ocupados=null;
       add('Compras do Personalizado','revisar','O plano salvo contém dados inválidos. Confira o Inventário; nenhuma escolha foi alterada.','itens');

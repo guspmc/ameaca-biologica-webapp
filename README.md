@@ -95,3 +95,5 @@ Disponibilidade por Mesa: [preparação local](docs/relatorio-disponibilidade-lo
 Disponibilidade integrada somente ao TESTE após checkpoint: [evidências e rodada humana](docs/relatorio-disponibilidade-integrada.md).
 
 Revisão da criação integrada às compras salvas: [resultado e pendência visual](docs/relatorio-revisao-compras.md).
+
+Resumo de pendências e plano vazio inicial: [evidências](docs/relatorio-resumo-revisao.md).

@@ -475,6 +475,8 @@ async function purchase(db,id,plan,revision=0,user=A){
 test('Compras locais: salva plano normalizado, preserva recursos e repeticao nao duplica',async()=>{
  const db=await setup();try{
   const id=await create(db);await equipment(db,id,'C');const before=await get(db,id);
+  assert.equal(await purchase(db,id,{},0),0);
+  assert.deepEqual(await get(db,id),before);
   assert.equal(await purchase(db,id,{bastao:1,'colete-acolchoado':1,faca:0}),1);
   assert.equal(await purchase(db,id,{bastao:1,'colete-acolchoado':1},0),1);
   const row=await get(db,id);assert.deepEqual(row.compras_iniciais,{bastao:1,'colete-acolchoado':1});assert.equal(row.revisao_compras,1);
