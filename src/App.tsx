@@ -218,7 +218,7 @@ function Lobby({ supabase, sessao }: { supabase: SupabaseClient; sessao: Session
           {aviso && <p className="sucesso" role="status">{aviso}</p>}
           <button className="acao" type="submit" disabled={criando}>{criando?'Criando...':'+ Criar Mesa'}</button>
         </form>
-        <div className="nota-etapa"><strong>PRÓXIMAS ETAPAS</strong><p>Convites, participantes, Origens e Perícias da criação estão disponíveis. Habilidades, combate e inventário serão integrados nas próximas etapas.</p></div>
+        <div className="nota-etapa"><strong>PRÓXIMAS ETAPAS</strong><p>Convites, participantes, Origens, Perícias e Habilidades Básicas da criação estão disponíveis. Equipamento, combate e finalização serão integrados nas próximas etapas.</p></div>
       </section>
       <section className="cartao cartao-padrao">
         <div className="linha-titulo"><div><p className="rotulo">ARQUIVO DE CAMPANHAS</p><h2>Mesas cadastradas</h2></div><button className="botao-claro" type="button" disabled={carregando} onClick={()=>{void atualizar()}}>Atualizar</button></div>

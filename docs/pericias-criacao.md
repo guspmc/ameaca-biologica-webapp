@@ -43,3 +43,7 @@ Se usar outra Classe/Origem, orçamento e opções mudam conforme o livro. Não 
 Confirmação humana do novo formulário e da persistência. Concorrência estrita continua pendente. As confirmações anteriores do Gus cobrem atualização imediata do nome da Mesa e isolamento visual de Mesa reservada, sem certificar todos os eventos de ficha.
 
 Exclusão de rascunhos na saída/remoção, finalização e limites de dez jogadores/dez ativas continuam fora deste incremento. Produção ainda exige reconciliação do histórico da 006 e aprovação específica das novas migrações antes de uma eventual publicação.
+
+## Atualização após o roteiro
+
+Em 23/10/2026, Gus informou que fez vários testes e todos funcionaram. Capturas mostram Operador 3/3, Atletismo Treinada +5 e Luta Mestre +6 com FOR 3. Confirmação humana desta etapa registrada; o próximo checkpoint é o incremento de Habilidades Básicas, descrito em habilidades-basicas.md. Concorrência estrita permanece pendente.

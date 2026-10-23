@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { PONTOS_CLASSE, PERICIAS_CLASSE, grauPericia, bonusTreinamento, totalPontos } from './pericias';
+import { HABILIDADES_BASICAS } from './habilidades';
 
 type Mesa = { id: string; nome: string; mestre_id: string };
 type Classe = 'Agente' | 'Autodidata' | 'Operador';
@@ -15,6 +16,7 @@ type Personagem = {
   bi_atual:number|null;bi_maximo:number|null;defesa:number|null;
   estado_ficha:string;
   pontos_pericia_classe:Record<string,number>;
+  habilidade_basica:string|null;
 };
 type Props = {
   supabase:SupabaseClient; usuarioId:string; mesas:Mesa[];
@@ -88,10 +90,14 @@ export default function FichasJogador({supabase,usuarioId,mesas,sinalAtualizacao
   const [salvandoPericias,setSalvandoPericias]=useState(false);
   const [erroPericias,setErroPericias]=useState('');
   const [avisoPericias,setAvisoPericias]=useState('');
+  const [habilidadeEscolhida,setHabilidadeEscolhida]=useState('');
+  const [salvandoHabilidade,setSalvandoHabilidade]=useState(false);
+  const [erroHabilidade,setErroHabilidade]=useState('');
+  const [avisoHabilidade,setAvisoHabilidade]=useState('');
 
   const carregar=useCallback(async()=>{
     const {data,error}=await supabase.from('personagens')
-      .select('id,nome,mesa_id,jogador_id,classe,origem,pericia_origem_treinada,pericia_origem_extra,pontos_pericia_classe,nivel,forca,agilidade,vigor,astucia,pv_atual,pv_maximo,sa_atual,sa_maximo,bi_atual,bi_maximo,defesa,estado_ficha')
+      .select('id,nome,mesa_id,jogador_id,classe,origem,pericia_origem_treinada,pericia_origem_extra,pontos_pericia_classe,habilidade_basica,nivel,forca,agilidade,vigor,astucia,pv_atual,pv_maximo,sa_atual,sa_maximo,bi_atual,bi_maximo,defesa,estado_ficha')
       .order('criado_em',{ascending:false});
     if(error)setErro('Erro ao carregar personagens: '+error.message);
     else{setPersonagens((data??[]) as Personagem[]);setErro('');}
@@ -115,6 +121,9 @@ export default function FichasJogador({supabase,usuarioId,mesas,sinalAtualizacao
   const permitidasPericia=new Set([...(PERICIAS_CLASSE[ficha?.classe??'']??[]),...(extraFicha?[extraFicha]:[])]);
   const limitePericias=PONTOS_CLASSE[ficha?.classe??'']??0;
   const gastosPericias=totalPontos(distribuicao);
+  const habilidadesDaClasse=HABILIDADES_BASICAS.filter(h=>h.classe===ficha?.classe);
+  const habilidadeSalva=HABILIDADES_BASICAS.find(h=>h.id===ficha?.habilidade_basica);
+  const previaHabilidade=habilidadesDaClasse.find(h=>h.id===habilidadeEscolhida);
   const nomeMesa=(id:string)=>mesas.find(m=>m.id===id)?.nome??'Mesa autorizada';
 
   function mudarAtributo(chave:Atributo,direcao:-1|1){
@@ -139,12 +148,13 @@ export default function FichasJogador({supabase,usuarioId,mesas,sinalAtualizacao
     });
     if(error){setErro('Não foi possível criar o personagem: '+error.message);}
     else {
-      setMensagem('Rascunho criado e salvo! Escolha a Origem e distribua os Pontos de Perícia na ficha. Habilidades e equipamentos ainda estão pendentes.');
+      setMensagem('Rascunho criado e salvo! Escolha Origem, Perícias e Habilidade Básica na ficha. Equipamento e finalização ainda estão pendentes.');
       setNome('');setStats({...INICIAIS});await carregar();
       if(typeof data==='string'){
         setOrigemEscolhida('');setPericiaTreinada('');setPericiaExtra('');
         setErroOrigem('');setAvisoOrigem('');
         setDistribuicao({});setErroPericias('');setAvisoPericias('');
+        setHabilidadeEscolhida('');setErroHabilidade('');setAvisoHabilidade('');
         setAbertoId(data);setRecursoAberto(null);setSecaoAtiva('perfil');
       }
     }
@@ -152,7 +162,7 @@ export default function FichasJogador({supabase,usuarioId,mesas,sinalAtualizacao
   }
 
   async function salvarOrigem(){
-    if(!ficha||!dona||ficha.estado_ficha!=='rascunho'||salvandoOrigem||salvandoPericias)return;
+    if(!ficha||!dona||ficha.estado_ficha!=='rascunho'||salvandoOrigem||salvandoPericias||salvandoHabilidade||salvando)return;
     if(!dadosOrigem||!periciaTreinada||!opcoesOrigem.includes(periciaTreinada)||
       (origemEscolhida==='Amnésico'&&(!periciaExtra||periciaExtra===periciaTreinada))){
       setErroOrigem('Escolha Origem e Perícia Treinada; Amnésico exige duas Perícias distintas.');
@@ -172,7 +182,7 @@ export default function FichasJogador({supabase,usuarioId,mesas,sinalAtualizacao
   }
 
   async function salvarPericias(){
-    if(!ficha||!dona||ficha.estado_ficha!=='rascunho'||salvandoPericias||salvandoOrigem)return;
+    if(!ficha||!dona||ficha.estado_ficha!=='rascunho'||salvandoPericias||salvandoOrigem||salvandoHabilidade)return;
     setSalvandoPericias(true);setErroPericias('');setAvisoPericias('');
     try{
       const {error}=await supabase.rpc('definir_pericias_rascunho',{
@@ -188,7 +198,7 @@ export default function FichasJogador({supabase,usuarioId,mesas,sinalAtualizacao
 
   async function ajustar(recurso:Recurso,delta:-1|1){
     if(recurso==='DEF')return;
-    if(!ficha||!dona||salvando)return;
+    if(!ficha||!dona||salvando||salvandoHabilidade||salvandoOrigem)return;
     const [campo,maximo]=recurso==='PV'?['pv_atual','pv_maximo']:
       recurso==='SA'?['sa_atual','sa_maximo']:['bi_atual','bi_maximo'];
     const atual=Number(ficha[campo as keyof Personagem]??0);
@@ -203,6 +213,20 @@ export default function FichasJogador({supabase,usuarioId,mesas,sinalAtualizacao
     setSalvando(false);
   }
 
+  async function salvarHabilidade(){
+    if(!ficha||!dona||ficha.estado_ficha!=='rascunho'||salvandoHabilidade||salvandoOrigem||salvandoPericias||salvando)return;
+    setSalvandoHabilidade(true);setErroHabilidade('');setAvisoHabilidade('');
+    try{
+      const {error}=await supabase.rpc('definir_habilidade_rascunho',{
+        p_personagem:ficha.id,p_habilidade:habilidadeEscolhida||null
+      });
+      if(error){setErroHabilidade('Não foi possível salvar a Habilidade: '+error.message);return;}
+      await carregar();
+      setAvisoHabilidade('Escolha salva. A ficha continua em rascunho.');
+    }catch(problema){setErroHabilidade(problema instanceof Error?problema.message:'Falha ao salvar Habilidade.');}
+    finally{setSalvandoHabilidade(false);}
+  }
+
   function abrirFicha(id:string){
     const registro=personagens.find(p=>p.id===id);
     setOrigemEscolhida(registro?.origem??'');
@@ -210,6 +234,7 @@ export default function FichasJogador({supabase,usuarioId,mesas,sinalAtualizacao
     setPericiaExtra(registro?.pericia_origem_extra??'');
     setErroOrigem('');setAvisoOrigem('');
     setDistribuicao({...registro?.pontos_pericia_classe});setErroPericias('');setAvisoPericias('');
+    setHabilidadeEscolhida(registro?.habilidade_basica??'');setErroHabilidade('');setAvisoHabilidade('');
     setAbertoId(id);setRecursoAberto(null);setSecaoAtiva('perfil');
   }
   function irPara(secao:string){
@@ -233,7 +258,7 @@ export default function FichasJogador({supabase,usuarioId,mesas,sinalAtualizacao
       <section className="cartao cartao-padrao">
         <p className="rotulo">NOVO SOBREVIVENTE</p>
         <h3>Criar rascunho de personagem</h3>
-        <p className="secundario">Criação inicial por pontos do Arquivo do Jogador v1.0. Após criar, escolha a Origem e distribua os Pontos de Perícia na ficha. Habilidades e equipamentos ainda estão pendentes.</p>
+        <p className="secundario">Criação inicial por pontos do Arquivo do Jogador v1.0. Após criar, escolha Origem, Perícias e uma Habilidade Básica. Equipamento e finalização ainda estão pendentes.</p>
         {minhasMesas.length===0 ? <p className="dica">Você precisa ter sido aprovado como jogador em uma Mesa para criar um personagem.</p>:
           <form onSubmit={criar} className="formulario">
             <label>Mesa <select value={mesaEscolhida} onChange={e=>setMesaId(e.target.value)}>
@@ -317,8 +342,8 @@ export default function FichasJogador({supabase,usuarioId,mesas,sinalAtualizacao
                 <p>Defesa: 10 + AGI{ficha.origem==='Policial'?' + 2 da Origem Policial':''}. Equipamento, Habilidades e Condições ainda não foram aplicados neste rascunho.</p>:
                 <><p>Alterações salvas no Supabase e visíveis na sessão do Mestre.</p>
                   {dona?<div className="ficha-ajustes">
-                    <button type="button" disabled={salvando} onClick={()=>{void ajustar(recursoAberto,-1)}}>− 1 {recursoAberto}</button>
-                    <button type="button" disabled={salvando} onClick={()=>{void ajustar(recursoAberto,1)}}>+ 1 {recursoAberto}</button>
+                    <button type="button" disabled={salvando||salvandoHabilidade||salvandoOrigem} onClick={()=>{void ajustar(recursoAberto,-1)}}>− 1 {recursoAberto}</button>
+                    <button type="button" disabled={salvando||salvandoHabilidade||salvandoOrigem} onClick={()=>{void ajustar(recursoAberto,1)}}>+ 1 {recursoAberto}</button>
                   </div>:<p>Somente o jogador proprietário pode alterar este recurso.</p>}</>}
             </div>}
             <div className="ficha-condicoes">CONDIÇÕES <span>Nenhuma condição cadastrada · recurso futuro</span></div>
@@ -357,13 +382,31 @@ export default function FichasJogador({supabase,usuarioId,mesas,sinalAtualizacao
                 </label>}
                 {erroOrigem&&<p role="alert" className="erro">{erroOrigem}</p>}
                 {avisoOrigem&&<p role="status" className="sucesso">{avisoOrigem}</p>}
-                <button type="button" className="acao" disabled={salvandoOrigem||salvandoPericias||!dadosOrigem||!periciaTreinada||(origemEscolhida==='Amnésico'&&!periciaExtra)} onClick={()=>{void salvarOrigem();}}>
+                <button type="button" className="acao" disabled={salvandoOrigem||salvandoPericias||salvandoHabilidade||salvando||!dadosOrigem||!periciaTreinada||(origemEscolhida==='Amnésico'&&!periciaExtra)} onClick={()=>{void salvarOrigem();}}>
                   {salvandoOrigem?'Salvando...':'Confirmar Origem'}
                 </button>
               </div>}
-              <p className="ficha-dica">A Origem concede um Treinamento gratuito. Distribua os pontos da Classe na seção Perícias. Para trocar escolhas de Origem após distribuir pontos, zere a distribuição e salve primeiro. Efeitos condicionais e Habilidades ainda serão integrados.</p>
+              <p className="ficha-dica">A Origem concede um Treinamento gratuito. Distribua os pontos da Classe na seção Perícias. Para trocar escolhas de Origem após distribuir pontos, zere a distribuição e salve primeiro. Efeitos condicionais ainda serão integrados.</p>
             </details>
-            <details><summary>Habilidades de Classe</summary><p>O catálogo de Habilidades ainda não está vinculado. Nenhuma Habilidade é concedida automaticamente neste rascunho.</p></details>
+            <details><summary>Habilidade Básica de Classe · {habilidadeSalva?.nome??'pendente'}</summary>
+              {habilidadeSalva&&<p><strong>{habilidadeSalva.nome} · {habilidadeSalva.ramo}</strong><br/>{habilidadeSalva.efeito} <small>({habilidadeSalva.referencia})</small></p>}
+              {dona&&ficha.estado_ficha==='rascunho'&&(ficha.nivel!==1?
+                <p className="ficha-dica">Escolha de Habilidade disponível nesta etapa apenas no nível 1.</p>:
+                <div className="formulario">
+                  <label>Escolher Habilidade Básica
+                    <select value={habilidadeEscolhida} disabled={salvandoHabilidade} onChange={e=>{setHabilidadeEscolhida(e.target.value);setAvisoHabilidade('');}}>
+                      <option value="">Sem Habilidade escolhida</option>
+                      {habilidadesDaClasse.map(h=><option key={h.id} value={h.id}>{h.nome} · {h.ramo}</option>)}
+                    </select>
+                  </label>
+                  {previaHabilidade&&<p><strong>Prévia da escolha:</strong> {previaHabilidade.efeito}</p>}
+                  <p className="ficha-dica">No nível 1, escolha uma Básica da sua Classe. É possível refazer a escolha no rascunho. Parrudo recalcula PV e BI máximos, preservando dano já sofrido; a troca é recusada se descartaria BI acumulada.</p>
+                  {erroHabilidade&&<p role="alert" className="erro">{erroHabilidade}</p>}
+                  {avisoHabilidade&&<p role="status" className="sucesso">{avisoHabilidade}</p>}
+                  <button type="button" className="acao" disabled={salvandoHabilidade||salvandoOrigem||salvandoPericias||salvando||habilidadesDaClasse.length===0} onClick={()=>{void salvarHabilidade();}}>{salvandoHabilidade?'Salvando...':'Salvar Habilidade Básica'}</button>
+                </div>)}
+              <p className="ficha-dica">Custos, Vantagens, curas e manobras condicionais são referências para declarar em jogo. Nenhuma rolagem, ataque ou consumo é disparado por escolher a Habilidade. Equipamento e finalização ainda estão pendentes.</p>
+            </details>
             <details><summary>Identidade, aparência e história</summary><p>Campos narrativos serão adicionados numa próxima implementação da ficha.</p></details>
           </section>
           <section className="ficha-secao" id="ficha-pericias">
@@ -400,7 +443,7 @@ export default function FichasJogador({supabase,usuarioId,mesas,sinalAtualizacao
                   })}
                   {erroPericias&&<p role="alert" className="erro">{erroPericias}</p>}
                   {avisoPericias&&<p role="status" className="sucesso">{avisoPericias}</p>}
-                  <button type="button" className="acao" disabled={salvandoPericias||salvandoOrigem||gastosPericias>limitePericias} onClick={()=>{void salvarPericias();}}>{salvandoPericias?'Salvando...':'Salvar Perícias'}</button>
+                  <button type="button" className="acao" disabled={salvandoPericias||salvandoOrigem||salvandoHabilidade||gastosPericias>limitePericias} onClick={()=>{void salvarPericias();}}>{salvandoPericias?'Salvando...':'Salvar Perícias'}</button>
                   <button type="button" className="botao-claro" disabled={salvandoPericias} onClick={()=>{setDistribuicao({});setAvisoPericias('Escolhas zeradas no formulário. Clique em Salvar Perícias para confirmar.');}}>Zerar escolhas de pontos</button>
                 </div>
               </details>)}

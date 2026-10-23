@@ -70,6 +70,78 @@ async function visible(db, user) {
 async function skills(db,id,points,user=A) {
   return as(db,user,()=>db.query('select public.definir_pericias_rascunho($1,$2::jsonb)',[id,JSON.stringify(points)]));
 }
+async function ability(db,id,name,user=A){
+  return as(db,user,()=>db.query('select public.definir_habilidade_rascunho($1,$2)',[id,name]));
+}
+test('Habilidade: nove Basicas, uma por ficha, validacao de Classe e sem acumulacao',async()=>{
+  const db=await setup();
+  try{
+    for(const [classe,choices,pv,bi] of [
+      ['Agente',['anatomia-de-combate','nao-vai-escapar','rolamento'],12,9],
+      ['Autodidata',['ambidestria','curiosa','herbalista'],10,11],
+      ['Operador',['golpe-sujo','armeiro','parrudo'],14,7]
+    ]){
+      const id=await create(db,A,T,classe);
+      for(const choice of choices){
+        await ability(db,id,choice);await ability(db,id,choice);
+        const row=await get(db,id);
+        assert.equal(row.habilidade_basica,choice);
+        assert.equal(row.pv_maximo,pv+(choice==='parrudo'?5:0));
+        assert.equal(row.bi_maximo,bi+(choice==='parrudo'?3:0));
+        assert.equal(row.bi_atual,0);assert.equal(row.sa_atual,3);
+        assert.equal(row.estado_ficha,'rascunho');
+      }
+      await ability(db,id,null);
+      const before=await get(db,id);
+      for(const choice of ['inexistente','casca-grossa','parrudo,armeiro',classe==='Agente'?'ambidestria':'rolamento']){
+        await assert.rejects(ability(db,id,choice),/invalida/);
+        assert.deepEqual(await get(db,id),before);
+      }
+    }
+  }finally{await db.close();}
+});
+test('Parrudo: preserva dano e BI acumulada; combina com Origem sem perder bonus',async()=>{
+  const db=await setup();
+  try{
+    const id=await create(db,A,T,'Operador');
+    await as(db,A,()=>db.query('update public.personagens set pv_atual=9 where id=$1',[id]));
+    await ability(db,id,'parrudo');
+    assert.equal((await get(db,id)).pv_atual,14);
+    await ability(db,id,'parrudo');
+    assert.equal((await get(db,id)).pv_atual,14);
+    await origin(db,id,'Cobaia','Reflexos');
+    assert.equal((await get(db,id)).bi_maximo,12);
+    await as(db,A,()=>db.query('update public.personagens set bi_atual=10 where id=$1',[id]));
+    await origin(db,id,'Policial','Pontaria');
+    assert.equal((await get(db,id)).bi_maximo,10);
+    const before=await get(db,id);
+    await assert.rejects(ability(db,id,'armeiro'),/BI atual excede/);
+    assert.deepEqual(await get(db,id),before);
+    await assert.rejects(ability(db,id,null),/BI atual excede/);
+    await as(db,A,()=>db.query('update public.personagens set bi_atual=0 where id=$1',[id]));
+    await ability(db,id,'armeiro');
+    const after=await get(db,id);
+    assert.equal(after.pv_maximo,14);assert.equal(after.pv_atual,9);
+    assert.equal(after.bi_maximo,7);assert.equal(after.defesa,14);
+  }finally{await db.close();}
+});
+test('Habilidade: autorizacao, escrita direta negada e somente rascunho nivel 1',async()=>{
+  const db=await setup();
+  try{
+    const id=await create(db);
+    for(const user of [B,M,X])await assert.rejects(ability(db,id,'rolamento',user),/acesso negado/);
+    await assert.rejects(ability(db,id,'rolamento',null),/Autenticacao/);
+    await assert.rejects(as(db,null,()=>db.query('select public.definir_habilidade_rascunho($1,$2)',[id,'rolamento']),'anon'),/permission denied/);
+    await assert.rejects(as(db,A,()=>db.query("update public.personagens set habilidade_basica='rolamento' where id=$1",[id])),/permission denied/);
+    await db.query('update public.personagens set nivel=2 where id=$1',[id]);
+    await assert.rejects(ability(db,id,'rolamento'),/nivel 1/);
+    await db.query("update public.personagens set nivel=1,estado_ficha='completa' where id=$1",[id]);
+    await assert.rejects(ability(db,id,'rolamento'),/acesso negado/);
+    await db.query("update public.personagens set estado_ficha='rascunho' where id=$1",[id]);
+    await db.query('delete from public.mesa_participantes where mesa_id=$1 and usuario_id=$2',[T,A]);
+    await assert.rejects(ability(db,id,'rolamento'),/acesso negado/);
+  }finally{await db.close();}
+});
 
 test('Pericias: orcamentos 4/5/3, grau gratuito e recursos preservados', async()=>{
   const db=await setup();
