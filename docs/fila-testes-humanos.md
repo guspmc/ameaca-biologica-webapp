@@ -59,3 +59,9 @@ Gus confirmou que F5 retorna ao Misto na prévia e enviou controles visíveis no
 ## Atualização: preferências agora salvas no TESTE
 
 Checkpoint aplicado e smoke remoto aprovado; Salvar Preferências conectado somente no modo teste. Rodada humana disponível: salvar Manual/F5; voltar Misto e conferir escolhas preservadas; salvar Misto/F5; outra ficha independente; alterações sem salvar descartadas no F5. Recursos e inventário não mudam. Conflito entre sessões e celular continuam enfileirados. Roteiro detalhado: relatorio-funcionamento-integrado.md.
+
+
+## Atualização: preferências persistidas aprovadas; preparação local do inventário
+
+Gus respondeu Funciona. Comprovado. ao roteiro de salvar/F5, alternar modos preservando opções e conferir outra ficha independente. Rodada de persistência encerrada.
+O planejador de instâncias iniciais do inventário está somente em módulo local e testes; nenhum teste humano novo é solicitado. Rodada de inventário ativo será agrupada ao final da integração autorizada. Conflito real entre sessões, troca de kit e celular seguem enfileirados conforme relevância da próxima etapa. Relatório: inventario-criacao-instancias.md.
