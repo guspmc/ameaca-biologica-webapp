@@ -49,3 +49,8 @@ Novo item opcional da rodada agrupada: conferir resumo no topo da revisão e o a
 
 Gus confirmou explicitamente que os atalhos levam às seções exatas. Resumo, navegação e plano vazio encerrados.
 Nova rodada agrupada: na revisão, abrir Funcionamento da ficha; verificar Misto com três habilitados e BI/Durabilidade a definir; mudar uma opção, alternar Manual e voltar Misto (opção preservada); Automático habilita todos os controles da prévia; F5 descarta escolhas locais e não altera recursos. Não há salvamento ou automação real nesta prévia. Ver relatorio-funcionamento-previo.md.
+
+
+## Atualização: F5 da prévia confirmado; persistência preparada localmente
+
+Gus confirmou que F5 retorna ao Misto na prévia e enviou controles visíveis nos três modos. Próximo roteiro depende de checkpoint e integração da persistência; não testar salvamento remoto ainda. Passos futuros completos em contrato-persistencia-funcionamento.md. Continuam pendências independentes anteriores, sem repetir casos aprovados.

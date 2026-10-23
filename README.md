@@ -99,3 +99,5 @@ Revisão da criação integrada às compras salvas: [resultado e pendência visu
 Resumo de pendências e plano vazio inicial: [evidências](docs/relatorio-resumo-revisao.md).
 
 Prévia local de funcionamento: [resultado](docs/relatorio-funcionamento-previo.md). Próxima ativação: [contrato e dependências](docs/contrato-ativacao-ficha.md).
+
+Persistência do funcionamento pronta para revisão, sem aplicação remota: [contrato, testes e operação do checkpoint](docs/contrato-persistencia-funcionamento.md).

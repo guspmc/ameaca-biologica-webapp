@@ -37,3 +37,13 @@ test('revisao renderizada resume escolhas, destaca pendencias e mantem rascunho 
  assert.ok(vazio.includes('Plano inicial sem compras'));
  assert.ok(!vazio.includes('Salve o plano para confirmar'));
 });
+
+test('funcionamento preparado para salvar: renderiza estado carregado sem chamada de rede',async()=>{
+ const {default:Funcionamento}=await import(modulos.FuncionamentoPrevio);
+ const inicial={modo:'manual',preferenciasMisto:{municao:false,inventario:true,duracaoEfeitos:true,biInfectante:null,durabilidadeAparar:false}};
+ const antes=structuredClone(inicial);let chamadas=0;
+ const html=renderToStaticMarkup(React.createElement(Funcionamento,{inicial,revisaoInicial:4,aoSalvar:async()=>{chamadas++;return 5;}}));
+ assert.ok(html.includes('Salvar Preferências'));assert.ok(html.includes('Versão carregada: 4'));
+ assert.ok(html.includes('a configuração já salva permanece'));assert.ok(html.includes('Munição após disparos registrados: Desabilitado'));
+ assert.equal(chamadas,0);assert.deepEqual(inicial,antes);
+});
