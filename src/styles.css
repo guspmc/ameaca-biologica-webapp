@@ -248,3 +248,5 @@ footer { margin-top:45px; border-top:1px solid #dce2df; padding-top:19px; color:
 .previa-compras{margin:16px 0}.busca-compras{display:grid;gap:6px;margin:12px 0}.busca-compras input{width:100%;box-sizing:border-box;padding:10px;border:1px solid #bac5c7;border-radius:5px}.compra-linha{display:grid;gap:6px;border-top:1px solid #c9b99f;padding:12px 0}.compra-linha>div{display:flex;gap:12px;align-items:center;flex-wrap:wrap}.compra-linha small{color:#746655}.saldo-compras{line-height:1.5}
 
 .revisao-atalhos{display:flex;flex-wrap:wrap;gap:.5rem;margin:1rem 0}.revisao-atalhos p{flex-basis:100%;margin:0}.revisao-atalhos button{white-space:normal;max-width:100%}
+
+.funcionamento-previo{border:1px solid #c6b79b;padding:.75rem;margin:1rem 0}.funcionamento-previo summary{font-weight:700;cursor:pointer}.funcionamento-previo label{display:grid;gap:.35rem}.funcionamento-opcoes{display:grid;gap:1rem;margin:1rem 0}.funcionamento-previo select{max-width:100%;width:100%;min-height:44px}.funcionamento-previo small{font-size:.8rem;line-height:1.5}

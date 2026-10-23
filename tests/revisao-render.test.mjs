@@ -7,8 +7,8 @@ import ts from 'typescript';
 import React from 'react';
 import {renderToStaticMarkup} from 'react-dom/server';
 const require=createRequire(import.meta.url),modulos={};
-for(const nome of ['textoPersonagem','origens','habilidades','pericias','equipamento','comprasIniciais','conferenciaCriacao','RevisaoCriacao']){
- const ext=nome==='RevisaoCriacao'?'.tsx':'.ts';
+for(const nome of ['textoPersonagem','origens','habilidades','pericias','equipamento','comprasIniciais','conferenciaCriacao','funcionamentoFicha','FuncionamentoPrevio','RevisaoCriacao']){
+ const ext=['RevisaoCriacao','FuncionamentoPrevio'].includes(nome)?'.tsx':'.ts';
  let {outputText:s}=ts.transpileModule(await readFile(new URL('../src/'+nome+ext,import.meta.url),'utf8'),{compilerOptions:{module:ts.ModuleKind.ESNext,target:ts.ScriptTarget.ES2022,jsx:ts.JsxEmit.ReactJSX}});
  s=s.replaceAll("'react'",JSON.stringify(pathToFileURL(require.resolve('react')).href)).replaceAll('"react/jsx-runtime"',JSON.stringify(pathToFileURL(require.resolve('react/jsx-runtime')).href));
  for(const [n,uri] of Object.entries(modulos))s=s.replaceAll("'./"+n+"'",JSON.stringify(uri));
@@ -27,6 +27,12 @@ test('revisao renderizada resume escolhas, destaca pendencias e mantem rascunho 
  assert.ok(pendente.includes('aria-label="Pendências da criação"'));
  assert.ok(pendente.includes('Habilidade Básica · Pendente'));
  assert.equal(chamadas,0);
+ assert.ok(completo.includes('Funcionamento da ficha · prévia não salva'));
+ assert.ok(completo.includes('Misto'));
+ assert.ok(completo.includes('BI após ataque infectante: A definir'));
+ assert.ok(completo.includes('Durabilidade ao Aparar: A definir'));
+ assert.ok(!completo.includes('Salvar Funcionamento'));
+ assert.ok(completo.includes('descartada ao fechar a ficha'));
  const vazio=render({...ficha,equipamento_inicial:'C',compras_iniciais:{},revisao_compras:0});
  assert.ok(vazio.includes('Plano inicial sem compras'));
  assert.ok(!vazio.includes('Salve o plano para confirmar'));

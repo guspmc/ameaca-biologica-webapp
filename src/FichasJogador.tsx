@@ -452,7 +452,7 @@ export default function FichasJogador({supabase,usuarioId,mesas,sinalAtualizacao
             <h3><span>04</span> Inventário <small>AB-04</small></h3>
             <EquipamentoRascunho key={ficha.id} supabase={supabase} ficha={ficha} dona={dona} recarregar={carregar}/>
           </section>
-          {dona&&ficha.estado_ficha==='rascunho'&&<RevisaoCriacao ficha={ficha} irPara={irPara}/>}
+          {dona&&ficha.estado_ficha==='rascunho'&&<RevisaoCriacao key={ficha.id} ficha={ficha} irPara={irPara}/>}
           <div className="ficha-rodape">FICHA DO JOGADOR · ALFA 0.4 · RASCUNHO SALVO NO BANCO</div>
         </div>
         <nav className="ficha-nav" aria-label="Atalhos da ficha">

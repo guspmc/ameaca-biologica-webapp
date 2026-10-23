@@ -43,3 +43,9 @@ Próxima conferência: F5, abrir Revisão da criação e comparar compras/saldo/
 
 Gus confirmou e mostrou Compras do Personalizado sem compras, 3/3 moedas, 3/5 espaços e equipamento inicial consistente. Conferência visual anterior concluída.
 Novo item opcional da rodada agrupada: conferir resumo no topo da revisão e o atalho Habilidade Básica pendente, que deve levar a Características. Sem repetir compras, bloqueio ou limpeza. Caso inicial de plano vazio/revisão 0 agora é conferido sem exigir salvamento que não muda a versão. Relatório: relatorio-resumo-revisao.md.
+
+
+## Atualização: atalhos aprovados; prévia de funcionamento enfileirada
+
+Gus confirmou explicitamente que os atalhos levam às seções exatas. Resumo, navegação e plano vazio encerrados.
+Nova rodada agrupada: na revisão, abrir Funcionamento da ficha; verificar Misto com três habilitados e BI/Durabilidade a definir; mudar uma opção, alternar Manual e voltar Misto (opção preservada); Automático habilita todos os controles da prévia; F5 descarta escolhas locais e não altera recursos. Não há salvamento ou automação real nesta prévia. Ver relatorio-funcionamento-previo.md.

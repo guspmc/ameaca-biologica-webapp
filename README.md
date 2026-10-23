@@ -97,3 +97,5 @@ Disponibilidade integrada somente ao TESTE após checkpoint: [evidências e roda
 Revisão da criação integrada às compras salvas: [resultado e pendência visual](docs/relatorio-revisao-compras.md).
 
 Resumo de pendências e plano vazio inicial: [evidências](docs/relatorio-resumo-revisao.md).
+
+Prévia local de funcionamento: [resultado](docs/relatorio-funcionamento-previo.md). Próxima ativação: [contrato e dependências](docs/contrato-ativacao-ficha.md).
