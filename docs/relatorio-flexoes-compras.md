@@ -42,3 +42,7 @@ Compra persistida depende de contrato de catálogo/acesso e gravação validada 
 ## PRÓXIMO PASSO
 
 Validar flexões/prévia numa única sessão e preparar contrato local de compras persistidas: catálogo, acesso, saldo, quantidade, capacidade, idempotência e finalização. Manter checkpoints para gravação/permissões. Preservar pendências de modo Misto, dez jogadores/dez ativas, concorrência estrita, readmissão, resumo do Mestre e histórico da 006 em produção.
+
+## Confirmação humana recebida
+
+Gus confirmou flexões femininas, teste de compras e busca funcionais. Capturas mostram Investigadora/Armeira e busca por colete; não são evidência de persistência, ainda indisponível. Próxima preparação em contrato-compras-persistidas.md, sem nova solicitação de repetir os testes já aprovados.

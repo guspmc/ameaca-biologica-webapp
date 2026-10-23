@@ -34,6 +34,7 @@ async function setup({ proposal = true } = {}) {
   await db.query('insert into auth.users values ($1),($2),($3),($4)', [A, B, M, X]);
   await db.query('insert into public.mesas(id,nome,mestre_id) values ($1,$2,$3),($4,$5,$3)',
     [T, 'Mesa ficticia A', M, U, 'Mesa ficticia B']);
+  await db.query(`insert into app_private.disponibilidade_compra_inicial(mesa_id,item_id) select m,i from unnest(array[$1::uuid,$2::uuid]) m cross join unnest(array['bastao','faca','colete-acolchoado','colete-leve','lanterna-simples','municao-9mm']) i`,[T,U]);
   await db.query(`insert into public.mesa_participantes(mesa_id,usuario_id,papel)
     values ($1,$2,'jogador'),($1,$3,'jogador'),($4,$2,'jogador')`, [T, A, B, U]);
   return db;
@@ -467,3 +468,74 @@ test('Identidade: autor admitido somente; RLS protege leitura; escrita direta e 
   await db.query('delete from public.mesa_participantes where mesa_id=$1 and usuario_id=$2',[T,A]);await assert.rejects(identity(db,id,'Removido',{}),/acesso negado/);
  }finally{await db.close();}
 });
+
+async function purchase(db,id,plan,revision=0,user=A){
+ return as(db,user,async()=>(await db.query('select public.salvar_compras_rascunho($1,$2,$3) rev',[id,JSON.stringify(plan),revision])).rows[0].rev);
+}
+test('Compras locais: salva plano normalizado, preserva recursos e repeticao nao duplica',async()=>{
+ const db=await setup();try{
+  const id=await create(db);await equipment(db,id,'C');const before=await get(db,id);
+  assert.equal(await purchase(db,id,{bastao:1,'colete-acolchoado':1,faca:0}),1);
+  assert.equal(await purchase(db,id,{bastao:1,'colete-acolchoado':1},0),1);
+  const row=await get(db,id);assert.deepEqual(row.compras_iniciais,{bastao:1,'colete-acolchoado':1});assert.equal(row.revisao_compras,1);
+  assert.deepEqual({...row,compras_iniciais:{},revisao_compras:0},before);
+  await assert.rejects(purchase(db,id,{faca:1},0),/desatualizada/);
+  assert.deepEqual(await get(db,id),row);
+  assert.equal(await purchase(db,id,{'municao-9mm':3},1),2);
+  assert.equal(await purchase(db,id,{'municao-9mm':3},1),2);
+  await assert.rejects(purchase(db,id,{'municao-9mm':3},99),/desatualizada/);
+ }finally{await db.close();}
+});
+test('Compras locais: saldo e pilhas oficiais no servidor; capacidade insuficiente nao grava',async()=>{
+ const db=await setup();try{
+  const id=await as(db,A,async()=>(await db.query("select public.criar_personagem_rascunho($1,'Fixture compras','Operador',0,3,3,1) id",[T])).rows[0].id);
+  await equipment(db,id,'C');
+  await assert.rejects(purchase(db,id,{'colete-leve':2}),/Saldo/);
+  await assert.rejects(purchase(db,id,{bastao:1,'colete-acolchoado':1}),/Capacidade/);
+  assert.equal((await get(db,id)).revisao_compras,0);
+  // 45 tiros: dois Espacos; sem moedas restantes; mais dois itens comuns = quatro.
+  assert.equal(await purchase(db,id,{'municao-9mm':3}),1);
+  assert.deepEqual((await get(db,id)).compras_iniciais,{'municao-9mm':3});
+  for(const plan of [null,[],{Hatchet:1},{bastao:1.5},{bastao:-1},{bastao:4},{bastao:'1'},{bastao:null}])
+   await assert.rejects(purchase(db,id,plan,1),/invalido|invalida/);
+  assert.equal((await get(db,id)).revisao_compras,1);
+ }finally{await db.close();}
+});
+test('Compras locais: trocar kit exige limpeza explicita; contrato nao permite comprar em B ou nivel 2',async()=>{
+ const db=await setup();try{
+  const id=await create(db);await equipment(db,id,'C');await purchase(db,id,{faca:1});
+  await assert.rejects(equipment(db,id,'B'),/compras vazias/);
+  assert.equal((await get(db,id)).equipamento_inicial,'C');
+  await equipment(db,id,'C');assert.deepEqual((await get(db,id)).compras_iniciais,{faca:1});
+  await purchase(db,id,{},1);await equipment(db,id,'B');
+  await assert.rejects(purchase(db,id,{} ,2),/Personalizado/);
+  await equipment(db,id,'C');await db.query('update public.personagens set nivel=2 where id=$1',[id]);
+  await assert.rejects(purchase(db,id,{},2),/nivel 1/);
+  await db.query('update public.personagens set nivel=1,classe=null where id=$1',[id]);await assert.rejects(purchase(db,id,{},2),/nivel 1/);
+ }finally{await db.close();}
+});
+test('Compras locais: propriedade, admissao e estado validados; colunas e anon protegidos',async()=>{
+ const db=await setup();try{
+  const id=await create(db);await equipment(db,id,'C');
+  for(const user of [B,M,X])await assert.rejects(purchase(db,id,{faca:1},0,user),/acesso negado/);
+  await assert.rejects(purchase(db,id,{faca:1},0,null),/Autenticacao/);
+  await assert.rejects(as(db,null,()=>db.query("select public.salvar_compras_rascunho($1,'{}',0)",[id]),'anon'),/permission denied/);
+  for(const assignment of ["compras_iniciais='{}'",'revisao_compras=5'])await assert.rejects(as(db,A,()=>db.query('update public.personagens set '+assignment+' where id=$1',[id])),/permission denied/);
+  await db.query("update public.personagens set estado_ficha='completa' where id=$1",[id]);await assert.rejects(purchase(db,id,{}),/acesso negado/);
+  await db.query("update public.personagens set estado_ficha='rascunho' where id=$1",[id]);await db.query('delete from public.mesa_participantes where mesa_id=$1 and usuario_id=$2',[T,A]);
+  await assert.rejects(purchase(db,id,{}),/acesso negado/);
+ }finally{await db.close();}
+});
+
+test('Compras locais: disponibilidade e controlada no servidor e nao pode ser ampliada pelo jogador',async()=>{
+ const db=await setup();try{
+  const id=await create(db);await equipment(db,id,'C');
+  await db.query("delete from app_private.disponibilidade_compra_inicial where mesa_id=$1 and item_id='faca'",[T]);
+  await assert.rejects(purchase(db,id,{faca:1}),/indisponivel/);
+  assert.deepEqual((await get(db,id)).compras_iniciais,{});
+  await assert.rejects(as(db,A,()=>db.query("insert into app_private.disponibilidade_compra_inicial values ($1,'faca')",[T])),/permission denied/);
+  assert.equal(await purchase(db,id,{bastao:1}),1);
+ }finally{await db.close();}
+});
+
+test('smoke transacional de Compras e exercitado localmente com rollback',async()=>{const db=await setup();try{await db.exec(await readFile(new URL('staging-compras.sql',import.meta.url),'utf8'));}finally{await db.close();}});

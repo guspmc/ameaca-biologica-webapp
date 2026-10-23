@@ -84,3 +84,5 @@ Novo incremento: [equipamento inicial no rascunho](docs/equipamento-inicial.md),
 Seguir o [fluxo autônomo autorizado](docs/fluxo-autonomo-supervisionado.md). A [rodada de revisão da criação](docs/relatorio-revisao-criacao.md) adiciona conferência de escolhas salvas, fórmulas e flexão de Classe, com 32 testes. Sem mudança no banco nesta rodada; finalização segue indisponível.
 
 [Flexões e prévia local de compras](docs/relatorio-flexoes-compras.md): Investigadora/Armeira e demais termos, simulador não salvo da opção C. Sem alteração de banco ou permissões.
+
+[Contrato local de compras persistidas](docs/contrato-compras-persistidas.md): proposta com 43 testes integrados, ainda NÃO aplicada em nenhum Supabase remoto. Não executar db push/reparação de histórico automaticamente. Prévia continua não salva.
