@@ -91,3 +91,5 @@ Seguir o [fluxo autônomo autorizado](docs/fluxo-autonomo-supervisionado.md). A 
 Estado de compras persistidas no TESTE: [implementação, evidências e pendências humanas](docs/relatorio-compras-integradas.md).
 
 Disponibilidade por Mesa: [preparação local](docs/relatorio-disponibilidade-local.md) e [fila única de testes humanos](docs/fila-testes-humanos.md). Painel ainda isolado, sem nova aplicação remota.
+
+Disponibilidade integrada somente ao TESTE após checkpoint: [evidências e rodada humana](docs/relatorio-disponibilidade-integrada.md).

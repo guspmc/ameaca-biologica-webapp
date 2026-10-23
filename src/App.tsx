@@ -234,7 +234,7 @@ function Lobby({ supabase, sessao }: { supabase: SupabaseClient; sessao: Session
     </div>
     <FichasJogador supabase={supabase} usuarioId={sessao.user.id} mesas={mesas}
       sinalAtualizacao={sinalAtualizacao}/>
-    <Participantes supabase={supabase} usuarioId={sessao.user.id} mesas={mesas}
+    <Participantes permitirDisponibilidade={import.meta.env.MODE==='teste'} supabase={supabase} usuarioId={sessao.user.id} mesas={mesas}
       sinalAtualizacao={sinalAtualizacao} aoAtualizarMesas={() => atualizar(true)}/>
     <Convites supabase={supabase} usuarioId={sessao.user.id} mesas={mesas}
       sinalAtualizacao={sinalAtualizacao} aoAtualizarMesas={() => atualizar(true)}/>

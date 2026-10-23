@@ -9,7 +9,6 @@ async function setup(){
  await db.exec("create role anon;create role authenticated;create schema auth;create table auth.users(id uuid primary key);create function auth.uid() returns uuid language sql stable as $$ select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid $$;grant usage on schema auth to anon,authenticated;grant execute on function auth.uid() to anon,authenticated;create publication supabase_realtime;");
  const dir=new URL('../supabase/migrations/',import.meta.url);
  for(const f of (await readdir(dir)).filter(f=>f.endsWith('.sql')).sort())await db.exec(await readFile(new URL(f,dir),'utf8'));
- await db.exec(await readFile(new URL('../supabase/proposals/disponibilidade-mestre.sql',import.meta.url),'utf8'));
  await db.query('insert into auth.users values($1),($2),($3)',[M,J,X]);
  await db.query("insert into public.mesas(id,nome,mestre_id) values($1,'Fixture M', $2),($3,'Fixture X',$4)",[T,M,U,X]);
  await db.query("insert into public.mesa_participantes(mesa_id,usuario_id,papel) values($1,$2,'jogador')",[T,J]);
@@ -59,3 +58,5 @@ test('Disponibilidade proposta: bloquear preserva compras salvas e impede novo p
  await as(db,J,"select public.salvar_compras_rascunho($1,'{}',1)",[id]);
  }finally{await db.close();}
 });
+
+test('smoke remoto de disponibilidade passa localmente com rollback',async()=>{const db=await setup();try{await db.exec(await readFile(new URL('staging-disponibilidade.sql',import.meta.url),'utf8'));}finally{await db.close();}});

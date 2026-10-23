@@ -23,3 +23,8 @@ Aplicar as duas funções exige autorização específica para o TESTE; produç�
 Revisar proposta e conferir fixture. Depois decidir checkpoint para adicionar as funções exclusivamente ao TESTE; a instalação não habilita nenhum item, e o Mestre fará escolhas por Mesa explicitamente. PR permanece em rascunho; sem merge ou publicação.
 
 Referência de permissões e search_path consultada: https://supabase.com/docs/guides/database/functions . Índice de changelog consultado; preparação usa PL/pgSQL e RPC já adotados, sem novo recurso de plataforma.
+
+
+## Atualização após checkpoint
+
+Preparação acima preservada como histórico. Gus confirmou o painel fictício e autorizou as duas funções exclusivamente no TESTE. Aplicação, permissões e smoke com ROLLBACK verificados; painel conectado no modo teste. Estado atual: relatorio-disponibilidade-integrada.md.
