@@ -70,3 +70,5 @@ Execute `pnpm test` para recriar PostgreSQL em memória com fixtures fictícias 
 Consulte [o checkpoint e roteiro humano](docs/checkpoint-privacidade-rascunhos.md). As seções antigas acima descrevem a Alfa anterior; o relatório de auditoria preserva o estado observado em produção, sem afirmar que esta proposta foi aplicada.
 
 O [ambiente gratuito de teste](docs/ambiente-de-teste.md) já recebeu as sete migrações e passou no teste SQL com rollback. Para a prévia isolada, preencha `.env.teste` usando `.env.example` e execute `pnpm run dev:teste`. A faixa AMBIENTE DE TESTE identifica essa versão. Ela ignora conexão guardada no navegador e não aceita o projeto de produção como alternativa. Produção permanece sem a nova proposta.
+
+Incremento de 23/10: [distribuição dos Pontos de Perícia da Classe](docs/pericias-criacao.md), com oito migrações no ambiente de teste e 16 testes automatizados. Fichas continuam em rascunho de nível 1; Habilidades, equipamento e finalização ainda estão pendentes. Aplicar a migração aprovada no destino antes de publicar esta interface; ela seleciona a nova coluna.

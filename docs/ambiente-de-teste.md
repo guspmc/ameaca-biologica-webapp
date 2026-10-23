@@ -1,5 +1,7 @@
 # Ambiente de teste gratuito
 
+Atualização de 23/10/2026: [Perícias da criação](pericias-criacao.md) implementadas e aplicadas somente no projeto de teste. São agora oito migrações; o relato das sete abaixo preserva o checkpoint anterior. Gus também confirmou mudança imediata do nome da Mesa e isolamento da Mesa Reservada após F5. São evidências favoráveis ao Realtime nesse fluxo e ao isolamento entre Mesas; concorrência e eventos específicos de ficha permanecem pendentes.
+
 Preparado em 22/10/2026, com autorização do Gus para continuar somente a custo zero.
 
 ## Identificação e custo

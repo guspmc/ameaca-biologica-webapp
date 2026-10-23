@@ -67,6 +67,93 @@ async function get(db, id) {
 async function visible(db, user) {
   return as(db, user, async () => (await db.query('select id from public.personagens order by id')).rows.map(r => r.id));
 }
+async function skills(db,id,points,user=A) {
+  return as(db,user,()=>db.query('select public.definir_pericias_rascunho($1,$2::jsonb)',[id,JSON.stringify(points)]));
+}
+
+test('Pericias: orcamentos 4/5/3, grau gratuito e recursos preservados', async()=>{
+  const db=await setup();
+  try{
+    for(const [classe,points,over] of [
+      ['Agente',{'Pontaria':1,'Luta':2,'Reflexos':1},{'Pontaria':1,'Luta':2,'Reflexos':2}],
+      ['Autodidata',{'Pontaria':1,'Luta':2,'Medicina':2},{'Pontaria':1,'Luta':2,'Medicina':2,'Vontade':1}],
+      ['Operador',{'Pontaria':1,'Luta':2},{'Pontaria':1,'Luta':2,'Fortitude':1}],
+    ]){
+      const id=await create(db,A,T,classe);
+      await origin(db,id,'Policial','Pontaria');
+      const before=await get(db,id);
+      await skills(db,id,points);
+      const after=await get(db,id);
+      assert.deepEqual(after.pontos_pericia_classe,points);
+      assert.deepEqual({...after,pontos_pericia_classe:{}},before);
+      await assert.rejects(skills(db,id,over),/excedem/);
+      assert.deepEqual((await get(db,id)).pontos_pericia_classe,points);
+      await assert.rejects(skills(db,id,{'Pontaria':2}),/Mestre/);
+      await skills(db,id,{'Luta':0});
+      assert.deepEqual((await get(db,id)).pontos_pericia_classe,{});
+    }
+  }finally{await db.close();}
+});
+
+test('Pericias: a outra opcao de Origem amplia a lista; nao concede segundo treinamento gratuito',async()=>{
+  const db=await setup();
+  try{
+    const id=await create(db,A,T,'Operador');
+    await origin(db,id,'Acadêmico','Investigação');
+    await skills(db,id,{'Medicina':2,'Luta':1});
+    assert.equal((await get(db,id)).pontos_pericia_classe.Medicina,2);
+    await assert.rejects(skills(db,id,{'Acrobacia':1}),/invalida/);
+    await skills(db,id,{});
+    await origin(db,id,'Amnésico','Medicina','Vontade');
+    await skills(db,id,{'Vontade':2,'Luta':1});
+    // Treinamento gratuito fora da lista nao passa a autorizar pontos da Classe.
+    await assert.rejects(skills(db,id,{'Medicina':1}),/invalida/);
+    assert.equal((await get(db,id)).pericia_origem_treinada,'Medicina');
+  }finally{await db.close();}
+});
+
+test('Pericias: rejeita payloads e estados invalidos sem atualizar parcialmente',async()=>{
+  const db=await setup();
+  try{
+    const id=await create(db);
+    await assert.rejects(skills(db,id,{}),/Origem/);
+    await origin(db,id,'Policial','Pontaria');
+    await skills(db,id,{'Luta':1});
+    const before=await get(db,id);
+    for(const input of [null,[],1,{'Luta':'1'},{'Luta':true},{'Luta':null},{'Luta':1.5},{'Luta':-1},{'Luta':3},{'Outra':0},{'Luta':1,'Medicina':1}]){
+      await assert.rejects(skills(db,id,input),/objeto|invalida/);
+      assert.deepEqual(await get(db,id),before);
+    }
+    for(const args of [['Cobaia','Reflexos'],['Policial','Percepção']]){
+      await assert.rejects(origin(db,id,...args),/distribuicao vazia/);
+      assert.deepEqual(await get(db,id),before);
+    }
+    await origin(db,id,'Policial','Pontaria');
+    assert.deepEqual(await get(db,id),before);
+    await skills(db,id,{});
+    await origin(db,id,'Cobaia','Reflexos');
+    assert.equal((await get(db,id)).origem,'Cobaia');
+    await db.query('update public.personagens set nivel=2 where id=$1',[id]);
+    await assert.rejects(skills(db,id,{}),/nivel 1/);
+  }finally{await db.close();}
+});
+
+test('Pericias: RPC somente do jogador admitido, escrita direta e anon negados',async()=>{
+  const db=await setup();
+  try{
+    const id=await create(db);
+    await origin(db,id,'Policial','Pontaria');
+    for(const user of [B,M,X]) await assert.rejects(skills(db,id,{'Luta':1},user),/acesso negado/);
+    await assert.rejects(skills(db,id,{},null),/Autenticacao/);
+    await assert.rejects(as(db,null,()=>db.query('select public.definir_pericias_rascunho($1,$2::jsonb)',[id,'{}']),'anon'),/permission denied/);
+    await assert.rejects(as(db,A,()=>db.query("update public.personagens set pontos_pericia_classe='{}'::jsonb where id=$1",[id])),/permission denied/);
+    await db.query("update public.personagens set estado_ficha='completa' where id=$1",[id]);
+    await assert.rejects(skills(db,id,{}),/acesso negado/);
+    await db.query("update public.personagens set estado_ficha='rascunho' where id=$1",[id]);
+    await db.query('delete from public.mesa_participantes where mesa_id=$1 and usuario_id=$2',[T,A]);
+    await assert.rejects(skills(db,id,{}),/acesso negado/);
+  }finally{await db.close();}
+});
 
 test('RLS: reproduz vazamento antigo; proposta protege rascunho sem ocultar ficha completa do Mestre', async () => {
   for (const proposal of [false, true]) {
