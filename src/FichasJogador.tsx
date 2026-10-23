@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { PONTOS_CLASSE, PERICIAS_CLASSE, grauPericia, bonusTreinamento, totalPontos } from './pericias';
 import { HABILIDADES_BASICAS } from './habilidades';
+import EquipamentoRascunho from './EquipamentoRascunho';
 
 type Mesa = { id: string; nome: string; mestre_id: string };
 type Classe = 'Agente' | 'Autodidata' | 'Operador';
@@ -17,6 +18,7 @@ type Personagem = {
   estado_ficha:string;
   pontos_pericia_classe:Record<string,number>;
   habilidade_basica:string|null;
+  equipamento_inicial:string|null;
 };
 type Props = {
   supabase:SupabaseClient; usuarioId:string; mesas:Mesa[];
@@ -97,7 +99,7 @@ export default function FichasJogador({supabase,usuarioId,mesas,sinalAtualizacao
 
   const carregar=useCallback(async()=>{
     const {data,error}=await supabase.from('personagens')
-      .select('id,nome,mesa_id,jogador_id,classe,origem,pericia_origem_treinada,pericia_origem_extra,pontos_pericia_classe,habilidade_basica,nivel,forca,agilidade,vigor,astucia,pv_atual,pv_maximo,sa_atual,sa_maximo,bi_atual,bi_maximo,defesa,estado_ficha')
+      .select('id,nome,mesa_id,jogador_id,classe,origem,pericia_origem_treinada,pericia_origem_extra,pontos_pericia_classe,habilidade_basica,equipamento_inicial,nivel,forca,agilidade,vigor,astucia,pv_atual,pv_maximo,sa_atual,sa_maximo,bi_atual,bi_maximo,defesa,estado_ficha')
       .order('criado_em',{ascending:false});
     if(error)setErro('Erro ao carregar personagens: '+error.message);
     else{setPersonagens((data??[]) as Personagem[]);setErro('');}
@@ -258,7 +260,7 @@ export default function FichasJogador({supabase,usuarioId,mesas,sinalAtualizacao
       <section className="cartao cartao-padrao">
         <p className="rotulo">NOVO SOBREVIVENTE</p>
         <h3>Criar rascunho de personagem</h3>
-        <p className="secundario">Criação inicial por pontos do Arquivo do Jogador v1.0. Após criar, escolha Origem, Perícias e uma Habilidade Básica. Equipamento e finalização ainda estão pendentes.</p>
+        <p className="secundario">Criação inicial por pontos do Arquivo do Jogador v1.0. Após criar, escolha Origem, Perícias, uma Habilidade Básica e equipamento inicial. A finalização ainda está pendente.</p>
         {minhasMesas.length===0 ? <p className="dica">Você precisa ter sido aprovado como jogador em uma Mesa para criar um personagem.</p>:
           <form onSubmit={criar} className="formulario">
             <label>Mesa <select value={mesaEscolhida} onChange={e=>setMesaId(e.target.value)}>
@@ -453,17 +455,13 @@ export default function FichasJogador({supabase,usuarioId,mesas,sinalAtualizacao
             <div className="ficha-combate-bloco">
               <div className="ficha-combate-header">ARMAMENTO <small>AINDA NÃO CADASTRADO</small></div>
               <div className="ficha-combate-info"><div>ATAQUE<strong>—</strong></div><div>DANO<strong>—</strong></div><div>MUNIÇÃO<strong>—</strong></div></div>
-              <p>Modos de disparo, recarga, ataque e armas corpo a corpo serão habilitados quando existir equipamento real na ficha. Nenhuma rolagem ou consumo de munição é simulado aqui.</p>
+              <p>Modos de disparo, recarga, ataque e armas corpo a corpo serão habilitados na ficha ativa. Nenhuma rolagem ou consumo de munição é simulado aqui.</p>
             </div>
             <details><summary>Condições, ferimentos e Reanimação</summary><p>Os efeitos completos serão ligados às regras oficiais nas próximas versões.</p></details>
           </section>
           <section className="ficha-secao" id="ficha-itens">
             <h3><span>04</span> Inventário <small>AB-04</small></h3>
-            <div className="ficha-inventario-topo"><span>GRADE DE EQUIPAMENTOS</span><strong>0 / {4+ficha.forca+(ficha.origem==='Mochileiro'?1:0)} ESPAÇOS</strong></div>
-            <div className="ficha-inventario">
-              {Array.from({length:4+ficha.forca+(ficha.origem==='Mochileiro'?1:0)},(_,i)=><div className="ficha-slot" key={i} aria-label={'Espaço vazio '+(i+1)} />)}
-            </div>
-            <p className="ficha-dica">Itens Característicos não consomem Espaços. Equipamento Inicial, Expansões e itens de 2 Espaços ainda não estão configurados.</p>
+            <EquipamentoRascunho key={ficha.id} supabase={supabase} ficha={ficha} dona={dona} recarregar={carregar}/>
           </section>
           <div className="ficha-rodape">FICHA DO JOGADOR · ALFA 0.4 · RASCUNHO SALVO NO BANCO</div>
         </div>

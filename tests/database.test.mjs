@@ -381,3 +381,55 @@ test('criacao preserva formulas das tres Classes e rejeita entradas ilegais', as
     assert.equal((await get(db,legalZero.rows[0].id)).forca,0);
   } finally { await db.close(); }
 });
+
+async function equipment(db,id,option,user=A){return as(db,user,()=>db.query('select public.definir_equipamento_rascunho($1,$2)',[id,option]));}
+test('Equipamento: escolhas persistem sem acumular e preservam recursos, Origem e Habilidade',async()=>{
+  const db=await setup();try{
+    for(const classe of ['Agente','Autodidata','Operador']){
+      const id=await create(db,A,T,classe);
+      await origin(db,id,'Policial','Pontaria');
+      if(classe==='Operador')await ability(db,id,'parrudo');
+      const before=await get(db,id);
+      for(const opcao of ['A','A','B','C',null]){
+        await equipment(db,id,opcao);
+        const after=await get(db,id);
+        assert.equal(after.equipamento_inicial,opcao);
+        assert.deepEqual({...after,equipamento_inicial:null},{...before,equipamento_inicial:null});
+      }
+      for(const opcao of ['D','a','', 'A;select 1']){
+        await assert.rejects(equipment(db,id,opcao),/invalida/);
+        assert.equal((await get(db,id)).equipamento_inicial,null);
+      }
+    }
+  }finally{await db.close();}
+});
+test('Equipamento: capacidade validada no banco; reducao preserva escolha anterior',async()=>{
+  const db=await setup();try{
+    const id=await as(db,A,async()=>(await db.query("select public.criar_personagem_rascunho($1,'Fixture fragil','Operador',0,3,3,1) id",[T])).rows[0].id);
+    await equipment(db,id,'B');
+    await assert.rejects(equipment(db,id,'A'),/capacidade/);
+    assert.equal((await get(db,id)).equipamento_inicial,'B');
+    await origin(db,id,'Mochileiro','Atletismo');await equipment(db,id,'A');
+    await origin(db,id,'Policial','Pontaria');
+    assert.equal((await get(db,id)).equipamento_inicial,'A');
+    await assert.rejects(equipment(db,id,'A'),/capacidade/);
+    await equipment(db,id,'C');assert.equal((await get(db,id)).equipamento_inicial,'C');
+  }finally{await db.close();}
+});
+test('Equipamento: RPC exige autor admitido e rascunho nivel 1; coluna protegida',async()=>{
+  const db=await setup();try{
+    const id=await create(db);
+    for(const user of [B,M,X])await assert.rejects(equipment(db,id,'A',user),/acesso negado/);
+    await assert.rejects(equipment(db,id,'A',null),/Autenticacao/);
+    await assert.rejects(as(db,null,()=>db.query("select public.definir_equipamento_rascunho($1,'A')",[id]),'anon'),/permission denied/);
+    await assert.rejects(as(db,A,()=>db.query("update public.personagens set equipamento_inicial='A' where id=$1",[id])),/permission denied/);
+    await db.query('update public.personagens set nivel=2 where id=$1',[id]);
+    await assert.rejects(equipment(db,id,'A'),/nivel 1/);
+    await db.query("update public.personagens set nivel=1,estado_ficha='completa' where id=$1",[id]);
+    await assert.rejects(equipment(db,id,'A'),/acesso negado/);
+    await db.query("update public.personagens set estado_ficha='rascunho' where id=$1",[id]);
+    await db.query('delete from public.mesa_participantes where mesa_id=$1 and usuario_id=$2',[T,A]);
+    await assert.rejects(equipment(db,id,'A'),/acesso negado/);
+    assert.equal((await get(db,id)).equipamento_inicial,null);
+  }finally{await db.close();}
+});

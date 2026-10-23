@@ -238,3 +238,5 @@ footer { margin-top:45px; border-top:1px solid #dce2df; padding-top:19px; color:
 @media(max-width:850px){.grade-fichas{grid-template-columns:1fr}}
 @media(max-width:520px){.ficha-fundo{padding:0}.ficha{height:100dvh;width:100%;border-radius:0;border:0}.ficha-topo{padding:10px}.ficha-papel{padding:13px 15px 110px}.ficha-small-status{font-size:7px}.ficha-inventario{grid-auto-rows:62px}.ficha-pericia small{font-size:8px}}
 .ambiente-teste{margin:0;padding:12px 18px;text-align:center;background:#f3d991;color:#332710;font-weight:700;font-size:13px}
+
+.ficha-slot-item{display:flex;flex-direction:column;justify-content:center;gap:5px;padding:7px;color:#f5ebdc;min-width:0;overflow-wrap:anywhere}.ficha-slot-item strong{font-size:11px;line-height:1.2}.ficha-slot-item small{font-size:9px;line-height:1.2;color:#ded4c4}.ficha-caracteristicos{margin:18px 0}.ficha-caracteristicos>strong{font:10px monospace;color:#746655}.ficha-inventario{grid-auto-rows:minmax(100px,auto)}

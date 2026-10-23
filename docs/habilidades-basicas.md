@@ -31,3 +31,7 @@ Gus confirmou os testes humanos de Perícias em 23/10 e enviou capturas: Operado
 4. Na janela de Mestre, o rascunho continua invisível. Em Agente/Autodidata, confira as três opções da respectiva Classe.
 
 Concorrência estrita segue pendente. Readmissão ainda restaura rascunhos; exclusão exige decisão separada. Limites futuros de dez jogadores/dez ativas e reconciliação da migração 006 em produção permanecem pendentes. PR continua em rascunho, sem merge ou publicação.
+
+## Confirmação humana recebida
+
+Gus confirmou todo o roteiro em 23/10/2026. Capturas mostram Chris com Parrudo (20/20 PV, BI máxima 9) e Armeiro (15/15 PV, BI máxima 6), e painel do Mestre sem rascunhos. Repetição e persistência foram confirmadas pelo relato explícito do roteiro; as imagens complementam essa evidência. Próximo incremento: equipamento-inicial.md.
