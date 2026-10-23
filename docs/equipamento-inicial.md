@@ -41,3 +41,7 @@ Gus aprovou o roteiro humano de Habilidades Básicas: relatou tudo funcionar e f
 4. Se quiser, confira A na Autodidata (5 Espaços) e A/B no Agente (Sentinel Nine 19/19 ou JMB Hp3 13/13). Mestre continua sem rascunhos.
 
 Sem merge ou publicação. Concorrência estrita, limites de dez jogadores/dez ativas, readmissão que restaura rascunhos e histórico de produção da 006 seguem pendências separadas. Nenhuma exclusão automática foi implementada.
+
+## Confirmação humana recebida
+
+Gus relatou teste funcional e persistência após F5 em 23/10/2026. Capturas mostram opção B de Operador, LEMI 10/10, uma moeda, Erva/Lanterna, Característicos separados e ocupação 4/7. Mestre permanece sem rascunhos. Troca para C não é comprovada especificamente pelas capturas; relato confirma o roteiro geral. Próximo incremento: identidade-rascunho.md.

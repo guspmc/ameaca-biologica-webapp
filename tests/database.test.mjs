@@ -433,3 +433,37 @@ test('Equipamento: RPC exige autor admitido e rascunho nivel 1; coluna protegida
     assert.equal((await get(db,id)).equipamento_inicial,null);
   }finally{await db.close();}
 });
+
+async function identity(db,id,name,data,user=A){return as(db,user,()=>db.query('select public.definir_identidade_rascunho($1,$2,$3)',[id,name,JSON.stringify(data)]));}
+test('Identidade: textos opcionais, acentos, quebras de linha e limpeza explicita sem alterar mecanicas',async()=>{
+ const db=await setup();try{
+  const id=await create(db);const before=await get(db,id);
+  const data={idade:'28',genero:'Feminino',ocupacao:'Médica',apelido:'Águia',afiliacao:'Equipe fictícia',aparencia:'Cicatriz',personalidade:'Cautelosa',objetivo:'Resgatar o grupo',medo:'Isolamento',lacos:'Irmã',historia:'Linha 1\nLinha 2 <script>texto literal</script>'};
+  await identity(db,id,'  Personagem fictícia  ',data);
+  let row=await get(db,id);assert.equal(row.nome,'Personagem fictícia');assert.deepEqual(row.identidade,data);
+  assert.deepEqual({...row,nome:before.nome,identidade:{}},before);
+  await identity(db,id,'Personagem fictícia',{historia:'   '});assert.deepEqual((await get(db,id)).identidade,{});
+ }finally{await db.close();}
+});
+test('Identidade: entradas invalidas recusadas atomicamente e limites aceitos',async()=>{
+ const db=await setup();try{
+  const id=await create(db);await identity(db,id,'Nome válido',{historia:'h'.repeat(4000),idade:'i'.repeat(40),ocupacao:'o'.repeat(120),aparencia:'a'.repeat(1000)});
+  const before=await get(db,id);
+  for(const [name,data] of [['x',{}],['n'.repeat(61),{}],['Nome',[]],['Nome',null],['Nome',{pv_atual:'100'}],['Nome',{idade:12}],['Nome',{historia:null}],['Nome',{historia:'h'.repeat(4001)}],['Nome',{genero:'x'.repeat(41)}],['Nome',{ocupacao:'x'.repeat(121)}],['Nome',{medo:'x'.repeat(1001)}]]){
+   await assert.rejects(identity(db,id,name,data),/Nome|objeto|invalido|limite/);assert.deepEqual(await get(db,id),before);
+  }
+ }finally{await db.close();}
+});
+test('Identidade: autor admitido somente; RLS protege leitura; escrita direta e anon negados',async()=>{
+ const db=await setup();try{
+  const id=await create(db);
+  for(const user of [B,M,X])await assert.rejects(identity(db,id,'Alheio',{},user),/acesso negado/);
+  await assert.rejects(identity(db,id,'Anon',{},null),/Autenticacao/);
+  await assert.rejects(as(db,null,()=>db.query("select public.definir_identidade_rascunho($1,'Anon','{}')",[id]),'anon'),/permission denied/);
+  await assert.rejects(as(db,A,()=>db.query("update public.personagens set identidade='{}' where id=$1",[id])),/permission denied/);
+  assert.equal((await visible(db,M)).includes(id),false);assert.equal((await visible(db,B)).includes(id),false);
+  await db.query("update public.personagens set estado_ficha='completa' where id=$1",[id]);await assert.rejects(identity(db,id,'Completa',{}),/acesso negado/);
+  await db.query("update public.personagens set estado_ficha='rascunho' where id=$1",[id]);
+  await db.query('delete from public.mesa_participantes where mesa_id=$1 and usuario_id=$2',[T,A]);await assert.rejects(identity(db,id,'Removido',{}),/acesso negado/);
+ }finally{await db.close();}
+});

@@ -240,3 +240,5 @@ footer { margin-top:45px; border-top:1px solid #dce2df; padding-top:19px; color:
 .ambiente-teste{margin:0;padding:12px 18px;text-align:center;background:#f3d991;color:#332710;font-weight:700;font-size:13px}
 
 .ficha-slot-item{display:flex;flex-direction:column;justify-content:center;gap:5px;padding:7px;color:#f5ebdc;min-width:0;overflow-wrap:anywhere}.ficha-slot-item strong{font-size:11px;line-height:1.2}.ficha-slot-item small{font-size:9px;line-height:1.2;color:#ded4c4}.ficha-caracteristicos{margin:18px 0}.ficha-caracteristicos>strong{font:10px monospace;color:#746655}.ficha-inventario{grid-auto-rows:minmax(100px,auto)}
+
+.formulario-identidade textarea{width:100%;box-sizing:border-box;resize:vertical;min-height:80px;border:1px solid #bac5c7;border-radius:5px;padding:10px;font:inherit;background:#fafcfc;color:#23343a}.formulario-identidade small{font:10px monospace;color:#746655}.identidade-leitura dd{white-space:pre-wrap;overflow-wrap:anywhere;margin:4px 0 14px}.identidade-leitura dt{font-weight:bold}

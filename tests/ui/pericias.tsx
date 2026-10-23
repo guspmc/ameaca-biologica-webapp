@@ -8,12 +8,13 @@ const equipamentoQA=location.pathname.endsWith('/equipamento.html');
 const habilidadeQA=location.pathname.endsWith('/habilidades.html')||equipamentoQA;
 let ficha={id:'fixture-ficha',nome:'Sobrevivente fictício',mesa_id:'fixture-mesa',jogador_id:'fixture-jogador',
   classe:habilidadeQA?'Operador':'Agente',origem:'Policial',pericia_origem_treinada:'Pontaria',pericia_origem_extra:null,
-  habilidade_basica:null as string|null,equipamento_inicial:null as string|null,
+  identidade:{} as Record<string,string>,habilidade_basica:null as string|null,equipamento_inicial:null as string|null,
   pontos_pericia_classe:{},nivel:1,forca:2,agilidade:2,vigor:2,astucia:1,
   pv_atual:habilidadeQA?14:12,pv_maximo:habilidadeQA?14:12,sa_atual:3,sa_maximo:3,bi_atual:0,bi_maximo:habilidadeQA?7:9,defesa:14,estado_ficha:'rascunho'};
 const mock={
   from:()=>({select:()=>({order:async()=>({data:[structuredClone(ficha)],error:null})})}),
-  rpc:async(nome:string,args:{p_pontos:Record<string,number>;p_habilidade:string|null;p_opcao:string|null})=>{
+  rpc:async(nome:string,args:{p_pontos:Record<string,number>;p_habilidade:string|null;p_opcao:string|null;p_nome:string;p_identidade:Record<string,string>})=>{
+    if(nome==='definir_identidade_rascunho'){ficha={...ficha,nome:args.p_nome,identidade:{...args.p_identidade}};return {error:null};}
     if(nome==='definir_equipamento_rascunho'){ficha={...ficha,equipamento_inicial:args.p_opcao};return {error:null};}
     if(nome==='definir_habilidade_rascunho'){
       ficha={...ficha,habilidade_basica:args.p_habilidade};

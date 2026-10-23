@@ -3,6 +3,7 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 import { PONTOS_CLASSE, PERICIAS_CLASSE, grauPericia, bonusTreinamento, totalPontos } from './pericias';
 import { HABILIDADES_BASICAS } from './habilidades';
 import EquipamentoRascunho from './EquipamentoRascunho';
+import IdentidadeRascunho from './IdentidadeRascunho';
 
 type Mesa = { id: string; nome: string; mestre_id: string };
 type Classe = 'Agente' | 'Autodidata' | 'Operador';
@@ -19,6 +20,7 @@ type Personagem = {
   pontos_pericia_classe:Record<string,number>;
   habilidade_basica:string|null;
   equipamento_inicial:string|null;
+  identidade:Record<string,string>;
 };
 type Props = {
   supabase:SupabaseClient; usuarioId:string; mesas:Mesa[];
@@ -99,7 +101,7 @@ export default function FichasJogador({supabase,usuarioId,mesas,sinalAtualizacao
 
   const carregar=useCallback(async()=>{
     const {data,error}=await supabase.from('personagens')
-      .select('id,nome,mesa_id,jogador_id,classe,origem,pericia_origem_treinada,pericia_origem_extra,pontos_pericia_classe,habilidade_basica,equipamento_inicial,nivel,forca,agilidade,vigor,astucia,pv_atual,pv_maximo,sa_atual,sa_maximo,bi_atual,bi_maximo,defesa,estado_ficha')
+      .select('id,nome,mesa_id,jogador_id,classe,origem,pericia_origem_treinada,pericia_origem_extra,pontos_pericia_classe,habilidade_basica,equipamento_inicial,identidade,nivel,forca,agilidade,vigor,astucia,pv_atual,pv_maximo,sa_atual,sa_maximo,bi_atual,bi_maximo,defesa,estado_ficha')
       .order('criado_em',{ascending:false});
     if(error)setErro('Erro ao carregar personagens: '+error.message);
     else{setPersonagens((data??[]) as Personagem[]);setErro('');}
@@ -409,7 +411,7 @@ export default function FichasJogador({supabase,usuarioId,mesas,sinalAtualizacao
                 </div>)}
               <p className="ficha-dica">Custos, Vantagens, curas e manobras condicionais são referências para declarar em jogo. Nenhuma rolagem, ataque ou consumo é disparado por escolher a Habilidade. Equipamento e finalização ainda estão pendentes.</p>
             </details>
-            <details><summary>Identidade, aparência e história</summary><p>Campos narrativos serão adicionados numa próxima implementação da ficha.</p></details>
+            <IdentidadeRascunho key={ficha.id} supabase={supabase} ficha={ficha} dona={dona} recarregar={carregar}/>
           </section>
           <section className="ficha-secao" id="ficha-pericias">
             <h3><span>02</span> Atributos e Perícias <small>AB-02</small></h3>
