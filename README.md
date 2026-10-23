@@ -105,3 +105,5 @@ Persistência do funcionamento pronta para revisão, sem aplicação remota: [co
 Preferências persistidas exclusivamente no TESTE: [evidências e roteiro humano](docs/relatorio-funcionamento-integrado.md).
 
 Inventário ativo em preparação local: [plano de instâncias, regras e limites verificados](docs/inventario-criacao-instancias.md). Nenhuma materialização remota ou ativação habilitada.
+
+Inventário: [protótipo privado de persistência transacional, testes e limites](docs/inventario-persistencia-local.md). Não aplicado ao Supabase nem exposto ao cliente.

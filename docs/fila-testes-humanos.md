@@ -65,3 +65,8 @@ Checkpoint aplicado e smoke remoto aprovado; Salvar Preferências conectado some
 
 Gus respondeu Funciona. Comprovado. ao roteiro de salvar/F5, alternar modos preservando opções e conferir outra ficha independente. Rodada de persistência encerrada.
 O planejador de instâncias iniciais do inventário está somente em módulo local e testes; nenhum teste humano novo é solicitado. Rodada de inventário ativo será agrupada ao final da integração autorizada. Conflito real entre sessões, troca de kit e celular seguem enfileirados conforme relevância da próxima etapa. Relatório: inventario-criacao-instancias.md.
+
+
+## Persistência interna do inventário — somente preparação local
+
+Protótipo transacional privado preparado e testado localmente. Nenhum teste humano novo solicitado; manter integração de inventário/ativação, duas contas, resposta interrompida e celular na rodada única ao final. Nenhuma operação remota nesta etapa. Ver inventario-persistencia-local.md.
