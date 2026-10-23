@@ -9,7 +9,6 @@ async function setup(){
  await db.exec("create role anon;create role authenticated;create schema auth;create table auth.users(id uuid primary key);create function auth.uid() returns uuid language sql stable as $$select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid$$;grant usage on schema auth to anon,authenticated;grant execute on function auth.uid() to anon,authenticated;create publication supabase_realtime;");
  const dir=new URL('../supabase/migrations/',import.meta.url);
  for(const f of(await readdir(dir)).filter(f=>f.endsWith('.sql')).sort())await db.exec(await readFile(new URL(f,dir),'utf8'));
- await db.exec(await readFile(new URL('../supabase/proposals/funcionamento-rascunho.sql',import.meta.url),'utf8'));
  await db.query('insert into auth.users values($1),($2),($3),($4)',[A,B,M,X]);
  await db.query("insert into public.mesas(id,nome,mestre_id) values($1,'Fixture',$2)",[T,M]);
  await db.query("insert into public.mesa_participantes(mesa_id,usuario_id,papel) values($1,$2,'jogador'),($1,$3,'jogador')",[T,A,B]);

@@ -101,3 +101,5 @@ Resumo de pendências e plano vazio inicial: [evidências](docs/relatorio-resumo
 Prévia local de funcionamento: [resultado](docs/relatorio-funcionamento-previo.md). Próxima ativação: [contrato e dependências](docs/contrato-ativacao-ficha.md).
 
 Persistência do funcionamento pronta para revisão, sem aplicação remota: [contrato, testes e operação do checkpoint](docs/contrato-persistencia-funcionamento.md).
+
+Preferências persistidas exclusivamente no TESTE: [evidências e roteiro humano](docs/relatorio-funcionamento-integrado.md).

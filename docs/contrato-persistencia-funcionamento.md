@@ -33,3 +33,8 @@ Adicionar somente as duas colunas e a RPC ao projeto gratuito de TESTE elctulggq
 Não criar/gravar escolhas em Mesas humanas automaticamente. Padrões em novas colunas fazem parte da estrutura proposta; demais dados preservados.
 
 Fontes técnicas já consultadas: https://supabase.com/docs/guides/database/functions e https://supabase.com/docs/guides/database/postgres/row-level-security . Regras de produto: Planejamento v2.0 §§5.1/6.2 e contrato-ativacao-ficha.md.
+
+
+## Atualização após checkpoint de Gus
+
+Preparação acima preservada como histórico. Estrutura aplicada e verificada exclusivamente no TESTE, com smoke remoto e ROLLBACK; botão conectado no modo teste. Estado atual e roteiro: relatorio-funcionamento-integrado.md. Nenhuma automação de jogo ou finalização habilitada.

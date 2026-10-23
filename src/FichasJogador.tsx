@@ -1,3 +1,5 @@
+import {salvarFuncionamento} from './servicoFuncionamento';
+import type {ConfiguracaoFuncionamento} from './funcionamentoFicha';
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { PONTOS_CLASSE, PERICIAS_CLASSE, grauPericia, bonusTreinamento, totalPontos } from './pericias';
@@ -24,6 +26,7 @@ type Personagem = {
   habilidade_basica:string|null;
   equipamento_inicial:string|null;
   compras_iniciais:Record<string,number>;revisao_compras:number;
+  configuracao_funcionamento?:ConfiguracaoFuncionamento;revisao_funcionamento?:number;
   identidade:Record<string,string>;
 };
 type Props = {
@@ -86,9 +89,10 @@ export default function FichasJogador({supabase,usuarioId,mesas,sinalAtualizacao
   const [avisoHabilidade,setAvisoHabilidade]=useState('');
 
   const carregar=useCallback(async()=>{
-    const {data,error}=await supabase.from('personagens')
-      .select('id,nome,mesa_id,jogador_id,classe,origem,pericia_origem_treinada,pericia_origem_extra,pontos_pericia_classe,habilidade_basica,equipamento_inicial,compras_iniciais,revisao_compras,identidade,nivel,forca,agilidade,vigor,astucia,pv_atual,pv_maximo,sa_atual,sa_maximo,bi_atual,bi_maximo,defesa,estado_ficha')
-      .order('criado_em',{ascending:false});
+    const tabela=supabase.from('personagens');
+    const {data,error}=import.meta.env.MODE==='teste'
+      ?await tabela.select("id,nome,mesa_id,jogador_id,classe,origem,pericia_origem_treinada,pericia_origem_extra,pontos_pericia_classe,habilidade_basica,equipamento_inicial,compras_iniciais,revisao_compras,identidade,nivel,forca,agilidade,vigor,astucia,pv_atual,pv_maximo,sa_atual,sa_maximo,bi_atual,bi_maximo,defesa,estado_ficha,configuracao_funcionamento,revisao_funcionamento").order('criado_em',{ascending:false})
+      :await tabela.select("id,nome,mesa_id,jogador_id,classe,origem,pericia_origem_treinada,pericia_origem_extra,pontos_pericia_classe,habilidade_basica,equipamento_inicial,compras_iniciais,revisao_compras,identidade,nivel,forca,agilidade,vigor,astucia,pv_atual,pv_maximo,sa_atual,sa_maximo,bi_atual,bi_maximo,defesa,estado_ficha").order('criado_em',{ascending:false});
     if(error)setErro('Erro ao carregar personagens: '+error.message);
     else{setPersonagens((data??[]) as Personagem[]);setErro('');}
     setCarregando(false);
@@ -452,7 +456,7 @@ export default function FichasJogador({supabase,usuarioId,mesas,sinalAtualizacao
             <h3><span>04</span> Inventário <small>AB-04</small></h3>
             <EquipamentoRascunho key={ficha.id} supabase={supabase} ficha={ficha} dona={dona} recarregar={carregar}/>
           </section>
-          {dona&&ficha.estado_ficha==='rascunho'&&<RevisaoCriacao key={ficha.id} ficha={ficha} irPara={irPara}/>}
+          {dona&&ficha.estado_ficha==='rascunho'&&<RevisaoCriacao key={ficha.id} ficha={ficha} irPara={irPara} funcionamento={import.meta.env.MODE==='teste'&&ficha.configuracao_funcionamento&&ficha.revisao_funcionamento!==undefined?{inicial:ficha.configuracao_funcionamento,revisaoInicial:ficha.revisao_funcionamento,aoSalvar:async(config,rev)=>{const nova=await salvarFuncionamento(supabase,ficha.id,config,rev);await carregar();return nova;}}:undefined}/>}
           <div className="ficha-rodape">FICHA DO JOGADOR · ALFA 0.4 · RASCUNHO SALVO NO BANCO</div>
         </div>
         <nav className="ficha-nav" aria-label="Atalhos da ficha">

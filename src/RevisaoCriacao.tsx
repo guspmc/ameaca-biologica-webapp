@@ -1,6 +1,8 @@
+import type {ConfiguracaoFuncionamento} from './funcionamentoFicha';
 import FuncionamentoPrevio from './FuncionamentoPrevio';
 import {revisarCriacao,type FichaRevisao} from './conferenciaCriacao';
-export default function RevisaoCriacao({ficha,irPara}:{ficha:FichaRevisao;irPara:(secao:string)=>void}){
+type FuncionamentoSalvo={inicial:ConfiguracaoFuncionamento;revisaoInicial:number;aoSalvar:(config:ConfiguracaoFuncionamento,revisao:number)=>Promise<number>};
+export default function RevisaoCriacao({ficha,irPara,funcionamento}:{ficha:FichaRevisao;irPara:(secao:string)=>void;funcionamento?:FuncionamentoSalvo}){
   const linhas=revisarCriacao(ficha);
   const pendentes=linhas.filter(l=>l.estado==='pendente');
   const revisar=linhas.filter(l=>l.estado==='revisar');
@@ -18,7 +20,7 @@ export default function RevisaoCriacao({ficha,irPara}:{ficha:FichaRevisao;irPara
       <p>{l.detalhe}</p>{l.estado!=='conferido'&&<button type="button" className="botao-claro" onClick={()=>irPara(l.secao)}>Ver {l.secao==='itens'?'Inventário':l.secao==='pericias'?'Perícias':'Características'}</button>}
     </li>)}</ul>
     <p className="ficha-dica">Recursos atuais podem estar gastos; esta revisão confere os máximos sem restaurá-los. Efeitos condicionais continuam dependentes da situação de jogo.</p>
-    <FuncionamentoPrevio/>
-    <p className="dica">Finalização ainda indisponível. Ainda faltam catálogo completo de compras, inventário ativo, persistência das configurações de funcionamento e validações de ativação. Mesmo com as escolhas conferidas, a personagem continua em rascunho.</p>
+    <FuncionamentoPrevio {...funcionamento}/>
+    <p className="dica">Finalização ainda indisponível. Ainda faltam catálogo completo de compras, inventário ativo, validações de ativação e integração das automações de funcionamento. Mesmo com as escolhas conferidas, a personagem continua em rascunho.</p>
   </details>;
 }

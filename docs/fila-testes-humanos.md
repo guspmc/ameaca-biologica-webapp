@@ -54,3 +54,8 @@ Nova rodada agrupada: na revisão, abrir Funcionamento da ficha; verificar Misto
 ## Atualização: F5 da prévia confirmado; persistência preparada localmente
 
 Gus confirmou que F5 retorna ao Misto na prévia e enviou controles visíveis nos três modos. Próximo roteiro depende de checkpoint e integração da persistência; não testar salvamento remoto ainda. Passos futuros completos em contrato-persistencia-funcionamento.md. Continuam pendências independentes anteriores, sem repetir casos aprovados.
+
+
+## Atualização: preferências agora salvas no TESTE
+
+Checkpoint aplicado e smoke remoto aprovado; Salvar Preferências conectado somente no modo teste. Rodada humana disponível: salvar Manual/F5; voltar Misto e conferir escolhas preservadas; salvar Misto/F5; outra ficha independente; alterações sem salvar descartadas no F5. Recursos e inventário não mudam. Conflito entre sessões e celular continuam enfileirados. Roteiro detalhado: relatorio-funcionamento-integrado.md.
