@@ -92,3 +92,9 @@ Arquivamento, retomada, saída e limpeza de rascunhos preparados e testados some
 Página fictícia em `tests/ui/ativacao.html`, sem Supabase/Auth/armazenamento. Enfileirados **T5 confirmação/resumo; T6 pendências/teto; T7 revisão antiga; T8 falhas/repetição; T9 recusa/reinício/janela estreita**. Passos no topo do [roteiro consolidado](testes-humanos-pendentes.md). Sem obrigação de executar agora ou repetir casos aprovados.
 
 106 testes, TypeScript e compilação aprovados localmente. Navegador conferido em desktop e largura emulada de 390 px; celular físico pendente. Acesso será avaliado depois, conforme pedido de Gus; sem abertura de rede. Limites em [ciclo-e-interface-local.md](ciclo-e-interface-local.md).
+
+## Resultado em 24/10: T5–T9 aprovados por Gus
+
+Gus confirmou os cinco casos explicitamente e enviou treze capturas: confirmação/resumo, pendências/lotação, revisão antiga/nova conferência, falhas antes/depois da gravação simulada sem duplicação, recusa/recuperação do resumo e janela estreita no PC. Também confirmou o roteiro T9 completo, cujo F5 não tem captura própria nesta mensagem.
+
+Rodada da simulação encerrada; não repetir sem mudança relevante. Celular físico continua pendente de acesso adequado. Integração remota, ciclo real e concorrência não são aprovados por estes resultados. Nenhuma autorização complementar de banco ou publicação inferida. Registro completo em [resultado-testes-humanos-2026-10-24.md](resultado-testes-humanos-2026-10-24.md).

@@ -4,6 +4,7 @@ Atualizado em 24/10/2026. Este é o roteiro atual; o histórico foi preservado e
 ## Situação atual — rodada respondida por Gus
 
 - **T1, T3 e T4: aprovados.** Não repetir sem mudança relevante.
+- **T5, T6, T7, T8 e T9: aprovados por Gus em 24/10/2026**, com treze capturas da simulação isolada. Não repetir sem mudança relevante. Resultado e limites em [resultado-testes-humanos-2026-10-24.md](resultado-testes-humanos-2026-10-24.md).
 - **T2: fluxo aprovado por Gus, com sincronização imediata de B após compras em A.** A recusa de uma compra enviada com revisão antiga não foi demonstrada por esse comportamento; manter essa diferença de cobertura registrada, sem pedir repetição manual agora.
 - **Celular: não executado por falta de acesso à prévia local.** Aguarda preparação de acesso adequado; a tentativa de abrir o link no celular não é teste de layout ou funcionamento.
 
@@ -11,9 +12,9 @@ Resultado e limites: [resultado-testes-humanos-2026-10-23.md](resultado-testes-h
 
 Os passos abaixo ficam preservados como roteiro da rodada realizada, não como pedido de novos testes agora. Usar somente Mesa e personagens fictícias do ambiente TESTE em eventuais regressões futuras. Nenhum caso exige produção, publicação ou ativação de ficha.
 
-## Nova rodada enfileirada — T5 a T9, somente simulação local
+## Histórico — T5 a T9 aprovados, somente simulação local
 
-**Para executar depois, em um único momento.** Não é necessário testar agora nem repetir T1–T4. Não usar ficha de campanha nestes casos.
+**Rodada encerrada e aprovada.** Os passos abaixo ficam preservados para futuras regressões; não constituem pedido de novos testes. Não usar ficha de campanha nestes casos.
 
 No PC da prévia, abrir http://127.0.0.1:4174/ameaca-biologica-webapp/tests/ui/ativacao.html . Confirmar **SIMULAÇÃO ISOLADA · SEM DADOS DE CAMPANHA**; não há login. F5, trocar cenário ou Reiniciar zera somente a simulação. Cada falha programada acontece uma vez por reinício. Início: Tentativas 0, conjuntos 0, PV 7, SA 1 e BI 3.
 

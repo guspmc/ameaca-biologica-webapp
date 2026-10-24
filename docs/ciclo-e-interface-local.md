@@ -41,7 +41,7 @@ A primeira execução do novo teste de isolamento tentou criar ficha com o Mestr
 
 ## PENDENTE DE TESTE HUMANO
 
-**T5–T9** enfileirados no [roteiro consolidado](testes-humanos-pendentes.md); sem repetição imediata de T1–T4. Aplicação conectada mantém funcionalidades anteriormente aprovadas.
+**T5–T9 aprovados por Gus em 24/10/2026**, com capturas e confirmação explícita. Rodada da simulação encerrada; [resultado e limites](resultado-testes-humanos-2026-10-24.md). Sem repetição de T1–T9 sem mudança relevante; T2 conserva sua ressalva anterior de cobertura. Aplicação conectada mantém funcionalidades anteriormente aprovadas.
 
 Celular físico aguarda preparação posterior de acesso, conforme pedido de Gus. Prévia em 127.0.0.1; sem exposição de rede, abertura de firewall, túnel ou publicação.
 
@@ -55,4 +55,4 @@ Celular físico aguarda preparação posterior de acesso, conforme pedido de Gus
 
 ## PRÓXIMO PASSO
 
-Revisar T5–T9 quando Gus estiver disponível e preparar o contrato público antes de solicitar mudanças no TESTE. Avaliar depois acesso pelo celular. Produção, autenticação e dados humanos intactos; sem merge ou publicação.
+Preparar o contrato público de integração antes de solicitar mudanças no TESTE. T5–T9 já encerrados. Avaliar depois acesso pelo celular. Produção, autenticação e dados humanos intactos; sem merge ou publicação.
