@@ -1,9 +1,11 @@
-import type {SupabaseClient} from '@supabase/supabase-js';
 import {FalhaAtivacao,type ConferenciaAtivacao,type PedidoAtivacao,type ReciboAtivacao} from './pedidoAtivacao';
 import type {ResumoPersonagem} from './ResumoOperacional';
+import type {ResultadoConsultaAtivacao} from './recuperacaoAtivacao';
+export type ResultadoAtivacaoServidor={situacao:'sem_recibo';estadoFicha:'rascunho'|'completa';pedido:null;recibo:null}|{situacao:'confirmada';estadoFicha:'completa';pedido:PedidoAtivacao;recibo:ReciboAtivacao};
 
 // Contrato futuro, deliberadamente fora da aplicacao conectada. Criar nao consulta.
 type Objeto=Record<string,unknown>;
+export type ClienteAtivacaoRPC={rpc:(nome:string,args:Objeto)=>PromiseLike<{data:unknown;error:unknown}>};
 const objeto=(v:unknown):v is Objeto=>v!==null&&typeof v==='object'&&!Array.isArray(v);
 const inteiro=(v:unknown):v is number=>typeof v==='number'&&Number.isSafeInteger(v);
 const natural=(v:unknown):v is number=>inteiro(v)&&v>=0;
@@ -24,6 +26,15 @@ function lerRecibo(v:unknown,p:PedidoAtivacao):ReciboAtivacao{
  ||v.personagemId!==p.personagemId||v.operacaoId!==p.operacaoId||v.estado!=='completa'
  ||!natural(v.quantidadeInstancias)||!natural(v.revisaoCriacao)||v.revisaoCriacao<=p.revisaoFicha)return invalida();
  return {personagemId:p.personagemId,operacaoId:p.operacaoId,estado:'completa',quantidadeInstancias:v.quantidadeInstancias,revisaoCriacao:v.revisaoCriacao};
+}
+function lerResultado(v:unknown,id:string,esperado?:PedidoAtivacao):ResultadoAtivacaoServidor{
+ if(!objeto(v)||!chaves(v,['situacao','estadoFicha','pedido','recibo']))return invalida();
+ if(v.situacao==='sem_recibo'&&(v.estadoFicha==='rascunho'||v.estadoFicha==='completa')&&v.pedido===null&&v.recibo===null)return {situacao:'sem_recibo',estadoFicha:v.estadoFicha,pedido:null,recibo:null};
+ const p=v.pedido;
+ if(v.situacao!=='confirmada'||v.estadoFicha!=='completa'||!objeto(p)||!chaves(p,['personagemId','operacaoId','revisaoFicha','revisaoMesa'])||p.personagemId!==id||!uuid(p.operacaoId)||!natural(p.revisaoFicha)||!natural(p.revisaoMesa))return invalida();
+ const pedido:PedidoAtivacao={personagemId:id,operacaoId:p.operacaoId,revisaoFicha:p.revisaoFicha,revisaoMesa:p.revisaoMesa};
+ if(esperado&&(['personagemId','operacaoId','revisaoFicha','revisaoMesa'] as const).some(k=>esperado[k]!==pedido[k]))return invalida();
+ return {situacao:'confirmada',estadoFicha:'completa',pedido,recibo:lerRecibo(v.recibo,pedido)};
 }
 function recurso(v:unknown):{atual:number;maximo:number}{
  if(!objeto(v)||!chaves(v,['atual','maximo'])||!inteiro(v.atual)||!natural(v.maximo))return invalida();
@@ -54,7 +65,7 @@ function falhaRPC(erro:unknown):FalhaAtivacao{
  // Nunca usar message/details/hint recebidos como texto da interface.
  return new FalhaAtivacao('Não foi possível confirmar a resposta. Uma nova tentativa deve usar o mesmo pedido.','incerto');
 }
-export function prepararServicosAtivacao(cliente:Pick<SupabaseClient,'rpc'>){
+export function prepararServicosAtivacao(cliente:ClienteAtivacaoRPC){
  async function chamar(nome:string,args:Objeto):Promise<unknown>{
   let resposta:unknown;
   try{resposta=await cliente.rpc(nome,args);}catch{return Promise.reject(falhaRPC(null));}
@@ -62,7 +73,20 @@ export function prepararServicosAtivacao(cliente:Pick<SupabaseClient,'rpc'>){
   if(resposta.error!==null)throw falhaRPC(resposta.error);
   return resposta.data;
  }
+ async function consultarResultado(personagemId:string,esperado?:PedidoAtivacao):Promise<ResultadoAtivacaoServidor>{
+  idValido(personagemId);
+  if(esperado&&(!objeto(esperado)||!chaves(esperado,['personagemId','operacaoId','revisaoFicha','revisaoMesa'])||esperado.personagemId!==personagemId||!uuid(esperado.operacaoId)||!natural(esperado.revisaoFicha)||!natural(esperado.revisaoMesa)))throw new FalhaAtivacao('Pedido inválido para consulta.','regra');
+  const pedido=esperado?{...esperado}:undefined;
+  return lerResultado(await chamar('consultar_resultado_ativacao',{p_personagem:personagemId,p_operacao:pedido?.operacaoId??null}),personagemId,pedido);
+ }
  return {
+  consultarResultado,
+  async consultarPedido(p:PedidoAtivacao):Promise<ResultadoConsultaAtivacao>{
+   const r=await consultarResultado(p.personagemId,p);
+   if(r.situacao==='confirmada')return {situacao:'confirmada',recibo:r.recibo};
+   if(r.estadoFicha!=='rascunho')throw new FalhaAtivacao('A ficha já está completa e não tem recibo disponível para este pedido.','regra');
+   return {situacao:'sem_recibo'};
+  },
   async conferir(personagemId:string):Promise<ConferenciaAtivacao>{
    idValido(personagemId);
    return lerConferencia(await chamar('conferir_ativacao_personagem',{p_personagem:personagemId}),personagemId);

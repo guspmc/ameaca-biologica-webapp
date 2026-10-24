@@ -110,3 +110,9 @@ T10 (ativação integrada/resultado após F5), T11 (privacidade e troca de conte
 Controlador com armazenamento mínimo injetado, pedido preservado antes do envio, consulta antes da repetição e descarte de respostas de contexto encerrado. Outro controlador ignora respostas de Mesa/sessão anterior, inclusive A→B→A e atualizações fora de ordem. Doze ensaios novos usam memória/callbacks simulados; não certificam F5 ou sessão no aplicativo conectado.
 
 T10/T11 receberam os casos futuros de falha de armazenamento e respostas atrasadas, mas continuam indisponíveis. T5–T9 não precisam ser repetidos e celular permanece para depois. Limites e validações em [recuperacao-e-contexto-local.md](recuperacao-e-contexto-local.md).
+
+## Nova rodada concreta: T13 — recuperação e contexto na fixture
+
+Consulta autorizada de recibo ensaiada em PostgreSQL local, transporte ligado à página fictícia `tests/ui/recuperacao.html`. Agora é possível conferir F5 sem duplicar conjunto, recuperação sem referência local, falha de armazenamento e respostas atrasadas, sem banco ou contas reais.
+
+T13.1–T13.6 disponíveis em [teste-humano-recuperacao.md](teste-humano-recuperacao.md). T5–T9 permanecem aprovados; T10–T12 continuam futuros/condicionados. Somente T13 está sendo apresentado para a próxima rodada humana; o acesso físico pelo celular fica para depois. Relatório e limites em [consulta-resultado-e-qa.md](consulta-resultado-e-qa.md).

@@ -1,5 +1,7 @@
 # Recuperação de ativação e isolamento de contexto — 24/10/2026
 
+> Continuação em [consulta-resultado-e-qa.md](consulta-resultado-e-qa.md): consulta de recibo implementada/testada em banco local e recuperação ligada a uma fixture com F5. O relatório abaixo preserva a preparação anterior; integração remota permanece pendente.
+
 ## IMPLEMENTADO
 
 Continuação local do checkpoint `dc361c5`, sem mudança na aplicação ou simulação T5–T9. Os dois novos módulos não são importados por componentes conectados e não executam RPCs ou acesso a armazenamento na criação.

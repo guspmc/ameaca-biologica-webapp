@@ -79,3 +79,18 @@ test('contrato RPC: resumo invalido, duplicado ou contaminado e recusado integra
  const p=resumo(),incompleto={...p.passivos};delete incompleto.Vontade;
  for(const r of [null,{},[p,p],Array.from({length:11},(_,i)=>({...resumo(),personagemId:'00000000-0000-4000-8000-'+String(i).padStart(12,'0')})),[{...p,historia:'SEGREDO'}],[{...p,pv:{...p.pv,item:'SEGREDO'}}],[{...p,passivos:incompleto}],[{...p,passivos:{...p.passivos,Extra:10}}],[{...p,passivos:{...p.passivos,Luta:'12'}}],[{...p,condicoes:{privado:'SEGREDO'}}],[{...p,nivel:0}]])await assert.rejects(mock(r).listarResumo(mesa),tipo('incerto'));
 });
+
+test('contrato RPC: consulta recupera por ficha sem referencia ou confere tupla do pedido conhecido',async()=>{
+ let chamada;const fonte={situacao:'confirmada',estadoFicha:'completa',pedido:pedido(),recibo:recibo()};
+ const s=prepararServicosAtivacao({rpc:async(n,a)=>{chamada=[n,a];return {data:fonte,error:null};}});
+ const r=await s.consultarResultado(id);assert.deepEqual(chamada,['consultar_resultado_ativacao',{p_personagem:id,p_operacao:null}]);assert.deepEqual(r,fonte);
+ assert.deepEqual(await s.consultarPedido(pedido()),{situacao:'confirmada',recibo:recibo()});assert.equal(chamada[1].p_operacao,op);
+ fonte.pedido.revisaoFicha=1;assert.equal(r.pedido.revisaoFicha,2);await assert.rejects(s.consultarPedido(pedido()),tipo('incerto'));
+});
+
+test('contrato RPC: completa sem recibo impede reenvio; resposta de consulta ambigua recusada',async()=>{
+ const r={situacao:'sem_recibo',estadoFicha:'completa',pedido:null,recibo:null};
+ assert.deepEqual(await mock(r).consultarResultado(id),r);await assert.rejects(mock(r).consultarPedido(pedido()),tipo('regra'));
+ assert.deepEqual(await mock({...r,estadoFicha:'rascunho'}).consultarPedido(pedido()),{situacao:'sem_recibo'});
+ for(const dado of [{...r,extra:'SEGREDO'},{...r,estadoFicha:'arquivada'},{situacao:'confirmada',estadoFicha:'rascunho',pedido:pedido(),recibo:recibo()},{situacao:'confirmada',estadoFicha:'completa',pedido:{...pedido(),operacaoId:mesa},recibo:recibo()}])await assert.rejects(mock(dado).consultarResultado(id),tipo('incerto'));
+});

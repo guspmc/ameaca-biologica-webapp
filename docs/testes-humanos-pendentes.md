@@ -5,6 +5,7 @@ Atualizado em 24/10/2026. Este é o roteiro atual; o histórico foi preservado e
 
 - **T1, T3 e T4: aprovados.** Não repetir sem mudança relevante.
 - **T5, T6, T7, T8 e T9: aprovados por Gus em 24/10/2026**, com treze capturas da simulação isolada. Não repetir sem mudança relevante. Resultado e limites em [resultado-testes-humanos-2026-10-24.md](resultado-testes-humanos-2026-10-24.md).
+- **T13.1–T13.6: nova rodada disponível somente na simulação de recuperação**, pendente de confirmação humana. [Roteiro enumerado com passos e resultados esperados](teste-humano-recuperacao.md). Não executa operações de campanha nem exige login.
 - **T2: fluxo aprovado por Gus, com sincronização imediata de B após compras em A.** A recusa de uma compra enviada com revisão antiga não foi demonstrada por esse comportamento; manter essa diferença de cobertura registrada, sem pedir repetição manual agora.
 - **Celular: não executado por falta de acesso à prévia local.** Aguarda preparação de acesso adequado; a tentativa de abrir o link no celular não é teste de layout ou funcionamento.
 
@@ -72,6 +73,8 @@ Arquivamento/retomada, saída/readmissão e Baú ensaiados somente em banco loca
 Relatório: [ciclo-e-interface-local.md](ciclo-e-interface-local.md).
 
 ## Próxima rodada condicionada — ainda indisponível
+
+Esta seção refere-se a T10–T12 da futura integração. A nova página fictícia de recuperação é T13, disponível no roteiro indicado no topo; sua aprovação não encerra os testes conectados abaixo.
 
 O [contrato de integração](contrato-integracao-ativacao.md) está em preparação local. Os casos abaixo ficam enfileirados; **não executar na aplicação conectada agora**. Os endpoints, recuperação após reinício e mudança segura de contexto precisam existir antes de preparar a rodada. Usar apenas fixtures descartáveis acordadas no TESTE, após checkpoint específico; não adaptar estes passos a fichas humanas existentes.
 
