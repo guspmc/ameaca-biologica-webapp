@@ -80,3 +80,7 @@ Gus aprovou T1, T2, T3 e T4 e enviou capturas. T1 mostra conflito de preferênci
 Em T2, Gus relata atualização imediata de B após compras em A, sem erros. Registrar como fluxo/sincronização aprovado, não como prova de uma compra com revisão antiga recusada. A prova controlada desse conflito permanece uma cobertura técnica distinta; nenhuma repetição humana imediata foi solicitada.
 
 Celular não executado por indisponibilidade de acesso à prévia local. A captura da falha de abertura não valida layout ou interação da ficha. Não houve abertura de rede nem publicação. Relatório: [resultado-testes-humanos-2026-10-23.md](resultado-testes-humanos-2026-10-23.md).
+
+## Preparação de ativação e resumo — sem novos cliques humanos
+
+Ativação transacional interna, revisão integral e proposta de resumo operacional foram preparadas e testadas em banco local descartável. Nenhuma alteração remota ou nova funcionalidade de interface nesta etapa. Não repetir T1–T4 agora. A rodada de ativação/resumo, inventário em uso e celular será agrupada quando a integração estiver disponível e autorizada. Limites e próximos passos em [ativacao-sql-local.md](ativacao-sql-local.md).
