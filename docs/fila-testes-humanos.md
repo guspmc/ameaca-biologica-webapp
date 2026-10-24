@@ -98,3 +98,9 @@ Página fictícia em `tests/ui/ativacao.html`, sem Supabase/Auth/armazenamento. 
 Gus confirmou os cinco casos explicitamente e enviou treze capturas: confirmação/resumo, pendências/lotação, revisão antiga/nova conferência, falhas antes/depois da gravação simulada sem duplicação, recusa/recuperação do resumo e janela estreita no PC. Também confirmou o roteiro T9 completo, cujo F5 não tem captura própria nesta mensagem.
 
 Rodada da simulação encerrada; não repetir sem mudança relevante. Celular físico continua pendente de acesso adequado. Integração remota, ciclo real e concorrência não são aprovados por estes resultados. Nenhuma autorização complementar de banco ou publicação inferida. Registro completo em [resultado-testes-humanos-2026-10-24.md](resultado-testes-humanos-2026-10-24.md).
+
+## Continuação: contrato de transporte preparado, sem nova rodada executável
+
+Módulo RPC desconectado com validação de conferência/recibo/resumo, argumentos mínimos e recuperação pelo mesmo pedido. Não consulta na criação, não faz repetição automática e não altera a simulação aprovada ou aplicação conectada. Oito testes novos de transporte simulado; relatório em [contrato-integracao-ativacao.md](contrato-integracao-ativacao.md).
+
+T10 (ativação integrada/resultado após F5), T11 (privacidade e troca de contexto) e T12 (celular físico) enfileirados como **condicionados e indisponíveis**. Precisam de implementação/checkpoint/acesso antes de qualquer execução. Sem solicitação humana agora e sem repetição de T5–T9.

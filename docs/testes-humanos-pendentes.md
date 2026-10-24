@@ -71,6 +71,33 @@ Arquivamento/retomada, saída/readmissão e Baú ensaiados somente em banco loca
 
 Relatório: [ciclo-e-interface-local.md](ciclo-e-interface-local.md).
 
+## Próxima rodada condicionada — ainda indisponível
+
+O [contrato de integração](contrato-integracao-ativacao.md) está em preparação local. Os casos abaixo ficam enfileirados; **não executar na aplicação conectada agora**. Os endpoints, recuperação após reinício e mudança segura de contexto precisam existir antes de preparar a rodada. Usar apenas fixtures descartáveis acordadas no TESTE, após checkpoint específico; não adaptar estes passos a fichas humanas existentes.
+
+### T10 — ativação integrada e recuperação de resultado
+
+1. Após liberação específica, conferir uma fixture apta e confirmar uma única vez. Esperado: ficha completa e um conjunto de itens, sem restaurar recursos.
+2. Usar o cenário controlado de resposta interrompida que será preparado; anotar o identificador do pedido. Não desligar serviços ou alterar o banco manualmente.
+3. Atualizar/reabrir a aplicação. Esperado: recuperar o estado real/recibo autorizado, sem anunciar fracasso falso, gerar outro pedido às cegas ou duplicar itens.
+4. Esperado: nenhuma alteração em outras fichas/Mesas. Evidência: mensagem, estado final e identificador do pedido; sem tokens ou credenciais.
+
+### T11 — privacidade e troca de contexto entre contas/Mesas
+
+1. Após integração autorizada, usar contas fictícias de Jogador/Mestre e duas Mesas de ensaio.
+2. Esperado: autoria pode conferir seu rascunho; Mestre não recebe rascunho nem ficha integral, apenas resumo autorizado de completas. Outra conta não pode ativar a ficha.
+3. Durante consulta com atraso controlado, trocar a Mesa selecionada. Esperado: resultado antigo não aparece no novo contexto; recusa não conserva cartão anterior.
+4. Repetir a troca após sair da sessão. Esperado: nenhum dado do usuário anterior na nova sessão. Não remover participantes reais para simular o caso.
+
+### T12 — celular físico após preparação de acesso
+
+1. Somente depois de definir acesso apropriado, abrir a versão exata indicada no aparelho. O endereço 127.0.0.1 do PC não serve diretamente no celular.
+2. Abrir ficha, usar quatro atalhos, percorrer Inventário/Revisão e preencher um campo fictício. Conferir teclado, toque, botões e rolagem em retrato/paisagem.
+3. Salvar e reabrir a fixture. Esperado: dados salvos preservados, controles acessíveis e nenhuma rolagem horizontal indevida.
+4. Registrar aparelho, navegador e versão testada, sem enviar dados pessoais. Até preparar o acesso, marcar **não executável**, não reprovado.
+
+Nenhum destes casos representa autorização para mudar banco, permissões, publicar ou abrir rede. T5–T9 continuam aprovados; não repetir sua simulação por causa do transporte ainda desconectado.
+
 ## Histórico — roteiro T1 a T4 já respondido
 
 ## Preparação — cerca de 3 minutos

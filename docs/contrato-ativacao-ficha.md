@@ -1,5 +1,7 @@
 # Contrato de ativação — preparação sem operação remota
 
+> Continuação técnica atual: [contrato-integracao-ativacao.md](contrato-integracao-ativacao.md). T5–T9 da simulação foram aprovados; transporte RPC está preparado separadamente, sem integração remota. O texto abaixo preserva o contrato e a sequência original.
+
 Referências somente de leitura: Planejamento WebApp v2.0 §§2.3, 3.3, 3.5, 4, 5.1–5.5, 6.1–6.2, 9.1–9.6 e critérios T04, T08, T13, T14; Arquivo do Jogador v1.0 J 21–27 e opções de Classe já auditadas.
 Este documento orienta implementação futura. Não autoriza executar SQL, ativar registros ou modificar políticas existentes.
 
