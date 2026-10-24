@@ -104,3 +104,9 @@ Rodada da simulação encerrada; não repetir sem mudança relevante. Celular f�
 Módulo RPC desconectado com validação de conferência/recibo/resumo, argumentos mínimos e recuperação pelo mesmo pedido. Não consulta na criação, não faz repetição automática e não altera a simulação aprovada ou aplicação conectada. Oito testes novos de transporte simulado; relatório em [contrato-integracao-ativacao.md](contrato-integracao-ativacao.md).
 
 T10 (ativação integrada/resultado após F5), T11 (privacidade e troca de contexto) e T12 (celular físico) enfileirados como **condicionados e indisponíveis**. Precisam de implementação/checkpoint/acesso antes de qualquer execução. Sem solicitação humana agora e sem repetição de T5–T9.
+
+## Continuação: recuperação e proteção de contexto preparadas localmente
+
+Controlador com armazenamento mínimo injetado, pedido preservado antes do envio, consulta antes da repetição e descarte de respostas de contexto encerrado. Outro controlador ignora respostas de Mesa/sessão anterior, inclusive A→B→A e atualizações fora de ordem. Doze ensaios novos usam memória/callbacks simulados; não certificam F5 ou sessão no aplicativo conectado.
+
+T10/T11 receberam os casos futuros de falha de armazenamento e respostas atrasadas, mas continuam indisponíveis. T5–T9 não precisam ser repetidos e celular permanece para depois. Limites e validações em [recuperacao-e-contexto-local.md](recuperacao-e-contexto-local.md).

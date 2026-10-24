@@ -1,5 +1,7 @@
 # Contrato de integração de ativação e resumo — 24/10/2026
 
+> Continuação: [recuperacao-e-contexto-local.md](recuperacao-e-contexto-local.md) prepara preservação mínima de pedido e descarte de respostas antigas com armazenamento/callbacks injetados. A consulta de resultado no servidor e a integração real ainda estão pendentes. O contrato abaixo registra a etapa de transporte anterior.
+
 ## IMPLEMENTADO NESTA ETAPA
 
 Base: checkpoint `5edd1e5`, posterior à aprovação humana T5–T9 da simulação. O contrato complementa [contrato-ativacao-ficha.md](contrato-ativacao-ficha.md) e [ciclo-e-interface-local.md](ciclo-e-interface-local.md), sem modificar fontes oficiais, SQL, permissões ou registros remotos.

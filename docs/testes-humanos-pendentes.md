@@ -82,12 +82,16 @@ O [contrato de integração](contrato-integracao-ativacao.md) está em preparaç
 3. Atualizar/reabrir a aplicação. Esperado: recuperar o estado real/recibo autorizado, sem anunciar fracasso falso, gerar outro pedido às cegas ou duplicar itens.
 4. Esperado: nenhuma alteração em outras fichas/Mesas. Evidência: mensagem, estado final e identificador do pedido; sem tokens ou credenciais.
 
+Quando o cenário isolado de recuperação estiver integrado, incluir falha controlada de armazenamento: a primeira ativação não pode ser enviada sem preservar o pedido. Após recriar o controlador/F5, a consulta deve recuperar o mesmo pedido sem duplicar efeitos. Ainda não há esse cenário executável na interface; os testes locais do módulo não encerram T10.
+
 ### T11 — privacidade e troca de contexto entre contas/Mesas
 
 1. Após integração autorizada, usar contas fictícias de Jogador/Mestre e duas Mesas de ensaio.
 2. Esperado: autoria pode conferir seu rascunho; Mestre não recebe rascunho nem ficha integral, apenas resumo autorizado de completas. Outra conta não pode ativar a ficha.
 3. Durante consulta com atraso controlado, trocar a Mesa selecionada. Esperado: resultado antigo não aparece no novo contexto; recusa não conserva cartão anterior.
 4. Repetir a troca após sair da sessão. Esperado: nenhum dado do usuário anterior na nova sessão. Não remover participantes reais para simular o caso.
+
+Incluir retorno Mesa A→B→A e duas atualizações da mesma Mesa em ordem invertida. Esperado: somente o resultado da consulta mais recente aparece. Ainda depende de integração dos eventos reais; os testes locais do controlador não encerram T11.
 
 ### T12 — celular físico após preparação de acesso
 
