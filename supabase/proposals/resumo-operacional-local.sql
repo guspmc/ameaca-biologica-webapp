@@ -63,7 +63,7 @@ begin
   raise exception 'Acesso ao resumo negado.';
  end if;
  select coalesce(jsonb_agg(jsonb_build_object(
-  'personagemId',p.id,'nome',p.nome,'classe',p.classe,'nivel',p.nivel,
+  'personagemId',p.id,'nome',p.nome,'classe',case when p.classe='Operador' and lower(btrim(coalesce(p.identidade->>'genero',''))) in('feminino','feminina','mulher','f') then 'Operadora' else p.classe end,'nivel',p.nivel,
   'pv',jsonb_build_object('atual',p.pv_atual,'maximo',p.pv_maximo),
   'sa',jsonb_build_object('atual',p.sa_atual,'maximo',p.sa_maximo),
   'bi',jsonb_build_object('atual',p.bi_atual,'maximo',p.bi_maximo),'defesa',p.defesa,

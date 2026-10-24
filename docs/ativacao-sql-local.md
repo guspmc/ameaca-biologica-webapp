@@ -1,5 +1,7 @@
 # Ativação e resumo operacional — protótipo SQL local
 
+> Continuação em [ciclo-e-interface-local.md](ciclo-e-interface-local.md): ciclo e interface fictícia preparados localmente. Este relatório preserva a etapa anterior e seus limites históricos.
+
 ## IMPLEMENTADO
 Propostas fora da cadeia de migrações: [ativacao-local.sql](../supabase/proposals/ativacao-local.sql) e [resumo-operacional-local.sql](../supabase/proposals/resumo-operacional-local.sql), usando a proposta anterior de instâncias de inventário. Nenhum SQL foi executado em projeto remoto.
 

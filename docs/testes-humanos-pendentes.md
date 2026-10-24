@@ -1,5 +1,5 @@
 # Testes humanos pendentes — roteiro consolidado
-Atualizado em 23/10/2026. Este é o roteiro atual; o histórico foi preservado em [fila-testes-humanos.md](fila-testes-humanos.md).
+Atualizado em 24/10/2026. Este é o roteiro atual; o histórico foi preservado em [fila-testes-humanos.md](fila-testes-humanos.md).
 
 ## Situação atual — rodada respondida por Gus
 
@@ -10,6 +10,67 @@ Atualizado em 23/10/2026. Este é o roteiro atual; o histórico foi preservado e
 Resultado e limites: [resultado-testes-humanos-2026-10-23.md](resultado-testes-humanos-2026-10-23.md).
 
 Os passos abaixo ficam preservados como roteiro da rodada realizada, não como pedido de novos testes agora. Usar somente Mesa e personagens fictícias do ambiente TESTE em eventuais regressões futuras. Nenhum caso exige produção, publicação ou ativação de ficha.
+
+## Nova rodada enfileirada — T5 a T9, somente simulação local
+
+**Para executar depois, em um único momento.** Não é necessário testar agora nem repetir T1–T4. Não usar ficha de campanha nestes casos.
+
+No PC da prévia, abrir http://127.0.0.1:4174/ameaca-biologica-webapp/tests/ui/ativacao.html . Confirmar **SIMULAÇÃO ISOLADA · SEM DADOS DE CAMPANHA**; não há login. F5, trocar cenário ou Reiniciar zera somente a simulação. Cada falha programada acontece uma vez por reinício. Início: Tentativas 0, conjuntos 0, PV 7, SA 1 e BI 3.
+
+### T5 — confirmação normal e resumo do Mestre
+
+1. Selecionar **Normal** e clicar **Conferir criação**.
+2. Esperado: Sobrevivente fictícia, conferência 0/10 e caixa desmarcada; Ativar personagem desabilitado.
+3. Marcar “Conferi as escolhas...” e clicar **Ativar personagem** uma vez.
+4. Esperado: Ativação confirmada, Tentativas 1, conjuntos criados 1. PV 7, SA 1 e BI 3 permanecem. Botão de ativar deixa de aparecer.
+5. No painel da direita, clicar **Atualizar resumo** e abrir **Perícias Passivas**.
+6. Esperado: Operadora, nível 1, PV 7/15, SA 1/3, BI 3/7, Defesa 12 e doze perícias. Condições não informadas. Sem história, inventário ou edição. Lembrete de Vantagem/Desvantagem não modifica os valores normais.
+
+### T6 — pendências e Mesa lotada
+
+1. Selecionar **Escolhas pendentes**, clicar Conferir criação.
+2. Esperado: pendência de Pontos de Perícia e de duas opções do Misto. Sem botão para ativar; Tentativas 0 e conjuntos 0.
+3. Selecionar **Dez vagas ocupadas**, clicar Conferir criação.
+4. Esperado: 10/10, aviso de lotação, sem botão para ativar; Tentativas 0 e conjuntos 0.
+
+### T7 — dados alterados antes da confirmação
+
+1. Selecionar **Dados mudaram antes de confirmar**, conferir, marcar a caixa e ativar.
+2. Esperado: aviso de dados alterados pedindo nova conferência; Tentativas 1, conjuntos 0, sem confirmação de sucesso.
+3. Clicar **Conferir criação** novamente; caixa volta desmarcada.
+4. Marcar e ativar novamente. Esperado: sucesso, Tentativas 2, conjuntos 1; recursos iguais aos iniciais.
+
+### T8 — nova tentativa após falha, sem duplicar
+
+1. Selecionar **Falha antes de gravar**, conferir, marcar e ativar.
+2. Esperado: erro, Tentativas 1, conjuntos 0; botão **Tentar novamente**, nova conferência/caixa desabilitadas enquanto a resposta está incerta.
+3. Clicar Tentar novamente. Esperado: sucesso, Tentativas 2, conjuntos 1; mesmos recursos.
+4. Selecionar **Resposta perdida após gravar**, conferir, marcar e ativar.
+5. Esperado: erro de resposta perdida, Tentativas 1, conjuntos 1; ainda sem “Ativação confirmada”.
+6. Clicar Tentar novamente. Esperado: sucesso, Tentativas 2 e conjuntos **ainda 1**, sem restaurar recursos. Atualizar resumo mostra uma única personagem.
+
+Falhas simuladas: não desligar internet nem tentar clicar simultaneamente.
+
+### T9 — recusa de resumo, janela estreita e reinício
+
+1. Após ativação fictícia em T5, T7 ou T8, clicar Atualizar resumo; conferir cartão visível.
+2. Clicar **Simular recusa do próximo resumo** e Atualizar resumo.
+3. Esperado: aviso de acesso recusado; cartão anterior desaparece, sem exibir dados antigos como atuais.
+4. Atualizar resumo novamente. Esperado: cartão recuperado com mesmos valores.
+5. Reduzir largura da janela do PC. Conferir leitura, botões, caixa e Passivas, sem rolagem horizontal ou controles escondidos.
+6. F5. Esperado: Normal, Tentativas 0, conjuntos 0, revisão não conferida; resumo só consultado ao clicar Atualizar resumo. Nenhuma personagem real alterada.
+
+Registrar: **T5 aprovado; T6 aprovado; T7 falhou no passo 2 — mensagem...**. Captura do problema basta; não enviar credenciais.
+
+### Futura integração — ainda não executar
+
+Arquivamento/retomada, saída/readmissão e Baú ensaiados somente em banco local descartável. Testes com contas de TESTE serão preparados após integração/checkpoint próprios. Não remover participantes nem apagar fichas ou Mesas para testar esta página.
+
+**Celular físico** continua aguardando acesso adequado. Largura emulada de 390 px já inspecionada automaticamente, sem validar toque/teclado/rolagem/salvamento no aparelho. Avaliar acesso depois; não expor servidor nesta rodada.
+
+Relatório: [ciclo-e-interface-local.md](ciclo-e-interface-local.md).
+
+## Histórico — roteiro T1 a T4 já respondido
 
 ## Preparação — cerca de 3 minutos
 1. No PC que executa a prévia, abrir http://127.0.0.1:4174/ameaca-biologica-webapp/ . Se não abrir, informar que a prévia está indisponível; isso não é resultado de falha da ficha.
@@ -80,8 +141,8 @@ A janela estreita no PC já foi aprovada. O teste em aparelho físico permanece 
 
 Não há endereço de rede preparado nem abertura de firewall nesta etapa. Quando houver acesso local apropriado, o roteiro será: abrir ficha, usar os quatro atalhos, preencher e salvar um campo, percorrer Inventário e Revisão, verificar teclado/botões/rolagem e reabrir após atualização. Até lá, marcar como **não executável nesta prévia**, sem tentar expor o servidor.
 
-## Não entram nesta rodada humana
-- Ativação, inventário em uso, equipar/consumir/recarregar, teto coletivo de dez ativas e resumo operacional do Mestre: ainda não disponíveis na interface. Precisam de integração e checkpoint próprios.
+## Não entram na rodada conectada T1–T4
+- Ativação/resumo reais, inventário em uso, equipar/consumir/recarregar e teto coletivo real de dez ativas precisam de integração/checkpoint próprios. T5–T9 acima exercitam somente simulação isolada de ativação/resumo.
 - Requisições realmente simultâneas, falha de rede no meio da resposta e repetição após ativação: exigem um ensaio técnico controlado. Não é necessário tentar clicar simultaneamente em várias janelas.
 - Remover e readmitir participante, apagar rascunhos ou mudar permissões: dependem de proposta e autorização específica; não executar como parte destes testes.
 

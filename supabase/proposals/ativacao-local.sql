@@ -13,7 +13,9 @@ alter table app_private.contextos_criacao_mesa enable row level security;
 revoke all on app_private.contextos_criacao_mesa from public,anon,authenticated;
 
 alter table public.personagens add column revisao_criacao bigint not null default 0 check(revisao_criacao>=0);
+alter table public.personagens add column metodo_criacao text check(metodo_criacao in('padrao','casa'));
 revoke update(revisao_criacao) on public.personagens from public,anon,authenticated;
+revoke update(metodo_criacao) on public.personagens from public,anon,authenticated;
 create function app_private.versionar_criacao() returns trigger
 language plpgsql security invoker set search_path='' as $$
 begin
@@ -170,7 +172,7 @@ begin
  if (select count(*) from public.personagens p where p.mesa_id=mesa and p.estado_ficha='completa')>=10 then raise exception 'Limite de dez personagens ativas.';end if;
  perform app_private.validar_criacao_nivel_um(f);
  total:=app_private.persistir_inventario_criacao(f.id);
- update public.personagens set estado_ficha='completa' where id=f.id returning revisao_criacao into nova_revisao;
+ update public.personagens set estado_ficha='completa',metodo_criacao='padrao' where id=f.id returning revisao_criacao into nova_revisao;
  resposta:=jsonb_build_object('personagemId',f.id,'operacaoId',p_operacao,'estado','completa','quantidadeInstancias',total,'revisaoCriacao',nova_revisao);
  insert into app_private.ativacoes_ficha(personagem_id,operacao_id,mesa_id,usuario_id,revisao_ficha_pedida,revisao_mesa_pedida,resposta)
  values(f.id,p_operacao,mesa,uid,p_revisao_ficha,p_revisao_mesa,resposta);

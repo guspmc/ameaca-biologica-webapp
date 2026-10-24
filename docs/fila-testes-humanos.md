@@ -84,3 +84,11 @@ Celular não executado por indisponibilidade de acesso à prévia local. A captu
 ## Preparação de ativação e resumo — sem novos cliques humanos
 
 Ativação transacional interna, revisão integral e proposta de resumo operacional foram preparadas e testadas em banco local descartável. Nenhuma alteração remota ou nova funcionalidade de interface nesta etapa. Não repetir T1–T4 agora. A rodada de ativação/resumo, inventário em uso e celular será agrupada quando a integração estiver disponível e autorizada. Limites e próximos passos em [ativacao-sql-local.md](ativacao-sql-local.md).
+
+## Continuação em 24/10: ciclo local e rodada fictícia T5–T9 enfileirada
+
+Arquivamento, retomada, saída e limpeza de rascunhos preparados e testados somente em PostgreSQL local descartável, preservando instâncias e recursos. Sem operação remota nova, integração de ciclo ou alteração de dados humanos.
+
+Página fictícia em `tests/ui/ativacao.html`, sem Supabase/Auth/armazenamento. Enfileirados **T5 confirmação/resumo; T6 pendências/teto; T7 revisão antiga; T8 falhas/repetição; T9 recusa/reinício/janela estreita**. Passos no topo do [roteiro consolidado](testes-humanos-pendentes.md). Sem obrigação de executar agora ou repetir casos aprovados.
+
+106 testes, TypeScript e compilação aprovados localmente. Navegador conferido em desktop e largura emulada de 390 px; celular físico pendente. Acesso será avaliado depois, conforme pedido de Gus; sem abertura de rede. Limites em [ciclo-e-interface-local.md](ciclo-e-interface-local.md).

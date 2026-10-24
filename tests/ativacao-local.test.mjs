@@ -57,7 +57,7 @@ test('ativacao local: nove kits, varias ativas da mesma autoria e preservacao de
  for(const classe of ['Agente','Autodidata','Operador'])for(const kit of ['A','B','C']){
   const id=await criar(db,A,classe,kit);const antes=await get(db,id);const resposta=await ativar(db,await pedido(db,id,op(n++)));
   const depois=await get(db,id);
-  assert.deepEqual(depois,{...antes,estado_ficha:'completa',revisao_criacao:antes.revisao_criacao+1});
+  assert.deepEqual(depois,{...antes,estado_ficha:'completa',metodo_criacao:'padrao',revisao_criacao:antes.revisao_criacao+1});
   assert.equal(resposta.estado,'completa');assert.equal(resposta.quantidadeInstancias,(await instances(db,id)).length);
   assert.equal((await instances(db,id)).filter(i=>i.dados.vinculadoClasse).length,2);
  }
@@ -205,13 +205,16 @@ test('ativacao local: bonus de Origem combinam com Parrudo; Misto resolvido pres
 
 test('resumo local: Mestre recebe somente operacao e passivos normais, sem narrativa ou inventario',async()=>{
  const db=await setup();try{
- const id=await criar(db,A,'Operador','B','parrudo');await ativar(db,await pedido(db,id));
+ const id=await criar(db,A,'Operador','B','parrudo');
+ await db.query("update public.personagens set identidade=identidade||'{\"genero\":\"Feminino\"}' where id=$1",[id]);
+ await ativar(db,await pedido(db,id));
  const r=await asRole(db,M,async()=>{
   assert.equal((await db.query('select * from public.personagens')).rows.length,0);
   assert.equal((await db.query('update public.personagens set pv_atual=1 where id=$1 returning id',[id])).rows.length,0);
   return(await db.query('select public.resumo_operacional_mesa($1) resumo',[T])).rows[0].resumo;
  });
  assert.equal(r.length,1);const p=r[0];
+ assert.equal(p.classe,'Operadora');assert.equal((await get(db,id)).classe,'Operador');
  assert.deepEqual(Object.keys(p).sort(),['personagemId','nome','classe','nivel','pv','sa','bi','defesa','passivos','condicoes'].sort());
  assert.equal(p.pv.atual,3);assert.equal(p.pv.maximo,18);assert.equal(p.passivos.Fortitude,11);assert.equal(p.passivos.Luta,16);
  assert.equal(Object.keys(p.passivos).length,12);assert.equal(p.condicoes,null);
