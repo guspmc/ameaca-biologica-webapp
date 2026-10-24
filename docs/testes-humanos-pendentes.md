@@ -1,7 +1,15 @@
 # Testes humanos pendentes — roteiro consolidado
 Atualizado em 23/10/2026. Este é o roteiro atual; o histórico foi preservado em [fila-testes-humanos.md](fila-testes-humanos.md).
 
-Não é necessário testar agora. Os casos abaixo podem ser feitos juntos quando Gus estiver no PC. Usar somente Mesa e personagens fictícias do ambiente TESTE. Nenhum caso exige produção, publicação ou ativação de ficha.
+## Situação atual — rodada respondida por Gus
+
+- **T1, T3 e T4: aprovados.** Não repetir sem mudança relevante.
+- **T2: fluxo aprovado por Gus, com sincronização imediata de B após compras em A.** A recusa de uma compra enviada com revisão antiga não foi demonstrada por esse comportamento; manter essa diferença de cobertura registrada, sem pedir repetição manual agora.
+- **Celular: não executado por falta de acesso à prévia local.** Aguarda preparação de acesso adequado; a tentativa de abrir o link no celular não é teste de layout ou funcionamento.
+
+Resultado e limites: [resultado-testes-humanos-2026-10-23.md](resultado-testes-humanos-2026-10-23.md).
+
+Os passos abaixo ficam preservados como roteiro da rodada realizada, não como pedido de novos testes agora. Usar somente Mesa e personagens fictícias do ambiente TESTE em eventuais regressões futuras. Nenhum caso exige produção, publicação ou ativação de ficha.
 
 ## Preparação — cerca de 3 minutos
 1. No PC que executa a prévia, abrir http://127.0.0.1:4174/ameaca-biologica-webapp/ . Se não abrir, informar que a prévia está indisponível; isso não é resultado de falha da ficha.

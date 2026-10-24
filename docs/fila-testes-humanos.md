@@ -72,3 +72,11 @@ O planejador de instâncias iniciais do inventário está somente em módulo loc
 ## Persistência interna do inventário — somente preparação local
 
 Protótipo transacional privado preparado e testado localmente. Nenhum teste humano novo solicitado; manter integração de inventário/ativação, duas contas, resposta interrompida e celular na rodada única ao final. Nenhuma operação remota nesta etapa. Ver inventario-persistencia-local.md.
+
+## Atualização: rodada T1–T4 respondida em 23/10/2026
+
+Gus aprovou T1, T2, T3 e T4 e enviou capturas. T1 mostra conflito de preferências recusado sem perder a escolha local; T3 mostra recusa da troca com compras, seguida de limpeza e troca aceita; T4 confirma descarte do que não foi salvo.
+
+Em T2, Gus relata atualização imediata de B após compras em A, sem erros. Registrar como fluxo/sincronização aprovado, não como prova de uma compra com revisão antiga recusada. A prova controlada desse conflito permanece uma cobertura técnica distinta; nenhuma repetição humana imediata foi solicitada.
+
+Celular não executado por indisponibilidade de acesso à prévia local. A captura da falha de abertura não valida layout ou interação da ficha. Não houve abertura de rede nem publicação. Relatório: [resultado-testes-humanos-2026-10-23.md](resultado-testes-humanos-2026-10-23.md).
