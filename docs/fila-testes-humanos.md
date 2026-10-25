@@ -116,3 +116,15 @@ T10/T11 receberam os casos futuros de falha de armazenamento e respostas atrasad
 Consulta autorizada de recibo ensaiada em PostgreSQL local, transporte ligado à página fictícia `tests/ui/recuperacao.html`. Agora é possível conferir F5 sem duplicar conjunto, recuperação sem referência local, falha de armazenamento e respostas atrasadas, sem banco ou contas reais.
 
 T13.1–T13.6 disponíveis em [teste-humano-recuperacao.md](teste-humano-recuperacao.md). T5–T9 permanecem aprovados; T10–T12 continuam futuros/condicionados. Somente T13 está sendo apresentado para a próxima rodada humana; o acesso físico pelo celular fica para depois. Relatório e limites em [consulta-resultado-e-qa.md](consulta-resultado-e-qa.md).
+
+## 25/10/2026 — ampliação autorizada para dez casos
+
+Gus pediu mais quatro interações humanas, totalizando dez. Acrescentados T13.7–T13.10 na mesma simulação isolada: consulta recusada, recibo inválido, completa sem recibo e resultado de outro pedido. T13.1–T13.6 continuam pendentes; não dependem destas novas confirmações. T10–T12 futuros continuam separados. Validação técnica: 141 testes, TypeScript, compilação e os quatro fluxos no navegador. Relatório: [rodada-recuperacao-ampliada-2026-10-25.md](rodada-recuperacao-ampliada-2026-10-25.md). Sem alterações remotas; mudanças salvas localmente sobre 7fbfc8c, sem novo commit nesta etapa.
+
+## 25/10/2026 — T13 encerrado e continuação local
+
+Gus confirmou T13.1–T13.10 e enviou 33 capturas. Todos os dez casos foram encerrados; evidências preservadas com SHA-256 fora do Git. Resultado: [resultado-testes-humanos-2026-10-25.md](resultado-testes-humanos-2026-10-25.md). T10–T12 permanecem condicionados à integração/acesso, celular físico pendente. Preparado ciclo local de seleção/encerramento da recuperação, sem alterar login ou aplicação conectada: [sessao-recuperacao-local.md](sessao-recuperacao-local.md). 145 testes aprovados. Nenhuma nova interação humana executável foi criada nesta etapa.
+
+## 25/10/2026 — protocolo até dez e gateway local
+
+Gus confirmou continuidade autônoma com até dez casos humanos, sem contar celular e com interrupção antecipada apenas por necessidade indispensável. Protocolo consolidado em [protocolo-autonomia-supervisionada.md](protocolo-autonomia-supervisionada.md). Gateway local de conferência/confirmação preparado e oito novos ensaios SQL aprovados; suíte total 153. Sem integração remota ou mudança na interface conectada. Fila executável nova: 0/10. [Relatório e limites](gateway-ativacao-local.md).

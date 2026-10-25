@@ -162,7 +162,7 @@ begin
  if not found then raise exception 'Contexto da Mesa ainda nao preparado.';end if;
  if contexto.metodo<>'padrao' or contexto.nivel_inicial<>1 or f.nivel<>1 then raise exception 'Somente criacao Padrao de nivel 1 contemplada.';end if;
  if not contexto.permite_criacao then raise exception 'Mesa nao permite criacao.';end if;
- if f.revisao_criacao<>p_revisao_ficha or contexto.revisao<>p_revisao_mesa then raise exception 'Revisao da ficha ou da Mesa desatualizada; escolhas preservadas.';end if;
+ if f.revisao_criacao<>p_revisao_ficha or contexto.revisao<>p_revisao_mesa then raise exception using errcode='PT409',message='Revisao da ficha ou da Mesa desatualizada; escolhas preservadas.',detail='AB_REVISAO';end if;
  -- Escreve a linha serializadora: snapshots de REPEATABLE READ/SERIALIZABLE
  -- devem abortar ao encontrar versao concorrente, em vez de contar snapshot antigo.
  -- Nao altera a revisao das escolhas da Mesa e nao e executado em repeticao.

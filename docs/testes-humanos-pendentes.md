@@ -1,11 +1,13 @@
 # Testes humanos pendentes — roteiro consolidado
-Atualizado em 24/10/2026. Este é o roteiro atual; o histórico foi preservado em [fila-testes-humanos.md](fila-testes-humanos.md).
+Atualizado em 25/10/2026. Este é o roteiro atual; o histórico foi preservado em [fila-testes-humanos.md](fila-testes-humanos.md).
 
 ## Situação atual — rodada respondida por Gus
 
+**Fila nova executável: 0/10.** Desenvolvimento segue o [protocolo de autonomia supervisionada](protocolo-autonomia-supervisionada.md). A preparação local de sessão e gateway não criou novos controles na aplicação. Casos futuros de integração e celular não são pedidos de teste nesta rodada.
+
 - **T1, T3 e T4: aprovados.** Não repetir sem mudança relevante.
 - **T5, T6, T7, T8 e T9: aprovados por Gus em 24/10/2026**, com treze capturas da simulação isolada. Não repetir sem mudança relevante. Resultado e limites em [resultado-testes-humanos-2026-10-24.md](resultado-testes-humanos-2026-10-24.md).
-- **T13.1–T13.6: nova rodada disponível somente na simulação de recuperação**, pendente de confirmação humana. [Roteiro enumerado com passos e resultados esperados](teste-humano-recuperacao.md). Não executa operações de campanha nem exige login.
+- **T13.1–T13.10: aprovados por Gus em 25/10/2026**, com 33 capturas da simulação de recuperação. [Resultado e limites](resultado-testes-humanos-2026-10-25.md). Não repetir sem alteração relevante. T10–T12 continuam futuros e condicionados à integração/acesso; não foram certificados pela simulação.
 - **T2: fluxo aprovado por Gus, com sincronização imediata de B após compras em A.** A recusa de uma compra enviada com revisão antiga não foi demonstrada por esse comportamento; manter essa diferença de cobertura registrada, sem pedir repetição manual agora.
 - **Celular: não executado por falta de acesso à prévia local.** Aguarda preparação de acesso adequado; a tentativa de abrir o link no celular não é teste de layout ou funcionamento.
 
