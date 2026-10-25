@@ -128,3 +128,7 @@ Gus confirmou T13.1–T13.10 e enviou 33 capturas. Todos os dez casos foram ence
 ## 25/10/2026 — protocolo até dez e gateway local
 
 Gus confirmou continuidade autônoma com até dez casos humanos, sem contar celular e com interrupção antecipada apenas por necessidade indispensável. Protocolo consolidado em [protocolo-autonomia-supervisionada.md](protocolo-autonomia-supervisionada.md). Gateway local de conferência/confirmação preparado e oito novos ensaios SQL aprovados; suíte total 153. Sem integração remota ou mudança na interface conectada. Fila executável nova: 0/10. [Relatório e limites](gateway-ativacao-local.md).
+
+## 25/10/2026 — contexto de criação e quatro casos enfileirados
+
+Preparadas leitura e gestão explícita do contexto Padrão nível 1, somente localmente. Pausar novas finalizações não encerra a Mesa ou altera rascunhos. Preparação de Mesa legada com personagens é recusada; sem mudança de método sem votação. 164 testes locais aprovados; simulação conferida no navegador. Fila 4/10: T14.1–T14.4, pendentes para rodada posterior. [Roteiro](teste-humano-contexto.md) e [relatório](contexto-criacao-local.md). T13 encerrado; celular fora da contagem; nada aplicado remotamente.

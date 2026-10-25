@@ -3,7 +3,7 @@ Atualizado em 25/10/2026. Este é o roteiro atual; o histórico foi preservado e
 
 ## Situação atual — rodada respondida por Gus
 
-**Fila nova executável: 0/10.** Desenvolvimento segue o [protocolo de autonomia supervisionada](protocolo-autonomia-supervisionada.md). A preparação local de sessão e gateway não criou novos controles na aplicação. Casos futuros de integração e celular não são pedidos de teste nesta rodada.
+**Fila nova executável: 4/10 — T14.1–T14.4**, somente [simulação do contexto de criação](teste-humano-contexto.md), enfileirados para a rodada posterior. Desenvolvimento segue o [protocolo de autonomia supervisionada](protocolo-autonomia-supervisionada.md). A aplicação conectada não foi alterada. Casos futuros de integração e celular não são pedidos de teste nesta rodada.
 
 - **T1, T3 e T4: aprovados.** Não repetir sem mudança relevante.
 - **T5, T6, T7, T8 e T9: aprovados por Gus em 24/10/2026**, com treze capturas da simulação isolada. Não repetir sem mudança relevante. Resultado e limites em [resultado-testes-humanos-2026-10-24.md](resultado-testes-humanos-2026-10-24.md).
