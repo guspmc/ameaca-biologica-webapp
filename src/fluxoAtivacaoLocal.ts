@@ -5,9 +5,10 @@ import {prepararSessaoRecuperacao} from './sessaoRecuperacao';
 
 type Contexto={usuarioId:string;mesaId:string;personagemId:string};
 type Etapa='sem_contexto'|'selecionada'|'conferindo'|'impedida'|'pronta'|'enviando'|'pendente'|'incerta'|'confirmada';
-type Estado={etapa:Etapa;contexto:Contexto|null;criacao:ContextoCriacao|null;conferencia:ConferenciaAtivacao|null;recibo:ReciboAtivacao|null;conferida:boolean;pedidoPreservado:boolean;mensagem:string};
+type RevisoesPedido={fichaPreservada:number;mesaPreservada:number;fichaAtual:number;mesaAtual:number};
+type Estado={etapa:Etapa;contexto:Contexto|null;criacao:ContextoCriacao|null;conferencia:ConferenciaAtivacao|null;recibo:ReciboAtivacao|null;conferida:boolean;pedidoPreservado:boolean;revisoesPedido:RevisoesPedido|null;mensagem:string};
 type Dependencias={cliente:ClienteAtivacaoRPC;armazenamento:Pick<Storage,'getItem'|'setItem'>;criarId?:()=>string};
-const inicial=(contexto:Contexto|null=null):Estado=>({etapa:contexto?'selecionada':'sem_contexto',contexto,criacao:null,conferencia:null,recibo:null,conferida:false,pedidoPreservado:false,mensagem:''});
+const inicial=(contexto:Contexto|null=null):Estado=>({etapa:contexto?'selecionada':'sem_contexto',contexto,criacao:null,conferencia:null,recibo:null,conferida:false,pedidoPreservado:false,revisoesPedido:null,mensagem:''});
 const falhar=(texto:string):never=>{throw new FalhaAtivacao(texto,'regra');};
 
 // Composição local desconectada: não lê Auth, não cria cliente SDK nem consulta ao montar.
@@ -50,6 +51,7 @@ export function prepararFluxoAtivacaoLocal({cliente,armazenamento,criarId}:Depen
     const conferencia=await servico.conferir(c.personagemId);if(!atual())return 'descartada';vista.conferencia=conferencia;
     if(conferencia.revisaoMesa!==cfg.revisao||conferencia.pendencias.length||conferencia.ativas>=10){vista={...vista,etapa:'impedida',mensagem:'Confira os impedimentos ou atualize o contexto da criação.'};return 'atual';}
     if(p){
+     vista.revisoesPedido={fichaPreservada:p.revisaoFicha,mesaPreservada:p.revisaoMesa,fichaAtual:conferencia.revisaoFicha,mesaAtual:cfg.revisao};
      if(p.revisaoFicha!==conferencia.revisaoFicha||p.revisaoMesa!==cfg.revisao){vista={...vista,etapa:'impedida',mensagem:'Pedido preservado com revisões diferentes. É necessária reconciliação antes de outro envio; a referência foi mantida.'};return 'atual';}
      vista={...vista,etapa:'pendente',mensagem:'Pedido preservado sem recibo neste momento. Somente repetição explícita do mesmo pedido.'};return 'atual';
     }

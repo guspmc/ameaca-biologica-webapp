@@ -136,3 +136,7 @@ Preparadas leitura e gestão explícita do contexto Padrão nível 1, somente lo
 ## 25/10/2026 — composição local do fluxo
 
 T14.1–T14.4 permanecem pendentes. Acrescentados T15.1–T15.3, somente simulação em memória: confirmação explícita/reabertura, pausa e recuperação de resposta perdida sem segundo envio. Roteiro: [teste-humano-fluxo.md](teste-humano-fluxo.md). Fila executável 7/10; pode aguardar. T13 não reaberto; T10–T12 e celular separados. Nenhuma integração remota nesta etapa.
+
+## 25/10/2026 — fila fechada em dez casos
+
+Adicionados T15.4–T15.6: falha antes da gravação/repetição explícita, revisões divergentes com referência preservada e falha de armazenamento sem envio. Fila executável 10/10: quatro T14 e seis T15. Índice: [rodada-10-testes-locais.md](rodada-10-testes-locais.md). Aguardar rodada humana antes de ampliar. Celular fora da contagem; T13 permanece encerrado. Nenhuma mudança remota.

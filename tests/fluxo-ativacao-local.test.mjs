@@ -5,6 +5,7 @@ const carregados={};for(const nome of ['pedidoAtivacao','recuperacaoAtivacao','s
  for(const [anterior,u]of Object.entries(carregados))s=s.replaceAll("'./"+anterior+"'",JSON.stringify(u));carregados[nome]=uri(s);
 }
 const {prepararFluxoAtivacaoLocal}=await import(carregados.fluxoAtivacaoLocal);
+const {prepararFluxoQA,CONTEXTO_FLUXO_QA}=await import(uri(ts.transpileModule(await readFile(new URL('./ui/estadoFluxo.ts',import.meta.url),'utf8'),{compilerOptions:{module:ts.ModuleKind.ESNext,target:ts.ScriptTarget.ES2022}}).outputText));
 const id=n=>'00000000-0000-4000-8000-'+String(n).padStart(12,'0');
 const contexto=()=>({usuarioId:id(1),mesaId:id(2),personagemId:id(3)});
 const adiar=()=>{let ok;const promessa=new Promise(r=>{ok=r;});return {promessa,ok};};
@@ -52,6 +53,26 @@ test('fluxo local: cliques compartilham envio, encerramento descarta recibo tard
 });
 test('fluxo local: armazenamento ilegivel impede conferir ou enviar e nao vaza erro interno',async()=>{
  const f=fixture();f.deps.armazenamento.getItem=()=>{throw Error('SEGREDO');};const x=f.novo();x.selecionar(contexto());await x.conferir();assert.equal(x.estado().etapa,'incerta');assert.ok(!x.estado().mensagem.includes('SEGREDO'));assert.equal(f.chamadas.length,0);assert.throws(()=>x.confirmar());
+});
+
+for(const cenario of ['antes','revisao','armazenamento'])test('fluxo QA integrado: '+cenario,async()=>{
+ const servidor=prepararFluxoQA(cenario);let ids=0;const x=prepararFluxoAtivacaoLocal({cliente:servidor,armazenamento:servidor.armazenamento,criarId:()=>{ids++;return id(15);}});
+ x.selecionar(CONTEXTO_FLUXO_QA);await x.conferir();x.consentir(true);await x.confirmar();assert.equal(x.estado().etapa,'incerta');
+ const chave=['ab','ativacao','1',CONTEXTO_FLUXO_QA.usuarioId,CONTEXTO_FLUXO_QA.mesaId,CONTEXTO_FLUXO_QA.personagemId].join(':');const referencia=servidor.armazenamento.getItem(chave);
+ assert.equal(servidor.estado().conjuntos,0);assert.equal(servidor.estado().envios,cenario==='armazenamento'?0:1);
+ if(cenario==='armazenamento'){
+  assert.equal(referencia,null);assert.equal(x.estado().pedidoPreservado,false);await x.conferir();assert.equal(x.estado().etapa,'pronta');assert.equal(x.estado().conferida,false);assert.equal(servidor.estado().envios,0);
+ }else{
+  assert.ok(referencia);await x.conferir();assert.equal(servidor.armazenamento.getItem(chave),referencia);assert.equal(servidor.estado().envios,1);
+  const esperado={fichaPreservada:2,mesaPreservada:3,fichaAtual:2,mesaAtual:cenario==='revisao'?4:3};assert.deepEqual(x.estado().revisoesPedido,esperado);
+  const copia=x.estado();copia.revisoesPedido.mesaAtual=99;assert.deepEqual(x.estado().revisoesPedido,esperado);
+  if(cenario==='revisao'){
+   assert.equal(x.estado().etapa,'impedida');assert.throws(()=>x.repetir());assert.throws(()=>x.confirmar());x.encerrar();assert.equal(x.estado().revisoesPedido,null);x.selecionar(CONTEXTO_FLUXO_QA);await x.conferir();assert.equal(x.estado().etapa,'impedida');assert.equal(servidor.estado().envios,1);assert.equal(servidor.armazenamento.getItem(chave),referencia);
+  }else{
+   assert.equal(x.estado().etapa,'pendente');assert.throws(()=>x.confirmar());await x.repetir();assert.equal(x.estado().etapa,'confirmada');assert.equal(x.estado().recibo.operacaoId,JSON.parse(referencia).pedido.operacaoId);assert.equal(servidor.estado().envios,2);assert.equal(servidor.estado().conjuntos,1);assert.equal(servidor.armazenamento.getItem(chave),referencia);
+  }
+ }
+ assert.equal(ids,1);assert.deepEqual([servidor.estado().pv,servidor.estado().sa,servidor.estado().bi],[7,1,3]);
 });
 
 test('fluxo local: composicao completa usa SQL local autorizado e recupera confirmacao sem outro envio',async()=>{

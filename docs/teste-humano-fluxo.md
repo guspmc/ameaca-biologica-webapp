@@ -1,6 +1,6 @@
 # T15 — fluxo combinado, somente simulação local
 
-**Três casos enfileirados para a próxima rodada. Não é necessário testar agora.** Somados aos quatro T14, a fila tem 7/10. Não repetir T13. Celular não entra na contagem.
+**Seis casos enfileirados para a próxima rodada.** Somados aos quatro T14, a fila está fechada em 10/10. Não repetir T13. Celular não entra na contagem. [Índice único dos dez testes](rodada-10-testes-locais.md).
 
 No PC da prévia, abrir http://127.0.0.1:4174/ameaca-biologica-webapp/tests/ui/fluxo.html . Confirmar o aviso **SIMULAÇÃO ISOLADA · FLUXO DE ATIVAÇÃO**. Não há login nem acesso a campanha. F5, Reiniciar ou trocar cenário zera a simulação; durante cada caso, reabrir pelo botão indicado, sem F5.
 
@@ -27,4 +27,27 @@ No PC da prévia, abrir http://127.0.0.1:4174/ameaca-biologica-webapp/tests/ui/f
 4. **Sem F5**, clicar **Abrir ou reabrir ficha fictícia**, depois **Consultar e conferir**.
 5. Esperado: `confirmada`, “Resultado recuperado por consulta, sem envio”, identificador e cinco itens; Envios 1/conjuntos 1, PV 7/SA 1/BI 3. Nenhuma segunda ativação para recuperar a resposta.
 
-Pode responder: “T15.1 aprovado; T15.2 aprovado; T15.3 aprovado”. Se falhar, informar caso, passo e mensagem; uma captura ajuda. Estes casos não certificam Auth, banco remoto, concorrência real ou celular.
+## T15.4 — falha antes de gravar e repetição explícita (2 minutos)
+
+1. Escolher **Falha antes de gravar**. Abrir a ficha fictícia, consultar/conferir, marcar a caixa e confirmar uma vez.
+2. Esperado: `incerta`, referência preservada, Envios 1/conjuntos 0. Confirmar e repetir desabilitados. Nenhum reenvio por conta própria.
+3. Clicar **Consultar e conferir**. Esperado: `pendente`, revisões preservadas e consultadas iguais: ficha 2/Mesa 3. Envios continua 1/conjuntos 0; nova confirmação bloqueada e **Repetir pedido preservado** disponível.
+4. Clicar **Repetir pedido preservado** uma vez. Esperado: `confirmada`, Envios 2/conjuntos 1, cinco itens iniciais e PV 7/SA 1/BI 3. São duas tentativas e um único conjunto, não duas compras ou duas fichas.
+5. Reabrir pelo botão e consultar novamente. Esperado: mesmo identificador confirmado, Envios 2/conjuntos 1.
+
+## T15.5 — revisão mudou e pedido precisa de reconciliação (2 minutos)
+
+1. Escolher **Revisão mudou com pedido pendente**. Abrir, consultar/conferir, marcar a caixa e confirmar uma vez.
+2. Esperado: `incerta`, referência preservada, Envios 1/conjuntos 0. A simulação mudou a revisão da Mesa depois da tentativa sem gravação.
+3. Clicar **Consultar e conferir**. Esperado: `impedida`; pedido preservado com ficha 2/Mesa 3 e consulta atual com ficha 2/Mesa 4. Aviso de reconciliação necessária; confirmar, caixa e repetir desabilitados.
+4. Clicar **Abrir ou reabrir ficha fictícia**, depois **Consultar e conferir**. Esperado: permanece impedida, mesmas revisões e referência preservada; Envios 1/conjuntos 0, PV 7/SA 1/BI 3.
+5. Não tentar apagar armazenamento ou desbloquear: este caso valida a conservação do pedido ambíguo. A solução definitiva de reconciliação ainda não está implementada. Trocar cenário encerra apenas estes dados fictícios.
+
+## T15.6 — não foi possível preservar o pedido (2 minutos)
+
+1. Escolher **Falha ao preservar pedido**. Abrir, consultar/conferir, marcar a caixa e confirmar uma vez.
+2. Esperado: `incerta`, referência ausente, **Envios 0/conjuntos 0**, sem confirmação de sucesso. Caixa, confirmar e repetir desabilitados; PV 7/SA 1/BI 3.
+3. Clicar **Consultar e conferir**. Esperado: `pronta`, mas caixa desmarcada e confirmar desabilitado até novo consentimento. Envios 0/conjuntos 0; consulta não envia nada.
+4. Não precisa alterar permissões do navegador, desligar internet ou testar nova confirmação: a falha de armazenamento é fictícia e continua ativa neste cenário.
+
+Pode responder em partes: “T15.1 aprovado; …; T15.6 aprovado”. Se falhar, informar caso, passo e mensagem; uma captura ajuda. Estes casos não certificam Auth, banco remoto, concorrência real ou celular.
