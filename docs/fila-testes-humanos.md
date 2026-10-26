@@ -2,7 +2,7 @@
 
 > Roteiro atual consolidado: [testes-humanos-pendentes.md](testes-humanos-pendentes.md). As seções abaixo preservam o histórico; instruções antigas podem já estar concluídas.
 
-**Estado atual em 26/10/2026:** T17 e MC6 aprovados, encerrados conforme [resultado escrito](resultado-t17-mc6-2026-10-26.md). Nova fila PC **10/10 T18** e celular **10/10 MC7**, organização fictícia de espaços. [PC](rodada-organizacao-pc-2026-10-26.md), [celular](rodada-organizacao-celular-2026-10-26.md), [relatório](organizacao-inventario-local-2026-10-26.md). Aguardar resultados antes de ampliar.
+**Estado atual em 26/10/2026:** T18 e MC7.1–MC7.8 aprovados, conforme [resultado escrito](resultado-t18-mc7-parcial-2026-10-26.md). MC7.9 e MC7.10 não confirmados. PC **10/10 T19**, [roteiro](rodada-retomada-pc-2026-10-26.md); celular **10/10**, duas pendências MC7 e oito novas MC8, [fila completa](fila-celular-retomada-2026-10-26.md). Aguardar resultados antes de ampliar.
 
 As confirmações anteriores de Gus permanecem registradas: Origens, Perícias, Habilidades, kits, identidade, flexões, busca, simulação, privacidade dos rascunhos e janela estreita. Não repetir sem mudança relevante.
 
