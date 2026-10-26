@@ -2,7 +2,7 @@
 
 > Roteiro atual consolidado: [testes-humanos-pendentes.md](testes-humanos-pendentes.md). As seções abaixo preservam o histórico; instruções antigas podem já estar concluídas.
 
-**Estado atual em 26/10/2026:** T16 e MC5 aprovados, encerrados em Windows 11/Edge e Galaxy S24 FE/Samsung Browser. Nova fila PC **10/10 T17** e celular **10/10 MC6**, consulta do inventário. [PC](rodada-inventario-pc-2026-10-26.md), [celular](rodada-inventario-celular-2026-10-26.md), [resultado anterior](resultado-t16-mc5-2026-10-26.md). Aguardar resultados antes de ampliar.
+**Estado atual em 26/10/2026:** T17 e MC6 aprovados, encerrados conforme [resultado escrito](resultado-t17-mc6-2026-10-26.md). Nova fila PC **10/10 T18** e celular **10/10 MC7**, organização fictícia de espaços. [PC](rodada-organizacao-pc-2026-10-26.md), [celular](rodada-organizacao-celular-2026-10-26.md), [relatório](organizacao-inventario-local-2026-10-26.md). Aguardar resultados antes de ampliar.
 
 As confirmações anteriores de Gus permanecem registradas: Origens, Perícias, Habilidades, kits, identidade, flexões, busca, simulação, privacidade dos rascunhos e janela estreita. Não repetir sem mudança relevante.
 

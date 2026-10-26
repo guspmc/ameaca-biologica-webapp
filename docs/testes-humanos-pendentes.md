@@ -1,11 +1,13 @@
 # Testes humanos pendentes — roteiro consolidado
 Atualizado em 26/10/2026. Este é o roteiro atual; o histórico foi preservado em [fila-testes-humanos.md](fila-testes-humanos.md).
 
-## Situação atual — inventário por exemplar
+## Situação atual — organização de espaços
 
 **T16.1–T16.10 e MC5.1–MC5.10 aprovados por Gus em 26/10/2026**: Windows 11/Microsoft Edge e Galaxy S24 FE/Samsung Browser. [Resultado escrito e limites](resultado-t16-mc5-2026-10-26.md). As duas filas anteriores estão encerradas.
 
-**Fila PC: 10/10 — T17.1–T17.10** no [roteiro PC](rodada-inventario-pc-2026-10-26.md). **Fila celular: 10/10 — MC6.1–MC6.10** no [roteiro independente](rodada-inventario-celular-2026-10-26.md). Consulta fictícia do inventário por exemplar, sem ações de jogo. [Relatório técnico](inventario-consulta-local-2026-10-26.md). Aguardar resultados antes de ampliar. Roteiros antigos preservados para regressão.
+**T17.1–T17.10 e MC6.1–MC6.10 aprovados por Gus em 26/10/2026**, conforme [confirmação escrita e limites](resultado-t17-mc6-2026-10-26.md). Não repetir sem mudança relevante.
+
+**Fila PC: 10/10 — T18.1–T18.10** no [roteiro PC](rodada-organizacao-pc-2026-10-26.md). **Fila celular: 10/10 — MC7.1–MC7.10** no [roteiro independente](rodada-organizacao-celular-2026-10-26.md). Organização de posições em simulação isolada: prévia, consentimento e recuperação por consulta. [Relatório técnico](organizacao-inventario-local-2026-10-26.md). Aguardar resultados antes de ampliar. Roteiros anteriores preservados.
 
 **T14.1–T14.4 e T15.1–T15.6 aprovados por Gus em 25/10/2026**, com 30 capturas preservadas. [Resultado da rodada encerrada](resultado-testes-humanos-t14-t15-2026-10-25.md). Seus roteiros ficam como histórico de regressão. Desenvolvimento segue o [protocolo de autonomia supervisionada](protocolo-autonomia-supervisionada.md). A aplicação conectada não foi alterada; integração remota permanece condicionada a autorização específica.
 

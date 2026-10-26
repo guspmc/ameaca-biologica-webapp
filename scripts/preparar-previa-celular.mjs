@@ -7,7 +7,7 @@ import {resolve,dirname} from 'node:path';
 
 const raiz=resolve(dirname(fileURLToPath(import.meta.url)),'..');
 const destino=resolve(raiz,'../output/previa-celular');
-const entradas=['celular','compras','contexto','fluxo','ativacao','resumo','inventario'].map(n=>resolve(raiz,`tests/ui/${n}.html`));
+const entradas=['celular','compras','contexto','fluxo','ativacao','resumo','inventario','organizacao'].map(n=>resolve(raiz,`tests/ui/${n}.html`));
 // Entrada fechada: nenhuma aplicação conectada, SDK, pasta pública ou .env exposta.
 const resultado=await build({configFile:false,root:raiz,base:'/',mode:'qa-celular',envPrefix:'QA_CELULAR_',publicDir:false,plugins:[react(),{
  name:'qa-sem-conexao',generateBundle(_op,bundle){
