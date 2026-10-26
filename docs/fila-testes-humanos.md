@@ -144,3 +144,7 @@ Adicionados T15.4–T15.6: falha antes da gravação/repetição explícita, rev
 ## 25/10/2026 — T14 e T15 aprovados por Gus
 
 Confirmação explícita dos dez casos T14.1–T14.4 e T15.1–T15.6, com 30 capturas originais preservadas fora do Git e índice SHA-256. Resultado: [resultado-testes-humanos-t14-t15-2026-10-25.md](resultado-testes-humanos-t14-t15-2026-10-25.md). Rodada encerrada; fila executável atual 0/10. Não repetir sem mudança relevante. T13 preservado como aprovado; T10–T12 e celular continuam separados. Aprovação somente das simulações, sem autorização de integração remota, publicação ou merge.
+
+## 26/10/2026 — preparação para celular físico
+
+Prévia estática de interfaces fictícias preparada e servida em IPv4 privado, sem firewall ou publicação externa. MC1–MC4 em [teste-celular.md](teste-celular.md), fora da fila comum, que permanece 0/10. Acesso do aparelho ainda não confirmado; teste no PC não certifica conectividade/toque/teclado/rotação. T14/T15 continuam aprovados. Relatório: [previa-celular-local.md](previa-celular-local.md).

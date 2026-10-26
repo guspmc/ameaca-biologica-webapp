@@ -1,8 +1,8 @@
 import {useRef,useState} from 'react';
 import {confirmarAtivacao,FalhaAtivacao,type ConferenciaAtivacao,type PedidoAtivacao,type ReciboAtivacao} from './pedidoAtivacao';
-type Props={aoConferir:()=>Promise<ConferenciaAtivacao>;aoAtivar:(pedido:PedidoAtivacao)=>Promise<ReciboAtivacao>};
+type Props={aoConferir:()=>Promise<ConferenciaAtivacao>;aoAtivar:(pedido:PedidoAtivacao)=>Promise<ReciboAtivacao>;criarId?:()=>string};
 // Componente isolado: nenhum backend e chamado durante a renderizacao.
-export default function RevisaoAtivacao({aoConferir,aoAtivar}:Props){
+export default function RevisaoAtivacao({aoConferir,aoAtivar,criarId}:Props){
  const [conferencia,setConferencia]=useState<ConferenciaAtivacao|null>(null),[confirmado,setConfirmado]=useState(false);
  const [ocupado,setOcupado]=useState(false),[erro,setErro]=useState(''),[incerto,setIncerto]=useState(false),[concluido,setConcluido]=useState(false);
  const trava=useRef(false),controle=useRef<ReturnType<typeof confirmarAtivacao>|null>(null);
@@ -15,7 +15,7 @@ export default function RevisaoAtivacao({aoConferir,aoAtivar}:Props){
  async function ativar(){
   if(trava.current||!conferencia||!confirmado||concluido)return;
   trava.current=true;setOcupado(true);setErro('');
-  try{controle.current??=confirmarAtivacao(conferencia);await controle.current.executar(aoAtivar);setConcluido(true);setIncerto(false);}
+  try{controle.current??=confirmarAtivacao(conferencia,criarId);await controle.current.executar(aoAtivar);setConcluido(true);setIncerto(false);}
   catch(e){setErro(e instanceof Error?e.message:'Não foi possível obter a confirmação.');setIncerto(!(e instanceof FalhaAtivacao)||e.tipo==='incerto');}
   finally{trava.current=false;setOcupado(false);}
  }

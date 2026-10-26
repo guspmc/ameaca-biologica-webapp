@@ -1,5 +1,5 @@
 # Testes humanos pendentes — roteiro consolidado
-Atualizado em 25/10/2026. Este é o roteiro atual; o histórico foi preservado em [fila-testes-humanos.md](fila-testes-humanos.md).
+Atualizado em 26/10/2026. Este é o roteiro atual; o histórico foi preservado em [fila-testes-humanos.md](fila-testes-humanos.md).
 
 ## Situação atual — rodada respondida por Gus
 
@@ -9,7 +9,7 @@ Atualizado em 25/10/2026. Este é o roteiro atual; o histórico foi preservado e
 - **T5, T6, T7, T8 e T9: aprovados por Gus em 24/10/2026**, com treze capturas da simulação isolada. Não repetir sem mudança relevante. Resultado e limites em [resultado-testes-humanos-2026-10-24.md](resultado-testes-humanos-2026-10-24.md).
 - **T13.1–T13.10: aprovados por Gus em 25/10/2026**, com 33 capturas da simulação de recuperação. [Resultado e limites](resultado-testes-humanos-2026-10-25.md). Não repetir sem alteração relevante. T10–T12 continuam futuros e condicionados à integração/acesso; não foram certificados pela simulação.
 - **T2: fluxo aprovado por Gus, com sincronização imediata de B após compras em A.** A recusa de uma compra enviada com revisão antiga não foi demonstrada por esse comportamento; manter essa diferença de cobertura registrada, sem pedir repetição manual agora.
-- **Celular: não executado por falta de acesso à prévia local.** Aguarda preparação de acesso adequado; a tentativa de abrir o link no celular não é teste de layout ou funcionamento.
+- **Celular: prévia fictícia estática preparada na rede local em 26/10/2026; acesso do aparelho ainda não confirmado.** [MC1–MC4 e passos de acesso](teste-celular.md), separados da fila comum 0/10. Requer celular e PC na mesma rede. A tentativa anterior por localhost não é teste de layout ou funcionamento. [Escopo e validações da preparação](previa-celular-local.md).
 
 Resultado e limites: [resultado-testes-humanos-2026-10-23.md](resultado-testes-humanos-2026-10-23.md).
 

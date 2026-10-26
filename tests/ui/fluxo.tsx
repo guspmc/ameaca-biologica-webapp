@@ -1,10 +1,11 @@
 import {createRoot} from 'react-dom/client';import {useMemo,useState} from 'react';
 import {prepararFluxoAtivacaoLocal} from '../../src/fluxoAtivacaoLocal';
 import {prepararFluxoQA,CONTEXTO_FLUXO_QA,type CenarioFluxo} from './estadoFluxo';
+import {prepararIdsFicticios} from './idsFicticios';
 import '../../src/styles.css';import './ativacao.css';
 function Painel({cenario}:{cenario:CenarioFluxo}){
  const servidor=useMemo(()=>prepararFluxoQA(cenario),[cenario]);
- const fluxo=useMemo(()=>prepararFluxoAtivacaoLocal({cliente:servidor,armazenamento:servidor.armazenamento}),[servidor]);
+ const fluxo=useMemo(()=>prepararFluxoAtivacaoLocal({cliente:servidor,armazenamento:servidor.armazenamento,criarId:prepararIdsFicticios()}),[servidor]);
  const [vista,setVista]=useState(fluxo.estado()),[dados,setDados]=useState(servidor.estado()),[ocupado,setOcupado]=useState(false),[aviso,setAviso]=useState('');
  function atualizar(){setVista(fluxo.estado());setDados(servidor.estado());}
  async function executar(fn:()=>Promise<unknown>){setOcupado(true);setAviso('');try{await fn();}catch{setAviso('Ação indisponível neste estado. Consulte novamente.');}finally{atualizar();setOcupado(false);}}
