@@ -1,6 +1,6 @@
 # T14 — contexto de criação, somente simulação
 
-**Enfileirados: quatro casos, pendentes de teste humano.** Fazem parte da fila de até dez; não é necessário interromper outras atividades para executá-los agora. T13 permanece encerrado. Estes identificadores pertencem à fila do WebApp, não à tabela de cenários do Planejamento oficial.
+**T14.1–T14.4 aprovados por Gus em 25/10/2026.** [Resultado e limites](resultado-testes-humanos-t14-t15-2026-10-25.md). Roteiro preservado para regressão; não constitui pedido de repetir a rodada. T13 permanece encerrado. Estes identificadores pertencem à fila do WebApp, não à tabela de cenários do Planejamento oficial.
 
 Abrir no PC: http://127.0.0.1:4174/ameaca-biologica-webapp/tests/ui/contexto.html
 

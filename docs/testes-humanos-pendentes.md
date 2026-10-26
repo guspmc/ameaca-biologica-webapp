@@ -3,7 +3,7 @@ Atualizado em 25/10/2026. Este é o roteiro atual; o histórico foi preservado e
 
 ## Situação atual — rodada respondida por Gus
 
-**Fila nova executável fechada: 10/10 — T14.1–T14.4 e T15.1–T15.6**, somente [simulação do contexto de criação](teste-humano-contexto.md) e [fluxo combinado](teste-humano-fluxo.md). [Índice enumerado da rodada](rodada-10-testes-locais.md). Aguardar a confirmação desta rodada antes de ampliar a fila. Desenvolvimento segue o [protocolo de autonomia supervisionada](protocolo-autonomia-supervisionada.md). A aplicação conectada não foi alterada. Casos futuros de integração e celular não são pedidos de teste nesta rodada.
+**Fila executável atual: 0/10. T14.1–T14.4 e T15.1–T15.6 aprovados por Gus em 25/10/2026**, com 30 capturas preservadas. [Resultado e limites da rodada encerrada](resultado-testes-humanos-t14-t15-2026-10-25.md). O [índice dos dez casos](rodada-10-testes-locais.md) e seus roteiros ficam como histórico de regressão, não como pedido de repetição. Desenvolvimento segue o [protocolo de autonomia supervisionada](protocolo-autonomia-supervisionada.md). A aplicação conectada não foi alterada. Casos futuros de integração e celular continuam separados.
 
 - **T1, T3 e T4: aprovados.** Não repetir sem mudança relevante.
 - **T5, T6, T7, T8 e T9: aprovados por Gus em 24/10/2026**, com treze capturas da simulação isolada. Não repetir sem mudança relevante. Resultado e limites em [resultado-testes-humanos-2026-10-24.md](resultado-testes-humanos-2026-10-24.md).

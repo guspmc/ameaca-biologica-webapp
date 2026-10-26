@@ -140,3 +140,7 @@ T14.1–T14.4 permanecem pendentes. Acrescentados T15.1–T15.3, somente simula�
 ## 25/10/2026 — fila fechada em dez casos
 
 Adicionados T15.4–T15.6: falha antes da gravação/repetição explícita, revisões divergentes com referência preservada e falha de armazenamento sem envio. Fila executável 10/10: quatro T14 e seis T15. Índice: [rodada-10-testes-locais.md](rodada-10-testes-locais.md). Aguardar rodada humana antes de ampliar. Celular fora da contagem; T13 permanece encerrado. Nenhuma mudança remota.
+
+## 25/10/2026 — T14 e T15 aprovados por Gus
+
+Confirmação explícita dos dez casos T14.1–T14.4 e T15.1–T15.6, com 30 capturas originais preservadas fora do Git e índice SHA-256. Resultado: [resultado-testes-humanos-t14-t15-2026-10-25.md](resultado-testes-humanos-t14-t15-2026-10-25.md). Rodada encerrada; fila executável atual 0/10. Não repetir sem mudança relevante. T13 preservado como aprovado; T10–T12 e celular continuam separados. Aprovação somente das simulações, sem autorização de integração remota, publicação ou merge.

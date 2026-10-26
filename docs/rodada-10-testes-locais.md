@@ -1,6 +1,6 @@
 # Rodada de dez testes humanos locais
 
-Fila fechada em **10/10**, em 25/10/2026. Nenhum destes casos foi declarado aprovado por humano. T13 continua encerrado. Celular, T10–T12 e integrações remotas ficam separados; não aumentam esta contagem.
+**Rodada encerrada: os dez casos foram aprovados por Gus em 25/10/2026**, com 30 capturas. [Resultado e limites](resultado-testes-humanos-t14-t15-2026-10-25.md). Fila executável atual 0/10. Os passos abaixo ficam preservados para regressão; não repetir sem mudança relevante. T13 continua encerrado. Celular, T10–T12 e integrações remotas ficam separados.
 
 Somente simulações fictícias no PC da prévia, sem login, banco remoto ou alteração em campanha. Pode executar e confirmar em partes. Tempo aproximado total: 20–25 minutos. Os roteiros vinculados abaixo detalham os botões, a sequência e os resultados esperados.
 

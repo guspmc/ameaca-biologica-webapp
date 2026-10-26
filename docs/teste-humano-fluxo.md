@@ -1,6 +1,6 @@
 # T15 — fluxo combinado, somente simulação local
 
-**Seis casos enfileirados para a próxima rodada.** Somados aos quatro T14, a fila está fechada em 10/10. Não repetir T13. Celular não entra na contagem. [Índice único dos dez testes](rodada-10-testes-locais.md).
+**T15.1–T15.6 aprovados por Gus em 25/10/2026**, junto aos quatro T14. [Resultado e limites](resultado-testes-humanos-t14-t15-2026-10-25.md). Roteiro preservado para regressão; não repetir sem mudança relevante. Celular continua separado. [Índice da rodada encerrada](rodada-10-testes-locais.md).
 
 No PC da prévia, abrir http://127.0.0.1:4174/ameaca-biologica-webapp/tests/ui/fluxo.html . Confirmar o aviso **SIMULAÇÃO ISOLADA · FLUXO DE ATIVAÇÃO**. Não há login nem acesso a campanha. F5, Reiniciar ou trocar cenário zera a simulação; durante cada caso, reabrir pelo botão indicado, sem F5.
 
