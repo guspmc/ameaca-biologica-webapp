@@ -5,7 +5,7 @@ export class FalhaAtivacao extends Error{
  constructor(mensagem:string,public readonly tipo:'revisao'|'regra'|'incerto'){super(mensagem);}
 }
 // Uma confirmacao conserva o mesmo identificador e snapshot em todas as tentativas.
-export function confirmarAtivacao(conferencia:ConferenciaAtivacao,criarId=()=>crypto.randomUUID()){
+export function confirmarAtivacao(conferencia:ConferenciaAtivacao,criarId:()=>string=()=>crypto.randomUUID()){
  if(!conferencia.personagemId||conferencia.pendencias.length||!Number.isSafeInteger(conferencia.ativas)||conferencia.ativas<0||conferencia.ativas>=10
  ||![conferencia.revisaoFicha,conferencia.revisaoMesa].every(n=>Number.isSafeInteger(n)&&n>=0))throw new FalhaAtivacao('A criação precisa ser conferida antes de ativar.','regra');
  const base={personagemId:conferencia.personagemId,revisaoFicha:conferencia.revisaoFicha,revisaoMesa:conferencia.revisaoMesa};

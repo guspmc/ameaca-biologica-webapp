@@ -132,3 +132,7 @@ Gus confirmou continuidade autônoma com até dez casos humanos, sem contar celu
 ## 25/10/2026 — contexto de criação e quatro casos enfileirados
 
 Preparadas leitura e gestão explícita do contexto Padrão nível 1, somente localmente. Pausar novas finalizações não encerra a Mesa ou altera rascunhos. Preparação de Mesa legada com personagens é recusada; sem mudança de método sem votação. 164 testes locais aprovados; simulação conferida no navegador. Fila 4/10: T14.1–T14.4, pendentes para rodada posterior. [Roteiro](teste-humano-contexto.md) e [relatório](contexto-criacao-local.md). T13 encerrado; celular fora da contagem; nada aplicado remotamente.
+
+## 25/10/2026 — composição local do fluxo
+
+T14.1–T14.4 permanecem pendentes. Acrescentados T15.1–T15.3, somente simulação em memória: confirmação explícita/reabertura, pausa e recuperação de resposta perdida sem segundo envio. Roteiro: [teste-humano-fluxo.md](teste-humano-fluxo.md). Fila executável 7/10; pode aguardar. T13 não reaberto; T10–T12 e celular separados. Nenhuma integração remota nesta etapa.
