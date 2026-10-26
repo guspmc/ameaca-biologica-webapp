@@ -2,7 +2,7 @@
 
 > Roteiro atual consolidado: [testes-humanos-pendentes.md](testes-humanos-pendentes.md). As seções abaixo preservam o histórico; instruções antigas podem já estar concluídas.
 
-**Estado atual em 26/10/2026:** PC **10/10** T16.1–T16.10 ([roteiro](rodada-resumo-pc-2026-10-26.md)); celular **10/10** MC5.1–MC5.10 ([roteiro independente](rodada-resumo-celular-2026-10-26.md)). MC1–MC4 aprovados no Galaxy S24 FE. Aguardar esta rodada antes de ampliar a fila.
+**Estado atual em 26/10/2026:** T16 e MC5 aprovados, encerrados em Windows 11/Edge e Galaxy S24 FE/Samsung Browser. Nova fila PC **10/10 T17** e celular **10/10 MC6**, consulta do inventário. [PC](rodada-inventario-pc-2026-10-26.md), [celular](rodada-inventario-celular-2026-10-26.md), [resultado anterior](resultado-t16-mc5-2026-10-26.md). Aguardar resultados antes de ampliar.
 
 As confirmações anteriores de Gus permanecem registradas: Origens, Perícias, Habilidades, kits, identidade, flexões, busca, simulação, privacidade dos rascunhos e janela estreita. Não repetir sem mudança relevante.
 
