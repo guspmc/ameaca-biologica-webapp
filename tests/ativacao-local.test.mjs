@@ -216,8 +216,8 @@ test('resumo local: Mestre recebe somente operacao e passivos normais, sem narra
  assert.equal(r.length,1);const p=r[0];
  assert.equal(p.classe,'Operadora');assert.equal((await get(db,id)).classe,'Operador');
  assert.deepEqual(Object.keys(p).sort(),['personagemId','nome','classe','nivel','pv','sa','bi','defesa','passivos','condicoes'].sort());
- assert.equal(p.pv.atual,3);assert.equal(p.pv.maximo,18);assert.equal(p.passivos.Fortitude,11);assert.equal(p.passivos.Luta,16);
- assert.equal(Object.keys(p.passivos).length,12);assert.equal(p.condicoes,null);
+ assert.equal(p.pv.atual,3);assert.equal(p.pv.maximo,18);assert.equal(p.passivos.Fortitude,11);
+ assert.deepEqual(Object.keys(p.passivos).sort(),['Fortitude','Percepção','Reflexos','Vontade']);assert.equal(p.condicoes,null);
  assert.ok(!JSON.stringify(r).includes('HISTORIA PRIVADA'));assert.ok(!JSON.stringify(r).includes('MEDO PRIVADO'));assert.ok(!JSON.stringify(r).includes('LEMI'));
  assert.equal((await get(db,id)).pv_atual,3);
  await asRole(db,X,()=>assert.rejects(db.query('select public.resumo_operacional_mesa($1)',[T]),/negado/));

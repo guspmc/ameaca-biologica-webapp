@@ -11,7 +11,7 @@ const id='00000000-0000-4000-8000-000000000001',op='20000000-0000-4000-8000-0000
 const conferencia=()=>({personagemId:id,nome:'Fictícia',revisaoFicha:2,revisaoMesa:3,ativas:0,pendencias:[]});
 const pedido=()=>({personagemId:id,operacaoId:op,revisaoFicha:2,revisaoMesa:3});
 const recibo=()=>({personagemId:id,operacaoId:op,estado:'completa',quantidadeInstancias:6,revisaoCriacao:9});
-const passivas=['Acrobacia','Atletismo','Fortitude','Furtividade','Investigação','Luta','Medicina','Percepção','Pontaria','Reflexos','Sobrevivência','Vontade'];
+const passivas=['Percepção','Vontade','Fortitude','Reflexos'];
 const resumo=()=>({personagemId:id,nome:'Fictícia',classe:'Operadora',nivel:1,pv:{atual:7,maximo:15},sa:{atual:1,maximo:3},bi:{atual:3,maximo:7},defesa:12,passivos:Object.fromEntries(passivas.map(n=>[n,12])),condicoes:null});
 const mock=data=>prepararServicosAtivacao({rpc:async()=>({data,error:null})});
 const tipo=t=>e=>e instanceof FalhaAtivacao&&e.tipo===t&&!e.message.includes('SEGREDO');
@@ -70,8 +70,8 @@ test('contrato RPC: resumo fechado copia recursos, passivas e condicoes sem reca
  const p=resumo();p.condicoes=['Condição fictícia'];p.passivos.Fortitude=null;let chamada;
  const servico=prepararServicosAtivacao({rpc:async(n,a)=>{chamada=[n,a];return {data:[p],error:null};}});
  const recebido=await servico.listarResumo(mesa);assert.deepEqual(chamada,['resumo_operacional_mesa',{p_mesa:mesa}]);
- assert.deepEqual(recebido,[p]);p.pv.atual=15;p.passivos.Luta=999;p.condicoes.push('Outra');
- assert.equal(recebido[0].pv.atual,7);assert.equal(recebido[0].passivos.Luta,12);assert.deepEqual(recebido[0].condicoes,['Condição fictícia']);
+ assert.deepEqual(recebido,[p]);p.pv.atual=15;p.passivos.Reflexos=999;p.condicoes.push('Outra');
+ assert.equal(recebido[0].pv.atual,7);assert.equal(recebido[0].passivos.Reflexos,12);assert.deepEqual(recebido[0].condicoes,['Condição fictícia']);
  assert.equal((await mock([resumo()]).listarResumo(mesa))[0].condicoes,null);assert.deepEqual(await mock([]).listarResumo(mesa),[]);
 });
 

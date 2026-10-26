@@ -1,15 +1,17 @@
 # Testes humanos pendentes — roteiro consolidado
 Atualizado em 26/10/2026. Este é o roteiro atual; o histórico foi preservado em [fila-testes-humanos.md](fila-testes-humanos.md).
 
-## Situação atual — rodada respondida por Gus
+## Situação atual — nova rodada de resumo preparada
 
-**Fila executável atual: 0/10. T14.1–T14.4 e T15.1–T15.6 aprovados por Gus em 25/10/2026**, com 30 capturas preservadas. [Resultado e limites da rodada encerrada](resultado-testes-humanos-t14-t15-2026-10-25.md). O [índice dos dez casos](rodada-10-testes-locais.md) e seus roteiros ficam como histórico de regressão, não como pedido de repetição. Desenvolvimento segue o [protocolo de autonomia supervisionada](protocolo-autonomia-supervisionada.md). A aplicação conectada não foi alterada. Casos futuros de integração e celular continuam separados.
+**Fila PC: 10/10 — T16.1–T16.10** no [roteiro PC](rodada-resumo-pc-2026-10-26.md). **Fila celular: 10/10 — MC5.1–MC5.10** no [roteiro físico independente](rodada-resumo-celular-2026-10-26.md). São vinte verificações da nova consulta do resumo; podem aguardar e ser respondidas em partes. [Relatório técnico e limites](resumo-consulta-local-2026-10-26.md). Não ampliar antes dos resultados.
+
+**T14.1–T14.4 e T15.1–T15.6 aprovados por Gus em 25/10/2026**, com 30 capturas preservadas. [Resultado da rodada encerrada](resultado-testes-humanos-t14-t15-2026-10-25.md). Seus roteiros ficam como histórico de regressão. Desenvolvimento segue o [protocolo de autonomia supervisionada](protocolo-autonomia-supervisionada.md). A aplicação conectada não foi alterada; integração remota permanece condicionada a autorização específica.
 
 - **T1, T3 e T4: aprovados.** Não repetir sem mudança relevante.
 - **T5, T6, T7, T8 e T9: aprovados por Gus em 24/10/2026**, com treze capturas da simulação isolada. Não repetir sem mudança relevante. Resultado e limites em [resultado-testes-humanos-2026-10-24.md](resultado-testes-humanos-2026-10-24.md).
 - **T13.1–T13.10: aprovados por Gus em 25/10/2026**, com 33 capturas da simulação de recuperação. [Resultado e limites](resultado-testes-humanos-2026-10-25.md). Não repetir sem alteração relevante. T10–T12 continuam futuros e condicionados à integração/acesso; não foram certificados pela simulação.
 - **T2: fluxo aprovado por Gus, com sincronização imediata de B após compras em A.** A recusa de uma compra enviada com revisão antiga não foi demonstrada por esse comportamento; manter essa diferença de cobertura registrada, sem pedir repetição manual agora.
-- **Celular: prévia fictícia estática preparada na rede local em 26/10/2026; acesso do aparelho ainda não confirmado.** [MC1–MC4 e passos de acesso](teste-celular.md), separados da fila comum 0/10. Requer celular e PC na mesma rede. A tentativa anterior por localhost não é teste de layout ou funcionamento. [Escopo e validações da preparação](previa-celular-local.md).
+- **MC1–MC4 aprovados em Galaxy S24 FE por Gus em 26/10/2026.** [Resultado e correção solicitada das quatro Passivas](resultado-celular-2026-10-26.md). Roteiro antigo preservado em [teste-celular.md](teste-celular.md). A nova rodada MC5 é independente, cobre mudanças posteriores e requer PC/servidor ligado na mesma rede. Reinício do PC exige retomar a prévia; 127.0.0.1 no celular não aponta para o PC.
 
 Resultado e limites: [resultado-testes-humanos-2026-10-23.md](resultado-testes-humanos-2026-10-23.md).
 

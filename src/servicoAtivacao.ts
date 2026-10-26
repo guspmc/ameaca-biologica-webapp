@@ -12,7 +12,7 @@ const natural=(v:unknown):v is number=>inteiro(v)&&v>=0;
 const texto=(v:unknown):v is string=>typeof v==='string'&&v.trim().length>0;
 const uuid=(v:unknown):v is string=>typeof v==='string'&&/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/.test(v);
 const chaves=(v:Objeto,campos:readonly string[])=>Object.keys(v).length===campos.length&&campos.every(k=>Object.hasOwn(v,k));
-const passivas=['Acrobacia','Atletismo','Fortitude','Furtividade','Investigação','Luta','Medicina','Percepção','Pontaria','Reflexos','Sobrevivência','Vontade'] as const;
+const passivas=['Percepção','Vontade','Fortitude','Reflexos'] as const;
 function invalida():never{throw new FalhaAtivacao('A resposta não pôde ser verificada. Preserve o pedido antes de tentar novamente.','incerto');}
 function idValido(id:string){if(!uuid(id))throw new FalhaAtivacao('Identificador inválido. Reabra a ficha para conferir.','regra');}
 function lerConferencia(v:unknown,id:string):ConferenciaAtivacao{

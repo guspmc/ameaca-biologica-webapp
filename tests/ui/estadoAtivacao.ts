@@ -5,7 +5,7 @@ export function criarEstadoAtivacao(cenario:Cenario='normal'){
  let revisao=1,ativa=false,tentativas=0,conjuntos=0,primeira=true,falharResumo=false;
  let pedidoSalvo:PedidoAtivacao|undefined,recibo:ReciboAtivacao|undefined;
  const pv=7,sa=1,bi=3; // Gastos ficticios: ativar/repetir nao os restaura.
- const passivos={Acrobacia:12,Atletismo:11,Fortitude:12,Furtividade:12,'Investigação':13,Luta:14,Medicina:11,'Percepção':13,Pontaria:12,Reflexos:12,'Sobrevivência':11,Vontade:11};
+ const passivos={'Percepção':13,Vontade:11,Fortitude:12,Reflexos:12};
  const resumo=(id:string,nome:string):ResumoPersonagem=>({personagemId:id,nome,classe:'Operadora',nivel:1,pv:{atual:pv,maximo:15},sa:{atual:sa,maximo:3},bi:{atual:bi,maximo:7},defesa:12,passivos:{...passivos},condicoes:null});
  return {
   async conferir():Promise<ConferenciaAtivacao>{return {personagemId:'fixture-ativacao',nome:'Sobrevivente fictícia',revisaoFicha:revisao,revisaoMesa:0,ativas:cenario==='lotada'?10:ativa?1:0,

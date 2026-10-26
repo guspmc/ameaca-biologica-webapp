@@ -34,9 +34,7 @@ declare
  resultado jsonb:='{}'; pericia record; pontos integer; grau integer; valor integer;
 begin
  for pericia in select * from (values
- ('Acrobacia',f.agilidade),('Atletismo',f.forca),('Fortitude',f.vigor),('Furtividade',f.agilidade),
- ('Investigação',f.astucia),('Luta',f.forca),('Medicina',f.astucia),('Percepção',f.astucia),
- ('Pontaria',f.agilidade),('Reflexos',f.agilidade),('Sobrevivência',f.astucia),('Vontade',f.astucia)) as p(nome,atributo)
+ ('Percepção',f.astucia),('Vontade',f.astucia),('Fortitude',f.vigor),('Reflexos',f.agilidade)) as p(nome,atributo)
  loop
   valor:=null;
   if jsonb_typeof(f.pontos_pericia_classe)='object'

@@ -1,6 +1,8 @@
 # Fluxo vigente — desenvolvimento autônomo supervisionado
 
-Confirmado por Gus em 25/10/2026: avançar nas etapas aprovadas em alterações pequenas e verificáveis, acumulando **até dez novos casos humanos executáveis** antes de solicitar uma rodada. Testes de celular não entram nessa contagem enquanto o acesso não estiver preparado. Não criar testes manuais artificiais para preencher a fila.
+Confirmado por Gus em 25/10/2026 e ampliado em 26/10/2026: avançar nas etapas aprovadas em alterações pequenas e verificáveis, acumulando **dez novos casos humanos no PC e, separadamente, dez independentes no celular**, até vinte no total. O acesso físico foi aprovado no Galaxy S24 FE (MC1–MC4). As filas não dependem uma da outra. Não criar testes manuais artificiais para preencher a fila.
+
+Gus autorizou avançar pelos checkpoints de preparação necessários enquanto os testes puderem aguardar. Isso não revoga as restrições a banco remoto, Auth/RLS, produção, publicação ou merge na principal. Ao atingir as duas filas, consolidar e aguardar; interação indispensável pode antecipar a parada. Computador desligado interrompe o trabalho e as prévias; deixar checkpoint verificável para retomar, sem prometer execução fora do host.
 
 Uma necessidade indispensável de decisão, autorização ou interação permite interromper antes de dez. Registrar a dependência e continuar trabalho independente quando possível. Não interpretar silêncio como autorização. Testes aprovados permanecem encerrados, salvo mudança relevante.
 

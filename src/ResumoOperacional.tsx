@@ -5,7 +5,7 @@ export function CartaoResumo({personagem:p}:{personagem:ResumoPersonagem}){
  return <article className="qa-resumo-personagem"><h3>{p.nome}</h3><p>{p.classe} · nível {p.nivel}</p>
  <dl className="qa-recursos"><div><dt>PV</dt><dd>{p.pv.atual}/{p.pv.maximo}</dd></div><div><dt>SA</dt><dd>{p.sa.atual}/{p.sa.maximo}</dd></div><div><dt>BI</dt><dd>{p.bi.atual}/{p.bi.maximo}</dd></div><div><dt>Defesa</dt><dd>{p.defesa}</dd></div></dl>
  <p>Condições: {p.condicoes===null?'não informadas':p.condicoes.length?p.condicoes.join(', '):'nenhuma registrada'}.</p>
- <details><summary>Perícias Passivas</summary><dl className="qa-passivos">{Object.entries(p.passivos).sort(([a],[b])=>a.localeCompare(b,'pt-BR')).map(([nome,valor])=><div key={nome}><dt>{nome}</dt><dd>{valor??'A conferir'}</dd></div>)}</dl>
+ <details><summary>Perícias Passivas</summary><dl className="qa-passivos">{['Percepção','Vontade','Fortitude','Reflexos'].map(nome=><div key={nome}><dt>{nome}</dt><dd>{p.passivos[nome]??'A conferir'}</dd></div>)}</dl>
  <p className="ficha-dica">Obs.: Testes Passivos recebem +5 com Vantagem ou -5 com Desvantagem.</p></details></article>;
 }
 export default function ResumoOperacional({mesaNome,aoListar}:Props){
