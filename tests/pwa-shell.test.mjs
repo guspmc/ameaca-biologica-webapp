@@ -110,5 +110,5 @@ test('registro do service worker respeita base do GitHub Pages e não ativa no m
  assert.match(mainSource,/import\.meta\.env\.MODE === 'teste'/);
  assert.match(mainSource,/navigator\.serviceWorker\.register/);
  assert.match(mainSource,/\$\{import\.meta\.env\.BASE_URL\}sw\.js/);
- assert.match(viteSource,/base: '\/ameaca-biologica-webapp\/'/);
+ assert.ok(viteSource.includes("base: '/ameaca-biologica-webapp/'"));
 });
