@@ -285,7 +285,14 @@ function Lobby({ supabase, sessao }: { supabase: SupabaseClient; sessao: Session
           <i aria-hidden="true" /> {estadoRealtime==='ao-vivo' ? 'Atualizações ao vivo' :
           estadoRealtime==='conectando' ? 'Conectando sincronização...' : 'Atualização automática de contingência'}
         </span></div>
-      <div className="conta"><small>USUÁRIO CONECTADO</small><strong>{sessao.user.email??'Conta autenticada'}</strong><button className="link-botao" type="button" onClick={async()=>{await limparCacheUsuario(sessao.user.id).catch(()=>undefined);void supabase.auth.signOut();}}>Sair da conta</button></div>
+      <div className="conta"><small>USUÁRIO CONECTADO</small><strong>{sessao.user.email??'Conta autenticada'}</strong><button className="link-botao" type="button" onClick={async()=>{
+        if(typeof indexedDB!=='undefined'){
+          try{await limparCacheUsuario(sessao.user.id);}
+          catch{setErro('Não foi possível limpar o cache local. A sessão foi mantida para proteger os dados desta conta. Feche outras abas e tente sair novamente.');return;}
+        }
+        const {error:erroSaida}=await supabase.auth.signOut();
+        if(erroSaida)setErro('Falha ao encerrar a sessão: '+erroSaida.message);
+      }}>Sair da conta</button></div>
     </div>
     {somenteLeituraOffline&&<div className="offline-banner" role="status">
       <strong>Modo offline · consulta somente</strong>
