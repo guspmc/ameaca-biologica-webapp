@@ -30,7 +30,7 @@ O teste integrado foi preparado para verificar:
 - resumo do Mestre sem narrativa privada nem acesso à ficha completa;
 - negação dos comandos de ativação para `anon`.
 
-**Resultado de CI pendente de confirmação.** Os testes usam PostgreSQL embutido/PGlite e identidades fictícias; mesmo aprovados, não certificam PostgREST/JWT real, concorrência entre conexões independentes, nem o comportamento em aparelhos físicos.
+**TESTADO no GitHub Actions #48:** 243/243 testes aprovados, incluindo os três testes do pacote integrado; TypeScript/Vite build aprovado e verificação de tipos das páginas de QA aprovada. O job terminou com sucesso. Os testes usam PostgreSQL embutido/PGlite e identidades fictícias; não certificam PostgREST/JWT real, concorrência entre conexões independentes, nem o comportamento em aparelhos físicos.
 
 ## PENDENTE
 
