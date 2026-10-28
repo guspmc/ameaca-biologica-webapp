@@ -108,6 +108,8 @@ test('assets versionados continuam disponíveis offline após instalação',asyn
 test('registro do service worker respeita base do GitHub Pages e não ativa no modo teste/dev',()=>{
  assert.match(mainSource,/import\.meta\.env\.PROD/);
  assert.match(mainSource,/import\.meta\.env\.MODE === 'teste'/);
+ assert.match(mainSource,/import\.meta\.env\.VITE_PWA_TESTE === 'true'/);
+ assert.match(mainSource,/modoTesteComPwa/);
  assert.match(mainSource,/navigator\.serviceWorker\.register/);
  assert.match(mainSource,/\$\{import\.meta\.env\.BASE_URL\}sw\.js/);
  assert.ok(viteSource.includes("base: '/ameaca-biologica-webapp/'"));

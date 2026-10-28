@@ -6,7 +6,8 @@ import './styles.css';
 // O cache offline guarda somente o shell estático; nunca dados pessoais/API.
 // A prévia de teste e o servidor de desenvolvimento não registram este worker.
 function registrarShellOffline() {
-  if (!import.meta.env.PROD || import.meta.env.MODE === 'teste' || !('serviceWorker' in navigator)) return;
+  const modoTesteComPwa = import.meta.env.MODE === 'teste' && import.meta.env.VITE_PWA_TESTE === 'true';
+  if (!import.meta.env.PROD || (import.meta.env.MODE === 'teste' && !modoTesteComPwa) || !('serviceWorker' in navigator)) return;
   void navigator.serviceWorker.register(`${import.meta.env.BASE_URL}sw.js`, {
     scope: import.meta.env.BASE_URL,
   }).catch(() => {
