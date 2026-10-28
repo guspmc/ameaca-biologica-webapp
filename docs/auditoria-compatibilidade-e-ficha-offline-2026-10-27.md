@@ -95,3 +95,34 @@ Alternativa: acrescentar desbloqueio por PIN/frase local e criptografia via Web 
 ## Próximo checkpoint
 
 A preparação local da ativação passou 243/243 testes, build e verificações de tipos na execução #49. O próximo trabalho de código deve priorizar a Etapa A e o contrato offline; a Etapa B aguarda a decisão de proteção local. A reconciliação remota e a correção de RLS aguardam checkpoint específico. Nenhuma migration remota, ajuste de RLS/Auth, merge ou publicação foi feita.
+
+
+## Atualização de checkpoint — 28/10/2026
+
+### Etapa A IMPLEMENTADA na branch (shell estático)
+
+- Adicionado `public/sw.js`: pré-cache de `index.html`, assets locais referenciados pelo HTML, manifesto e ícone; navegação tenta rede e recorre ao shell guardado se estiver offline.
+- O service worker intercepta apenas GETs da mesma origem/escopo para navegação e assets estáticos conhecidos. Não intercepta nem guarda chamadas cross-origin ao Supabase/API.
+- `src/main.tsx` registra o worker apenas em build de produção e fora do modo `teste`; o escopo usa `import.meta.env.BASE_URL` para respeitar GitHub Pages.
+- Criado `tests/pwa-shell.test.mjs` com cinco testes de instalação/cache, fallback offline, isolamento das chamadas Supabase e base do Pages.
+
+**TESTADO — GitHub Actions #54:** 248/248 testes passaram, incluindo os cinco testes novos; build Vite/TypeScript e verificação de tipos de QA concluídos com sucesso. Os testes do service worker usam um ambiente simulado de Node; ainda não é prova de instalação/atualização no Edge ou Samsung Browser físico.
+
+**Limite explícito:** isto disponibiliza o shell estático, não a ficha offline. Não foi adicionado cache de dados de personagem, IndexedDB, edição offline de notas, alteração de Supabase ou publicação. A etapa de dados locais continua bloqueada pela decisão de proteção descrita acima.
+
+### Divergência adicional de configuração remota
+
+A leitura dos catálogos mostrou um event trigger habilitado somente em produção:
+
+- Evento: `ensure_rls`, em `ddl_command_end`, para `CREATE TABLE`, `CREATE TABLE AS` e `SELECT INTO`.
+- Função: `public.rls_auto_enable()`, que habilita RLS em novas tabelas do schema `public`.
+- Não está presente no histórico de migrations versionadas nem no projeto de teste.
+- A função tem EXECUTE concedido a `anon` no catálogo, mas retorna o tipo especial `event_trigger` e é chamada pelo event trigger do PostgreSQL, não como RPC comum. A concessão é desnecessária para a invocação pelo trigger e deve ser revisada como hardening, sem afirmar que foi possível invocá-la pela API.
+
+Esse mecanismo parece protetivo, mas a diferença significa que o comportamento de criação de novas tabelas não é igual entre produção e teste. Não foi alterado. A próxima reconciliação deve decidir se a proteção é configuração intencional a versionar e reproduzir no TESTE, e remover privilégios EXECUTE desnecessários somente após teste e checkpoint.
+
+### Próximo checkpoint
+
+1. Resolver a política de proteção local antes de persistir snapshots de ficha.
+2. Em paralelo, preparar a comparação de definições remotas (funções, triggers, constraints e policies) com os arquivos versionados; não executar reparo de histórico.
+3. Obter checkpoint específico para qualquer ajuste remoto de RLS/privileges no TESTE. Produção permanece fora do escopo.
