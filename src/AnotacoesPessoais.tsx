@@ -55,7 +55,7 @@ export default function AnotacoesPessoais({ usuarioId, mesaId, personagemId }: P
           aria-describedby="estado-notas-pessoais"
         />
       </label>
-      {erro ? <p className="erro" role="alert">{erro}</p> : <p className="ficha-dica" id="estado-notas-pessoais" role="status">{estado}</p>}
+      {erro ? <p className="erro" id="estado-notas-pessoais" role="alert">{erro}</p> : <p className="ficha-dica" id="estado-notas-pessoais" role="status">{estado}</p>}
     </section>
   );
 }
