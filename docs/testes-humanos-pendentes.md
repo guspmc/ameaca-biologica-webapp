@@ -1,4 +1,17 @@
 # Testes humanos pendentes — roteiro consolidado
+
+## Nova rodada enfileirada — offline e notas pessoais
+
+A rodada não deve ser solicitada ao Gus até a implementação passar por revisão e testes automatizados. Decisões confirmadas em 28/10/2026: notas pessoais somente no dispositivo, separadas por conta/Mesa/personagem e sem sincronização; autenticação continua obrigatória, inclusive no uso offline. O roteiro passo a passo está em [rodada-offline-notas-locais.md](rodada-offline-notas-locais.md).
+
+Casos novos a agrupar:
+- Nota da ficha A persiste após fechar/reabrir e F5; ficha B permanece independente.
+- Nota não é mostrada ao Mestre nem a outra conta no mesmo dispositivo.
+- Nota continua disponível para a mesma conta após sair e entrar novamente.
+- Edição local da nota funciona offline e sobrevive a F5/reconexão; os campos compartilhados continuam somente para consulta.
+- Após logout, não é possível entrar/abrir uma sessão nova sem conexão.
+- Teste físico em Edge e Samsung Browser será feito na rodada consolidada, depois da preparação do ambiente.
+
 Atualizado em 26/10/2026. Este é o roteiro atual; o histórico foi preservado em [fila-testes-humanos.md](fila-testes-humanos.md).
 
 ## Situação atual — retomada da organização
