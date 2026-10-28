@@ -34,6 +34,7 @@ test('edição de identidade e equipamento é somente leitura ao usar snapshot l
  assert.match(identitySource,/!somenteLeituraOffline/);
  assert.match(equipmentSource,/!somenteLeituraOffline/);
  assert.match(sheetSource,/Ficha em cache local · somente leitura/);
+ assert.match(sheetSource,/Modo offline: Perícias de Classe em consulta somente/);
 });
 test('migration da proteção de convites habilita RLS sem criar política de acesso direto',()=>{
  assert.match(migrationSource,/ALTER TABLE app_private\.convites_mesa ENABLE ROW LEVEL SECURITY/i);

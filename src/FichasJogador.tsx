@@ -467,7 +467,7 @@ export default function FichasJogador({supabase,usuarioId,mesas,sinalAtualizacao
                 <strong>+{ficha[p.atributo]+bonusTreinamento(grau)}</strong>
               </div>;
             })}</div>
-            {dona&&ficha.estado_ficha==='rascunho'&&(ficha.nivel!==1?
+            {dona&&ficha.estado_ficha==='rascunho'&&(leituraSomente?<p className="ficha-dica">Modo offline: Perícias de Classe em consulta somente.</p>:(ficha.nivel!==1?
               <p className="ficha-dica">Distribuição disponível nesta etapa apenas para criação no nível 1.</p>:
               !ficha.origem||!ficha.pericia_origem_treinada?<p className="ficha-dica">Salve a Origem e o Treinamento gratuito antes de distribuir pontos.</p>:
               <details open><summary>Distribuir Pontos de Perícia da Classe</summary>
@@ -491,7 +491,7 @@ export default function FichasJogador({supabase,usuarioId,mesas,sinalAtualizacao
                   <button type="button" className="acao" disabled={salvandoPericias||salvandoOrigem||salvandoHabilidade||gastosPericias>limitePericias} onClick={()=>{void salvarPericias();}}>{salvandoPericias?'Salvando...':'Salvar Perícias'}</button>
                   <button type="button" className="botao-claro" disabled={salvandoPericias} onClick={()=>{setDistribuicao({});setAvisoPericias('Escolhas zeradas no formulário. Clique em Salvar Perícias para confirmar.');}}>Zerar escolhas de pontos</button>
                 </div>
-              </details>)}
+              </details>))}
           </section>
           <section className="ficha-secao" id="ficha-combate">
             <h3><span>03</span> Combate <small>AB-03</small></h3>
