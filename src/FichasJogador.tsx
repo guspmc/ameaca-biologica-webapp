@@ -32,7 +32,7 @@ type Personagem = {
 };
 type Props = {
   supabase:SupabaseClient; usuarioId:string; mesas:Mesa[];
-  sinalAtualizacao:number; somenteLeituraOffline:boolean;
+  sinalAtualizacao:number; somenteLeituraOffline?:boolean;
 };
 type Stats = Record<Atributo,number>;
 const INICIAIS:Stats = {forca:1,agilidade:1,vigor:1,astucia:1};
@@ -60,7 +60,7 @@ const PERICIAS:{nome:string;atributo:Atributo}[]=[
 const CLASSES:Classe[]=['Agente','Autodidata','Operador'];
 const ABREV:Record<Atributo,string>={forca:'FOR',agilidade:'AGI',vigor:'VIG',astucia:'AST'};
 
-export default function FichasJogador({supabase,usuarioId,mesas,sinalAtualizacao,somenteLeituraOffline}:Props){
+export default function FichasJogador({supabase,usuarioId,mesas,sinalAtualizacao,somenteLeituraOffline=false}:Props){
   const [personagens,setPersonagens]=useState<Personagem[]>([]);
   const [carregando,setCarregando]=useState(true);
   const [criando,setCriando]=useState(false);
