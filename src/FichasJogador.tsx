@@ -359,6 +359,10 @@ export default function FichasJogador({supabase,usuarioId,mesas,sinalAtualizacao
           <div className="ficha-wordmark">AMEAÇA <span>BIOLÓGICA</span></div>
           <span className="ficha-small-status">{dona?'EDIÇÃO DO JOGADOR':'CONSULTA DO MESTRE'}</span>
         </div>
+        {leituraSomente&&<div className="offline-banner offline-banner-ficha" role="status">
+          <strong>Modo offline · ficha somente leitura</strong>
+          <p>{cacheAtualizadoEm?'Última consulta confirmada: '+new Intl.DateTimeFormat('pt-BR',{dateStyle:'short',timeStyle:'short'}).format(new Date(cacheAtualizadoEm))+'.':'O horário da última cópia não está disponível.'} A ficha pode estar desatualizada. O acesso será revalidado quando a conexão voltar.</p>
+        </div>}
         <div className="ficha-papel" id="ficha-inicio">
           <header className="ficha-cab">
             <div className="ficha-metadados">{termo('REGISTRO DO SOBREVIVENTE')} <span>· {nomeMesa(ficha.mesa_id)}</span></div>
