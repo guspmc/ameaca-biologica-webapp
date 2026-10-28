@@ -1,0 +1,97 @@
+# Auditoria de compatibilidade e prioridade local/offline — 27/10/2026
+
+## Escopo e limites
+
+Auditoria somente de leitura dos dois projetos Supabase, do histórico de migrations, dos privilégios/políticas e do código da branch `feat/origens-rascunho-alfa04`. Nenhuma SQL de escrita foi executada; não houve alteração de dados, Auth, RLS, migrations remotas, merge ou publicação.
+
+## Estado remoto observado
+
+- Produção `ameaca-biologica-rpg` (`pftuhqioutvwnmvlbtrt`): ativa, 5 migrations registradas.
+- Teste `ameaca-biologica-rpg-teste` (`elctulggqcokixswusre`): ativa, 15 migrations registradas.
+- Todas as tabelas consultadas no schema `public` estão com RLS habilitada.
+- O schema `app_private` não tem USAGE para `anon`; tem USAGE para `authenticated`.
+
+## Reconciliação do histórico de migrations
+
+Os nomes registrados no projeto de teste correspondem aos nomes das migrations locais, mas as versões/timestamps remotos não correspondem aos prefixos dos arquivos versionados. Exemplos:
+
+| Nome registrado no TESTE | Arquivo local correspondente |
+|---|---|
+| `20261022225720 estrutura_inicial` | `20261022000100_estrutura_inicial.sql` |
+| `20261022225723 politicas_rls` | `20261022000200_politicas_rls.sql` |
+| `20261022225726 convites_e_solicitacoes` | `20261022000300_convites_e_solicitacoes.sql` |
+| `20261022225733 participantes_e_realtime` | `20261022000400_participantes_e_realtime.sql` |
+| `20261022225738 fichas_personagem_alfa04` | `20261022000500_fichas_personagem_alfa04.sql` |
+| `20261022225745 origens_rascunhos` | `20261022000600_origens_rascunhos.sql` |
+| `20261022225748 privacidade_e_limite_rascunhos` | `20261022224633_privacidade_e_limite_rascunhos.sql` |
+| `20261023040357 pericias_criacao_rascunhos` | `20261023035943_pericias_criacao_rascunhos.sql` |
+| `20261023043941 habilidade_basica_rascunhos` | `20261023042414_habilidade_basica_rascunhos.sql` |
+| `20261023044310 habilidade_origem_compatibilidade` | `20261023043912_habilidade_origem_compatibilidade.sql` |
+| `20261023045839 equipamento_inicial_rascunhos` | `20261023045501_equipamento_inicial_rascunhos.sql` |
+| `20261023050850 identidade_rascunhos` | `20261023050653_identidade_rascunhos.sql` |
+| `20261023140317 compras_iniciais_rascunhos` | `20261023134639_compras_iniciais_rascunhos.sql` |
+| `20261023160853 disponibilidade_mestre` | `20261023160814_disponibilidade_mestre.sql` |
+| `20261023173950 funcionamento_rascunho` | `20261023173853_funcionamento_rascunho.sql` |
+
+O projeto de produção registra as cinco primeiras versões locais exatamente; ainda não contém as etapas posteriores de criação.
+
+**Conclusão:** não executar `supabase db push`, `migration repair`, reset ou qualquer reconciliação automática. Os nomes e o formato das tabelas ajudam a mapear a história, mas não provam que todo o SQL remoto é byte a byte equivalente ao arquivo local. Antes de reparar o histórico, comparar definições atuais de funções, triggers, constraints e políticas com os arquivos de origem e produzir um plano de reconciliação que não reaplique DDL existente.
+
+## Alerta de RLS em `app_private.convites_mesa`
+
+A tabela está com RLS desabilitada em TESTE e produção. A consulta adicional de privilégios mostrou:
+
+- `anon`: sem USAGE em `app_private` e sem privilégios diretos de SELECT/INSERT/UPDATE/DELETE na tabela.
+- `authenticated`: USAGE em `app_private`, mas sem privilégios diretos de SELECT/INSERT/UPDATE/DELETE na tabela.
+- As RPCs públicas de convite observadas são SECURITY DEFINER; EXECUTE permitido a `authenticated` e negado a `anon`.
+
+Assim, esta auditoria **não encontrou evidência de acesso direto à tabela pela API**, embora RLS desabilitada permaneça uma lacuna de defesa em profundidade. Não alterar automaticamente: ativar RLS sem políticas bloqueia o acesso direto e exige conferir cuidadosamente o desenho das RPCs e o proprietário efetivo das funções.
+
+SQL candidato a revisão, **não executado**:
+
+```sql
+ALTER TABLE app_private.convites_mesa ENABLE ROW LEVEL SECURITY;
+```
+
+Não adicionar políticas genéricas para `authenticated`. O desenho atual parece intencionalmente concentrar o acesso por RPC autenticada; qualquer política deve ser justificada por uma necessidade de acesso direto e testada entre contas/Mesas. Esta decisão precisa de checkpoint próprio antes de alterar TESTE; produção continua fora do escopo.
+
+## Ficha local/offline — estado real do código
+
+- `public/manifest.webmanifest` existe e está ligado por `index.html`.
+- Não foi encontrado service worker nem registro de service worker; `vite.config.ts` não configura plugin PWA.
+- Não foi encontrada persistência da ficha em IndexedDB. O `localStorage` atual guarda apenas a configuração da conexão e o código de convite temporário.
+- `src/FichasJogador.tsx` carrega personagens do Supabase e mantém a resposta em estado React; não existe fallback de leitura de ficha em cache.
+- Portanto, há um manifesto de instalação, mas **a ficha offline ainda não está implementada**.
+
+## Contrato funcional aprovado que deve guiar a implementação
+
+1. Cachear somente dados que a conta recebeu legitimamente do servidor e que a interface já podia consultar.
+2. Identificar claramente a ficha offline como potencialmente desatualizada e informar a última consulta confirmada.
+3. Não permitir offline alterações de PV, SA, BI, Inventário/Baú, Iniciativa, combate ou outros estados compartilhados.
+4. Permitir escrita de anotações pessoais offline, sem misturá-las com estado compartilhado. Na sincronização, preservar versões conflitantes para resolução explícita; nunca usar sobrescrita silenciosa.
+5. Ao reconectar, revalidar autorização. Se a conta perdeu acesso à Mesa ou ela foi excluída, limpar o cache dessa Mesa antes de retomar sincronização; impedir que alterações atrasadas recriem dados excluídos.
+6. Não tratar fechamento do app como encerramento de encontro/Missão. Não incluir notas pessoais em exportações automáticas.
+
+## Plano incremental recomendado
+
+**Etapa A — shell offline seguro:** adicionar service worker para a aplicação estática e seus assets versionados, sem cache de chamadas Supabase/API. Testar atualização de versão e fallback offline em GitHub Pages.
+
+**Etapa B — contrato e armazenamento local:** decidir explicitamente a proteção local antes de persistir dados de ficha. Implementar armazenamento versionado e isolado por conta/Mesa/personagem, com validação de esquema, indicador de desatualização, falha de armazenamento tratada e limpeza por conta/Mesa. Nenhuma operação compartilhada entra numa fila offline.
+
+**Etapa C — leitura offline da ficha ativa:** depois de existir uma ficha ativa e o carregamento online estar estável, guardar snapshots apenas após resposta autorizada; em offline, exibir snapshot somente para o contexto de conta conhecido e em modo de leitura. Sem cache válido, mostrar estado vazio/sem conexão em vez de inventar dados.
+
+**Etapa D — notas pessoais:** criar armazenamento local de versões e contrato de sincronização que preserve conflitos. Não criar tabela nem gravar no Supabase até checkpoint próprio para o modelo e as políticas.
+
+**Etapa E — aceitação real:** testes em duas contas, duas Mesas, remoção de participante, logout, cache antigo, modo avião, falha de IndexedDB, atualização de service worker e Samsung Browser físico. Testes automatizados e simulações não substituem estes casos.
+
+## Decisão de proteção local necessária antes da Etapa B
+
+Opção recomendada para a primeira versão: IndexedDB com dados estritamente allowlisted e escopo por conta/Mesa/personagem; limpeza no logout voluntário e na próxima conexão quando a autorização for revogada; aviso persistente de desatualização; nenhum dado do Mestre/segredo privado no cache do Jogador; nenhuma criptografia própria na primeira etapa, contando com o perfil isolado do navegador e a proteção do dispositivo. Isso reduz complexidade, mas não protege contra outra pessoa que consiga usar o mesmo perfil de navegador desbloqueado.
+
+Alternativa: acrescentar desbloqueio por PIN/frase local e criptografia via Web Crypto. Isso adiciona UX e recuperação de chave, e precisa de desenho próprio; a chave não pode ser armazenada como texto junto dos dados e depois descrita como proteção forte.
+
+**Não assumir a opção recomendada sem confirmação do responsável pelo produto.** A política de proteção local estava pendente no planejamento e afeta a exposição de dados pessoais em aparelhos compartilhados.
+
+## Próximo checkpoint
+
+A preparação local da ativação passou 243/243 testes, build e verificações de tipos na execução #49. O próximo trabalho de código deve priorizar a Etapa A e o contrato offline; a Etapa B aguarda a decisão de proteção local. A reconciliação remota e a correção de RLS aguardam checkpoint específico. Nenhuma migration remota, ajuste de RLS/Auth, merge ou publicação foi feita.
