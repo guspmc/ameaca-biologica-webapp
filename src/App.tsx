@@ -10,6 +10,30 @@ type Modo = 'entrar' | 'cadastrar';
 const CHAVE_LOCAL = 'ameaca-biologica:conexao-v1';
 const URL_INICIAL = URL_PRODUCAO;
 const AMBIENTE_TESTE = import.meta.env.VITE_AMBIENTE === 'teste';
+const DIAGNOSTICO_AUTH = import.meta.env.DEV || import.meta.env.VITE_DIAGNOSTICO_AUTH === 'true';
+
+function registrarDiagnosticoAuth(evento: string, detalhes: Record<string, unknown> = {}) {
+  if (!DIAGNOSTICO_AUTH) return;
+  console.info('[AB auth-diagnostico]', {
+    evento,
+    horario: new Date().toISOString(),
+    online: typeof navigator === 'undefined' ? null : navigator.onLine,
+    ...detalhes,
+  });
+}
+
+function metadadosErroAuth(erro: unknown) {
+  if (!erro || typeof erro !== 'object') return { erroPresente: Boolean(erro) };
+  const detalhe = erro as { name?: unknown; status?: unknown; code?: unknown };
+  return {
+    erroPresente: true,
+    erroTipo: typeof detalhe.name === 'string' ? detalhe.name.slice(0, 80) : 'Error',
+    erroStatus: typeof detalhe.status === 'number' ? detalhe.status : null,
+    erroCodigo: typeof detalhe.code === 'string' && /^[a-zA-Z0-9_.-]{1,80}$/.test(detalhe.code)
+      ? detalhe.code
+      : null,
+  };
+}
 
 function carregarConexao(): Conexao | null {
   let guardada: string | null = null;
@@ -268,13 +292,48 @@ export default function App(){
     if (!supabase) {setVerificando(false);setSessao(null);return;}
     let ativo=true;
     setVerificando(true);
-    const {data:{subscription}}=supabase.auth.onAuthStateChange((_evento,nova)=>{
+    const {data:{subscription}}=supabase.auth.onAuthStateChange((evento,nova)=>{
+      registrarDiagnosticoAuth('evento-auth', {
+        eventoAuth: evento,
+        sessaoPresente: Boolean(nova),
+      });
       if(ativo){setSessao(nova);setVerificando(false);}
     });
-    void supabase.auth.getSession().then(({data})=>{
+    const aoMudarArmazenamento = (evento: StorageEvent) => {
+      const chaveAuth = evento.key !== null && /^sb-.+-auth-token$/.test(evento.key);
+      const limpezaTotal = evento.key === null;
+      if (chaveAuth || limpezaTotal) {
+        registrarDiagnosticoAuth('armazenamento-alterado', {
+          chaveAuth,
+          limpezaTotal,
+          valorAnteriorPresente: evento.oldValue !== null,
+          valorNovoPresente: evento.newValue !== null,
+        });
+      }
+    };
+    const aoFicarOnline = () => registrarDiagnosticoAuth('rede-online');
+    const aoFicarOffline = () => registrarDiagnosticoAuth('rede-offline');
+    window.addEventListener('storage', aoMudarArmazenamento);
+    window.addEventListener('online', aoFicarOnline);
+    window.addEventListener('offline', aoFicarOffline);
+    registrarDiagnosticoAuth('getSession-iniciado');
+    void supabase.auth.getSession().then(({data,error})=>{
+      registrarDiagnosticoAuth('getSession-concluido', {
+        sessaoPresente: Boolean(data.session),
+        ...metadadosErroAuth(error),
+      });
       if(ativo){setSessao(data.session);setVerificando(false);}
-    }).catch(()=>{if(ativo)setVerificando(false)});
-    return ()=>{ativo=false;subscription.unsubscribe();};
+    }).catch((erro: unknown)=>{
+      registrarDiagnosticoAuth('getSession-rejeitado', metadadosErroAuth(erro));
+      if(ativo)setVerificando(false);
+    });
+    return ()=>{
+      ativo=false;
+      subscription.unsubscribe();
+      window.removeEventListener('storage', aoMudarArmazenamento);
+      window.removeEventListener('online', aoFicarOnline);
+      window.removeEventListener('offline', aoFicarOffline);
+    };
   },[supabase]);
 
   return <div className="aplicativo">
