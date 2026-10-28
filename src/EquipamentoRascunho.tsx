@@ -4,8 +4,8 @@ import PreviaCompras from './PreviaCompras';
 import {useEffect,useState} from 'react';
 import type {SupabaseClient} from '@supabase/supabase-js';
 import {capacidadeInventario,caracteristicos,equipamentoInicial,espacosOcupados,opcoesEquipamento} from './equipamento';
-type Props={supabase:SupabaseClient;ficha:{id:string;classe:string|null;forca:number;origem:string|null;nivel:number;estado_ficha:string;equipamento_inicial:string|null;compras_iniciais?:Record<string,number>;revisao_compras?:number};dona:boolean;recarregar:()=>Promise<void>};
-export default function EquipamentoRascunho({supabase,ficha,dona,recarregar}:Props){
+type Props={supabase:SupabaseClient;ficha:{id:string;classe:string|null;forca:number;origem:string|null;nivel:number;estado_ficha:string;equipamento_inicial:string|null;compras_iniciais?:Record<string,number>;revisao_compras?:number};dona:boolean;recarregar:()=>Promise<void>;somenteLeituraOffline?:boolean};
+export default function EquipamentoRascunho({supabase,ficha,dona,recarregar,somenteLeituraOffline=false}:Props){
   const [escolha,setEscolha]=useState(ficha.equipamento_inicial??'');
   const [salvando,setSalvando]=useState(false);
   const [erro,setErro]=useState('');
@@ -21,7 +21,7 @@ export default function EquipamentoRascunho({supabase,ficha,dona,recarregar}:Pro
   const previa=equipamentoInicial(ficha.classe,escolha);
   const cabe=espacosOcupados(previa)<=capacidade;
   const salvo=opcoesEquipamento(ficha.classe).find(o=>o.id===ficha.equipamento_inicial);
-  const pode=dona&&ficha.estado_ficha==='rascunho'&&ficha.nivel===1;
+  const pode=dona&&ficha.estado_ficha==='rascunho'&&ficha.nivel===1&&!somenteLeituraOffline;
   async function salvar(){
     if(!pode||salvando||!cabe)return;
     setSalvando(true);setErro('');setAviso('');

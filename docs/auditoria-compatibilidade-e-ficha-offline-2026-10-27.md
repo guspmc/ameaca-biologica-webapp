@@ -126,3 +126,25 @@ Esse mecanismo parece protetivo, mas a diferença significa que o comportamento 
 1. Resolver a política de proteção local antes de persistir snapshots de ficha.
 2. Em paralelo, preparar a comparação de definições remotas (funções, triggers, constraints e policies) com os arquivos versionados; não executar reparo de histórico.
 3. Obter checkpoint específico para qualquer ajuste remoto de RLS/privileges no TESTE. Produção permanece fora do escopo.
+
+
+## Atualização de checkpoint — 28/10/2026, etapa RLS e cache da ficha
+
+### RLS em convites — TESTE
+
+- **APLICADO** somente no projeto Supabase de teste, ID elctulggqcokixswusre: ALTER TABLE app_private.convites_mesa ENABLE ROW LEVEL SECURITY.
+- A migration remota ficou registrada como 20261028122021 rls_convites_mesa; o arquivo versionado correspondente é supabase/migrations/20261028122021_rls_convites_mesa.sql.
+- **VALIDADO antes e depois:** as RPCs gerar_convite_mesa e solicitar_entrada_mesa foram executadas sob role authenticated e contexto de usuário de teste, dentro de transação revertida. Ambas passaram após a ativação do RLS.
+- **VALIDADO:** RLS habilitada, zero políticas na tabela, e nenhum privilégio direto SELECT/INSERT/UPDATE/DELETE para anon/authenticated. O teste de acesso direto por role authenticated foi bloqueado como esperado. Contagens de Mesas, solicitações e convites permaneceram inalteradas após rollback.
+- **Produção não alterada.** Nenhuma política genérica foi adicionada.
+- Advisor de segurança do Supabase ainda aponta tabelas privadas sem políticas (incluindo app_private.convites_mesa e app_private.disponibilidade_compra_inicial) e funções SECURITY DEFINER intencionalmente executáveis por authenticated; esses avisos exigem revisão de cada função/tabela e não foram corrigidos em lote.
+
+### Ficha offline — código na branch, ainda sem publicação
+
+- Adicionado src/offlineCache.ts: IndexedDB versionado, snapshots isolados por conta/Mesa/personagem, data/hora da última consulta confirmada, limpeza da conta no logout voluntário e remoção de snapshots de personagens quando uma consulta online confirma que uma Mesa deixou de estar autorizada.
+- src/App.tsx tenta recuperar a lista de Mesas de cache quando a rede falha; exibe aviso de dados potencialmente desatualizados, bloqueia criação de Mesas e oculta convites/participantes no modo de consulta.
+- src/FichasJogador.tsx guarda apenas respostas de personagens que a consulta do Supabase autorizou. Quando offline/sem resposta, usa snapshots existentes em modo de leitura; PV/SA/BI, criação, Origem, Perícias, Habilidade, Identidade, Equipamento e revisão interativa ficam bloqueados.
+- O cache não guarda tokens, sessão, e-mail nem respostas de API no service worker. Não há fila de alterações compartilhadas offline.
+- Criado tests/offline-cache.test.mjs com verificações de escopo, revalidação, limpeza e bloqueio de edição offline.
+
+**PENDENTE:** execução de CI após este commit, testes reais em Edge/Samsung Browser, comportamento em duas contas e revisão da persistência/edição de notas pessoais. Esta etapa ainda não oferece edição offline de notas nem sincronização de notas; nenhuma tabela remota foi criada para isso.

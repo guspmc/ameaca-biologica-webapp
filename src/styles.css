@@ -250,3 +250,20 @@ footer { margin-top:45px; border-top:1px solid #dce2df; padding-top:19px; color:
 .revisao-atalhos{display:flex;flex-wrap:wrap;gap:.5rem;margin:1rem 0}.revisao-atalhos p{flex-basis:100%;margin:0}.revisao-atalhos button{white-space:normal;max-width:100%}
 
 .funcionamento-previo{border:1px solid #c6b79b;padding:.75rem;margin:1rem 0}.funcionamento-previo summary{font-weight:700;cursor:pointer}.funcionamento-previo label{display:grid;gap:.35rem}.funcionamento-opcoes{display:grid;gap:1rem;margin:1rem 0}.funcionamento-previo select{max-width:100%;width:100%;min-height:44px}.funcionamento-previo small{font-size:.8rem;line-height:1.5}
+
+
+/* Estado de consulta local quando a rede não permite validar o servidor. */
+.offline-banner {
+  margin: 18px 0 24px;
+  padding: 16px 18px;
+  border: 1px solid #d5b66b;
+  border-left: 4px solid #a97919;
+  border-radius: 8px;
+  background: #fff8e6;
+  color: #59471f;
+  line-height: 1.55;
+  font-size: 13px;
+}
+.offline-banner strong { display: block; margin-bottom: 5px; color: #6d4c0c; }
+.offline-banner p { margin: 0; }
+.offline-banner-ficha { margin: 18px 0; }

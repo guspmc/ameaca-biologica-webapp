@@ -13,14 +13,14 @@ const CAMPOS=[
   {id:'lacos',nome:'Laços',limite:1000},
   {id:'historia',nome:'História',limite:4000}
 ];
-type Props={supabase:SupabaseClient;ficha:{id:string;nome:string;estado_ficha:string;identidade:Record<string,string>};dona:boolean;recarregar:()=>Promise<void>};
-export default function IdentidadeRascunho({supabase,ficha,dona,recarregar}:Props){
+type Props={supabase:SupabaseClient;ficha:{id:string;nome:string;estado_ficha:string;identidade:Record<string,string>};dona:boolean;recarregar:()=>Promise<void>;somenteLeituraOffline?:boolean};
+export default function IdentidadeRascunho({supabase,ficha,dona,recarregar,somenteLeituraOffline=false}:Props){
   const [nome,setNome]=useState(ficha.nome);
   const [dados,setDados]=useState({...ficha.identidade});
   const [salvando,setSalvando]=useState(false);
   const [erro,setErro]=useState('');
   const [aviso,setAviso]=useState('');
-  const pode=dona&&ficha.estado_ficha==='rascunho';
+  const pode=dona&&ficha.estado_ficha==='rascunho'&&!somenteLeituraOffline;
   async function salvar(){
     if(!pode||salvando)return;
     setSalvando(true);setErro('');setAviso('');

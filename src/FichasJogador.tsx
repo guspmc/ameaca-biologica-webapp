@@ -1,4 +1,5 @@
 import {salvarFuncionamento} from './servicoFuncionamento';
+import {lerPersonagensOffline, salvarPersonagensOffline} from './offlineCache';
 import type {ConfiguracaoFuncionamento} from './funcionamentoFicha';
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react';
 import type { SupabaseClient } from '@supabase/supabase-js';
@@ -31,7 +32,7 @@ type Personagem = {
 };
 type Props = {
   supabase:SupabaseClient; usuarioId:string; mesas:Mesa[];
-  sinalAtualizacao:number;
+  sinalAtualizacao:number; somenteLeituraOffline:boolean;
 };
 type Stats = Record<Atributo,number>;
 const INICIAIS:Stats = {forca:1,agilidade:1,vigor:1,astucia:1};
@@ -59,7 +60,7 @@ const PERICIAS:{nome:string;atributo:Atributo}[]=[
 const CLASSES:Classe[]=['Agente','Autodidata','Operador'];
 const ABREV:Record<Atributo,string>={forca:'FOR',agilidade:'AGI',vigor:'VIG',astucia:'AST'};
 
-export default function FichasJogador({supabase,usuarioId,mesas,sinalAtualizacao}:Props){
+export default function FichasJogador({supabase,usuarioId,mesas,sinalAtualizacao,somenteLeituraOffline}:Props){
   const [personagens,setPersonagens]=useState<Personagem[]>([]);
   const [carregando,setCarregando]=useState(true);
   const [criando,setCriando]=useState(false);
@@ -87,16 +88,57 @@ export default function FichasJogador({supabase,usuarioId,mesas,sinalAtualizacao
   const [salvandoHabilidade,setSalvandoHabilidade]=useState(false);
   const [erroHabilidade,setErroHabilidade]=useState('');
   const [avisoHabilidade,setAvisoHabilidade]=useState('');
+  const [dadosCacheados,setDadosCacheados]=useState(false);
+  const [cacheAtualizadoEm,setCacheAtualizadoEm]=useState<string|null>(null);
+  const leituraSomente = somenteLeituraOffline || dadosCacheados || (typeof navigator !== 'undefined' && !navigator.onLine);
 
   const carregar=useCallback(async()=>{
-    const tabela=supabase.from('personagens');
-    const {data,error}=import.meta.env.MODE==='teste'
-      ?await tabela.select("id,nome,mesa_id,jogador_id,classe,origem,pericia_origem_treinada,pericia_origem_extra,pontos_pericia_classe,habilidade_basica,equipamento_inicial,compras_iniciais,revisao_compras,identidade,nivel,forca,agilidade,vigor,astucia,pv_atual,pv_maximo,sa_atual,sa_maximo,bi_atual,bi_maximo,defesa,estado_ficha,configuracao_funcionamento,revisao_funcionamento").order('criado_em',{ascending:false})
-      :await tabela.select("id,nome,mesa_id,jogador_id,classe,origem,pericia_origem_treinada,pericia_origem_extra,pontos_pericia_classe,habilidade_basica,equipamento_inicial,compras_iniciais,revisao_compras,identidade,nivel,forca,agilidade,vigor,astucia,pv_atual,pv_maximo,sa_atual,sa_maximo,bi_atual,bi_maximo,defesa,estado_ficha").order('criado_em',{ascending:false});
-    if(error)setErro('Erro ao carregar personagens: '+error.message);
-    else{setPersonagens((data??[]) as Personagem[]);setErro('');}
-    setCarregando(false);
-  },[supabase]);
+    const offline = somenteLeituraOffline || (typeof navigator !== 'undefined' && !navigator.onLine);
+    if (offline) {
+      const cache = await lerPersonagensOffline<Personagem>(usuarioId).catch(() => null);
+      if (cache) {
+        setPersonagens(cache.dados.map(p=>({...p,identidade:p.identidade??{},pontos_pericia_classe:p.pontos_pericia_classe??{},compras_iniciais:p.compras_iniciais??{}})) as Personagem[]);
+        setCacheAtualizadoEm(cache.atualizadoEm); setDadosCacheados(true); setErro('');
+      } else {
+        setPersonagens([]); setDadosCacheados(false);
+        setErro('Sem conexão e sem uma cópia local de personagens disponível.');
+      }
+      setCarregando(false); return;
+    }
+    try {
+      const tabela=supabase.from('personagens');
+      const {data,error}=import.meta.env.MODE==='teste'
+        ?await tabela.select("id,nome,mesa_id,jogador_id,classe,origem,pericia_origem_treinada,pericia_origem_extra,pontos_pericia_classe,habilidade_basica,equipamento_inicial,compras_iniciais,revisao_compras,identidade,nivel,forca,agilidade,vigor,astucia,pv_atual,pv_maximo,sa_atual,sa_maximo,bi_atual,bi_maximo,defesa,estado_ficha,configuracao_funcionamento,revisao_funcionamento").order('criado_em',{ascending:false})
+        :await tabela.select("id,nome,mesa_id,jogador_id,classe,origem,pericia_origem_treinada,pericia_origem_extra,pontos_pericia_classe,habilidade_basica,equipamento_inicial,compras_iniciais,revisao_compras,identidade,nivel,forca,agilidade,vigor,astucia,pv_atual,pv_maximo,sa_atual,sa_maximo,bi_atual,bi_maximo,defesa,estado_ficha").order('criado_em',{ascending:false});
+      if(error) {
+        const cache = await lerPersonagensOffline<Personagem>(usuarioId).catch(() => null);
+        if (cache) {
+          setPersonagens(cache.dados.map(p=>({...p,identidade:p.identidade??{},pontos_pericia_classe:p.pontos_pericia_classe??{},compras_iniciais:p.compras_iniciais??{}})) as Personagem[]);
+          setCacheAtualizadoEm(cache.atualizadoEm); setDadosCacheados(true);
+          setErro('Não foi possível confirmar os dados online. Exibindo a cópia local, que pode estar desatualizada.');
+        } else {
+          setPersonagens([]); setDadosCacheados(false);
+          setErro('Erro ao carregar personagens: '+error.message);
+        }
+      } else {
+        const lista=(data??[]) as Personagem[];
+        setPersonagens(lista.map(p=>({...p,identidade:p.identidade??{},pontos_pericia_classe:p.pontos_pericia_classe??{},compras_iniciais:p.compras_iniciais??{}})));
+        setErro(''); setDadosCacheados(false);
+        const atualizadoEm=await salvarPersonagensOffline(usuarioId,lista).catch(()=>null);
+        if(atualizadoEm)setCacheAtualizadoEm(atualizadoEm);
+      }
+    } catch {
+      const cache = await lerPersonagensOffline<Personagem>(usuarioId).catch(() => null);
+      if (cache) {
+        setPersonagens(cache.dados.map(p=>({...p,identidade:p.identidade??{},pontos_pericia_classe:p.pontos_pericia_classe??{},compras_iniciais:p.compras_iniciais??{}})) as Personagem[]);
+        setCacheAtualizadoEm(cache.atualizadoEm); setDadosCacheados(true);
+        setErro('Servidor sem resposta. Exibindo a cópia local, que pode estar desatualizada.');
+      } else {
+        setPersonagens([]); setDadosCacheados(false);
+        setErro('Servidor sem resposta e sem cópia local disponível.');
+      }
+    } finally { setCarregando(false); }
+  },[supabase,usuarioId,somenteLeituraOffline]);
 
   useEffect(()=>{void carregar();},[carregar,sinalAtualizacao]);
   const minhasMesas=useMemo(()=>mesas.filter(m=>m.mestre_id!==usuarioId),[mesas,usuarioId]);
@@ -133,6 +175,7 @@ export default function FichasJogador({supabase,usuarioId,mesas,sinalAtualizacao
 
   async function criar(evento:FormEvent<HTMLFormElement>){
     evento.preventDefault();setErro('');setMensagem('');
+    if(leituraSomente){setErro('Criação indisponível offline. Nenhuma alteração foi enviada.');return;}
     if(!mesaEscolhida){setErro('Selecione uma Mesa em que você seja jogador.');return;}
     if(rascunhosNaMesa>=3){setErro('Você já possui três rascunhos nesta Mesa. Continue um dos existentes.');return;}
     if(pontos!==0||zeros>1){setErro('Distribua todos os 3 pontos iniciais (ou 4 com um atributo reduzido a 0).');return;}
@@ -157,7 +200,7 @@ export default function FichasJogador({supabase,usuarioId,mesas,sinalAtualizacao
   }
 
   async function salvarOrigem(){
-    if(!ficha||!dona||ficha.estado_ficha!=='rascunho'||salvandoOrigem||salvandoPericias||salvandoHabilidade||salvando)return;
+    if(leituraSomente||!ficha||!dona||ficha.estado_ficha!=='rascunho'||salvandoOrigem||salvandoPericias||salvandoHabilidade||salvando)return;
     if(!dadosOrigem||!periciaTreinada||!opcoesOrigem.includes(periciaTreinada)||
       (origemEscolhida==='Amnésico'&&(!periciaExtra||periciaExtra===periciaTreinada))){
       setErroOrigem('Escolha Origem e Perícia Treinada; '+termo('Amnésico')+' exige duas Perícias distintas.');
@@ -177,7 +220,7 @@ export default function FichasJogador({supabase,usuarioId,mesas,sinalAtualizacao
   }
 
   async function salvarPericias(){
-    if(!ficha||!dona||ficha.estado_ficha!=='rascunho'||salvandoPericias||salvandoOrigem||salvandoHabilidade)return;
+    if(leituraSomente||!ficha||!dona||ficha.estado_ficha!=='rascunho'||salvandoPericias||salvandoOrigem||salvandoHabilidade)return;
     setSalvandoPericias(true);setErroPericias('');setAvisoPericias('');
     try{
       const {error}=await supabase.rpc('definir_pericias_rascunho',{
@@ -193,7 +236,7 @@ export default function FichasJogador({supabase,usuarioId,mesas,sinalAtualizacao
 
   async function ajustar(recurso:Recurso,delta:-1|1){
     if(recurso==='DEF')return;
-    if(!ficha||!dona||salvando||salvandoHabilidade||salvandoOrigem)return;
+    if(leituraSomente||!ficha||!dona||salvando||salvandoHabilidade||salvandoOrigem)return;
     const [campo,maximo]=recurso==='PV'?['pv_atual','pv_maximo']:
       recurso==='SA'?['sa_atual','sa_maximo']:['bi_atual','bi_maximo'];
     const atual=Number(ficha[campo as keyof Personagem]??0);
@@ -209,7 +252,7 @@ export default function FichasJogador({supabase,usuarioId,mesas,sinalAtualizacao
   }
 
   async function salvarHabilidade(){
-    if(!ficha||!dona||ficha.estado_ficha!=='rascunho'||salvandoHabilidade||salvandoOrigem||salvandoPericias||salvando)return;
+    if(leituraSomente||!ficha||!dona||ficha.estado_ficha!=='rascunho'||salvandoHabilidade||salvandoOrigem||salvandoPericias||salvando)return;
     setSalvandoHabilidade(true);setErroHabilidade('');setAvisoHabilidade('');
     try{
       const {error}=await supabase.rpc('definir_habilidade_rascunho',{
@@ -254,7 +297,8 @@ export default function FichasJogador({supabase,usuarioId,mesas,sinalAtualizacao
         <p className="rotulo">NOVO SOBREVIVENTE</p>
         <h3>Criar rascunho de personagem</h3>
         <p className="secundario">Criação inicial por pontos do Arquivo do Jogador v1.0. Após criar, escolha Origem, Perícias, uma Habilidade Básica e equipamento inicial. A finalização ainda está pendente.</p>
-        {minhasMesas.length===0 ? <p className="dica">Você precisa ter sido aprovado como jogador em uma Mesa para criar um personagem.</p>:
+        {leituraSomente ? <p className="dica">Modo offline: criação de personagens e alterações compartilhadas ficam bloqueadas. Consulte apenas cópias locais previamente autorizadas.</p>:
+          minhasMesas.length===0 ? <p className="dica">Você precisa ter sido aprovado como jogador em uma Mesa para criar um personagem.</p>:
           <form onSubmit={criar} className="formulario">
             <label>Mesa <select value={mesaEscolhida} onChange={e=>setMesaId(e.target.value)}>
               {minhasMesas.map(m=><option key={m.id} value={m.id}>{m.nome}</option>)}
@@ -285,7 +329,8 @@ export default function FichasJogador({supabase,usuarioId,mesas,sinalAtualizacao
       </section>
       <section className="cartao cartao-padrao">
         <div className="linha-titulo"><div><p className="rotulo">REGISTROS</p><h3>Personagens da Mesa</h3></div><button className="botao-claro" type="button" disabled={carregando} onClick={()=>{void carregar();}}>Atualizar</button></div>
-        {!disponiveis ? <p className="secundario">Entre numa Mesa para visualizar fichas autorizadas.</p> :
+        {leituraSomente&&!disponiveis ? <p className="secundario">Modo offline sem Mesas em cache: não há fichas locais autorizadas para exibir.</p>:
+          !disponiveis ? <p className="secundario">Entre numa Mesa para visualizar fichas autorizadas.</p> :
           carregando ? <p className="secundario">Carregando fichas...</p> :
           personagens.length===0 ? <p className="secundario">Ainda não existem fichas nesta Mesa.</p>:
           <ul className="lista-personagens">{personagens.map(p=><li key={p.id}>
@@ -302,6 +347,10 @@ export default function FichasJogador({supabase,usuarioId,mesas,sinalAtualizacao
     </div>
     {erro&&<p className="erro" role="alert">{erro}</p>}
     {mensagem&&<p className="sucesso" role="status">{mensagem}</p>}
+    {dadosCacheados&&<div className="offline-banner offline-banner-ficha" role="status">
+      <strong>Ficha em cache local · somente leitura</strong>
+      <p>{cacheAtualizadoEm?'Última consulta confirmada: '+new Intl.DateTimeFormat('pt-BR',{dateStyle:'short',timeStyle:'short'}).format(new Date(cacheAtualizadoEm))+'.':'Não há horário de consulta confirmado.'} A cópia pode estar desatualizada. Ao reconectar, a autorização será verificada novamente.</p>
+    </div>}
     {ficha&&<div className="ficha-fundo" role="presentation">
       <section className="ficha" role="dialog" aria-modal="true" aria-label={'Ficha de '+ficha.nome}>
         <div className="ficha-topo">
@@ -337,8 +386,8 @@ export default function FichasJogador({supabase,usuarioId,mesas,sinalAtualizacao
                 <p>Defesa: 10 + AGI{ficha.origem==='Policial'?' + 2 da Origem Policial':''}. Colete guardado e efeitos condicionais não acrescentam Defesa nesta etapa.</p>:
                 <><p>Alterações salvas. O rascunho continua privado; fichas ativas seguem as permissões da Mesa.</p>
                   {dona?<div className="ficha-ajustes">
-                    <button type="button" disabled={salvando||salvandoHabilidade||salvandoOrigem} onClick={()=>{void ajustar(recursoAberto,-1)}}>− 1 {recursoAberto}</button>
-                    <button type="button" disabled={salvando||salvandoHabilidade||salvandoOrigem} onClick={()=>{void ajustar(recursoAberto,1)}}>+ 1 {recursoAberto}</button>
+                    <button type="button" disabled={leituraSomente||salvando||salvandoHabilidade||salvandoOrigem} onClick={()=>{void ajustar(recursoAberto,-1)}}>− 1 {recursoAberto}</button>
+                    <button type="button" disabled={leituraSomente||salvando||salvandoHabilidade||salvandoOrigem} onClick={()=>{void ajustar(recursoAberto,1)}}>+ 1 {recursoAberto}</button>
                   </div>:<p>Somente o jogador proprietário pode alterar este recurso.</p>}</>}
             </div>}
             <div className="ficha-condicoes">CONDIÇÕES <span>Nenhuma condição cadastrada · recurso futuro</span></div>
@@ -355,7 +404,7 @@ export default function FichasJogador({supabase,usuarioId,mesas,sinalAtualizacao
               <summary>Origem e benefício {ficha.origem?'· '+termo(ficha.origem):'· pendente'}</summary>
               {ficha.origem&&<p><strong>Benefício:</strong> {ORIGENS.find(o=>o.nome===ficha.origem)?.beneficio}</p>}
               {ficha.pericia_origem_treinada&&<p>Treinamento gratuito: <strong>{ficha.pericia_origem_treinada}</strong>. {ficha.origem==='Amnésico'&&ficha.pericia_origem_extra?'Outra Perícia escolhida: '+ficha.pericia_origem_extra+'.':''}</p>}
-              {dona&&ficha.estado_ficha==='rascunho'&&<div className="formulario">
+              {dona&&ficha.estado_ficha==='rascunho'&&(leituraSomente?<p className="ficha-dica">Modo offline: Origem e Treinamento estão em consulta somente; nenhuma alteração será enviada.</p>:<div className="formulario">
                 <label>Escolher Origem
                   <select value={origemEscolhida} onChange={e=>{setOrigemEscolhida(e.target.value);setPericiaTreinada('');setPericiaExtra('');setAvisoOrigem('');}}>
                     <option value="">Selecione uma Origem</option>
@@ -380,12 +429,12 @@ export default function FichasJogador({supabase,usuarioId,mesas,sinalAtualizacao
                 <button type="button" className="acao" disabled={salvandoOrigem||salvandoPericias||salvandoHabilidade||salvando||!dadosOrigem||!periciaTreinada||(origemEscolhida==='Amnésico'&&!periciaExtra)} onClick={()=>{void salvarOrigem();}}>
                   {salvandoOrigem?'Salvando...':'Confirmar Origem'}
                 </button>
-              </div>}
+              </div>)}
               <p className="ficha-dica">A Origem concede um Treinamento gratuito. Distribua os pontos da Classe na seção Perícias. Para trocar escolhas de Origem após distribuir pontos, zere a distribuição e salve primeiro. Efeitos condicionais ainda serão integrados.</p>
             </details>
             <details><summary>Habilidade Básica de Classe · {termo(habilidadeSalva?.nome??'pendente')}</summary>
               {habilidadeSalva&&<p><strong>{termo(habilidadeSalva.nome)} · {termo(habilidadeSalva.ramo)}</strong><br/>{habilidadeSalva.efeito} <small>({habilidadeSalva.referencia})</small></p>}
-              {dona&&ficha.estado_ficha==='rascunho'&&(ficha.nivel!==1?
+              {dona&&ficha.estado_ficha==='rascunho'&&(leituraSomente?<p className="ficha-dica">Modo offline: Habilidade Básica em consulta somente.</p>:(ficha.nivel!==1?
                 <p className="ficha-dica">Escolha de Habilidade disponível nesta etapa apenas no nível 1.</p>:
                 <div className="formulario">
                   <label>Escolher Habilidade Básica
@@ -398,11 +447,11 @@ export default function FichasJogador({supabase,usuarioId,mesas,sinalAtualizacao
                   <p className="ficha-dica">No nível 1, escolha uma Básica da sua Classe. É possível refazer a escolha no rascunho. {termo('Parrudo')} recalcula PV e BI máximos, preservando dano já sofrido; a troca é recusada se descartaria BI acumulada.</p>
                   {erroHabilidade&&<p role="alert" className="erro">{erroHabilidade}</p>}
                   {avisoHabilidade&&<p role="status" className="sucesso">{avisoHabilidade}</p>}
-                  <button type="button" className="acao" disabled={salvandoHabilidade||salvandoOrigem||salvandoPericias||salvando||habilidadesDaClasse.length===0} onClick={()=>{void salvarHabilidade();}}>{salvandoHabilidade?'Salvando...':'Salvar Habilidade Básica'}</button>
-                </div>)}
+                  <button type="button" className="acao" disabled={leituraSomente||salvandoHabilidade||salvandoOrigem||salvandoPericias||salvando||habilidadesDaClasse.length===0} onClick={()=>{void salvarHabilidade();}}>{salvandoHabilidade?'Salvando...':'Salvar Habilidade Básica'}</button>
+                </div>))}
               <p className="ficha-dica">Custos, Vantagens, curas e manobras condicionais são referências para declarar em jogo. Nenhuma rolagem, ataque ou consumo é disparado por escolher a Habilidade. Uso de equipamento e finalização ainda estão pendentes.</p>
             </details>
-            <IdentidadeRascunho key={ficha.id} supabase={supabase} ficha={ficha} dona={dona} recarregar={carregar}/>
+            <IdentidadeRascunho key={ficha.id} supabase={supabase} ficha={ficha} dona={dona} recarregar={carregar} somenteLeituraOffline={leituraSomente}/>
           </section>
           <section className="ficha-secao" id="ficha-pericias">
             <h3><span>02</span> Atributos e Perícias <small>AB-02</small></h3>
@@ -454,9 +503,9 @@ export default function FichasJogador({supabase,usuarioId,mesas,sinalAtualizacao
           </section>
           <section className="ficha-secao" id="ficha-itens">
             <h3><span>04</span> Inventário <small>AB-04</small></h3>
-            <EquipamentoRascunho key={ficha.id} supabase={supabase} ficha={ficha} dona={dona} recarregar={carregar}/>
+            <EquipamentoRascunho key={ficha.id} supabase={supabase} ficha={ficha} dona={dona} recarregar={carregar} somenteLeituraOffline={leituraSomente}/>
           </section>
-          {dona&&ficha.estado_ficha==='rascunho'&&<RevisaoCriacao key={ficha.id} ficha={ficha} irPara={irPara} funcionamento={import.meta.env.MODE==='teste'&&ficha.configuracao_funcionamento&&ficha.revisao_funcionamento!==undefined?{inicial:ficha.configuracao_funcionamento,revisaoInicial:ficha.revisao_funcionamento,aoSalvar:async(config,rev)=>{const nova=await salvarFuncionamento(supabase,ficha.id,config,rev);await carregar();return nova;}}:undefined}/>}
+          {dona&&ficha.estado_ficha==='rascunho'&&(leituraSomente?<p className="ficha-dica">Revisão interativa e preferências ficam bloqueadas offline.</p>:<RevisaoCriacao key={ficha.id} ficha={ficha} irPara={irPara} funcionamento={import.meta.env.MODE==='teste'&&ficha.configuracao_funcionamento&&ficha.revisao_funcionamento!==undefined?{inicial:ficha.configuracao_funcionamento,revisaoInicial:ficha.revisao_funcionamento,aoSalvar:async(config,rev)=>{const nova=await salvarFuncionamento(supabase,ficha.id,config,rev);await carregar();return nova;}}:undefined}/>)}
           <div className="ficha-rodape">FICHA DO JOGADOR · ALFA 0.4 · RASCUNHO SALVO NO BANCO</div>
         </div>
         <nav className="ficha-nav" aria-label="Atalhos da ficha">
