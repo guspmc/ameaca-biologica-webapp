@@ -1,3 +1,5 @@
+> **Roteiro consolidado e detalhado:** consulte [Rodada offline e notas pessoais](rodada-offline-notas-locais.md). Ele explica o preparo desde o download da pasta até cada clique e resultado esperado. **Não execute ainda**: a rodada será solicitada depois da revisão e dos testes automatizados.
+
 # Teste manual da ficha offline — ambiente local
 
 Este roteiro usa somente o projeto Supabase de TESTE. Não use credenciais de produção. Não compartilhe nem comite arquivos .env, chaves ou tokens.
