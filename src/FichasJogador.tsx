@@ -332,7 +332,8 @@ export default function FichasJogador({supabase,usuarioId,mesas,sinalAtualizacao
         {leituraSomente&&!disponiveis ? <p className="secundario">Modo offline sem Mesas em cache: não há fichas locais autorizadas para exibir.</p>:
           !disponiveis ? <p className="secundario">Entre numa Mesa para visualizar fichas autorizadas.</p> :
           carregando ? <p className="secundario">Carregando fichas...</p> :
-          personagens.length===0 ? <p className="secundario">Ainda não existem fichas nesta Mesa.</p>:
+          leituraSomente&&!dadosCacheados ? <p className="secundario">Não há cópia local de personagens disponível. Reconecte-se para consultar o servidor.</p> :
+          personagens.length===0 ? <p className="secundario">A última consulta não encontrou personagens em cache para esta conta.</p>:
           <ul className="lista-personagens">{personagens.map(p=><li key={p.id}>
             <button type="button" className="abrir-personagem" onClick={()=>abrirFicha(p.id)}>
               <span className="ficha-mini-selo">{p.classe?.slice(0,1)??'?'}</span>

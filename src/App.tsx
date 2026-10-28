@@ -305,7 +305,8 @@ function Lobby({ supabase, sessao }: { supabase: SupabaseClient; sessao: Session
       </section>
       <section className="cartao cartao-padrao">
         <div className="linha-titulo"><div><p className="rotulo">ARQUIVO DE CAMPANHAS</p><h2>Mesas cadastradas</h2></div><button className="botao-claro" type="button" disabled={carregando} onClick={()=>{void atualizar()}}>Atualizar</button></div>
-        {carregando?<p className="vazio">Carregando Mesas...</p>:mesas.length===0?
+        {carregando?<p className="vazio">Carregando Mesas...</p>:somenteLeituraOffline&&mesas.length===0?
+          <div className="vazio"><h3>Sem cópia local das Mesas</h3><p>Reconecte-se para confirmar as Mesas desta conta. Nenhum dado foi inventado.</p></div>:mesas.length===0?
           <div className="vazio"><div className="simbolo-vazio">+</div><h3>Nenhuma Mesa ainda</h3><p>Crie a primeira campanha para inaugurar o laboratório.</p></div>:
           <ul className="lista-mesas">{mesas.map(mesa=><li key={mesa.id}>
             <button type="button" className="linha-mesa" onClick={()=>setEscolhida(mesa)}>

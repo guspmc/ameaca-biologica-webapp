@@ -13,6 +13,7 @@ test('cache local é isolado por usuário, Mesa e personagem',()=>{
  assert.match(cacheSource,/usuarioId \+ ':personagem:' \+ personagem\.mesa_id \+ ':' \+ personagem\.id/);
  assert.match(cacheSource,/mesaId: personagem\.mesa_id/);
  assert.match(cacheSource,/personagemId: personagem\.id/);
+ assert.match(cacheSource,/personagem\.jogador_id === usuarioId/);
 });
 test('snapshot de personagens só é gravado após consulta online autorizada',()=>{
  assert.match(sheetSource,/salvarPersonagensOffline\(usuarioId,lista\)/);

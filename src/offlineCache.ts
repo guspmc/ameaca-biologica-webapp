@@ -9,7 +9,7 @@ export type RegistroOffline = {
 };
 export type LeituraOffline<T> = { dados: T; atualizadoEm: string };
 type MesaCache = { id: string; nome: string; mestre_id: string; criada_em: string };
-type PersonagemCache = { id: string; mesa_id: string };
+type PersonagemCache = { id: string; mesa_id: string; jogador_id: string | null };
 const BANCO = 'ameaca-biologica-offline-v1';
 const VERSAO_BANCO = 1;
 const ARMAZENAMENTO = 'registros';
@@ -75,6 +75,8 @@ export async function lerMesasOffline(usuarioId: string): Promise<LeituraOffline
   return { dados: row.dados as MesaCache[], atualizadoEm: row.atualizadoEm };
 }
 export async function salvarPersonagensOffline<T extends PersonagemCache>(usuarioId: string, personagens: T[]): Promise<string> {
+  // Não persistir fichas completas de outras pessoas que o Mestre consiga consultar online.
+  const proprias = personagens.filter(personagem => personagem.jogador_id === usuarioId);
   const db = await abrirBanco();
   const atualizadoEm = new Date().toISOString();
   return new Promise((resolve, reject) => {
@@ -87,9 +89,9 @@ export async function salvarPersonagensOffline<T extends PersonagemCache>(usuari
       }
       store.put({
         id: usuarioId + ':personagens-indice', usuarioId, tipo: 'personagens-indice',
-        mesaId: null, personagemId: null, atualizadoEm, dados: { quantidade: personagens.length }
+        mesaId: null, personagemId: null, atualizadoEm, dados: { quantidade: proprias.length }
       } satisfies RegistroOffline);
-      for (const personagem of personagens) {
+      for (const personagem of proprias) {
         store.put({
           id: usuarioId + ':personagem:' + personagem.mesa_id + ':' + personagem.id,
           usuarioId, tipo: 'personagem', mesaId: personagem.mesa_id,

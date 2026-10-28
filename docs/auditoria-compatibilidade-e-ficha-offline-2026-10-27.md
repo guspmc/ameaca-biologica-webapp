@@ -141,7 +141,7 @@ Esse mecanismo parece protetivo, mas a diferença significa que o comportamento 
 
 ### Ficha offline — código na branch, ainda sem publicação
 
-- Adicionado src/offlineCache.ts: IndexedDB versionado, snapshots isolados por conta/Mesa/personagem, data/hora da última consulta confirmada, limpeza da conta no logout voluntário e remoção de snapshots de personagens quando uma consulta online confirma que uma Mesa deixou de estar autorizada.
+- Adicionado src/offlineCache.ts: IndexedDB versionado, snapshots isolados por conta/Mesa/personagem, data/hora da última consulta confirmada, limpeza da conta no logout voluntário e remoção de snapshots de personagens quando uma consulta online confirma que uma Mesa deixou de estar autorizada. O cache armazena somente personagens cujo jogador_id corresponde à conta; fichas completas de outras pessoas não são persistidas offline.
 - src/App.tsx tenta recuperar a lista de Mesas de cache quando a rede falha; exibe aviso de dados potencialmente desatualizados, bloqueia criação de Mesas e oculta convites/participantes no modo de consulta.
 - src/FichasJogador.tsx guarda apenas respostas de personagens que a consulta do Supabase autorizou. Quando offline/sem resposta, usa snapshots existentes em modo de leitura; PV/SA/BI, criação, Origem, Perícias, Habilidade, Identidade, Equipamento e revisão interativa ficam bloqueados.
 - O cache não guarda tokens, sessão, e-mail nem respostas de API no service worker. Não há fila de alterações compartilhadas offline.
