@@ -1,4 +1,5 @@
 import {salvarFuncionamento} from './servicoFuncionamento';
+import AnotacoesPessoais from './AnotacoesPessoais';
 import {lerPersonagensOffline, salvarPersonagensOffline} from './offlineCache';
 import type {ConfiguracaoFuncionamento} from './funcionamentoFicha';
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react';
@@ -457,6 +458,7 @@ export default function FichasJogador({supabase,usuarioId,mesas,sinalAtualizacao
               <p className="ficha-dica">Custos, Vantagens, curas e manobras condicionais são referências para declarar em jogo. Nenhuma rolagem, ataque ou consumo é disparado por escolher a Habilidade. Uso de equipamento e finalização ainda estão pendentes.</p>
             </details>
             <IdentidadeRascunho key={ficha.id} supabase={supabase} ficha={ficha} dona={dona} recarregar={carregar} somenteLeituraOffline={leituraSomente}/>
+            {dona && <AnotacoesPessoais key={usuarioId + ':' + ficha.mesa_id + ':' + ficha.id} usuarioId={usuarioId} mesaId={ficha.mesa_id} personagemId={ficha.id} />}
           </section>
           <section className="ficha-secao" id="ficha-pericias">
             <h3><span>02</span> Atributos e Perícias <small>AB-02</small></h3>
