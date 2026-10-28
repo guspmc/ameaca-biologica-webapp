@@ -267,3 +267,10 @@ footer { margin-top:45px; border-top:1px solid #dce2df; padding-top:19px; color:
 .offline-banner strong { display: block; margin-bottom: 5px; color: #6d4c0c; }
 .offline-banner p { margin: 0; }
 .offline-banner-ficha { margin: 18px 0; }
+
+/* Anotações pessoais: armazenamento local, independente dos campos sincronizados. */
+.notas-pessoais { border:1px solid #c9bba6; border-radius:7px; padding:14px; background:#f8f1e5; }
+.notas-pessoais h3 { font-size:18px; }
+.notas-pessoais-campo { display:grid; gap:8px; font-size:12px; font-weight:800; color:#4b4338; }
+.notas-pessoais-campo textarea { display:block; width:100%; min-height:130px; resize:vertical; border:1px solid #b7a68e; border-radius:5px; padding:11px; color:#252725; background:#fffaf0; font:13px/1.6 ui-monospace, SFMono-Regular, Consolas, monospace; }
+.notas-pessoais-campo textarea:focus-visible { outline:3px solid #a5263e; outline-offset:2px; }
