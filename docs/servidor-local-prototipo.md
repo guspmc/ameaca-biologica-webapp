@@ -75,6 +75,19 @@ Se os dispositivos não se conectarem, confira primeiro se ambos estão na mesma
 - O fato de um teste automatizado estar escrito não significa que ele passou. Os resultados precisam vir da execução local ou do CI.
 - O protótipo ainda não foi validado como servidor no Android. Essa será uma etapa posterior, depois de comprovar o fluxo no PC.
 
+## Incremento seguinte — autenticação local experimental
+
+A branch de desenvolvimento agora contém uma API de autenticação local separada em `server/auth-local.mjs`:
+
+- `POST /api/auth/register`: cria conta com e-mail normalizado e senha de 12 a 128 caracteres.
+- `POST /api/auth/login`: valida a senha e emite um token de sessão aleatório com validade de sete dias.
+- `GET /api/auth/me`: valida o token enviado no cabeçalho `Authorization: Bearer ...`.
+- `POST /api/auth/logout`: revoga a sessão atual.
+- Senhas são derivadas com scrypt e salt aleatório; o banco guarda o hash do token de sessão, não o token em si.
+- Testes automatizados dedicados cobrem cadastro, login, sessão, logout, senha curta e e-mail duplicado.
+
+**Limites importantes:** esta API ainda não está conectada à interface React e não protege as rotas demonstrativas `/api/events`. Não existem Mesas, papéis, autorização por Mesa, recuperação de conta, limitação de tentativas de login nem migrações versionadas de schema. O protótipo continua usando HTTP sem TLS; portanto, não use credenciais ou dados reais. Antes de colocar dados de campanha no servidor, precisamos tratar transporte seguro na LAN, limitação de tentativas, política de criação de contas e autorização no servidor. A presença desses endpoints não significa que o WebApp já tenha autenticação local pronta para uso real.
+
 ## Próximo marco
 
 Após os testes automatizados e a prova LAN serem aprovados, implementar autenticação local e autorização no servidor antes de introduzir dados reais de Mesas e personagens. Só então conectar gradualmente o frontend atual à API local.
