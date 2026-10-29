@@ -61,8 +61,8 @@
 
     <section>
       <h2>Eventos compartilhados</h2>
-      <p class="small">As mensagens são gravadas no banco SQLite deste servidor e devem aparecer nos navegadores conectados.</p>
-      <ul id="events" aria-live="polite"><li class="empty">Carregando eventos…</li></ul>
+      <p class="small">As mensagens são gravadas no banco SQLite deste servidor e devem aparecer nos navegadores conectados. Se o canal cair, a página tentará reconectar e recuperar o histórico sem exigir F5.</p>
+      <ul id="events" aria-live="polite"><li class="empty">Aguardando conexão e eventos…</li></ul>
     </section>
   </main>
 
@@ -74,7 +74,11 @@
     const input = document.querySelector('#message');
     const send = document.querySelector('#send');
     const list = document.querySelector('#events');
+    const eventIds = new Set();
+    const eventIdOrder = [];
     let socket;
+    let reconnectTimer = null;
+    let reconnectAttempt = 0;
 
     function setStatus(state, text) {
       statusEl.dataset.state = state;
@@ -82,7 +86,15 @@
     }
 
     function addEvent(evento) {
+      const id = Number(evento.id);
+      if (!Number.isSafeInteger(id) || id <= 0 || eventIds.has(id)) return;
+
+      eventIds.add(id);
+      eventIdOrder.push(id);
+      if (eventIdOrder.length > 500) eventIds.delete(eventIdOrder.shift());
+
       const item = document.createElement('li');
+      item.dataset.eventId = String(id);
       const message = document.createElement('div');
       const time = document.createElement('time');
       message.textContent = evento.message;
@@ -90,43 +102,86 @@
       time.textContent = new Date(evento.createdAt).toLocaleString('pt-BR');
       item.append(message, time);
       list.querySelector('.empty')?.remove();
-      list.append(item);
-      while (list.children.length > 50) list.firstElementChild.remove();
+
+      const following = [...list.querySelectorAll('li[data-event-id]')]
+        .find(existing => Number(existing.dataset.eventId) > id);
+      if (following) list.insertBefore(item, following);
+      else list.append(item);
+
+      while (list.querySelectorAll('li[data-event-id]').length > 50) {
+        list.querySelector('li[data-event-id]')?.remove();
+      }
     }
 
     async function loadEvents() {
       const response = await fetch('/api/events', { cache: 'no-store' });
       if (!response.ok) throw new Error('Não foi possível ler os eventos.');
       const data = await response.json();
-      list.replaceChildren();
-      if (!data.events.length) {
+      data.events.forEach(addEvent);
+
+      if (!list.querySelector('li[data-event-id]') && !list.querySelector('.empty')) {
         const empty = document.createElement('li');
         empty.className = 'empty';
         empty.textContent = 'Nenhuma mensagem ainda. Envie a primeira!';
         list.append(empty);
-        return;
       }
-      data.events.forEach(addEvent);
+    }
+
+    function scheduleReconnect() {
+      if (reconnectTimer !== null) return;
+      const baseDelay = Math.min(1000 * (2 ** Math.min(reconnectAttempt, 5)), 30000);
+      const delay = baseDelay + Math.floor(Math.random() * 500);
+      reconnectAttempt += 1;
+      reconnectTimer = setTimeout(() => {
+        reconnectTimer = null;
+        connect();
+      }, delay);
     }
 
     function connect() {
+      if (socket && (socket.readyState === WebSocket.OPEN || socket.readyState === WebSocket.CONNECTING)) return;
+
+      setStatus('wait', reconnectAttempt ? 'Reconectando ao canal…' : 'Conectando ao canal…');
       const protocolo = location.protocol === 'https:' ? 'wss:' : 'ws:';
-      socket = new WebSocket(protocolo + '//' + location.host + '/ws');
-      socket.addEventListener('open', () => setStatus('ok', 'Canal em tempo real conectado'));
-      socket.addEventListener('message', event => {
+      const candidato = new WebSocket(protocolo + '//' + location.host + '/ws');
+      socket = candidato;
+
+      candidato.addEventListener('open', () => {
+        if (socket !== candidato) return;
+        setStatus('ok', 'Canal em tempo real conectado');
+        feedback.textContent = 'Canal conectado. Sincronizando histórico…';
+        loadEvents().then(() => {
+          if (socket !== candidato || candidato.readyState !== WebSocket.OPEN) return;
+          reconnectAttempt = 0;
+          feedback.textContent = 'Conectado e histórico sincronizado. As mensagens novas devem aparecer sem atualizar a página.';
+        }).catch(() => {
+          if (socket !== candidato) return;
+          feedback.textContent = 'Canal ao vivo conectado, mas o histórico não carregou. Tentaremos sincronizar novamente após uma reconexão.';
+        });
+      });
+
+      candidato.addEventListener('message', event => {
+        if (socket !== candidato) return;
         try {
           const data = JSON.parse(event.data);
           if (data.type === 'event.created') addEvent(data.event);
-          if (data.type === 'ready') feedback.textContent = 'Conectado. Envie uma mensagem aqui e confira se ela aparece no outro dispositivo.';
+          if (data.type === 'ready') setStatus('ok', 'Canal em tempo real conectado');
         } catch {
           feedback.textContent = 'O servidor enviou uma mensagem que não foi possível interpretar.';
         }
       });
-      socket.addEventListener('close', () => {
-        setStatus('bad', 'Canal em tempo real desconectado');
-        feedback.textContent = 'A conexão ao vivo foi interrompida. Recarregue a página quando o servidor estiver disponível.';
+
+      candidato.addEventListener('close', () => {
+        if (socket !== candidato) return;
+        setStatus('bad', 'Canal desconectado — tentando reconectar');
+        feedback.textContent = 'A conexão ao vivo foi interrompida. A página tentará reconectar e recuperar os eventos automaticamente.';
+        scheduleReconnect();
       });
-      socket.addEventListener('error', () => setStatus('bad', 'Falha ao conectar ao canal em tempo real'));
+
+      candidato.addEventListener('error', () => {
+        if (socket !== candidato) return;
+        setStatus('bad', 'Falha no canal — tentando reconectar');
+      });
     }
 
     form.addEventListener('submit', async event => {
@@ -154,14 +209,6 @@
       }
     });
 
-    loadEvents().catch(() => {
-      list.replaceChildren();
-      const empty = document.createElement('li');
-      empty.className = 'empty';
-      empty.textContent = 'Não foi possível carregar os eventos.';
-      list.append(empty);
-      setStatus('bad', 'Servidor indisponível');
-    });
     connect();
   </script>
 </body>
