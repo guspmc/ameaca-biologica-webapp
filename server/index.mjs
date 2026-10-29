@@ -253,8 +253,8 @@ export function createLocalServer({
       return httpServer.address();
     },
     async close() {
+      // Encerrar sockets WebSocket antes de fechar o servidor HTTP.
       for (const cliente of wss.clients) cliente.terminate();
-      await new Promise(resolveClose => wss.close(() => resolveClose()));
       await new Promise((resolveClose, rejectClose) => {
         if (!httpServer.listening) {
           resolveClose();
