@@ -176,7 +176,7 @@ export async function tratarRotaAutenticacao(req, res, url, db) {
       const corpo = await corpoJson(req);
       const email = emailNormalizado(corpo.email);
       const senha = typeof corpo.password === 'string' ? corpo.password : '';
-      if (!email || email.length > EMAIL_MAX || !/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email)) {
+      if (!email || email.length > EMAIL_MAX || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
         json(res, 422, { error: 'Informe um e-mail válido.' });
         return true;
       }
