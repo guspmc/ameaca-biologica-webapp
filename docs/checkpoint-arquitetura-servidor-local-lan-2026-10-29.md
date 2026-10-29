@@ -2,7 +2,7 @@
 
 **Data:** 29/10/2026  
 **Branch de referência:** `feat/origens-rascunho-alfa04`  
-**Estado:** direção de produto confirmada pelo responsável; arquitetura de execução ainda precisa ser definida antes da implementação do backend.  
+**Estado:** stack aprovada pelo usuário em 29/10/2026 (Node.js + SQLite + WebSocket); primeiro protótipo técnico adicionado à branch. Testes automatizados/CI e validação manual LAN ainda pendentes.  
 **Governança:** nenhum merge, publicação no GitHub Pages, alteração remota de Supabase ou mudança de cânone autorizada por este checkpoint.
 
 ## 1. Direção confirmada pelo usuário
@@ -49,7 +49,7 @@ O frontend existente pode ser reaproveitado gradualmente, mas os acessos diretos
 
 ### Marco 0 — decisão técnica e prova de viabilidade
 
-Definir e validar a tecnologia do servidor, armazenamento persistente, autenticação local, transporte de eventos e forma de execução no Windows e Android. A exigência de hospedar também em celular precisa ser testada explicitamente; um servidor Node.js comum no PC não prova que a mesma experiência será simples ou confiável no Android.
+**Decisão de stack aprovada:** Node.js + SQLite + WebSocket para o primeiro protótipo. A execução no Android continua pendente de prova de viabilidade; a validação inicial começa no PC.
 
 ### Marco 1 — servidor local mínimo
 
@@ -109,3 +109,20 @@ Antes de trocar a stack, fazer uma comparação curta de duas opções e um prot
 - Os resultados manuais anteriores de notas/offline não certificam a nova arquitetura LAN-first.
 
 **Próximo passo:** aprovar a tecnologia/runtime do protótipo depois de comparar a viabilidade real no Windows e Android.
+
+## 8. Implementação atual — 29/10/2026
+
+**Implementado na branch, ainda não declarado testado:**
+- `server/index.mjs`: servidor HTTP Node.js, SQLite persistente, endpoint de saúde, API de eventos de demonstração e distribuição por WebSocket.
+- `server/index.html`: página de teste servida pelo próprio servidor.
+- `tests/servidor-local.test.mjs`: cinco testes para saúde, gravação/leitura, persistência após reinício, evento em tempo real e validação de mensagens.
+- `package.json` e `pnpm-lock.yaml`: comando `server:local`, execução de testes com a flag SQLite do Node 22 e dependência WebSocket.
+- `.github/workflows/ci-local-server.yml`: workflow isolado para instalar dependências, rodar testes e compilar o frontend; não publica GitHub Pages.
+- `docs/servidor-local-prototipo.md`: instruções para teste local e em dois dispositivos.
+- `.gitignore`: banco gerado em `.ameaca-local/` não entra no Git.
+
+**Limites explícitos:** o protótipo não tem autenticação, contas, papéis, Mesas reais, fichas ou integração com o frontend existente. Não usar dados reais. O frontend atual ainda usa Supabase hospedado. A nova implementação não substitui essa arquitetura ainda.
+
+**Validação pendente:** confirmar o resultado do workflow CI; depois executar os comandos locais descritos no guia, validar persistência após reinício e testar atualização entre dois dispositivos na mesma LAN com a internet indisponível. O servidor deve permanecer apenas na rede confiável durante os testes.
+
+**Próximo marco:** após a validação técnica, adicionar autenticação local e autorização server-side antes de qualquer migração de dados reais.
