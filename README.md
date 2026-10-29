@@ -107,3 +107,12 @@ Preferências persistidas exclusivamente no TESTE: [evidências e roteiro humano
 Inventário ativo em preparação local: [plano de instâncias, regras e limites verificados](docs/inventario-criacao-instancias.md). Nenhuma materialização remota ou ativação habilitada.
 
 Inventário: [protótipo privado de persistência transacional, testes e limites](docs/inventario-persistencia-local.md). Não aplicado ao Supabase nem exposto ao cliente.
+
+
+## Protótipo do servidor local (LAN-first)
+
+A direção aprovada é que o uso normal da Mesa funcione pela rede local, sem depender da internet. O frontend atual ainda depende do Supabase hospedado para autenticação e dados compartilhados; ele não foi migrado.
+
+O primeiro protótipo técnico separado usa Node.js, SQLite e WebSocket para validar persistência e eventos em tempo real entre navegadores. Ele **não contém autenticação nem dados de campanha** e não deve ser usado com informações reais.
+
+Consulte o [guia de execução e teste do servidor local](docs/servidor-local-prototipo.md). O protótipo ainda precisa passar pela validação automatizada e pelo teste manual em dois dispositivos antes de avançarmos para autenticação local.
