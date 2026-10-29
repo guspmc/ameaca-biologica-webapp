@@ -156,3 +156,58 @@ test('migra Mesas e permite papéis diferentes para a mesma conta em Mesas disti
     /CHECK constraint failed/,
   );
 });
+
+
+test('hub lista somente Mesas da conta autenticada e mantém papel por Mesa', async t => {
+  const { base } = await setup(t);
+  const senha = 'senha-local-comprida-2026';
+  const registrar = async email => {
+    assert.equal((await post(base, '/api/auth/register', { email, password: senha })).status, 201);
+    const resposta = await post(base, '/api/auth/login', { email, password: senha });
+    assert.equal(resposta.status, 200);
+    return (await resposta.json()).token;
+  };
+  const tokenClaire = await registrar('claire@example.test');
+  const tokenChris = await registrar('chris@example.test');
+
+  const criar = await post(base, '/api/mesas', { name: 'Mesa da Claire', accountId: 'conta-do-chris' }, tokenClaire);
+  assert.equal(criar.status, 201);
+  const { mesa } = await criar.json();
+  assert.equal(mesa.role, 'mestre');
+
+  const listagemClaire = await fetch(base + '/api/mesas', {
+    headers: { authorization: `Bearer ${tokenClaire}` },
+  });
+  assert.equal(listagemClaire.status, 200);
+  assert.deepEqual((await listagemClaire.json()).mesas.map(item => item.id), [mesa.id]);
+
+  const listagemChris = await fetch(base + '/api/mesas', {
+    headers: { authorization: `Bearer ${tokenChris}` },
+  });
+  assert.equal(listagemChris.status, 200);
+  assert.deepEqual((await listagemChris.json()).mesas, []);
+
+  const detalheNegado = await fetch(base + `/api/mesas/${mesa.id}`, {
+    headers: { authorization: `Bearer ${tokenChris}` },
+  });
+  assert.equal(detalheNegado.status, 404);
+
+  const detalheClaire = await fetch(base + `/api/mesas/${mesa.id}`, {
+    headers: { authorization: `Bearer ${tokenClaire}` },
+  });
+  assert.equal(detalheClaire.status, 200);
+  assert.equal((await detalheClaire.json()).mesa.role, 'mestre');
+});
+
+test('API de Mesas exige sessão válida e valida o nome', async t => {
+  const { base } = await setup(t);
+  assert.equal((await fetch(base + '/api/mesas')).status, 401);
+  assert.equal((await post(base, '/api/mesas', { name: 'Mesa sem login' })).status, 401);
+
+  const senha = 'senha-local-comprida-2026';
+  await post(base, '/api/auth/register', { email: 'validar@example.test', password: senha });
+  const login = await post(base, '/api/auth/login', { email: 'validar@example.test', password: senha });
+  const { token } = await login.json();
+  assert.equal((await post(base, '/api/mesas', { name: '   ' }, token)).status, 422);
+  assert.equal((await post(base, '/api/mesas', { name: 'x'.repeat(81) }, token)).status, 422);
+});
