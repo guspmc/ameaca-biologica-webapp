@@ -87,21 +87,39 @@ function emailNormalizado(valor) {
 
 export function prepararAutenticacaoLocal(db) {
   db.exec(`
-    CREATE TABLE IF NOT EXISTS contas_locais (
-      id TEXT PRIMARY KEY,
-      email TEXT NOT NULL UNIQUE COLLATE NOCASE,
-      senha_salt TEXT NOT NULL,
-      senha_hash TEXT NOT NULL,
-      criada_em TEXT NOT NULL
+    CREATE TABLE IF NOT EXISTS schema_migrations (
+      version INTEGER PRIMARY KEY,
+      applied_at TEXT NOT NULL
     );
-    CREATE TABLE IF NOT EXISTS sessoes_locais (
-      token_hash TEXT PRIMARY KEY,
-      conta_id TEXT NOT NULL REFERENCES contas_locais(id) ON DELETE CASCADE,
-      criada_em TEXT NOT NULL,
-      expira_em TEXT NOT NULL
-    );
-    CREATE INDEX IF NOT EXISTS idx_sessoes_locais_conta ON sessoes_locais(conta_id);
   `);
+
+  const versaoAtual = db.prepare('SELECT COALESCE(MAX(version), 0) AS version FROM schema_migrations').get().version;
+  if (versaoAtual >= 1) return;
+
+  db.exec('BEGIN IMMEDIATE');
+  try {
+    db.exec(`
+      CREATE TABLE IF NOT EXISTS contas_locais (
+        id TEXT PRIMARY KEY,
+        email TEXT NOT NULL UNIQUE COLLATE NOCASE,
+        senha_salt TEXT NOT NULL,
+        senha_hash TEXT NOT NULL,
+        criada_em TEXT NOT NULL
+      );
+      CREATE TABLE IF NOT EXISTS sessoes_locais (
+        token_hash TEXT PRIMARY KEY,
+        conta_id TEXT NOT NULL REFERENCES contas_locais(id) ON DELETE CASCADE,
+        criada_em TEXT NOT NULL,
+        expira_em TEXT NOT NULL
+      );
+      CREATE INDEX IF NOT EXISTS idx_sessoes_locais_conta ON sessoes_locais(conta_id);
+    `);
+    db.prepare('INSERT INTO schema_migrations (version, applied_at) VALUES (?, ?)').run(1, new Date().toISOString());
+    db.exec('COMMIT');
+  } catch (erro) {
+    db.exec('ROLLBACK');
+    throw erro;
+  }
 }
 
 async function autenticar(req, db) {
@@ -129,7 +147,7 @@ export async function tratarRotaAutenticacao(req, res, url, db) {
       const corpo = await corpoJson(req);
       const email = emailNormalizado(corpo.email);
       const senha = typeof corpo.password === 'string' ? corpo.password : '';
-      if (!email || email.length > EMAIL_MAX || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      if (!email || email.length > EMAIL_MAX || !/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email)) {
         json(res, 422, { error: 'Informe um e-mail válido.' });
         return true;
       }
