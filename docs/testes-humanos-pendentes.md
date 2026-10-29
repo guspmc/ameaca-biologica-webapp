@@ -241,6 +241,7 @@ Origens, Perícias, Habilidades, kits e persistência; identidade/flexões; busc
 A rodada genérica F2–F4 da PWA não comprova a arquitetura LAN-first e fica separada desta trilha. O primeiro protótipo está em `server/`; ele só armazena mensagens demonstrativas e não tem autenticação.
 
 ### Antes do teste manual
+- [x] CI no GitHub Actions passou para a árvore validada: [testes do servidor LAN](https://github.com/guspmc/ameaca-biologica-webapp/actions/runs/40811908864) e [build/validações do WebApp](https://github.com/guspmc/ameaca-biologica-webapp/actions/runs/40811908875). A árvore atual foi conferida como idêntica à validada.
 - [ ] Conferir o workflow [ci-local-server.yml](../.github/workflows/ci-local-server.yml): instalação congelada, testes e build aprovados.
 - [ ] Baixar a branch `feat/origens-rascunho-alfa04` e executar os comandos do [guia do protótipo local](servidor-local-prototipo.md).
 - [ ] Confirmar `pnpm.cmd test` sem falhas.
