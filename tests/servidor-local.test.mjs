@@ -170,4 +170,5 @@ test('script da página LAN tem sintaxe válida e inclui recuperação automáti
   assert.match(scripts[0][1], /function scheduleReconnect/);
   assert.match(scripts[0][1], /eventIds\.has\(id\)/);
   assert.match(scripts[0][1], /loadEvents\(\)\.then/);
+  assert.match(scripts[0][1], /document\.addEventListener\('visibilitychange'/);
 });
