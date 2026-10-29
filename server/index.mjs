@@ -9,6 +9,7 @@ import { WebSocketServer, WebSocket } from 'ws';
 const PAGINA = readFileSync(new URL('./index.html', import.meta.url), 'utf8');
 const AVISO = 'Protótipo técnico sem autenticação. Não use dados reais de campanha, senhas ou segredos.';
 const LIMITE_MENSAGEM = 280;
+const INTERVALO_HEARTBEAT_MS = 25_000;
 
 function respostaJson(res, status, dados) {
   res.writeHead(status, {
@@ -58,11 +59,16 @@ export function createLocalServer({
   host = '127.0.0.1',
   port = 4175,
   dataDir = resolve(process.cwd(), '.ameaca-local'),
+  heartbeatIntervalMs = INTERVALO_HEARTBEAT_MS,
 } = {}) {
+  if (!Number.isInteger(heartbeatIntervalMs) || heartbeatIntervalMs < 10) {
+    throw new Error('heartbeatIntervalMs deve ser um inteiro igual ou superior a 10 ms.');
+  }
+
   mkdirSync(dataDir, { recursive: true });
   const caminhoBanco = resolve(dataDir, 'servidor-prototipo.sqlite');
   const db = new DatabaseSync(caminhoBanco);
-  db.exec(`
+  db.exec(\`
     PRAGMA journal_mode = WAL;
     PRAGMA foreign_keys = ON;
     CREATE TABLE IF NOT EXISTS eventos_prototipo (
@@ -70,7 +76,7 @@ export function createLocalServer({
       mensagem TEXT NOT NULL CHECK (length(mensagem) BETWEEN 1 AND 280),
       criado_em TEXT NOT NULL
     );
-  `);
+  \`);
 
   const listarEventos = db.prepare(
     'SELECT id, mensagem AS message, criado_em AS createdAt FROM eventos_prototipo ORDER BY id DESC LIMIT 50'
@@ -192,7 +198,7 @@ export function createLocalServer({
     if (origem) {
       try {
         if (new URL(origem).host !== req.headers.host) {
-          socket.write('HTTP/1.1 403 Forbidden\r\n\r\n');
+          socket.write('HTTP/1.1 403 Forbidden\\r\\n\\r\\n');
           socket.destroy();
           return;
         }
@@ -208,6 +214,10 @@ export function createLocalServer({
   });
 
   wss.on('connection', cliente => {
+    cliente.isAlive = true;
+    cliente.on('pong', () => {
+      cliente.isAlive = true;
+    });
     cliente.send(JSON.stringify({
       type: 'ready',
       message: 'Canal local de tempo real conectado.',
@@ -223,6 +233,22 @@ export function createLocalServer({
       }
     });
   });
+
+  // Não encerra o servidor por inatividade. O heartbeat apenas detecta conexões
+  // WebSocket que deixaram de responder; o navegador poderá reconectar depois.
+  const heartbeatTimer = setInterval(() => {
+    for (const cliente of wss.clients) {
+      if (cliente.isAlive === false) {
+        cliente.terminate();
+        continue;
+      }
+      if (cliente.readyState === WebSocket.OPEN) {
+        cliente.isAlive = false;
+        cliente.ping();
+      }
+    }
+  }, heartbeatIntervalMs);
+  heartbeatTimer.unref();
 
   let iniciado = false;
 
@@ -253,6 +279,7 @@ export function createLocalServer({
       return httpServer.address();
     },
     async close() {
+      clearInterval(heartbeatTimer);
       for (const cliente of wss.clients) cliente.terminate();
       await new Promise(resolveClose => wss.close(() => resolveClose()));
       await new Promise((resolveClose, rejectClose) => {
@@ -283,22 +310,22 @@ async function iniciarPeloTerminal() {
   await app.listen();
   const endereco = app.address;
   const portaReal = typeof endereco === 'object' && endereco ? endereco.port : port;
-  console.log('\nAmeaça Biológica — servidor LAN (protótipo)');
-  console.log(`Página de teste: http://localhost:${portaReal}/`);
-  console.log(`Saúde:          http://localhost:${portaReal}/api/health`);
-  console.log(`Banco SQLite:   ${app.caminhoBanco}`);
-  console.log(`Internet exigida: não\n`);
-  console.warn(`ATENÇÃO: ${AVISO}`);
+  console.log('\\nAmeaça Biológica — servidor LAN (protótipo)');
+  console.log(\`Página de teste: http://localhost:${portaReal}/\`);
+  console.log(\`Saúde:          http://localhost:${portaReal}/api/health\`);
+  console.log(\`Banco SQLite:   ${app.caminhoBanco}\`);
+  console.log('Internet exigida: não\\n');
+  console.warn(\`ATENÇÃO: ${AVISO}\`);
 
   if (host === '0.0.0.0' || host === '::') {
     for (const enderecoLan of enderecosIPv4()) {
-      console.log(`Acesso pela LAN: http://${enderecoLan}:${portaReal}/`);
+      console.log(\`Acesso pela LAN: http://${enderecoLan}:${portaReal}/\`);
     }
-    console.warn('O servidor está visível na rede local. Use somente uma rede confiável durante este protótipo.\n');
+    console.warn('O servidor está visível na rede local. Use somente uma rede confiável durante este protótipo.\\n');
   }
 
   const encerrar = async () => {
-    console.log('\nEncerrando servidor local...');
+    console.log('\\nEncerrando servidor local...');
     await app.close();
     process.exit(0);
   };
