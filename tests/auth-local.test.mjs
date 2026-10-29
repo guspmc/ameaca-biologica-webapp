@@ -63,3 +63,15 @@ test('impede duplicação de e-mail sem diferenciar maiúsculas', async t => {
   assert.equal((await post(base, '/api/auth/register', { email: 'Conta@example.test', password })).status, 201);
   assert.equal((await post(base, '/api/auth/register', { email: 'conta@example.test', password })).status, 409);
 });
+
+test('limita tentativas repetidas de cadastro por IP e informa quando tentar novamente', async t => {
+  const base = await setup(t);
+  for (let i = 0; i < 5; i += 1) {
+    const resposta = await post(base, '/api/auth/register', { email: 'email-invalido', password: 'senha-local-comprida-2026' });
+    assert.equal(resposta.status, 422);
+  }
+  const bloqueada = await post(base, '/api/auth/register', { email: 'outro-email-invalido', password: 'senha-local-comprida-2026' });
+  assert.equal(bloqueada.status, 429);
+  assert.ok(Number(bloqueada.headers.get('retry-after')) > 0);
+  assert.equal((await bloqueada.json()).error, 'Muitas tentativas. Aguarde antes de tentar novamente.');
+});
