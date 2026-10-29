@@ -2,6 +2,16 @@
 
 ## Nova rodada enfileirada — offline e notas pessoais
 
+### Progresso observado — rodada local de notas (28/10/2026)
+
+- **Preparação/login:** aprovado. A prévia local exibiu `AMBIENTE DE TESTE`; o login passou após Gus corrigir um prefixo `sb` duplicado na chave pública do projeto de teste.
+- **Mesa/ficha:** a Mesa `Teste` e a ficha da Claire abriram normalmente na conta de Jogador.
+- **E1 — salvar e recuperar nota:** **aprovado por relato do Gus**. A nota `NOTA PRIVADA CLAIRE — teste local 01` foi salva; após voltar à Mesa e reabrir a ficha, o texto continuou presente.
+- **Ainda pendente:** isolamento da nota na interface do Mestre e após sair/entrar; independência entre personagens e contas; inspeção do service worker/cache; edição de nota offline e proteção dos campos compartilhados.
+
+Próxima ação: sair da conta de Jogador e entrar na conta de Mestre apenas para confirmar que a anotação pessoal não aparece em nenhuma área visível. Não remover participantes nem editar dados compartilhados. Depois, voltar à conta de Jogador e conferir que a nota continua salva.
+
+
 > **Checkpoint de escopo:** até o lançamento e aprovação do modo local, trabalhar somente nos bloqueios e testes dessa entrega. Itens adiados e o bloqueio atual `Invalid API key` estão registrados em [checkpoint-escopo-modo-local-2026-10-28.md](checkpoint-escopo-modo-local-2026-10-28.md).
 
 
