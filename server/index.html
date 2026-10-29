@@ -78,6 +78,7 @@
     const eventIdOrder = [];
     let socket;
     let reconnectTimer = null;
+    let stableConnectionTimer = null;
     let reconnectAttempt = 0;
 
     function setStatus(state, text) {
@@ -149,10 +150,14 @@
       candidato.addEventListener('open', () => {
         if (socket !== candidato) return;
         setStatus('ok', 'Canal em tempo real conectado');
+        if (stableConnectionTimer !== null) clearTimeout(stableConnectionTimer);
+        stableConnectionTimer = setTimeout(() => {
+          if (socket === candidato && candidato.readyState === WebSocket.OPEN) reconnectAttempt = 0;
+          stableConnectionTimer = null;
+        }, 10000);
         feedback.textContent = 'Canal conectado. Sincronizando histórico…';
         loadEvents().then(() => {
           if (socket !== candidato || candidato.readyState !== WebSocket.OPEN) return;
-          reconnectAttempt = 0;
           feedback.textContent = 'Conectado e histórico sincronizado. As mensagens novas devem aparecer sem atualizar a página.';
         }).catch(() => {
           if (socket !== candidato) return;
@@ -173,6 +178,8 @@
 
       candidato.addEventListener('close', () => {
         if (socket !== candidato) return;
+        if (stableConnectionTimer !== null) clearTimeout(stableConnectionTimer);
+        stableConnectionTimer = null;
         setStatus('bad', 'Canal desconectado — tentando reconectar');
         feedback.textContent = 'A conexão ao vivo foi interrompida. A página tentará reconectar e recuperar os eventos automaticamente.';
         scheduleReconnect();
