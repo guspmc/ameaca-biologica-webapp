@@ -88,7 +88,7 @@ export async function tratarRotaAutenticacao(req, res, url, db) {
       const corpo = await corpoJson(req);
       const email = emailNormalizado(corpo.email);
       const senha = typeof corpo.password === 'string' ? corpo.password : '';
-      if (!email || email.length > EMAIL_MAX || !/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email)) {
+      if (!email || email.length > EMAIL_MAX || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
         json(res, 422, { error: 'Informe um e-mail válido.' });
         return true;
       }
@@ -104,7 +104,7 @@ export async function tratarRotaAutenticacao(req, res, url, db) {
         db.prepare('INSERT INTO contas_locais (id, email, senha_salt, senha_hash, criada_em) VALUES (?, ?, ?, ?, ?)')
           .run(id, email, salt.toString('hex'), Buffer.from(senhaHash).toString('hex'), new Date().toISOString());
       } catch (erro) {
-        if (String(erro?.code ?? '').includes('CONSTRAINT')) {
+        if (String(erro?.code ?? '').includes('CONSTRAINT') || /UNIQUE constraint failed/i.test(String(erro?.message ?? ''))) {
           json(res, 409, { error: 'Não foi possível criar a conta com esses dados.' });
           return true;
         }
