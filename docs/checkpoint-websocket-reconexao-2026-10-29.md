@@ -18,7 +18,7 @@ A implementação anterior não tentava reconectar automaticamente e não recupe
 - **Cliente — reconexão automática:** ao receber o evento de fechamento, agenda novas tentativas com espera progressiva, começando perto de 1 segundo e aumentando até cerca de 30 segundos, com pequena variação aleatória.
 - **Recuperação de histórico:** quando o WebSocket abre ou reabre, a página consulta GET /api/events sem exigir F5.
 - **Deduplicação e ordenação:** eventos são identificados pelo ID do banco, não são inseridos duas vezes quando chegam pelo histórico e pelo canal ao vivo, e a lista permanece em ordem de ID. A página mantém até 50 eventos visíveis e limita o conjunto recente de IDs lembrados.
-- **Teste automatizado novo:** verifica que um cliente WebSocket responsivo permanece conectado durante múltiplos ciclos de heartbeat e que o servidor continua ouvindo enquanto está ocioso.
+- **Testes automatizados novos:** verificam que um cliente WebSocket responsivo permanece conectado durante múltiplos ciclos de heartbeat e que o script da página LAN tem sintaxe válida, com os ganchos de reconexão, sincronização e deduplicação presentes.
 - **CI:** o workflow de validação do servidor local foi ajustado para executar também em branches fix/**, e não apenas na branch original do protótipo.
 
 ## 3. O que ainda não foi comprovado
@@ -49,7 +49,7 @@ O GitHub Actions concluiu com sucesso o workflow “Validar protótipo local LAN
 - O novo teste “heartbeat mantém WebSocket responsivo conectado durante inatividade” passou.
 - Execução: https://github.com/guspmc/ameaca-biologica-webapp/actions/runs/40815151067
 
-Esta evidência valida a suíte automatizada e a compilação para aquele commit. O navegador real no PC e no Android ainda não foi retestado. A atualização deste checkpoint é documental e será novamente validada pelo CI.
+Esta evidência valida a suíte automatizada e a compilação para o commit b0f7cc0. O commit 55f45b4 acrescenta um teste de sintaxe para o JavaScript embutido na página LAN; a execução correspondente do CI ainda está pendente. O navegador real no PC e no Android também ainda não foi retestado.
 
 ## 6. Segurança e limites preservados
 
