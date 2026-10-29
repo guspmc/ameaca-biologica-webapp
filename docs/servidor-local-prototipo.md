@@ -109,3 +109,39 @@ Isso reduz o risco de um canal aparentemente conectado ficar morto sem ser perce
 3. Envie uma mensagem do Android e confira se ela aparece no PC sem F5; depois faça o caminho inverso.
 4. Observe o indicador de conexão durante a espera. Se ficar vermelho, aguarde a reconexão automática e confirme se o histórico volta sem atualizar a página.
 5. Repita com o celular bloqueado ou com o navegador em segundo plano. Esse cenário pode depender do sistema operacional e não deve ser confundido com desligamento por inatividade do servidor.
+
+## Decisão aprovada — alterações offline com trilha de auditoria
+
+**Aprovado pelo usuário em 29/10/2026:** permitir que o jogador altere também os estados compartilhados da própria ficha durante uma sessão offline (por exemplo, atributos, PV, SA, BI, munição e inventário), para não exigir conexão contínua durante o jogo presencial. Essa decisão amplia e substitui, para esse modo de uso, a restrição offline descrita no Planejamento v2.0, que permitia apenas leitura de snapshots e anotações pessoais. A alteração deve ser registrada como decisão posterior no histórico do planejamento; não modifica as regras do RPG nem concede ao Mestre editor universal.
+
+### Trilha de auditoria
+
+Toda alteração offline deve gerar um evento de histórico, em vez de depender apenas do valor final da ficha. O registro proposto contém:
+
+- identificador único do evento e do pacote de sincronização;
+- conta proprietária e personagem afetada;
+- campo/entidade alterado;
+- valor anterior e novo valor (ou operação equivalente para listas, como inventário);
+- data/hora informada pelo dispositivo em formato ISO 8601, preservando o fuso/offset quando disponível;
+- sequência local crescente e identificador da instalação/dispositivo;
+- versão/base do estado a partir da qual a edição foi feita;
+- origem marcada como offline e momento em que o servidor recebeu/importou o pacote.
+
+Exemplo de apresentação ao Mestre: **“AGI 3 » 4 — 14/08/2026 às 18:02”**. A interface também deve indicar que a alteração foi feita offline e, quando útil, mostrar quando o pacote foi recebido pelo servidor.
+
+### Limites de confiança e tratamento
+
+- O horário do aparelho pode estar incorreto e o arquivo exportado pode ser manipulado antes da importação. Portanto, a trilha é um histórico de transparência e revisão, não prova criptográfica de que a alteração ocorreu exatamente naquele horário ou de que o jogador não adulterou o arquivo.
+- O servidor registra o horário de recebimento separadamente e nunca substitui silenciosamente o horário declarado pelo dispositivo.
+- A importação valida conta, propriedade, permissões, estrutura, sequência, IDs de eventos e versão-base. Eventos duplicados não podem ser aplicados duas vezes.
+- Se a ficha no servidor mudou desde a exportação, o sistema apresenta conflito para revisão; não sobrescreve dados mais recentes automaticamente.
+- O Mestre pode consultar o histórico e solicitar ao jogador que corrija uma alteração irregular. Não haverá reversão automática nem julgamento automático de legitimidade pelo aplicativo.
+- O registro deve ser append-only na aplicação normal: correções posteriores geram novos eventos, sem apagar o histórico anterior. Isso não torna o arquivo offline inviolável; a importação deve preservar a origem e sinalizar limitações de confiança.
+- O pacote de exportação deve ser versionado e validado antes de qualquer gravação. Dados privados ou segredos não relacionados à ficha não devem ser incluídos.
+
+### Escopo e próximo passo
+
+**Planejado, ainda não implementado:** fila local de operações, exportação do pacote, pré-visualização no Mestre, importação idempotente, resolução de conflitos e tela de histórico por personagem. A sessão LAN continua sendo o caminho principal e sincroniza diretamente com o servidor autoritativo; o pacote offline é um caminho alternativo para transportar alterações até o Mestre. Não usar a API demonstrativa atual para esses dados.
+
+A política anterior do Planejamento v2.0 sobre anotações pessoais continua valendo: notas pessoais não são incluídas automaticamente em exportações. A trilha de auditoria aqui descrita é para alterações estruturadas da ficha e demais dados compartilhados autorizados.
+
