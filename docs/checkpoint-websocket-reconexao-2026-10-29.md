@@ -44,7 +44,7 @@ O roteiro completo está em docs/testes-humanos-pendentes.md.
 
 O GitHub Actions concluiu com sucesso o workflow “Validar protótipo local LAN” para o commit b0f7cc046c4a75bf7e45166d8947ba5fab68b796:
 
-- **264 testes passaram; 0 falharam.**
+- **264 testes passaram; 0 falharam no commit b0f7cc0.** A atualização adiciona um teste de sintaxe do script da página, que será incluído na nova execução de CI.
 - O build TypeScript + Vite concluiu com sucesso.
 - O novo teste “heartbeat mantém WebSocket responsivo conectado durante inatividade” passou.
 - Execução: https://github.com/guspmc/ameaca-biologica-webapp/actions/runs/40815151067

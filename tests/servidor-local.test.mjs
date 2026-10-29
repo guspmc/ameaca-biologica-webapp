@@ -1,6 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtemp, rm } from 'node:fs/promises';
+import { mkdtemp, readFile, rm } from 'node:fs/promises';
+import { Script } from 'node:vm';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import WebSocket from 'ws';
@@ -158,4 +159,15 @@ test('heartbeat mantém WebSocket responsivo conectado durante inatividade', asy
 
   assert.equal(cliente.readyState, WebSocket.OPEN, 'o cliente que responde ao heartbeat deve continuar conectado');
   assert.equal(app.httpServer.listening, true, 'o servidor não deve encerrar por inatividade');
+});
+
+
+test('script da página LAN tem sintaxe válida e inclui recuperação automática', async () => {
+  const html = await readFile(new URL('../server/index.html', import.meta.url), 'utf8');
+  const scripts = [...html.matchAll(/<script>([\s\S]*?)<\/script>/g)];
+  assert.equal(scripts.length, 1, 'a página de diagnóstico deve ter um script inline');
+  assert.doesNotThrow(() => new Script(scripts[0][1]));
+  assert.match(scripts[0][1], /function scheduleReconnect/);
+  assert.match(scripts[0][1], /eventIds\.has\(id\)/);
+  assert.match(scripts[0][1], /loadEvents\(\)\.then/);
 });

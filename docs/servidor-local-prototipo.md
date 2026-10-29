@@ -15,7 +15,7 @@
 - Heartbeat de WebSocket a cada 25 segundos para detectar conexões que deixaram de responder; o processo servidor não tem desligamento por inatividade.
 - Reconexão automática no navegador, com espera progressiva, e recuperação do histórico após reconectar.
 - Deduplicação por ID e ordenação dos eventos para evitar repetição ou perda em corridas entre histórico e mensagens ao vivo.
-- Seis testes automatizados previstos, incluindo a conexão ociosa responsiva; os resultados desta alteração ainda precisam ser confirmados pelo CI.
+- Sete testes automatizados previstos, incluindo conexão ociosa responsiva e validação sintática do script da página; os resultados desta alteração ainda precisam ser confirmados pelo CI.
 
 ## Requisitos
 
