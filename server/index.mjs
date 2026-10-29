@@ -5,7 +5,7 @@ import { mkdirSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { WebSocketServer, WebSocket } from 'ws';
-import { prepararAutenticacaoLocal, tratarRotaAutenticacao, tratarRotaMesas } from './auth-local.mjs';
+import { consumirTicketWebSocketLocal, prepararAutenticacaoLocal, tratarRotaAutenticacao, tratarRotaMesas } from './auth-local.mjs';
 
 const PAGINA = readFileSync(new URL('./index.html', import.meta.url), 'utf8');
 const AVISO = 'Protótipo LAN sem proteção de transporte. Use apenas dados fictícios e uma rede privada confiável; não use dados reais de campanha ou segredos.';
@@ -137,6 +137,11 @@ export function createLocalServer({
         return;
       }
 
+      if ((metodo === 'GET' || metodo === 'POST') && url.pathname === '/api/events') {
+        respostaJson(res, 410, { error: 'A rota de eventos demonstrativa foi desativada; ela não é um canal de sincronização de campanha.' });
+        return;
+      }
+
       if (metodo === 'GET' && url.pathname === '/api/events') {
         const eventos = listarEventos.all().reverse();
         respostaJson(res, 200, { events: eventos });
@@ -198,6 +203,15 @@ export function createLocalServer({
       return;
     }
 
+    // O ticket é temporário, de uso único e não é a credencial permanente da conta.
+    const ticket = url.searchParams.get('ticket');
+    const conta = consumirTicketWebSocketLocal(db, ticket);
+    if (!conta) {
+      socket.write('HTTP/1.1 401 Unauthorized\\r\\nConnection: close\\r\\n\\r\\n');
+      socket.destroy();
+      return;
+    }
+
     // Navegadores devem conectar ao mesmo host que serviu a página.
     const origem = req.headers.origin;
     if (origem) {
@@ -214,12 +228,12 @@ export function createLocalServer({
     }
 
     wss.handleUpgrade(req, socket, head, cliente => {
-      wss.emit('connection', cliente, req);
+      wss.emit('connection', cliente, req, conta);
     });
   });
 
-  wss.on('connection', cliente => {
-    console.info('[WebSocket] Cliente conectado. Clientes ativos: ' + wss.clients.size + '.');
+  wss.on('connection', (cliente, req, conta) => {
+    cliente.contaId = conta.id;\n    console.info('[WebSocket] Conta autenticada conectada. Clientes ativos: ' + wss.clients.size + '.');
     cliente.on('close', (codigo, motivo) => {
       const descricao = motivo.toString('utf8').trim() || '(sem motivo informado)';
       console.info('[WebSocket] Cliente desconectado. Código: ' + codigo + '; motivo: ' + descricao + '; clientes restantes: ' + wss.clients.size + '.');
