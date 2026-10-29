@@ -93,32 +93,61 @@ export function prepararAutenticacaoLocal(db) {
     );
   `);
 
-  const versaoAtual = db.prepare('SELECT COALESCE(MAX(version), 0) AS version FROM schema_migrations').get().version;
-  if (versaoAtual >= 1) return;
+  let versaoAtual = db.prepare('SELECT COALESCE(MAX(version), 0) AS version FROM schema_migrations').get().version;
 
-  db.exec('BEGIN IMMEDIATE');
-  try {
-    db.exec(`
-      CREATE TABLE IF NOT EXISTS contas_locais (
-        id TEXT PRIMARY KEY,
-        email TEXT NOT NULL UNIQUE COLLATE NOCASE,
-        senha_salt TEXT NOT NULL,
-        senha_hash TEXT NOT NULL,
-        criada_em TEXT NOT NULL
-      );
-      CREATE TABLE IF NOT EXISTS sessoes_locais (
-        token_hash TEXT PRIMARY KEY,
-        conta_id TEXT NOT NULL REFERENCES contas_locais(id) ON DELETE CASCADE,
-        criada_em TEXT NOT NULL,
-        expira_em TEXT NOT NULL
-      );
-      CREATE INDEX IF NOT EXISTS idx_sessoes_locais_conta ON sessoes_locais(conta_id);
-    `);
-    db.prepare('INSERT INTO schema_migrations (version, applied_at) VALUES (?, ?)').run(1, new Date().toISOString());
-    db.exec('COMMIT');
-  } catch (erro) {
-    db.exec('ROLLBACK');
-    throw erro;
+  if (versaoAtual < 1) {
+    db.exec('BEGIN IMMEDIATE');
+    try {
+      db.exec(`
+        CREATE TABLE IF NOT EXISTS contas_locais (
+          id TEXT PRIMARY KEY,
+          email TEXT NOT NULL UNIQUE COLLATE NOCASE,
+          senha_salt TEXT NOT NULL,
+          senha_hash TEXT NOT NULL,
+          criada_em TEXT NOT NULL
+        );
+        CREATE TABLE IF NOT EXISTS sessoes_locais (
+          token_hash TEXT PRIMARY KEY,
+          conta_id TEXT NOT NULL REFERENCES contas_locais(id) ON DELETE CASCADE,
+          criada_em TEXT NOT NULL,
+          expira_em TEXT NOT NULL
+        );
+        CREATE INDEX IF NOT EXISTS idx_sessoes_locais_conta ON sessoes_locais(conta_id);
+      `);
+      db.prepare('INSERT INTO schema_migrations (version, applied_at) VALUES (?, ?)').run(1, new Date().toISOString());
+      db.exec('COMMIT');
+    } catch (erro) {
+      db.exec('ROLLBACK');
+      throw erro;
+    }
+    versaoAtual = 1;
+  }
+
+  if (versaoAtual < 2) {
+    db.exec('BEGIN IMMEDIATE');
+    try {
+      db.exec(`
+        CREATE TABLE IF NOT EXISTS mesas (
+          id TEXT PRIMARY KEY,
+          nome TEXT NOT NULL CHECK (length(trim(nome)) BETWEEN 1 AND 80),
+          criada_por TEXT NOT NULL REFERENCES contas_locais(id) ON DELETE RESTRICT,
+          criada_em TEXT NOT NULL
+        );
+        CREATE TABLE IF NOT EXISTS participantes_mesa (
+          mesa_id TEXT NOT NULL REFERENCES mesas(id) ON DELETE CASCADE,
+          conta_id TEXT NOT NULL REFERENCES contas_locais(id) ON DELETE CASCADE,
+          papel TEXT NOT NULL CHECK (papel IN ('mestre', 'jogador')),
+          entrou_em TEXT NOT NULL,
+          PRIMARY KEY (mesa_id, conta_id)
+        );
+        CREATE INDEX IF NOT EXISTS idx_participantes_mesa_conta ON participantes_mesa(conta_id);
+      `);
+      db.prepare('INSERT INTO schema_migrations (version, applied_at) VALUES (?, ?)').run(2, new Date().toISOString());
+      db.exec('COMMIT');
+    } catch (erro) {
+      db.exec('ROLLBACK');
+      throw erro;
+    }
   }
 }
 
@@ -147,7 +176,7 @@ export async function tratarRotaAutenticacao(req, res, url, db) {
       const corpo = await corpoJson(req);
       const email = emailNormalizado(corpo.email);
       const senha = typeof corpo.password === 'string' ? corpo.password : '';
-      if (!email || email.length > EMAIL_MAX || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      if (!email || email.length > EMAIL_MAX || !/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email)) {
         json(res, 422, { error: 'Informe um e-mail válido.' });
         return true;
       }
@@ -185,7 +214,6 @@ export async function tratarRotaAutenticacao(req, res, url, db) {
         const armazenada = Buffer.from(conta.senha_hash, 'hex');
         valida = derivada.length === armazenada.length && timingSafeEqual(derivada, armazenada);
       } else {
-        // Mantém um custo semelhante quando o e-mail não existe.
         await scrypt('senha-inexistente', Buffer.alloc(16), 64);
       }
       if (!valida) {
