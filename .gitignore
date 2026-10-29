@@ -147,3 +147,6 @@ vite.config.ts.timestamp-*
 
 # Turbo Repo
 .turbo
+
+# Banco persistente do servidor local (dados de teste/campanha nunca vão ao Git)
+.ameaca-local/
