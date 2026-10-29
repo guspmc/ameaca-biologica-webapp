@@ -19,11 +19,12 @@ A implementação anterior não tentava reconectar automaticamente e não recupe
 - **Recuperação de histórico:** quando o WebSocket abre ou reabre, a página consulta GET /api/events sem exigir F5.
 - **Deduplicação e ordenação:** eventos são identificados pelo ID do banco, não são inseridos duas vezes quando chegam pelo histórico e pelo canal ao vivo, e a lista permanece em ordem de ID. A página mantém até 50 eventos visíveis e limita o conjunto recente de IDs lembrados.
 - **Testes automatizados novos:** verificam que um cliente WebSocket responsivo permanece conectado durante múltiplos ciclos de heartbeat e que o script da página LAN tem sintaxe válida, com os ganchos de reconexão, sincronização e deduplicação presentes.
+- **Diagnóstico da causa:** logs no servidor registram conexão/fechamento, código e motivo quando informados, além de indicar explicitamente quando o heartbeat encerra um cliente sem resposta.
 - **CI:** o workflow de validação do servidor local foi ajustado para executar também em branches fix/**, e não apenas na branch original do protótipo.
 
 ## 3. O que ainda não foi comprovado
 
-- O CI precisa passar no commit que contém todas estas alterações. Os resultados anteriores não substituem essa execução.
+- O CI passou no commit ad944c055ecb9982ba1ef7c0cf6baf106976c6a0, que inclui a instrumentação de diagnóstico. O reteste humano continua pendente.
 - O heartbeat foi concebido para detectar conexão sem resposta, mas ainda precisa ser validado com navegadores reais. O teste automatizado usa o cliente WebSocket da biblioteca Node, não o Chrome do PC e o navegador Android.
 - Não há evidência suficiente para afirmar que a queda original foi causada por inatividade. O servidor não possuía um desligamento por ociosidade; a causa provável continua em aberto entre rede, navegador/sistema, processo e canal WebSocket.
 - Não é possível garantir que a conexão física fique aberta indefinidamente: o sistema operacional, a economia de bateria, o navegador, o roteador ou a rede podem suspendê-la. O objetivo é não desligar o processo por inatividade e recuperar a conexão automaticamente quando o ambiente permitir.
@@ -42,14 +43,14 @@ O roteiro completo está em docs/testes-humanos-pendentes.md.
 
 ## 5. Resultado da validação automatizada
 
-O GitHub Actions concluiu com sucesso o workflow “Validar protótipo local LAN” para o commit b0f7cc046c4a75bf7e45166d8947ba5fab68b796:
+O GitHub Actions concluiu com sucesso o workflow “Validar protótipo local LAN” para o commit ad944c055ecb9982ba1ef7c0cf6baf106976c6a0:
 
-- **264 testes passaram; 0 falharam no commit b0f7cc0.** A atualização adiciona um teste de sintaxe do script da página, que será incluído na nova execução de CI.
+- **265 testes passaram; 0 falharam.**
 - O build TypeScript + Vite concluiu com sucesso.
-- O novo teste “heartbeat mantém WebSocket responsivo conectado durante inatividade” passou.
-- Execução: https://github.com/guspmc/ameaca-biologica-webapp/actions/runs/40815151067
+- Os testes de heartbeat e sintaxe do script da página passaram.
+- Execução: https://github.com/guspmc/ameaca-biologica-webapp/actions/runs/40815758261
 
-Esta evidência valida a suíte automatizada e a compilação para o commit b0f7cc0. O commit 55f45b4 acrescenta um teste de sintaxe para o JavaScript embutido na página LAN; a execução correspondente do CI ainda está pendente. O navegador real no PC e no Android também ainda não foi retestado.
+Esta evidência valida a suíte automatizada e a compilação para o commit ad944c0. O navegador real no PC e no Android ainda não foi retestado.
 
 ## 6. Segurança e limites preservados
 
