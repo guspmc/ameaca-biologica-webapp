@@ -214,6 +214,14 @@ export function createLocalServer({
   });
 
   wss.on('connection', cliente => {
+    console.info('[WebSocket] Cliente conectado. Clientes ativos: ' + wss.clients.size + '.');
+    cliente.on('close', (codigo, motivo) => {
+      const descricao = motivo.toString('utf8').trim() || '(sem motivo informado)';
+      console.info('[WebSocket] Cliente desconectado. Código: ' + codigo + '; motivo: ' + descricao + '; clientes restantes: ' + wss.clients.size + '.');
+    });
+    cliente.on('error', erro => {
+      console.warn('[WebSocket] Erro no cliente: ' + erro.message);
+    });
     cliente.isAlive = true;
     cliente.on('pong', () => {
       cliente.isAlive = true;
@@ -239,6 +247,7 @@ export function createLocalServer({
   const heartbeatTimer = setInterval(() => {
     for (const cliente of wss.clients) {
       if (cliente.isAlive === false) {
+        console.warn('[WebSocket] Cliente sem resposta ao heartbeat; encerrando a conexão para permitir reconexão.');
         cliente.terminate();
         continue;
       }
