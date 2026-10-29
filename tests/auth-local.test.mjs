@@ -9,11 +9,17 @@ async function setup(t) {
   const dataDir = await mkdtemp(join(tmpdir(), 'ameaca-auth-local-'));
   const app = createLocalServer({ host: '127.0.0.1', port: 0, dataDir });
   await app.listen();
-  t.after(async () => {
+  let fechado = false;
+  const fechar = async () => {
+    if (fechado) return;
     await app.close();
+    fechado = true;
+  };
+  t.after(async () => {
+    await fechar();
     await rm(dataDir, { recursive: true, force: true });
   });
-  return { base: `http://127.0.0.1:${app.address.port}`, app, dataDir };
+  return { base: `http://127.0.0.1:${app.address.port}`, app, dataDir, fechar };
 }
 async function post(base, path, body, token) {
   return fetch(base + path, {
@@ -77,12 +83,12 @@ test('limita tentativas repetidas de cadastro por IP e informa quando tentar nov
 });
 
 test('registra a migração de autenticação uma única vez', async t => {
-  const { app, dataDir } = await setup(t);
+  const { app, dataDir, fechar } = await setup(t);
   assert.deepEqual(
     app.db.prepare('SELECT version FROM schema_migrations ORDER BY version').all().map(row => row.version),
     [1],
   );
-  await app.close();
+  await fechar();
 
   const reiniciado = createLocalServer({ host: '127.0.0.1', port: 0, dataDir });
   await reiniciado.listen();
@@ -96,7 +102,7 @@ test('registra a migração de autenticação uma única vez', async t => {
 });
 
 test('preserva conta e sessão existentes ao reiniciar o servidor e reaplicar migrações', async t => {
-  const { base, app, dataDir } = await setup(t);
+  const { base, app, dataDir, fechar } = await setup(t);
   const credentials = { email: 'preservar@example.test', password: 'senha-local-comprida-2026' };
   assert.equal((await post(base, '/api/auth/register', credentials)).status, 201);
   const login = await post(base, '/api/auth/login', credentials);
