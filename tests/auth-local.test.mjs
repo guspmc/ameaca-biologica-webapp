@@ -4,6 +4,7 @@ import { mkdtemp, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { createLocalServer } from '../server/index.mjs';
+import { consumirTicketWebSocketLocal } from '../server/auth-local.mjs';
 
 async function setup(t) {
   const dataDir = await mkdtemp(join(tmpdir(), 'ameaca-auth-local-'));
@@ -86,7 +87,7 @@ test('registra a migração de autenticação uma única vez', async t => {
   const { app, dataDir, fechar } = await setup(t);
   assert.deepEqual(
     app.db.prepare('SELECT version FROM schema_migrations ORDER BY version').all().map(row => row.version),
-    [1, 2],
+    [1, 2, 3],
   );
   await fechar();
 
@@ -210,4 +211,38 @@ test('API de Mesas exige sessão válida e valida o nome', async t => {
   const { token } = await login.json();
   assert.equal((await post(base, '/api/mesas', { name: '   ' }, token)).status, 422);
   assert.equal((await post(base, '/api/mesas', { name: 'x'.repeat(81) }, token)).status, 422);
+});
+
+
+test('emite ticket WebSocket autenticado, temporário e de uso único', async t => {
+  const { base, app } = await setup(t);
+  const credentials = { email: 'ws@example.test', password: 'senha-local-comprida-2026' };
+  assert.equal((await post(base, '/api/auth/register', credentials)).status, 201);
+  const login = await post(base, '/api/auth/login', credentials);
+  const { token } = await login.json();
+
+  assert.equal((await post(base, '/api/auth/ws-ticket', {})).status, 401);
+  const resposta = await post(base, '/api/auth/ws-ticket', {}, token);
+  assert.equal(resposta.status, 201);
+  const dados = await resposta.json();
+  assert.match(dados.ticket, /^[A-Za-z0-9_-]{40,100}$/);
+  assert.equal(dados.singleUse, true);
+  assert.ok(Date.parse(dados.expiresAt) > Date.now());
+
+  const primeira = consumirTicketWebSocketLocal(app.db, dados.ticket);
+  assert.ok(primeira);
+  assert.equal(primeira.email, credentials.email);
+  assert.equal(consumirTicketWebSocketLocal(app.db, dados.ticket), null);
+});
+
+test('ticket WebSocket inválido ou desconhecido não autentica conexão', async t => {
+  const { app } = await setup(t);
+  assert.equal(consumirTicketWebSocketLocal(app.db, 'ticket-invalido'), null);
+  assert.equal(consumirTicketWebSocketLocal(app.db, 'A'.repeat(43)), null);
+});
+
+test('rotas antigas de eventos demonstrativos ficam desativadas', async t => {
+  const { base } = await setup(t);
+  assert.equal((await fetch(base + '/api/events')).status, 410);
+  assert.equal((await post(base, '/api/events', { message: 'teste' })).status, 410);
 });
