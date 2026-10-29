@@ -129,3 +129,33 @@ test('servidor rejeita mensagens vazias ou acima do limite', async t => {
   const consulta = await fetch(`${instancia.url}/api/events`);
   assert.deepEqual((await consulta.json()).events, []);
 });
+
+
+test('heartbeat mantém WebSocket responsivo conectado durante inatividade', async t => {
+  const dataDir = await mkdtemp(join(tmpdir(), 'ameaca-biologica-heartbeat-'));
+  const app = createLocalServer({
+    host: '127.0.0.1',
+    port: 0,
+    dataDir,
+    heartbeatIntervalMs: 20,
+  });
+  await app.listen();
+  const cliente = new WebSocket('ws://127.0.0.1:' + app.address.port + '/ws');
+
+  t.after(async () => {
+    if (cliente.readyState === WebSocket.OPEN || cliente.readyState === WebSocket.CONNECTING) {
+      cliente.terminate();
+    }
+    await app.close();
+    await rm(dataDir, { recursive: true, force: true });
+  });
+
+  await new Promise((resolve, reject) => {
+    cliente.once('open', resolve);
+    cliente.once('error', reject);
+  });
+  await new Promise(resolve => setTimeout(resolve, 140));
+
+  assert.equal(cliente.readyState, WebSocket.OPEN, 'o cliente que responde ao heartbeat deve continuar conectado');
+  assert.equal(app.httpServer.listening, true, 'o servidor não deve encerrar por inatividade');
+});
