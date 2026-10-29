@@ -32,12 +32,12 @@ Se o GitHub mostrar um aviso de que o arquivo está indisponível ou a branch n�
 2. Quando a instalação terminar, feche janelas antigas do PowerShell/Terminal e abra uma nova.
 3. Instale a versão de pnpm usada pelo projeto. No PowerShell, execute:
    ```powershell
-   npm install --global pnpm@11.25.0
+   npm.cmd install --global pnpm@11.25.0
    ```
 4. Confira as versões:
    ```powershell
    node --version
-   pnpm --version
+   pnpm.cmd --version
    ```
 5. O primeiro comando deve mostrar `v22` ou superior; o segundo deve mostrar `11.25.0`. Se aparecer erro, pare e envie somente o texto do erro, nunca senhas ou chaves.
 
@@ -73,7 +73,7 @@ Execute cada comando no PowerShell aberto dentro da pasta do WebApp. Espere o co
 ### B1. Instalar dependências
 
 ```powershell
-pnpm install --frozen-lockfile --ignore-scripts
+pnpm.cmd install --frozen-lockfile --ignore-scripts
 ```
 
 Espere o comando terminar. Se houver erro, copie a mensagem de erro sem incluir qualquer arquivo de configuração.
@@ -81,7 +81,7 @@ Espere o comando terminar. Se houver erro, copie a mensagem de erro sem incluir 
 ### B2. Rodar os testes automáticos
 
 ```powershell
-pnpm test
+pnpm.cmd test
 ```
 
 O resultado final esperado é uma linha indicando que todos os testes passaram e **0 falhas**. Guarde o número de testes e o resultado. Se algum teste falhar, não continue para os testes de interface; registre o nome do teste e a mensagem.
@@ -89,7 +89,7 @@ O resultado final esperado é uma linha indicando que todos os testes passaram e
 ### B3. Compilar o aplicativo
 
 ```powershell
-pnpm run build
+pnpm.cmd run build
 ```
 
 Esperado: o TypeScript e a compilação Vite terminam sem erros. Isto valida a compilação, mas não substitui o teste de navegação ou de autenticação.
@@ -101,10 +101,10 @@ Este passo cria uma versão de teste que inclui o service worker. O comando usa 
 1. Na mesma janela do PowerShell, execute:
    ```powershell
    $env:VITE_PWA_TESTE = "true"
-   pnpm exec tsc --noEmit
-   pnpm exec vite build --mode teste
+   pnpm.cmd exec tsc --noEmit
+   pnpm.cmd exec vite build --mode teste
    Remove-Item Env:VITE_PWA_TESTE
-   pnpm exec vite preview --host 127.0.0.1 --port 4174 --strictPort
+   pnpm.cmd exec vite preview --host 127.0.0.1 --port 4174 --strictPort
    ```
 2. Se um dos comandos falhar, pare e registre em qual linha ocorreu. Não execute o comando seguinte como se tivesse dado certo.
 3. Se todos terminarem corretamente, mantenha essa janela aberta. Ela está executando o servidor local. Fechá-la interrompe a prévia.
