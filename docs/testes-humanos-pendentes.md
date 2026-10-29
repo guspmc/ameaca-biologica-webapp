@@ -4,6 +4,8 @@
 
 ## Fila atual
 
+**Atualização de resultado humano (29/10/2026):** Gus aprovou L2–L6. PC perfeito. No Android, repouso prolongado pode desconectar; atualizar a página recupera em 100% dos casos observados e a reconexão automática acontece às vezes. L5 aprovado com ressalva; L7 adiado até estabilizar o PC como servidor.
+
 1. **L1 — CI (concluído para o código atual):** GitHub Actions passou no commit bb8835e481c3774360a0ec682af77816c74cfa19: 267 testes passaram, nenhum falhou, e o build TypeScript + Vite terminou com sucesso. Se houver nova alteração de código, validar novamente.
 2. **L2 — inatividade visível (fácil e prioritário, após L1):** com servidor no PC e as páginas abertas/visíveis no PC e Android, esperar 3–5 minutos sem enviar mensagens. Enviar Android → PC e PC → Android. Aprovação exige chegada nos dois lados sem F5 e sem duplicatas.
 3. **L3 — recuperação após reinício do servidor:** com as páginas abertas, parar o Node com Ctrl+C e iniciá-lo novamente. Confirmar que o navegador volta a conectar sozinho e que as mensagens já gravadas continuam aparecendo sem F5 e sem duplicatas.
@@ -284,3 +286,12 @@ A rodada genérica F2–F4 da PWA não comprova a arquitetura LAN-first e fica s
 - [ ] Parar o servidor e confirmar que o segundo dispositivo deixa de receber eventos.
 
 **Critério de aprovação deste marco:** testes automatizados e build aprovados, persistência após reinício confirmada e eventos vistos nos dois dispositivos pela LAN sem internet. Isso valida apenas a base técnica do servidor; não valida autenticação, permissões, Mesas ou fichas.
+
+
+## Atualização — resultado humano LAN (29/10/2026)
+
+Gus relatou **L2–L6 aprovados**. No PC, tudo funcionou perfeitamente. No Android, repouso prolongado com a tela apagada pode encerrar a conexão; atualizar a página recuperou em 100% dos casos observados, e a reconexão automática ocorreu apenas em alguns casos. Registrar L5 como aprovado com ressalva, sem afirmar que a reconexão automática está garantida. **L7 permanece adiado** até a operação do PC como servidor estar estabilizada.
+
+### Próxima fila humana
+
+Nenhum teste humano novo deve ser solicitado até a próxima alteração técnica ser inspecionada e validada por testes automatizados/CI. Após isso, enfileirar apenas os testes que não possam ser comprovados automaticamente.
