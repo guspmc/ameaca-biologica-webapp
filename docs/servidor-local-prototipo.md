@@ -2,7 +2,7 @@
 
 **Estado em 29/10/2026:** CI passou no commit `d3cc618ec7bde59208fd62cae053088573137c91`, incluindo testes automatizados e build do frontend. O reteste manual PC + Android foi relatado como aprovado para a LAN; a reconexão Android pode exigir recarga. A API de autenticação local continua experimental e não está conectada ao frontend.  
 **Objetivo:** provar a base técnica Node.js + SQLite + WebSocket sem depender de internet.  
-**Importante:** não é um servidor de campanha. Existe uma API experimental de contas e sessões locais, mas ela ainda não está conectada ao frontend; não há autorização por Mesa nem dados de RPG.
+**Importante:** não é um servidor de campanha. Existe uma API experimental de contas e sessões locais, mas ela ainda não está conectada ao frontend; há apenas o esquema inicial de Mesas e participantes; ainda não há API de Mesas, autorização por Mesa nem dados de RPG.
 
 ## O que foi implementado neste incremento
 
@@ -75,7 +75,7 @@ Se os dispositivos não se conectarem, confira primeiro se ambos estão na mesma
 - O fato de um teste automatizado estar escrito não significa que ele passou. Os resultados precisam vir da execução local ou do CI.
 - O protótipo ainda não foi validado como servidor no Android. Essa será uma etapa posterior, depois de comprovar o fluxo no PC.
 
-## Incremento seguinte — autenticação local experimental
+## Autenticação local e esquema inicial de Mesas
 
 A branch de desenvolvimento agora contém uma API de autenticação local separada em `server/auth-local.mjs`:
 
@@ -84,16 +84,16 @@ A branch de desenvolvimento agora contém uma API de autenticação local separa
 - `GET /api/auth/me`: valida o token enviado no cabeçalho `Authorization: Bearer ...`.
 - `POST /api/auth/logout`: revoga a sessão atual.
 - Senhas são derivadas com scrypt e salt aleatório; o banco guarda o hash do token de sessão, não o token em si.
-- O esquema de autenticação tem uma tabela `schema_migrations` e registra a versão 1; a migração inicial usa transação e `CREATE TABLE IF NOT EXISTS` para não recriar tabelas já existentes.
+- O banco usa `schema_migrations`: a versão 1 cria contas/sessões e a versão 2 cria `mesas` e `participantes_mesa`, ambas com transação. As migrações usam `CREATE TABLE IF NOT EXISTS` e não recriam tabelas já existentes.
 - Testes automatizados verificam o registro único da migração e a preservação de uma conta e sessão após reiniciar o servidor.
 - Testes automatizados dedicados cobrem cadastro, login, sessão, logout, senha curta, e-mail duplicado e limite de tentativas.
 - Limite experimental em memória por IP: até cinco tentativas por rota de cadastro/login em uma janela de dez minutos; ao exceder, responde HTTP 429 com `Retry-After`.
 
-**Limites importantes:** esta API ainda não está conectada à interface React e não protege as rotas demonstrativas `/api/events`. Não existem Mesas, papéis, autorização por Mesa, recuperação de conta nem migrações versionadas de schema. A limitação de tentativas é experimental, mantida apenas em memória, por IP; pode ser contornada reiniciando o servidor e não substitui controles de produção. O protótipo continua usando HTTP sem TLS; portanto, não use credenciais ou dados reais. Antes de colocar dados de campanha no servidor, precisamos tratar transporte seguro na LAN, reforçar os controles de limitação de tentativas, definir a política de criação de contas e implementar autorização no servidor. A presença desses endpoints não significa que o WebApp já tenha autenticação local pronta para uso real.
+**Limites importantes:** esta API ainda não está conectada à interface React e não protege as rotas demonstrativas `/api/events`. As tabelas de Mesas e participantes já existem, com papéis `mestre` e `jogador`, mas ainda não há rotas para criar/listar Mesas, convites, verificação de participação por requisição, fichas ou presença online. A migração ainda não aplica os limites de 10 participantes e 10 personagens ativas; esses controles precisam ser implementados no serviço antes de aceitar dados reais. Também não há recuperação de conta. A limitação de tentativas é experimental, mantida apenas em memória, por IP; pode ser contornada reiniciando o servidor e não substitui controles de produção. O protótipo continua usando HTTP sem TLS; portanto, não use credenciais ou dados reais. Antes de colocar dados de campanha no servidor, precisamos tratar transporte seguro na LAN, reforçar os controles de limitação de tentativas, definir a política de criação de contas e implementar autorização no servidor. A presença desses endpoints não significa que o WebApp já tenha autenticação local pronta para uso real.
 
 ## Próximo marco
 
-Após os testes automatizados e a prova LAN serem aprovados, implementar autenticação local e autorização no servidor antes de introduzir dados reais de Mesas e personagens. Só então conectar gradualmente o frontend atual à API local.
+Próximo incremento: implementar operações de Mesa com autorização derivada da sessão autenticada, sem confiar em IDs de conta enviados pelo cliente. Depois, proteger as rotas de tempo real e implementar presença com visibilidade limitada aos participantes da mesma Mesa. Só então conectar gradualmente o frontend atual à API local.
 
 
 ## Reconexão, heartbeat e tempo ocioso
