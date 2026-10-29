@@ -3,7 +3,7 @@
 **Projeto:** Ameaça Biológica RPG  
 **Branch de trabalho:** fix/lan-websocket-reconnect-2026-10-29  
 **Branch-base:** feat/origens-rascunho-alfa04  
-**Estado atualizado (29/10/2026):** heartbeat, reconexão automática, histórico/deduplicação, sincronização ao voltar para a aba e teste de cliente sem resposta estão implementados na branch. CI passou no commit bb8835e481c3774360a0ec682af77816c74cfa19 (267 testes, build concluído). Reteste humano ainda pendente.  
+**Estado atualizado (29/10/2026, após rodada humana):** heartbeat, reconexão automática, histórico/deduplicação e sincronização ao voltar para a aba estão implementados. O CI registrado no commit `bb8835e481c3774360a0ec682af77816c74cfa19` passou (267 testes e build concluído). Gus relatou L2–L6 aprovados; no PC o comportamento foi perfeito. No Android, após repouso prolongado com tela apagada, a conexão cai; atualizar a página recupera em 100% dos casos e às vezes ocorre reconexão automática. L5 fica aprovado com ressalva: a conexão não se mantém durante o repouso e a reconexão automática não é consistente. L7 adiado até estabilizar o PC como servidor.  
 **Publicação/merge:** não realizados.
 
 ## 1. Motivo
@@ -33,13 +33,13 @@ A implementação anterior não tentava reconectar automaticamente e não recupe
 
 ## 4. Próximas ações — ordem de execução
 
-1. **L1 — CI (concluído):** 267 testes passaram e o build foi aprovado para o código no commit bb8835e. A próxima ação é L2; repetir o CI se houver novas alterações de código.
-2. **L2 — inatividade visível:** deixar PC e Android com as páginas abertas por 3–5 minutos; enviar mensagens nos dois sentidos sem F5 e verificar ausência de duplicatas.
-3. **L3 — reinício do servidor:** parar e iniciar o servidor com os navegadores ainda abertos; confirmar reconexão automática e recuperação do histórico.
-4. **L4 — queda e retorno do Wi-Fi do cliente:** confirmar reconexão e sincronização do histórico.
-5. **L5 — suspensão do Android:** repetir com tela bloqueada ou navegador em segundo plano e registrar o comportamento observado.
-6. **L6 — LAN sem internet:** testar que a comunicação continua quando a internet está indisponível, mas a rede local permanece funcional.
-7. **L7 — Android como servidor:** investigar somente depois de estabilizar o PC como servidor.
+1. **L1 — CI (aprovado para o commit registrado):** 267 testes passaram e o build foi aprovado em `bb8835e481c3774360a0ec682af77816c74cfa19`. Reexecutar CI após novas alterações.
+2. **L2 — inatividade visível: aprovado por Gus.** PC e Android trocaram mensagens; PC relatado como perfeito.
+3. **L3 — reinício do servidor: aprovado por Gus.**
+4. **L4 — queda e retorno do Wi-Fi: aprovado por Gus.**
+5. **L5 — suspensão do Android: aprovado com ressalva por Gus.** Repouso prolongado pode derrubar a conexão; atualização da página recupera em 100% dos casos, reconexão automática ocorre em alguns casos. Não alegar reconexão automática garantida.
+6. **L6 — LAN sem internet: aprovado por Gus.**
+7. **L7 — Android como servidor: adiado a pedido de Gus até estabilizar o PC como servidor.**
 
 O roteiro completo está em docs/testes-humanos-pendentes.md.
 
@@ -60,3 +60,12 @@ Esta evidência valida a suíte automatizada e a compilação para o commit bb88
 - Usar somente rede confiável durante os testes.
 - Nenhum merge, publicação no GitHub Pages, alteração de Supabase ou mudança na arquitetura aprovada foi executado.
 - A correção está isolada na branch de desenvolvimento e não é considerada aprovada até CI e reteste manual.
+
+
+## 7. Resultado da rodada humana relatada por Gus — 29/10/2026
+
+- **L2–L6: aprovados por relato do usuário.** O PC funcionou perfeitamente durante os testes.
+- **Android em repouso prolongado:** ao apagar a tela por bastante tempo, o cliente pode desconectar. Atualizar a página restabelece o funcionamento em 100% dos casos observados; em alguns casos, a reconexão é automática. Isso não comprova reconexão automática consistente após suspensão.
+- **L7 adiado:** não investigar Android como servidor até o PC como servidor estar estabilizado.
+- **Próxima ação técnica:** inspecionar o estado real da branch e a arquitetura-alvo antes de escolher a próxima mudança; executar CI novamente após qualquer alteração de código.
+
