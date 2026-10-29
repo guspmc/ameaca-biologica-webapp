@@ -1,13 +1,15 @@
 name: Validar protótipo local LAN
 on:
   push:
-    branches: [feat/origens-rascunho-alfa04]
+    branches: [feat/origens-rascunho-alfa04, 'fix/**']
     paths:
       - 'server/**'
       - 'tests/**'
       - 'package.json'
       - 'pnpm-lock.yaml'
       - 'docs/servidor-local-prototipo.md'
+      - 'docs/testes-humanos-pendentes.md'
+      - 'docs/checkpoint-websocket-reconexao-2026-10-29.md'
       - '.github/workflows/ci-local-server.yml'
   pull_request:
     branches: [main]
