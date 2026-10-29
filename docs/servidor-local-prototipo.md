@@ -1,6 +1,6 @@
 # Protótipo do servidor local — primeiro teste LAN
 
-**Estado em 29/10/2026:** correção de reconexão na branch `fix/lan-websocket-reconnect-2026-10-29`; CI passou para o código no commit `bb8835e481c3774360a0ec682af77816c74cfa19` (267 testes e build). Reteste manual em PC + Android ainda pendente.  
+**Estado em 29/10/2026:** CI passou no commit `a079aa604c986a86a03004abe62312e0f76e4960` (271 testes e build); a etapa seguinte adiciona limitação experimental de tentativas de autenticação e requer nova validação de CI. Reteste manual PC + Android já foi relatado como aprovado para a LAN; a reconexão Android pode exigir recarga.  
 **Objetivo:** provar a base técnica Node.js + SQLite + WebSocket sem depender de internet.  
 **Importante:** não é um servidor de campanha. Ainda não há contas, login, autorização por Mesa nem dados de RPG.
 
@@ -84,7 +84,8 @@ A branch de desenvolvimento agora contém uma API de autenticação local separa
 - `GET /api/auth/me`: valida o token enviado no cabeçalho `Authorization: Bearer ...`.
 - `POST /api/auth/logout`: revoga a sessão atual.
 - Senhas são derivadas com scrypt e salt aleatório; o banco guarda o hash do token de sessão, não o token em si.
-- Testes automatizados dedicados cobrem cadastro, login, sessão, logout, senha curta e e-mail duplicado.
+- Testes automatizados dedicados cobrem cadastro, login, sessão, logout, senha curta, e-mail duplicado e limite de tentativas.
+- Limite experimental em memória por IP: até cinco tentativas por rota de cadastro/login em uma janela de dez minutos; ao exceder, responde HTTP 429 com `Retry-After`.
 
 **Limites importantes:** esta API ainda não está conectada à interface React e não protege as rotas demonstrativas `/api/events`. Não existem Mesas, papéis, autorização por Mesa, recuperação de conta, limitação de tentativas de login nem migrações versionadas de schema. O protótipo continua usando HTTP sem TLS; portanto, não use credenciais ou dados reais. Antes de colocar dados de campanha no servidor, precisamos tratar transporte seguro na LAN, limitação de tentativas, política de criação de contas e autorização no servidor. A presença desses endpoints não significa que o WebApp já tenha autenticação local pronta para uso real.
 
