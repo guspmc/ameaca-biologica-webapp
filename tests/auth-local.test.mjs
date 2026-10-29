@@ -112,7 +112,7 @@ test('preserva conta e sessão existentes ao reiniciar o servidor e reaplicar mi
   const sessoesAntes = app.db.prepare('SELECT COUNT(*) AS total FROM sessoes_locais').get().total;
   assert.equal(contaAntes, 1);
   assert.equal(sessoesAntes, 1);
-  await app.close();
+  await fechar();
 
   const reiniciado = createLocalServer({ host: '127.0.0.1', port: 0, dataDir });
   await reiniciado.listen();
