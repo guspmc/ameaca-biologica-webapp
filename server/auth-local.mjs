@@ -151,7 +151,7 @@ export function prepararAutenticacaoLocal(db) {
   }
 }
 
-async function autenticar(req, db) {
+export async function autenticarContaLocal(req, db) {
   const cabecalho = req.headers.authorization ?? '';
   const correspondencia = /^Bearer ([A-Za-z0-9_-]{40,100})$/.exec(cabecalho);
   if (!correspondencia) return null;
@@ -230,7 +230,7 @@ export async function tratarRotaAutenticacao(req, res, url, db) {
     }
 
     if (metodo === 'GET' && rota === '/api/auth/me') {
-      const conta = await autenticar(req, db);
+      const conta = await autenticarContaLocal(req, db);
       if (!conta) {
         json(res, 401, { error: 'Sessão ausente ou expirada.' });
         return true;
@@ -256,6 +256,85 @@ export async function tratarRotaAutenticacao(req, res, url, db) {
     }
     const status = Number.isInteger(erro?.status) ? erro.status : 500;
     json(res, status, { error: status === 500 ? 'Erro interno na autenticação local.' : erro.message });
+    return true;
+  }
+}
+
+
+export async function tratarRotaMesas(req, res, url, db) {
+  const metodo = req.method ?? 'GET';
+  const rota = url.pathname;
+  if (rota !== '/api/mesas' && !rota.startsWith('/api/mesas/')) return false;
+
+  const conta = await autenticarContaLocal(req, db);
+  if (!conta) {
+    json(res, 401, { error: 'Sessão ausente ou expirada.' });
+    return true;
+  }
+
+  try {
+    if (metodo === 'GET' && rota === '/api/mesas') {
+      const mesas = db.prepare(`
+        SELECT m.id, m.nome AS name, p.papel AS role, m.criada_em AS createdAt
+        FROM participantes_mesa p
+        JOIN mesas m ON m.id = p.mesa_id
+        WHERE p.conta_id = ?
+        ORDER BY m.criada_em DESC, m.id
+      `).all(conta.id);
+      json(res, 200, { mesas });
+      return true;
+    }
+
+    if (metodo === 'POST' && rota === '/api/mesas') {
+      const corpo = await corpoJson(req);
+      const nome = typeof corpo.name === 'string' ? corpo.name.trim() : '';
+      if (nome.length < 1 || nome.length > 80) {
+        json(res, 422, { error: 'O nome da Mesa deve ter entre 1 e 80 caracteres.' });
+        return true;
+      }
+
+      const id = randomBytes(16).toString('hex');
+      const agora = new Date().toISOString();
+      db.exec('BEGIN IMMEDIATE');
+      try {
+        db.prepare('INSERT INTO mesas (id, nome, criada_por, criada_em) VALUES (?, ?, ?, ?)')
+          .run(id, nome, conta.id, agora);
+        db.prepare('INSERT INTO participantes_mesa (mesa_id, conta_id, papel, entrou_em) VALUES (?, ?, ?, ?)')
+          .run(id, conta.id, 'mestre', agora);
+        db.exec('COMMIT');
+      } catch (erro) {
+        db.exec('ROLLBACK');
+        throw erro;
+      }
+      json(res, 201, { mesa: { id, name: nome, role: 'mestre', createdAt: agora } });
+      return true;
+    }
+
+    const detalhe = /^\/api\/mesas\/([a-f0-9]{32})$/.exec(rota);
+    if (metodo === 'GET' && detalhe) {
+      const mesa = db.prepare(`
+        SELECT m.id, m.nome AS name, p.papel AS role, m.criada_em AS createdAt
+        FROM mesas m
+        JOIN participantes_mesa p ON p.mesa_id = m.id
+        WHERE m.id = ? AND p.conta_id = ?
+      `).get(detalhe[1], conta.id);
+      if (!mesa) {
+        json(res, 404, { error: 'Mesa não encontrada.' });
+        return true;
+      }
+      json(res, 200, { mesa });
+      return true;
+    }
+
+    json(res, 404, { error: 'Rota de Mesa não encontrada.' });
+    return true;
+  } catch (erro) {
+    if (res.headersSent) {
+      res.destroy();
+      return true;
+    }
+    const status = Number.isInteger(erro?.status) ? erro.status : 500;
+    json(res, status, { error: status === 500 ? 'Erro interno nas Mesas locais.' : erro.message });
     return true;
   }
 }
