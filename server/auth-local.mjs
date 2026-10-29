@@ -6,6 +6,46 @@ const DURACAO_SESSAO_MS = 7 * 24 * 60 * 60 * 1000;
 const EMAIL_MAX = 254;
 const SENHA_MIN = 12;
 const SENHA_MAX = 128;
+const JANELA_LIMITE_MS = 10 * 60 * 1000;
+const MAX_TENTATIVAS_LOGIN = 5;
+const MAX_TENTATIVAS_CADASTRO = 5;
+const LIMITADORES_POR_BANCO = new WeakMap();
+
+function verificarLimite(db, chave, maximo, agora = Date.now()) {
+  let limitadores = LIMITADORES_POR_BANCO.get(db);
+  if (!limitadores) {
+    limitadores = new Map();
+    LIMITADORES_POR_BANCO.set(db, limitadores);
+  }
+
+  for (const [id, registro] of limitadores) {
+    if (registro.expiraEm <= agora) limitadores.delete(id);
+  }
+  if (!limitadores.has(chave) && limitadores.size >= 1000) {
+    const primeiraChave = limitadores.keys().next().value;
+    if (primeiraChave !== undefined) limitadores.delete(primeiraChave);
+  }
+
+  const registro = limitadores.get(chave);
+  if (!registro || registro.expiraEm <= agora) {
+    limitadores.set(chave, { quantidade: 1, expiraEm: agora + JANELA_LIMITE_MS });
+    return { permitido: true, restanteMs: JANELA_LIMITE_MS };
+  }
+  if (registro.quantidade >= maximo) {
+    return { permitido: false, restanteMs: Math.max(1000, registro.expiraEm - agora) };
+  }
+  registro.quantidade += 1;
+  return { permitido: true, restanteMs: Math.max(1000, registro.expiraEm - agora) };
+}
+
+function limitarRota(req, res, db, rota, maximo) {
+  const ip = req.socket?.remoteAddress || 'ip-desconhecido';
+  const limite = verificarLimite(db, rota + ':' + ip, maximo);
+  if (limite.permitido) return false;
+  res.setHeader('retry-after', String(Math.ceil(limite.restanteMs / 1000)));
+  json(res, 429, { error: 'Muitas tentativas. Aguarde antes de tentar novamente.' });
+  return true;
+}
 
 function json(res, status, body) {
   res.writeHead(status, {
@@ -85,6 +125,7 @@ export async function tratarRotaAutenticacao(req, res, url, db) {
 
   try {
     if (metodo === 'POST' && rota === '/api/auth/register') {
+      if (limitarRota(req, res, db, rota, MAX_TENTATIVAS_CADASTRO)) return true;
       const corpo = await corpoJson(req);
       const email = emailNormalizado(corpo.email);
       const senha = typeof corpo.password === 'string' ? corpo.password : '';
@@ -115,6 +156,7 @@ export async function tratarRotaAutenticacao(req, res, url, db) {
     }
 
     if (metodo === 'POST' && rota === '/api/auth/login') {
+      if (limitarRota(req, res, db, rota, MAX_TENTATIVAS_LOGIN)) return true;
       const corpo = await corpoJson(req);
       const email = emailNormalizado(corpo.email);
       const senha = typeof corpo.password === 'string' ? corpo.password : '';
