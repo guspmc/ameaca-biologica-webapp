@@ -1,6 +1,6 @@
 # Protótipo do servidor local — primeiro teste LAN
 
-**Estado em 29/10/2026:** correção de reconexão na branch `fix/lan-websocket-reconnect-2026-10-29`; CI passou para o código no commit `9816838c86185a3aa1be327659a5dc2b762a5cf0` (266 testes e build). Reteste manual em PC + Android ainda pendente.  
+**Estado em 29/10/2026:** correção de reconexão na branch `fix/lan-websocket-reconnect-2026-10-29`; CI passou para o código no commit `bb8835e481c3774360a0ec682af77816c74cfa19` (267 testes e build). Reteste manual em PC + Android ainda pendente.  
 **Objetivo:** provar a base técnica Node.js + SQLite + WebSocket sem depender de internet.  
 **Importante:** não é um servidor de campanha. Ainda não há contas, login, autorização por Mesa nem dados de RPG.
 
@@ -17,7 +17,7 @@
 - Deduplicação por ID e ordenação dos eventos para evitar repetição ou perda em corridas entre histórico e mensagens ao vivo.
 - Sincronização do histórico quando a aba volta ao primeiro plano, além da reconexão automática.
 - Diagnóstico no terminal para conexões/fechamentos WebSocket e clientes que não respondem ao heartbeat.
-- Oito testes específicos do protótipo LAN, incluindo conexão ociosa responsiva, encerramento de clientes sem resposta e validação sintática do script da página. A suíte completa de 266 testes passou no CI para o código atual.
+- Nove testes específicos do protótipo LAN, incluindo conexão ociosa responsiva, encerramento de clientes sem resposta, validação sintática do script e simulação de reconexão/retorno ao primeiro plano. A suíte completa de 266 testes passou no CI para o código atual.
 
 ## Requisitos
 
@@ -36,7 +36,7 @@ pnpm.cmd test
 pnpm.cmd run build
 ```
 
-Resultado esperado: instalação sem erro, testes concluídos com zero falhas e build concluído. O CI do commit `9816838` confirmou esse resultado para o código atual; se houver nova alteração de código, valide-a novamente. O módulo SQLite nativo do Node é experimental na linha Node 22 e é iniciado explicitamente com `--experimental-sqlite`.
+Resultado esperado: instalação sem erro, testes concluídos com zero falhas e build concluído. O CI do commit `bb8835e` confirmou esse resultado para o código atual; se houver nova alteração de código, valide-a novamente. O módulo SQLite nativo do Node é experimental na linha Node 22 e é iniciado explicitamente com `--experimental-sqlite`.
 
 ## Teste local no mesmo PC
 

@@ -3,7 +3,7 @@
 **Projeto:** Ameaça Biológica RPG  
 **Branch de trabalho:** fix/lan-websocket-reconnect-2026-10-29  
 **Branch-base:** feat/origens-rascunho-alfa04  
-**Estado atualizado (29/10/2026):** heartbeat, reconexão automática, histórico/deduplicação, sincronização ao voltar para a aba e teste de cliente sem resposta estão implementados na branch. CI passou no commit 9816838c86185a3aa1be327659a5dc2b762a5cf0. Reteste humano ainda pendente.  
+**Estado atualizado (29/10/2026):** heartbeat, reconexão automática, histórico/deduplicação, sincronização ao voltar para a aba e teste de cliente sem resposta estão implementados na branch. CI passou no commit bb8835e481c3774360a0ec682af77816c74cfa19 (267 testes, build concluído). Reteste humano ainda pendente.  
 **Publicação/merge:** não realizados.
 
 ## 1. Motivo
@@ -15,18 +15,18 @@ A implementação anterior não tentava reconectar automaticamente e não recupe
 ## 2. Alterações implementadas nesta branch
 
 - **Servidor — heartbeat:** envia ping WebSocket a cada 25 segundos e marca clientes responsivos por meio de pong. Se um cliente não responde até o ciclo seguinte, a conexão é encerrada para que o navegador possa reconstruí-la. O processo Node não tem temporizador de desligamento por inatividade.
-- **Cliente — reconexão automática:** ao receber o evento de fechamento, agenda novas tentativas com espera progressiva, começando perto de 1 segundo e aumentando até cerca de 30 segundos, com pequena variação aleatória.
+- **Cliente — reconexão automática:** ao receber o evento de fechamento, agenda novas tentativas com espera progressiva, começando perto de 1 segundo e aumentando até cerca de 30 segundos, com pequena variação aleatória. O contador de espera só é zerado após a conexão permanecer estável por 10 segundos, evitando tentativas rápidas repetidas quando o canal oscila.
 - **Recuperação de histórico:** quando o WebSocket abre ou reabre, a página consulta GET /api/events sem exigir F5.
 - **Retorno ao primeiro plano:** ao voltar de uma aba suspensa, a página tenta reconectar se o WebSocket já estiver fechado; se ainda estiver aberto, consulta novamente o histórico para reconciliar possíveis eventos perdidos.
 - **Teste de cliente sem resposta:** um cliente WebSocket que ignora os pings é encerrado pelo servidor após o próximo ciclo, permitindo que o navegador tente reconectar.
 - **Deduplicação e ordenação:** eventos são identificados pelo ID do banco, não são inseridos duas vezes quando chegam pelo histórico e pelo canal ao vivo, e a lista permanece em ordem de ID. A página mantém até 50 eventos visíveis e limita o conjunto recente de IDs lembrados.
-- **Testes automatizados novos:** verificam que um cliente WebSocket responsivo permanece conectado durante múltiplos ciclos de heartbeat e que o script da página LAN tem sintaxe válida, com os ganchos de reconexão, sincronização e deduplicação presentes.
+- **Testes automatizados novos:** verificam que um cliente WebSocket responsivo permanece conectado durante múltiplos ciclos de heartbeat e que o script da página LAN tem sintaxe válida, que a reconexão e a sincronização ao retomar a aba funcionam em um teste simulado do navegador, e que a deduplicação está presente.
 - **Diagnóstico da causa:** logs no servidor registram conexão/fechamento, código e motivo quando informados, além de indicar explicitamente quando o heartbeat encerra um cliente sem resposta.
 - **CI:** o workflow de validação do servidor local foi ajustado para executar também em branches fix/**, e não apenas na branch original do protótipo.
 
 ## 3. O que ainda não foi comprovado
 
-- O CI passou no commit 9816838c86185a3aa1be327659a5dc2b762a5cf0, incluindo o retorno ao primeiro plano e o teste de cliente que ignora os pings. O reteste humano continua pendente.
+- O CI passou no commit bb8835e481c3774360a0ec682af77816c74cfa19, incluindo retorno ao primeiro plano, reconexão simulada, encerramento de cliente que ignora pings e backoff após conexão estável. O reteste humano continua pendente.
 - O heartbeat foi concebido para detectar conexão sem resposta, mas ainda precisa ser validado com navegadores reais. O teste automatizado usa o cliente WebSocket da biblioteca Node, não o Chrome do PC e o navegador Android.
 - Não há evidência suficiente para afirmar que a queda original foi causada por inatividade. O servidor não possuía um desligamento por ociosidade; a causa provável continua em aberto entre rede, navegador/sistema, processo e canal WebSocket.
 - Não é possível garantir que a conexão física fique aberta indefinidamente: o sistema operacional, a economia de bateria, o navegador, o roteador ou a rede podem suspendê-la. O objetivo é não desligar o processo por inatividade e recuperar a conexão automaticamente quando o ambiente permitir.
@@ -45,14 +45,14 @@ O roteiro completo está em docs/testes-humanos-pendentes.md.
 
 ## 5. Resultado da validação automatizada
 
-O GitHub Actions concluiu com sucesso o workflow “Validar protótipo local LAN” para o commit 9816838c86185a3aa1be327659a5dc2b762a5cf0:
+O GitHub Actions concluiu com sucesso o workflow “Validar protótipo local LAN” para o commit bb8835e481c3774360a0ec682af77816c74cfa19:
 
-- **266 testes passaram; 0 falharam.**
+- **267 testes passaram; 0 falharam.**
 - O build TypeScript + Vite concluiu com sucesso.
 - Os testes de heartbeat e sintaxe do script da página passaram.
-- Execução: https://github.com/guspmc/ameaca-biologica-webapp/actions/runs/40877711329
+- Execução: https://github.com/guspmc/ameaca-biologica-webapp/actions/runs/40878510544
 
-Esta evidência valida a suíte automatizada e a compilação para o commit 9816838. O navegador real no PC e no Android ainda não foi retestado.
+Esta evidência valida a suíte automatizada e a compilação para o commit bb8835e. O navegador real no PC e no Android ainda não foi retestado.
 
 ## 6. Segurança e limites preservados
 
