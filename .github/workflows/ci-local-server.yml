@@ -1,0 +1,45 @@
+name: Validar protótipo local LAN
+on:
+  push:
+    branches: [feat/origens-rascunho-alfa04]
+    paths:
+      - 'server/**'
+      - 'tests/**'
+      - 'package.json'
+      - 'pnpm-lock.yaml'
+      - 'docs/servidor-local-prototipo.md'
+      - '.github/workflows/ci-local-server.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'server/**'
+      - 'tests/**'
+      - 'package.json'
+      - 'pnpm-lock.yaml'
+      - 'docs/servidor-local-prototipo.md'
+      - '.github/workflows/ci-local-server.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validar-servidor-local:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Obter código
+        uses: actions/checkout@v4
+      - name: Preparar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Preparar pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: '11.25.0'
+      - name: Instalar dependências
+        run: pnpm install --frozen-lockfile --ignore-scripts
+      - name: Executar testes automatizados
+        run: pnpm test
+      - name: Compilar frontend existente
+        run: pnpm run build

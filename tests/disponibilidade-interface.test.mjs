@@ -1,0 +1,31 @@
+import {test} from 'node:test';
+import assert from 'node:assert/strict';
+import {readFile} from 'node:fs/promises';
+import {createRequire} from 'node:module';
+import {pathToFileURL} from 'node:url';
+import ts from 'typescript';
+import React from 'react';
+import {renderToStaticMarkup} from 'react-dom/server';
+const require=createRequire(import.meta.url);
+const compile=async(path,jsx=false)=>ts.transpileModule(await readFile(new URL('../src/'+path,import.meta.url),'utf8'),{compilerOptions:{module:ts.ModuleKind.ESNext,target:ts.ScriptTarget.ES2022,jsx:jsx?ts.JsxEmit.ReactJSX:undefined}}).outputText;
+const uri=s=>'data:text/javascript;base64,'+Buffer.from(s).toString('base64');
+const catalogo=uri(await compile('comprasIniciais.ts'));
+const imports=s=>s.replaceAll("'./comprasIniciais'",JSON.stringify(catalogo));
+const {listarDisponibilidade,alterarDisponibilidade}=await import(uri(imports(await compile('servicoDisponibilidade.ts'))));
+test('Disponibilidade transporte: valida respostas e envia Mesa, item e estado esperado',async()=>{
+ let chamada;const fake={rpc:async(nome,args)=>{chamada={nome,args};return {data:true,error:null};}};
+ assert.equal(await alterarDisponibilidade(fake,'mesa-fixture','faca',true,false),true);
+ assert.deepEqual(chamada,{nome:'definir_disponibilidade_inicial',args:{p_mesa:'mesa-fixture',p_item:'faca',p_liberado:true,p_esperado:false}});
+ assert.deepEqual(await listarDisponibilidade({rpc:async()=>({data:[{item_id:'faca'},{item_id:'faca'}],error:null})},'m'),['faca']);
+ for(const data of [null,{},[{item_id:'intruso'}],[{}]])await assert.rejects(listarDisponibilidade({rpc:async()=>({data,error:null})},'m'),/Resposta inesperada/);
+ for(const data of [null,'true',false])await assert.rejects(alterarDisponibilidade({rpc:async()=>({data,error:null})},'m','faca',true,false),/Resposta inesperada/);
+ await assert.rejects(alterarDisponibilidade(fake,'m','intruso',true,false),/fora/);
+ await assert.rejects(listarDisponibilidade({rpc:async()=>({error:{message:'Acesso negado'}})},'m'),/Acesso negado/);
+});
+test('Disponibilidade painel: nao consulta nem altera durante renderizacao e exige carregamento',async()=>{
+ let s=imports(await compile('DisponibilidadeInicial.tsx',true));
+ s=s.replaceAll("'react'",JSON.stringify(pathToFileURL(require.resolve('react')).href)).replaceAll('"react/jsx-runtime"',JSON.stringify(pathToFileURL(require.resolve('react/jsx-runtime')).href));
+ const {default:Painel}=await import(uri(s));let chamadas=0;
+ const html=renderToStaticMarkup(React.createElement(Painel,{mesaNome:'Mesa fictícia',aoListar:async()=>{chamadas++;return[];},aoAlterar:async()=>{chamadas++;return true;}}));
+ assert.equal(chamadas,0);assert.ok(html.includes('Mesa fictícia'));assert.ok(html.includes('Atualize a lista antes de alterar itens'));assert.ok(!html.includes('aria-label="Liberar '));assert.ok(html.includes('Planos já salvos são preservados'));
+});

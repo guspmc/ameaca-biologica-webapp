@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#171a1d">
+  <title>Ameaça Biológica — servidor LAN (protótipo)</title>
+  <style>
+    :root { color-scheme: dark; font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: #101214; color: #f1f3f4; }
+    * { box-sizing: border-box; }
+    body { margin: 0; min-height: 100vh; }
+    main { width: min(760px, calc(100% - 28px)); margin: 28px auto; }
+    header, section { background: #1a1e21; border: 1px solid #343a3e; border-radius: 14px; padding: 20px; margin-bottom: 14px; }
+    h1 { font-size: clamp(1.3rem, 4vw, 1.9rem); margin: 0 0 8px; }
+    h2 { font-size: 1.05rem; margin: 0 0 12px; }
+    p { line-height: 1.5; color: #c7cdd1; }
+    .eyebrow { text-transform: uppercase; letter-spacing: .1em; color: #a8b1b7; font-size: .75rem; font-weight: 700; }
+    .status { display: inline-flex; align-items: center; gap: 8px; border: 1px solid #465057; border-radius: 999px; padding: 7px 11px; font-size: .9rem; }
+    .dot { width: 9px; height: 9px; border-radius: 50%; background: #e5aa45; }
+    .status[data-state="ok"] .dot { background: #52c78a; }
+    .status[data-state="bad"] .dot { background: #f07878; }
+    .warning { background: #352a17; border-color: #80622c; color: #ffe0a1; }
+    .warning p { color: #ffe0a1; margin-bottom: 0; }
+    form { display: flex; gap: 8px; }
+    input { min-width: 0; flex: 1; border-radius: 8px; border: 1px solid #4c555b; padding: 12px; color: inherit; background: #101214; font: inherit; }
+    button { border: 0; border-radius: 8px; background: #d6e1e6; color: #101214; font: inherit; font-weight: 700; padding: 12px 16px; cursor: pointer; }
+    button:disabled { opacity: .5; cursor: not-allowed; }
+    ul { padding: 0; margin: 0; list-style: none; display: grid; gap: 8px; }
+    li { border: 1px solid #343a3e; border-radius: 8px; padding: 12px; overflow-wrap: anywhere; }
+    li time { display: block; color: #a8b1b7; font-size: .78rem; margin-top: 5px; }
+    .empty { color: #a8b1b7; border-style: dashed; }
+    .small { font-size: .85rem; }
+    @media (max-width: 520px) { main { margin-top: 14px; } header, section { padding: 15px; } form { flex-direction: column; } button { width: 100%; } }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <div class="eyebrow">Ameaça Biológica RPG · Marco técnico 1</div>
+      <h1>Servidor local e atualizações em tempo real</h1>
+      <p>Esta página demonstra comunicação entre navegadores pela rede local usando SQLite e WebSocket. O teste não precisa de internet.</p>
+      <div id="status" class="status" data-state="wait" role="status" aria-live="polite">
+        <span class="dot" aria-hidden="true"></span><span id="status-text">Conectando ao servidor…</span>
+      </div>
+    </header>
+
+    <section class="warning" aria-labelledby="aviso-titulo">
+      <h2 id="aviso-titulo">Protótipo sem autenticação</h2>
+      <p>Não use dados reais de campanha, nomes de contas, senhas ou segredos. Qualquer pessoa com acesso a este endereço na rede pode ler e enviar as mensagens de teste.</p>
+    </section>
+
+    <section>
+      <h2>Enviar um evento de teste</h2>
+      <form id="event-form">
+        <label for="message" class="small" style="position:absolute;left:-10000px">Mensagem de teste</label>
+        <input id="message" name="message" maxlength="280" placeholder="Ex.: mensagem enviada pelo notebook" autocomplete="off" required>
+        <button id="send" type="submit">Enviar para a rede</button>
+      </form>
+      <p id="feedback" class="small" role="status" aria-live="polite">Abra este mesmo endereço em outro dispositivo conectado ao mesmo Wi-Fi.</p>
+    </section>
+
+    <section>
+      <h2>Eventos compartilhados</h2>
+      <p class="small">As mensagens são gravadas no banco SQLite deste servidor e devem aparecer nos navegadores conectados.</p>
+      <ul id="events" aria-live="polite"><li class="empty">Carregando eventos…</li></ul>
+    </section>
+  </main>
+
+  <script>
+    const statusEl = document.querySelector('#status');
+    const statusText = document.querySelector('#status-text');
+    const feedback = document.querySelector('#feedback');
+    const form = document.querySelector('#event-form');
+    const input = document.querySelector('#message');
+    const send = document.querySelector('#send');
+    const list = document.querySelector('#events');
+    let socket;
+
+    function setStatus(state, text) {
+      statusEl.dataset.state = state;
+      statusText.textContent = text;
+    }
+
+    function addEvent(evento) {
+      const item = document.createElement('li');
+      const message = document.createElement('div');
+      const time = document.createElement('time');
+      message.textContent = evento.message;
+      time.dateTime = evento.createdAt;
+      time.textContent = new Date(evento.createdAt).toLocaleString('pt-BR');
+      item.append(message, time);
+      list.querySelector('.empty')?.remove();
+      list.append(item);
+      while (list.children.length > 50) list.firstElementChild.remove();
+    }
+
+    async function loadEvents() {
+      const response = await fetch('/api/events', { cache: 'no-store' });
+      if (!response.ok) throw new Error('Não foi possível ler os eventos.');
+      const data = await response.json();
+      list.replaceChildren();
+      if (!data.events.length) {
+        const empty = document.createElement('li');
+        empty.className = 'empty';
+        empty.textContent = 'Nenhuma mensagem ainda. Envie a primeira!';
+        list.append(empty);
+        return;
+      }
+      data.events.forEach(addEvent);
+    }
+
+    function connect() {
+      const protocolo = location.protocol === 'https:' ? 'wss:' : 'ws:';
+      socket = new WebSocket(protocolo + '//' + location.host + '/ws');
+      socket.addEventListener('open', () => setStatus('ok', 'Canal em tempo real conectado'));
+      socket.addEventListener('message', event => {
+        try {
+          const data = JSON.parse(event.data);
+          if (data.type === 'event.created') addEvent(data.event);
+          if (data.type === 'ready') feedback.textContent = 'Conectado. Envie uma mensagem aqui e confira se ela aparece no outro dispositivo.';
+        } catch {
+          feedback.textContent = 'O servidor enviou uma mensagem que não foi possível interpretar.';
+        }
+      });
+      socket.addEventListener('close', () => {
+        setStatus('bad', 'Canal em tempo real desconectado');
+        feedback.textContent = 'A conexão ao vivo foi interrompida. Recarregue a página quando o servidor estiver disponível.';
+      });
+      socket.addEventListener('error', () => setStatus('bad', 'Falha ao conectar ao canal em tempo real'));
+    }
+
+    form.addEventListener('submit', async event => {
+      event.preventDefault();
+      const message = input.value.trim();
+      if (!message) return;
+      send.disabled = true;
+      feedback.textContent = 'Enviando…';
+      try {
+        const response = await fetch('/api/events', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ message }),
+        });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error || 'Falha ao enviar.');
+        input.value = '';
+        feedback.textContent = 'Mensagem gravada no SQLite deste servidor.';
+        if (!socket || socket.readyState !== WebSocket.OPEN) await loadEvents();
+      } catch (error) {
+        feedback.textContent = error instanceof Error ? error.message : 'Falha ao enviar mensagem.';
+      } finally {
+        send.disabled = false;
+        input.focus();
+      }
+    });
+
+    loadEvents().catch(() => {
+      list.replaceChildren();
+      const empty = document.createElement('li');
+      empty.className = 'empty';
+      empty.textContent = 'Não foi possível carregar os eventos.';
+      list.append(empty);
+      setStatus('bad', 'Servidor indisponível');
+    });
+    connect();
+  </script>
+</body>
+</html>
