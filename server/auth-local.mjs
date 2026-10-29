@@ -149,6 +149,47 @@ export function prepararAutenticacaoLocal(db) {
       throw erro;
     }
   }
+
+  if (versaoAtual < 3) {
+    db.exec('BEGIN IMMEDIATE');
+    try {
+      db.exec(`
+        CREATE TABLE IF NOT EXISTS tickets_websocket_locais (
+          token_hash TEXT PRIMARY KEY,
+          conta_id TEXT NOT NULL REFERENCES contas_locais(id) ON DELETE CASCADE,
+          criada_em TEXT NOT NULL,
+          expira_em TEXT NOT NULL
+        );
+        CREATE INDEX IF NOT EXISTS idx_tickets_websocket_expira
+          ON tickets_websocket_locais(expira_em);
+      `);
+      db.prepare('INSERT INTO schema_migrations (version, applied_at) VALUES (?, ?)').run(3, new Date().toISOString());
+      db.exec('COMMIT');
+    } catch (erro) {
+      db.exec('ROLLBACK');
+      throw erro;
+    }
+  }
+}
+
+export function consumirTicketWebSocketLocal(db, ticket) {
+  if (typeof ticket !== 'string' || !/^[A-Za-z0-9_-]{40,100}$/.test(ticket)) return null;
+  const agora = new Date().toISOString();
+  db.exec('BEGIN IMMEDIATE');
+  try {
+    const registro = db.prepare(`
+      SELECT c.id, c.email
+      FROM tickets_websocket_locais t
+      JOIN contas_locais c ON c.id = t.conta_id
+      WHERE t.token_hash = ? AND t.expira_em > ?
+    `).get(hashToken(ticket), agora);
+    db.prepare('DELETE FROM tickets_websocket_locais WHERE token_hash = ?').run(hashToken(ticket));
+    db.exec('COMMIT');
+    return registro ? { id: registro.id, email: registro.email } : null;
+  } catch (erro) {
+    db.exec('ROLLBACK');
+    throw erro;
+  }
 }
 
 export async function autenticarContaLocal(req, db) {
@@ -226,6 +267,22 @@ export async function tratarRotaAutenticacao(req, res, url, db) {
       db.prepare('INSERT INTO sessoes_locais (token_hash, conta_id, criada_em, expira_em) VALUES (?, ?, ?, ?)')
         .run(hashToken(token), conta.id, agora.toISOString(), expira.toISOString());
       json(res, 200, { account: { id: conta.id, email: conta.email }, token, expiresAt: expira.toISOString() });
+      return true;
+    }
+
+    if (metodo === 'POST' && rota === '/api/auth/ws-ticket') {
+      const conta = await autenticarContaLocal(req, db);
+      if (!conta) {
+        json(res, 401, { error: 'Sessão ausente ou expirada.' });
+        return true;
+      }
+      const ticket = randomBytes(32).toString('base64url');
+      const agora = new Date();
+      const expira = new Date(agora.getTime() + 30_000);
+      db.prepare('DELETE FROM tickets_websocket_locais WHERE expira_em <= ?').run(agora.toISOString());
+      db.prepare('INSERT INTO tickets_websocket_locais (token_hash, conta_id, criada_em, expira_em) VALUES (?, ?, ?, ?)')
+        .run(hashToken(ticket), conta.id, agora.toISOString(), expira.toISOString());
+      json(res, 201, { ticket, expiresAt: expira.toISOString(), singleUse: true });
       return true;
     }
 
