@@ -3,7 +3,7 @@
 **Projeto:** Ameaça Biológica RPG  
 **Branch de trabalho:** fix/lan-websocket-reconnect-2026-10-29  
 **Branch-base:** feat/origens-rascunho-alfa04  
-**Estado atualizado:** código e documentação estão na branch; CI do commit b0f7cc046c4a75bf7e45166d8947ba5fab68b796 passou. Reteste humano ainda pendente.  
+**Estado atualizado (29/10/2026):** heartbeat, reconexão automática, histórico/deduplicação e sincronização ao voltar para a aba estão implementados na branch. CI passou no commit ae300ed; CI para a nova alteração de visibilidade está em execução. Reteste humano ainda pendente.  
 **Publicação/merge:** não realizados.
 
 ## 1. Motivo
@@ -17,6 +17,7 @@ A implementação anterior não tentava reconectar automaticamente e não recupe
 - **Servidor — heartbeat:** envia ping WebSocket a cada 25 segundos e marca clientes responsivos por meio de pong. Se um cliente não responde até o ciclo seguinte, a conexão é encerrada para que o navegador possa reconstruí-la. O processo Node não tem temporizador de desligamento por inatividade.
 - **Cliente — reconexão automática:** ao receber o evento de fechamento, agenda novas tentativas com espera progressiva, começando perto de 1 segundo e aumentando até cerca de 30 segundos, com pequena variação aleatória.
 - **Recuperação de histórico:** quando o WebSocket abre ou reabre, a página consulta GET /api/events sem exigir F5.
+- **Retorno ao primeiro plano:** ao voltar de uma aba suspensa, a página tenta reconectar se o WebSocket já estiver fechado; se ainda estiver aberto, consulta novamente o histórico para reconciliar possíveis eventos perdidos.
 - **Deduplicação e ordenação:** eventos são identificados pelo ID do banco, não são inseridos duas vezes quando chegam pelo histórico e pelo canal ao vivo, e a lista permanece em ordem de ID. A página mantém até 50 eventos visíveis e limita o conjunto recente de IDs lembrados.
 - **Testes automatizados novos:** verificam que um cliente WebSocket responsivo permanece conectado durante múltiplos ciclos de heartbeat e que o script da página LAN tem sintaxe válida, com os ganchos de reconexão, sincronização e deduplicação presentes.
 - **Diagnóstico da causa:** logs no servidor registram conexão/fechamento, código e motivo quando informados, além de indicar explicitamente quando o heartbeat encerra um cliente sem resposta.
@@ -24,7 +25,7 @@ A implementação anterior não tentava reconectar automaticamente e não recupe
 
 ## 3. O que ainda não foi comprovado
 
-- O CI passou no commit ad944c055ecb9982ba1ef7c0cf6baf106976c6a0, que inclui a instrumentação de diagnóstico. O reteste humano continua pendente.
+- O CI passou no commit ad944c055ecb9982ba1ef7c0cf6baf106976c6a0, que inclui a instrumentação de diagnóstico, e no commit ae300ed74190eed3ce33489cb900aac37f80cd8e, que consolidou o checkpoint. O CI para a atualização de retorno ao primeiro plano está em execução; o reteste humano continua pendente.
 - O heartbeat foi concebido para detectar conexão sem resposta, mas ainda precisa ser validado com navegadores reais. O teste automatizado usa o cliente WebSocket da biblioteca Node, não o Chrome do PC e o navegador Android.
 - Não há evidência suficiente para afirmar que a queda original foi causada por inatividade. O servidor não possuía um desligamento por ociosidade; a causa provável continua em aberto entre rede, navegador/sistema, processo e canal WebSocket.
 - Não é possível garantir que a conexão física fique aberta indefinidamente: o sistema operacional, a economia de bateria, o navegador, o roteador ou a rede podem suspendê-la. O objetivo é não desligar o processo por inatividade e recuperar a conexão automaticamente quando o ambiente permitir.
