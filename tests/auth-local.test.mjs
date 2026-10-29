@@ -86,7 +86,7 @@ test('registra a migração de autenticação uma única vez', async t => {
   const { app, dataDir, fechar } = await setup(t);
   assert.deepEqual(
     app.db.prepare('SELECT version FROM schema_migrations ORDER BY version').all().map(row => row.version),
-    [1],
+    [1, 2],
   );
   await fechar();
 
@@ -97,7 +97,7 @@ test('registra a migração de autenticação uma única vez', async t => {
   });
   assert.deepEqual(
     reiniciado.db.prepare('SELECT version FROM schema_migrations ORDER BY version').all().map(row => row.version),
-    [1],
+    [1, 2],
   );
 });
 
@@ -126,4 +126,33 @@ test('preserva conta e sessão existentes ao reiniciar o servidor e reaplicar mi
   assert.equal((await resposta.json()).account.email, credentials.email);
   assert.equal(reiniciado.db.prepare('SELECT COUNT(*) AS total FROM contas_locais').get().total, 1);
   assert.equal(reiniciado.db.prepare('SELECT COUNT(*) AS total FROM sessoes_locais').get().total, 1);
+});
+
+
+test('migra Mesas e permite papéis diferentes para a mesma conta em Mesas distintas', async t => {
+  const { app } = await setup(t);
+  const agora = new Date().toISOString();
+  app.db.prepare('INSERT INTO contas_locais (id, email, senha_salt, senha_hash, criada_em) VALUES (?, ?, ?, ?, ?)')
+    .run('conta-teste', 'mesa@example.test', 'salt', 'hash', agora);
+  app.db.prepare('INSERT INTO mesas (id, nome, criada_por, criada_em) VALUES (?, ?, ?, ?)')
+    .run('mesa-a', 'Mesa A', 'conta-teste', agora);
+  app.db.prepare('INSERT INTO mesas (id, nome, criada_por, criada_em) VALUES (?, ?, ?, ?)')
+    .run('mesa-b', 'Mesa B', 'conta-teste', agora);
+  const inserirParticipante = app.db.prepare(
+    'INSERT INTO participantes_mesa (mesa_id, conta_id, papel, entrou_em) VALUES (?, ?, ?, ?)'
+  );
+  inserirParticipante.run('mesa-a', 'conta-teste', 'jogador', agora);
+  inserirParticipante.run('mesa-b', 'conta-teste', 'mestre', agora);
+
+  const participacoes = app.db.prepare(
+    'SELECT mesa_id, papel FROM participantes_mesa WHERE conta_id = ? ORDER BY mesa_id'
+  ).all('conta-teste');
+  assert.deepEqual(participacoes, [
+    { mesa_id: 'mesa-a', papel: 'jogador' },
+    { mesa_id: 'mesa-b', papel: 'mestre' },
+  ]);
+  assert.throws(
+    () => inserirParticipante.run('mesa-a', 'conta-teste', 'administrador', agora),
+    /CHECK constraint failed/,
+  );
 });
