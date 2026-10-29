@@ -2,6 +2,9 @@
 
 ## Nova rodada enfileirada — offline e notas pessoais
 
+> **Checkpoint de escopo:** até o lançamento e aprovação do modo local, trabalhar somente nos bloqueios e testes dessa entrega. Itens adiados e o bloqueio atual `Invalid API key` estão registrados em [checkpoint-escopo-modo-local-2026-10-28.md](checkpoint-escopo-modo-local-2026-10-28.md).
+
+
 A rodada não deve ser solicitada ao Gus até a implementação passar por revisão e testes automatizados. Decisões confirmadas em 28/10/2026: notas pessoais somente no dispositivo, separadas por conta/Mesa/personagem e sem sincronização; autenticação continua obrigatória, inclusive no uso offline. O roteiro passo a passo está em [rodada-offline-notas-locais.md](rodada-offline-notas-locais.md).
 
 Casos novos a agrupar:
