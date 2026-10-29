@@ -3,7 +3,7 @@
 **Projeto:** Ameaça Biológica RPG  
 **Branch de trabalho:** fix/lan-websocket-reconnect-2026-10-29  
 **Branch-base:** feat/origens-rascunho-alfa04  
-**Estado no momento deste checkpoint:** código e documentação enviados para a branch; CI do commit final e reteste humano ainda pendentes.  
+**Estado atualizado:** código e documentação estão na branch; CI do commit b0f7cc046c4a75bf7e45166d8947ba5fab68b796 passou. Reteste humano ainda pendente.  
 **Publicação/merge:** não realizados.
 
 ## 1. Motivo
@@ -40,7 +40,18 @@ A implementação anterior não tentava reconectar automaticamente e não recupe
 
 O roteiro completo está em docs/testes-humanos-pendentes.md.
 
-## 5. Segurança e limites preservados
+## 5. Resultado da validação automatizada
+
+O GitHub Actions concluiu com sucesso o workflow “Validar protótipo local LAN” para o commit b0f7cc046c4a75bf7e45166d8947ba5fab68b796:
+
+- **264 testes passaram; 0 falharam.**
+- O build TypeScript + Vite concluiu com sucesso.
+- O novo teste “heartbeat mantém WebSocket responsivo conectado durante inatividade” passou.
+- Execução: https://github.com/guspmc/ameaca-biologica-webapp/actions/runs/40815151067
+
+Esta evidência valida a suíte automatizada e a compilação para aquele commit. O navegador real no PC e no Android ainda não foi retestado. A atualização deste checkpoint é documental e será novamente validada pelo CI.
+
+## 6. Segurança e limites preservados
 
 - Protótipo continua sem autenticação e não deve receber dados reais de campanha.
 - Usar somente rede confiável durante os testes.
