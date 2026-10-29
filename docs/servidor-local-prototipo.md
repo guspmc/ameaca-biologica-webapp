@@ -144,4 +144,18 @@ Exemplo de apresentação ao Mestre: **“AGI 3 » 4 — 14/08/2026 às 18:02”
 **Planejado, ainda não implementado:** fila local de operações, exportação do pacote, pré-visualização no Mestre, importação idempotente, resolução de conflitos e tela de histórico por personagem. A sessão LAN continua sendo o caminho principal e sincroniza diretamente com o servidor autoritativo; o pacote offline é um caminho alternativo para transportar alterações até o Mestre. Não usar a API demonstrativa atual para esses dados.
 
 A política anterior do Planejamento v2.0 sobre anotações pessoais continua valendo: notas pessoais não são incluídas automaticamente em exportações. A trilha de auditoria aqui descrita é para alterações estruturadas da ficha e demais dados compartilhados autorizados.
+## Precisões aprovadas — permissões e documentos servidos pela LAN
 
+**Aprovado pelo usuário em 29/10/2026:**
+
+- O Mestre não recebe permissão para editar fichas de personagens por meio de editor comum. A auditoria das alterações offline é somente leitura/revisão; o Mestre pode apontar uma irregularidade e pedir que o proprietário corrija a ficha. A correção é feita pelo jogador e gera seu próprio registro.
+- **Notas e Anotações pessoais dos Jogadores ficam fora da trilha de auditoria de alterações da ficha.** Permanecem privadas, visíveis somente ao autor, e não são incluídas automaticamente em exportações ou pacotes de sincronização.
+- Documentos e mapas que o Mestre disponibilizar/revelar podem ser consultados pelos participantes autorizados por meio do servidor LAN, sem exigir que cada jogador baixe manualmente uma cópia permanente para o celular. Segredos não revelados permanecem exclusivos do Mestre; a revelação compartilha o conteúdo com toda a Mesa conforme as permissões funcionais aprovadas.
+
+### Cache e armazenamento temporário — proposta técnica
+
+O servidor mantém o arquivo original. O cliente solicita o documento quando abre a visualização e recebe o conteúdo em fluxo HTTP; o navegador pode manter buffers temporários e, dependendo dos cabeçalhos e da implementação do PWA/Service Worker, pode também armazenar uma cópia em cache. Portanto, 'não baixar manualmente' é possível, mas não significa que o conteúdo nunca seja transferido ou armazenado em memória/cache do aparelho.
+
+**Diretriz de implementação:** documentos do Mestre não devem ser adicionados automaticamente ao cache offline persistente do Service Worker nem a um armazenamento permanente do app. Priorizar o cabeçalho HTTP Cache-Control: no-store nas respostas de documentos privados e não armazenar esses arquivos no IndexedDB. Limpar referências/visualização ao sair da Mesa ou quando o acesso for revogado, na próxima comunicação com o servidor. Conteúdo já visualizado não pode ser apagado retroativamente de capturas de tela, fotografias ou cópias feitas pelo usuário; a revogação impede novos acessos online, não desfaz conhecimento já recebido.
+
+**Ainda precisa ser implementado e testado:** autorização server-side para cada documento, distinção entre rascunho secreto e documento revelado, entrega autenticada pela LAN, cabeçalhos de cache, comportamento do Service Worker e limpeza local na próxima conexão após revogação.
