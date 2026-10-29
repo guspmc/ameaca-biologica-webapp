@@ -13,7 +13,7 @@ async function setup(t) {
     await app.close();
     await rm(dataDir, { recursive: true, force: true });
   });
-  return `http://127.0.0.1:${app.address.port}`;
+  return { base: `http://127.0.0.1:${app.address.port}`, app, dataDir };
 }
 async function post(base, path, body, token) {
   return fetch(base + path, {
@@ -24,7 +24,7 @@ async function post(base, path, body, token) {
 }
 
 test('cria conta local e retorna apenas identificador e e-mail', async t => {
-  const base = await setup(t);
+  const { base } = await setup(t);
   const resposta = await post(base, '/api/auth/register', { email: 'Teste@Exemplo.com', password: 'uma-senha-local-segura-2026' });
   assert.equal(resposta.status, 201);
   const { account } = await resposta.json();
@@ -33,7 +33,7 @@ test('cria conta local e retorna apenas identificador e e-mail', async t => {
 });
 
 test('login cria sessão, /me valida token e logout revoga sessão', async t => {
-  const base = await setup(t);
+  const { base } = await setup(t);
   const credentials = { email: 'jogador@example.test', password: 'senha-local-comprida-2026' };
   assert.equal((await post(base, '/api/auth/register', credentials)).status, 201);
   const login = await post(base, '/api/auth/login', credentials);
@@ -50,7 +50,7 @@ test('login cria sessão, /me valida token e logout revoga sessão', async t => 
 });
 
 test('rejeita senha curta e usa erro genérico no login inválido', async t => {
-  const base = await setup(t);
+  const { base } = await setup(t);
   assert.equal((await post(base, '/api/auth/register', { email: 'curta@example.test', password: 'curta' })).status, 422);
   const resposta = await post(base, '/api/auth/login', { email: 'nao-existe@example.test', password: 'senha-local-comprida-2026' });
   assert.equal(resposta.status, 401);
@@ -58,14 +58,14 @@ test('rejeita senha curta e usa erro genérico no login inválido', async t => {
 });
 
 test('impede duplicação de e-mail sem diferenciar maiúsculas', async t => {
-  const base = await setup(t);
+  const { base } = await setup(t);
   const password = 'senha-local-comprida-2026';
   assert.equal((await post(base, '/api/auth/register', { email: 'Conta@example.test', password })).status, 201);
   assert.equal((await post(base, '/api/auth/register', { email: 'conta@example.test', password })).status, 409);
 });
 
 test('limita tentativas repetidas de cadastro por IP e informa quando tentar novamente', async t => {
-  const base = await setup(t);
+  const { base } = await setup(t);
   for (let i = 0; i < 5; i += 1) {
     const resposta = await post(base, '/api/auth/register', { email: 'email-invalido', password: 'senha-local-comprida-2026' });
     assert.equal(resposta.status, 422);
@@ -74,4 +74,50 @@ test('limita tentativas repetidas de cadastro por IP e informa quando tentar nov
   assert.equal(bloqueada.status, 429);
   assert.ok(Number(bloqueada.headers.get('retry-after')) > 0);
   assert.equal((await bloqueada.json()).error, 'Muitas tentativas. Aguarde antes de tentar novamente.');
+});
+
+test('registra a migração de autenticação uma única vez', async t => {
+  const { app, dataDir } = await setup(t);
+  assert.deepEqual(
+    app.db.prepare('SELECT version FROM schema_migrations ORDER BY version').all().map(row => row.version),
+    [1],
+  );
+  await app.close();
+
+  const reiniciado = createLocalServer({ host: '127.0.0.1', port: 0, dataDir });
+  await reiniciado.listen();
+  t.after(async () => {
+    await reiniciado.close();
+  });
+  assert.deepEqual(
+    reiniciado.db.prepare('SELECT version FROM schema_migrations ORDER BY version').all().map(row => row.version),
+    [1],
+  );
+});
+
+test('preserva conta e sessão existentes ao reiniciar o servidor e reaplicar migrações', async t => {
+  const { base, app, dataDir } = await setup(t);
+  const credentials = { email: 'preservar@example.test', password: 'senha-local-comprida-2026' };
+  assert.equal((await post(base, '/api/auth/register', credentials)).status, 201);
+  const login = await post(base, '/api/auth/login', credentials);
+  assert.equal(login.status, 200);
+  const { token } = await login.json();
+  const contaAntes = app.db.prepare('SELECT COUNT(*) AS total FROM contas_locais').get().total;
+  const sessoesAntes = app.db.prepare('SELECT COUNT(*) AS total FROM sessoes_locais').get().total;
+  assert.equal(contaAntes, 1);
+  assert.equal(sessoesAntes, 1);
+  await app.close();
+
+  const reiniciado = createLocalServer({ host: '127.0.0.1', port: 0, dataDir });
+  await reiniciado.listen();
+  t.after(async () => {
+    await reiniciado.close();
+  });
+  const resposta = await fetch(`http://127.0.0.1:${reiniciado.address.port}/api/auth/me`, {
+    headers: { authorization: `Bearer ${token}` },
+  });
+  assert.equal(resposta.status, 200);
+  assert.equal((await resposta.json()).account.email, credentials.email);
+  assert.equal(reiniciado.db.prepare('SELECT COUNT(*) AS total FROM contas_locais').get().total, 1);
+  assert.equal(reiniciado.db.prepare('SELECT COUNT(*) AS total FROM sessoes_locais').get().total, 1);
 });
