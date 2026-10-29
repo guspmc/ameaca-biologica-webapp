@@ -53,8 +53,8 @@ function enderecosIPv4() {
 
 /**
  * Cria uma instância isolada do protótipo LAN.
- * Este servidor só guarda mensagens demonstrativas; ainda não contém contas,
- * fichas, Mesas reais nem autenticação.
+ * Este servidor mantém contas locais experimentais e o esquema inicial de
+ * Mesas/participantes; ainda não oferece API de Mesas, fichas ou autorização.
  */
 export function createLocalServer({
   host = '127.0.0.1',
