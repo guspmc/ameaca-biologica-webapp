@@ -33,7 +33,7 @@ A implementação anterior não tentava reconectar automaticamente e não recupe
 
 ## 4. Próximas ações — ordem de execução
 
-1. **L1 — CI:** confirmar testes e build verdes para o commit atual. Corrigir qualquer falha antes de solicitar teste manual.
+1. **L1 — CI (concluído):** 267 testes passaram e o build foi aprovado para o código no commit bb8835e. A próxima ação é L2; repetir o CI se houver novas alterações de código.
 2. **L2 — inatividade visível:** deixar PC e Android com as páginas abertas por 3–5 minutos; enviar mensagens nos dois sentidos sem F5 e verificar ausência de duplicatas.
 3. **L3 — reinício do servidor:** parar e iniciar o servidor com os navegadores ainda abertos; confirmar reconexão automática e recuperação do histórico.
 4. **L4 — queda e retorno do Wi-Fi do cliente:** confirmar reconexão e sincronização do histórico.
@@ -49,7 +49,7 @@ O GitHub Actions concluiu com sucesso o workflow “Validar protótipo local LAN
 
 - **267 testes passaram; 0 falharam.**
 - O build TypeScript + Vite concluiu com sucesso.
-- Os testes de heartbeat e sintaxe do script da página passaram.
+- Os testes de heartbeat, sintaxe do script, reconexão simulada e sincronização ao retomar a aba passaram.
 - Execução: https://github.com/guspmc/ameaca-biologica-webapp/actions/runs/40878510544
 
 Esta evidência valida a suíte automatizada e a compilação para o commit bb8835e. O navegador real no PC e no Android ainda não foi retestado.

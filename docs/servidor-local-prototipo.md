@@ -17,7 +17,7 @@
 - Deduplicação por ID e ordenação dos eventos para evitar repetição ou perda em corridas entre histórico e mensagens ao vivo.
 - Sincronização do histórico quando a aba volta ao primeiro plano, além da reconexão automática.
 - Diagnóstico no terminal para conexões/fechamentos WebSocket e clientes que não respondem ao heartbeat.
-- Nove testes específicos do protótipo LAN, incluindo conexão ociosa responsiva, encerramento de clientes sem resposta, validação sintática do script e simulação de reconexão/retorno ao primeiro plano. A suíte completa de 266 testes passou no CI para o código atual.
+- Nove testes específicos do protótipo LAN, incluindo conexão ociosa responsiva, encerramento de clientes sem resposta, validação sintática do script e simulação de reconexão/retorno ao primeiro plano. A suíte completa de 267 testes passou no CI para o código atual.
 
 ## Requisitos
 

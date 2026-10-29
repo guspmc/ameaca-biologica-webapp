@@ -1,6 +1,6 @@
 # Pendências prioritárias — servidor local/LAN e reconexão (29/10/2026)
 
-> Esta fila é a referência atual para o protótipo LAN. Os testes históricos de notas/PWA abaixo não validam esta arquitetura. Executar primeiro o CI do branch fix/lan-websocket-reconnect-2026-10-29; depois realizar os testes manuais com dados fictícios.
+> Esta fila é a referência atual para o protótipo LAN. Os testes históricos de notas/PWA abaixo não validam esta arquitetura. O CI do código está verde; a próxima ação é o reteste manual L2, usando apenas dados fictícios.
 
 ## Fila atual
 
