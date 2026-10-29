@@ -184,6 +184,27 @@
       });
     }
 
+    // Ao voltar de uma aba suspensa, reconcilia o histórico. Se o navegador
+    // já percebeu a queda, agenda a reconexão sem exigir atualização manual.
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState !== 'visible') return;
+
+      if (!socket || socket.readyState === WebSocket.CLOSED || socket.readyState === WebSocket.CLOSING) {
+        scheduleReconnect();
+        return;
+      }
+
+      if (socket.readyState === WebSocket.OPEN) {
+        loadEvents().then(() => {
+          if (socket?.readyState === WebSocket.OPEN) {
+            feedback.textContent = 'Conexão retomada e histórico sincronizado.';
+          }
+        }).catch(() => {
+          feedback.textContent = 'A página voltou ao primeiro plano, mas não conseguiu sincronizar o histórico. A conexão será monitorada automaticamente.';
+        });
+      }
+    });
+
     form.addEventListener('submit', async event => {
       event.preventDefault();
       const message = input.value.trim();
