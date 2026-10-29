@@ -68,7 +68,7 @@ export function createLocalServer({
   mkdirSync(dataDir, { recursive: true });
   const caminhoBanco = resolve(dataDir, 'servidor-prototipo.sqlite');
   const db = new DatabaseSync(caminhoBanco);
-  db.exec(\`
+  db.exec(`
     PRAGMA journal_mode = WAL;
     PRAGMA foreign_keys = ON;
     CREATE TABLE IF NOT EXISTS eventos_prototipo (
@@ -76,7 +76,7 @@ export function createLocalServer({
       mensagem TEXT NOT NULL CHECK (length(mensagem) BETWEEN 1 AND 280),
       criado_em TEXT NOT NULL
     );
-  \`);
+  `);
 
   const listarEventos = db.prepare(
     'SELECT id, mensagem AS message, criado_em AS createdAt FROM eventos_prototipo ORDER BY id DESC LIMIT 50'
@@ -198,7 +198,7 @@ export function createLocalServer({
     if (origem) {
       try {
         if (new URL(origem).host !== req.headers.host) {
-          socket.write('HTTP/1.1 403 Forbidden\\r\\n\\r\\n');
+          socket.write('HTTP/1.1 403 Forbidden\r\n\r\n');
           socket.destroy();
           return;
         }
@@ -310,22 +310,22 @@ async function iniciarPeloTerminal() {
   await app.listen();
   const endereco = app.address;
   const portaReal = typeof endereco === 'object' && endereco ? endereco.port : port;
-  console.log('\\nAmeaça Biológica — servidor LAN (protótipo)');
-  console.log(\`Página de teste: http://localhost:${portaReal}/\`);
-  console.log(\`Saúde:          http://localhost:${portaReal}/api/health\`);
-  console.log(\`Banco SQLite:   ${app.caminhoBanco}\`);
-  console.log('Internet exigida: não\\n');
-  console.warn(\`ATENÇÃO: ${AVISO}\`);
+  console.log('\nAmeaça Biológica — servidor LAN (protótipo)');
+  console.log(`Página de teste: http://localhost:${portaReal}/`);
+  console.log(`Saúde:          http://localhost:${portaReal}/api/health`);
+  console.log(`Banco SQLite:   ${app.caminhoBanco}`);
+  console.log('Internet exigida: não\n');
+  console.warn(`ATENÇÃO: ${AVISO}`);
 
   if (host === '0.0.0.0' || host === '::') {
     for (const enderecoLan of enderecosIPv4()) {
-      console.log(\`Acesso pela LAN: http://${enderecoLan}:${portaReal}/\`);
+      console.log(`Acesso pela LAN: http://${enderecoLan}:${portaReal}/`);
     }
-    console.warn('O servidor está visível na rede local. Use somente uma rede confiável durante este protótipo.\\n');
+    console.warn('O servidor está visível na rede local. Use somente uma rede confiável durante este protótipo.\n');
   }
 
   const encerrar = async () => {
-    console.log('\\nEncerrando servidor local...');
+    console.log('\nEncerrando servidor local...');
     await app.close();
     process.exit(0);
   };
