@@ -2,7 +2,7 @@
 
 **Data:** 29/10/2026  
 **Branch de referência:** `feat/origens-rascunho-alfa04`  
-**Estado:** stack aprovada pelo usuário em 29/10/2026 (Node.js + SQLite + WebSocket); primeiro protótipo técnico adicionado à branch. Testes automatizados/CI e validação manual LAN ainda pendentes.  
+**Estado:** stack aprovada pelo usuário em 29/10/2026 (Node.js + SQLite + WebSocket); primeiro protótipo técnico adicionado à branch. CI de testes e build passou para a árvore de código `5c31a5b4f99d38219a6b75853a3ae8dd5a65b16c`, idêntica à árvore atual. Validação manual LAN pendente.  
 **Governança:** nenhum merge, publicação no GitHub Pages, alteração remota de Supabase ou mudança de cânone autorizada por este checkpoint.
 
 ## 1. Direção confirmada pelo usuário
@@ -123,6 +123,8 @@ Antes de trocar a stack, fazer uma comparação curta de duas opções e um prot
 
 **Limites explícitos:** o protótipo não tem autenticação, contas, papéis, Mesas reais, fichas ou integração com o frontend existente. Não usar dados reais. O frontend atual ainda usa Supabase hospedado. A nova implementação não substitui essa arquitetura ainda.
 
-**Validação pendente:** confirmar o resultado do workflow CI; depois executar os comandos locais descritos no guia, validar persistência após reinício e testar atualização entre dois dispositivos na mesma LAN com a internet indisponível. O servidor deve permanecer apenas na rede confiável durante os testes.
+**Validação automatizada:** [workflow de testes do protótipo](https://github.com/guspmc/ameaca-biologica-webapp/actions/runs/40811908864) concluiu com sucesso (instalação congelada, testes automatizados e build). O workflow de compilação existente também concluiu com sucesso na mesma árvore: [workflow de compilação](https://github.com/guspmc/ameaca-biologica-webapp/actions/runs/40811908875). A árvore atual foi conferida como idêntica à árvore validada.
+
+**Validação manual pendente:** executar os comandos locais descritos no guia, validar persistência após reinício e testar atualização entre dois dispositivos na mesma LAN com a internet indisponível. O servidor deve permanecer apenas na rede confiável durante os testes.
 
 **Próximo marco:** após a validação técnica, adicionar autenticação local e autorização server-side antes de qualquer migração de dados reais.
