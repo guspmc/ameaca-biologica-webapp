@@ -40,8 +40,8 @@ test('health informa que o protótipo usa SQLite e não exige internet', async t
   assert.equal(dados.storage, 'SQLite');
   assert.equal(dados.realtime, 'WebSocket');
   assert.equal(dados.internetRequired, false);
-  assert.equal(dados.authentication, 'not-implemented');
-  assert.match(dados.warning, /sem autenticação/i);
+  assert.equal(dados.authentication, 'local-prototype-api');
+  assert.match(dados.warning, /sem proteção de transporte/i);
 });
 
 test('evento válido é persistido no SQLite e pode ser consultado', async t => {
