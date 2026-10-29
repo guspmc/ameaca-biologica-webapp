@@ -34,7 +34,8 @@ O arquivo de exemplo contém intencionalmente o marcador `sb_publishable_SUBSTIT
 1. A chave pública do projeto de teste foi corrigida localmente, recompilada e a autenticação foi confirmada.
 2. A Mesa de teste e a ficha da Claire abriram normalmente na conta de Jogador.
 3. A primeira nota pessoal foi salva, a ficha foi fechada/reaberta e a nota reapareceu corretamente.
-4. Próximos passos: validar isolamento da nota na interface do Mestre e após nova sessão; depois concluir os testes de isolamento por ficha/conta e comportamento offline.
+4. **E2 — privacidade após troca de conta:** aprovado por relato do Gus. A anotação não apareceu na interface do Mestre; ao voltar à conta de Jogador, a nota permaneceu intacta.
+5. Próximos passos: validar a separação entre fichas e contas, depois o cache/service worker e o comportamento offline.
 
 ## Evidências já observadas
 
@@ -46,7 +47,8 @@ O arquivo de exemplo contém intencionalmente o marcador `sb_publishable_SUBSTIT
 - Autenticação no projeto de teste: **confirmada** após corrigir o prefixo `sb` duplicado na chave pública local.
 - Mesa `Teste` e ficha da Claire: abriram normalmente na conta de Jogador.
 - Nota pessoal: texto de teste salvo e recuperado após fechar/reabrir a ficha (**E1 aprovado por relato do Gus**).
-- Isolamento entre personagens/contas, logout/login, cache PWA e comportamento offline: **pendentes**.
+- Privacidade na troca Jogador → Mestre → Jogador: **E2 aprovado por relato do Gus**; o Mestre não viu a anotação e ela continuou intacta ao retornar à conta de Jogador.
+- Separação entre personagens e contas, inspeção do cache PWA e comportamento offline: **pendentes**.
 
 ## Adiado até depois do lançamento e aprovação do modo local
 
