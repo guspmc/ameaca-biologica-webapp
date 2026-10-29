@@ -234,3 +234,29 @@ Não há endereço de rede preparado nem abertura de firewall nesta etapa. Quand
 
 ## Casos já aprovados — não repetir sem mudança relevante
 Origens, Perícias, Habilidades, kits e persistência; identidade/flexões; busca e compras; liberação/bloqueio na Mesa correta; preservação da compra salva após bloqueio; limpeza do plano; privacidade dos rascunhos; revisão, contagens e atalhos; janela estreita; preferências salvas após F5 e independentes por ficha. As confirmações e capturas anteriores continuam válidas.
+
+
+## Nova trilha — servidor local LAN (29/10/2026)
+
+A rodada genérica F2–F4 da PWA não comprova a arquitetura LAN-first e fica separada desta trilha. O primeiro protótipo está em `server/`; ele só armazena mensagens demonstrativas e não tem autenticação.
+
+### Antes do teste manual
+- [ ] Conferir o workflow [ci-local-server.yml](../.github/workflows/ci-local-server.yml): instalação congelada, testes e build aprovados.
+- [ ] Baixar a branch `feat/origens-rascunho-alfa04` e executar os comandos do [guia do protótipo local](servidor-local-prototipo.md).
+- [ ] Confirmar `pnpm.cmd test` sem falhas.
+- [ ] Confirmar `pnpm.cmd run build` concluído.
+
+### Teste manual — PC
+- [ ] Iniciar com `pnpm.cmd run server:local`.
+- [ ] Abrir `http://localhost:4175/`, enviar uma mensagem fictícia e confirmar que aparece na lista.
+- [ ] Encerrar com Ctrl+C, iniciar novamente e confirmar que a mensagem permanece.
+
+### Teste manual — dois dispositivos na LAN
+- [ ] No PC servidor, iniciar com `pnpm.cmd run server:local -- --host 0.0.0.0`.
+- [ ] Abrir o endereço LAN que o terminal mostrar em outro dispositivo na mesma rede.
+- [ ] Enviar uma mensagem fictícia no dispositivo A e verificar que aparece no dispositivo B sem recarregar.
+- [ ] Repetir no sentido inverso.
+- [ ] Repetir com internet/WAN indisponível, mantendo a LAN/Wi-Fi entre dispositivos ativa.
+- [ ] Parar o servidor e confirmar que o segundo dispositivo deixa de receber eventos.
+
+**Critério de aprovação deste marco:** testes automatizados e build aprovados, persistência após reinício confirmada e eventos vistos nos dois dispositivos pela LAN sem internet. Isso valida apenas a base técnica do servidor; não valida autenticação, permissões, Mesas ou fichas.
