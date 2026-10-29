@@ -8,7 +8,7 @@ import { WebSocketServer, WebSocket } from 'ws';
 import { prepararAutenticacaoLocal, tratarRotaAutenticacao } from './auth-local.mjs';
 
 const PAGINA = readFileSync(new URL('./index.html', import.meta.url), 'utf8');
-const AVISO = 'Protótipo técnico sem autenticação. Não use dados reais de campanha, senhas ou segredos.';
+const AVISO = 'Protótipo LAN sem proteção de transporte. Use apenas dados fictícios e uma rede privada confiável; não use dados reais de campanha ou segredos.';
 const LIMITE_MENSAGEM = 280;
 const INTERVALO_HEARTBEAT_MS = 25_000;
 
@@ -131,7 +131,7 @@ export function createLocalServer({
           storage: 'SQLite',
           realtime: 'WebSocket',
           internetRequired: false,
-          authentication: 'not-implemented',
+          authentication: 'local-prototype-api',
           warning: AVISO,
         });
         return;
