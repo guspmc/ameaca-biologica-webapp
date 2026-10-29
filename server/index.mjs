@@ -254,9 +254,7 @@ export function createLocalServer({
     },
     async close() {
       for (const cliente of wss.clients) cliente.terminate();
-      if (wss.clients.size > 0) {
-        await new Promise(resolveClose => wss.once('close', resolveClose));
-      }
+      await new Promise(resolveClose => wss.close(() => resolveClose()));
       await new Promise((resolveClose, rejectClose) => {
         if (!httpServer.listening) {
           resolveClose();
