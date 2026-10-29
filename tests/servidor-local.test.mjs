@@ -172,3 +172,41 @@ test('script da página LAN tem sintaxe válida e inclui recuperação automáti
   assert.match(scripts[0][1], /loadEvents\(\)\.then/);
   assert.match(scripts[0][1], /document\.addEventListener\('visibilitychange'/);
 });
+
+
+test('heartbeat encerra cliente que deixa de responder aos pings', async t => {
+  const dataDir = await mkdtemp(join(tmpdir(), 'ameaca-biologica-heartbeat-dead-'));
+  const app = createLocalServer({
+    host: '127.0.0.1',
+    port: 0,
+    dataDir,
+    heartbeatIntervalMs: 20,
+  });
+  await app.listen();
+  const cliente = new WebSocket('ws://127.0.0.1:' + app.address.port + '/ws', {
+    autoPong: false,
+  });
+
+  t.after(async () => {
+    if (cliente.readyState === WebSocket.OPEN || cliente.readyState === WebSocket.CONNECTING) {
+      cliente.terminate();
+    }
+    await app.close();
+    await rm(dataDir, { recursive: true, force: true });
+  });
+
+  await new Promise((resolve, reject) => {
+    cliente.once('open', resolve);
+    cliente.once('error', reject);
+  });
+
+  await new Promise((resolve, reject) => {
+    const limite = setTimeout(() => reject(new Error('O servidor não encerrou o cliente que ignorou o heartbeat.')), 1000);
+    cliente.once('close', () => {
+      clearTimeout(limite);
+      resolve();
+    });
+  });
+
+  assert.equal(cliente.readyState, WebSocket.CLOSED);
+});
