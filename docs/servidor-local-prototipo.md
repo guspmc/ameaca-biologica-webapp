@@ -1,6 +1,6 @@
 # Protótipo do servidor local — primeiro teste LAN
 
-**Estado:** implementação inicial na branch `feat/origens-rascunho-alfa04`; ainda precisa executar os testes automatizados e o teste manual em dois dispositivos.  
+**Estado em 29/10/2026:** ajuste de reconexão na branch `fix/lan-websocket-reconnect-2026-10-29`; execução de CI e reteste manual ainda pendentes.  
 **Objetivo:** provar a base técnica Node.js + SQLite + WebSocket sem depender de internet.  
 **Importante:** não é um servidor de campanha. Ainda não há contas, login, autorização por Mesa nem dados de RPG.
 
@@ -12,8 +12,10 @@
 - API de saúde em `GET /api/health`.
 - API demonstrativa para criar e listar mensagens de teste em `POST /api/events` e `GET /api/events`.
 - Canal WebSocket em `/ws` que distribui cada evento aos navegadores conectados.
-- Validação do tamanho das mensagens e limite de payload WebSocket.
-- Cinco testes automatizados cobrindo saúde, persistência, reinício, atualização ao vivo e rejeição de mensagens inválidas.
+- Heartbeat de WebSocket a cada 25 segundos para detectar conexões que deixaram de responder; o processo servidor não tem desligamento por inatividade.
+- Reconexão automática no navegador, com espera progressiva, e recuperação do histórico após reconectar.
+- Deduplicação por ID e ordenação dos eventos para evitar repetição ou perda em corridas entre histórico e mensagens ao vivo.
+- Seis testes automatizados previstos, incluindo a conexão ociosa responsiva; os resultados desta alteração ainda precisam ser confirmados pelo CI.
 
 ## Requisitos
 
@@ -32,7 +34,7 @@ pnpm.cmd test
 pnpm.cmd run build
 ```
 
-Resultado esperado: instalação sem erro, testes concluídos com zero falhas e build concluído. O módulo SQLite nativo do Node é experimental na linha Node 22 e é iniciado explicitamente com `--experimental-sqlite`.
+Resultado esperado: instalação sem erro, testes concluídos com zero falhas e build concluído. O resultado precisa ser verificado para o commit atual; a aprovação de commits anteriores não valida esta alteração. O módulo SQLite nativo do Node é experimental na linha Node 22 e é iniciado explicitamente com `--experimental-sqlite`.
 
 ## Teste local no mesmo PC
 
@@ -74,3 +76,18 @@ Se os dispositivos não se conectarem, confira primeiro se ambos estão na mesma
 ## Próximo marco
 
 Após os testes automatizados e a prova LAN serem aprovados, implementar autenticação local e autorização no servidor antes de introduzir dados reais de Mesas e personagens. Só então conectar gradualmente o frontend atual à API local.
+
+
+## Reconexão, heartbeat e tempo ocioso
+
+O processo Node não encerra o servidor por ficar sem atividade. O heartbeat de WebSocket é uma verificação de conexão, não um temporizador de desligamento: o servidor envia um ping a cada 25 segundos e encerra somente conexões que deixam de responder por um ciclo adicional. Quando o navegador detecta a queda, tenta reconectar automaticamente, aumentando a espera até cerca de 30 segundos, e consulta novamente os últimos 50 eventos.
+
+Isso reduz o risco de um canal aparentemente conectado ficar morto sem ser percebido e evita exigir F5 para recuperar o histórico. **Não é possível garantir que a conexão física permaneça aberta para sempre:** suspensão do navegador/Android, economia de bateria, Wi-Fi/roteador ou encerramento do processo podem interrompê-la. O comportamento deve ser validado com os navegadores reais, especialmente após bloqueio de tela e inatividade prolongada.
+
+## Reteste manual após o CI
+
+1. Inicie o servidor no PC e abra o endereço LAN no PC e no Android.
+2. Deixe as duas páginas abertas e visíveis por pelo menos 3–5 minutos, sem enviar mensagens.
+3. Envie uma mensagem do Android e confira se ela aparece no PC sem F5; depois faça o caminho inverso.
+4. Observe o indicador de conexão durante a espera. Se ficar vermelho, aguarde a reconexão automática e confirme se o histórico volta sem atualizar a página.
+5. Repita com o celular bloqueado ou com o navegador em segundo plano. Esse cenário pode depender do sistema operacional e não deve ser confundido com desligamento por inatividade do servidor.
