@@ -210,3 +210,116 @@ test('heartbeat encerra cliente que deixa de responder aos pings', async t => {
 
   assert.equal(cliente.readyState, WebSocket.CLOSED);
 });
+
+
+test('cliente reconecta após fechamento e sincroniza histórico ao voltar à aba', async () => {
+  const html = await readFile(new URL('../server/index.html', import.meta.url), 'utf8');
+  const scriptText = [...html.matchAll(/<script>([\s\S]*?)<\/script>/g)][0][1];
+  const sockets = [];
+  let fetchCount = 0;
+  const visibilityListeners = [];
+  const elementos = new Map();
+
+  const lista = {
+    itens: [],
+    vazio: { className: 'empty', textContent: 'Aguardando conexão e eventos…' },
+    querySelector(seletor) {
+      if (seletor === '.empty') return this.vazio;
+      if (seletor === 'li[data-event-id]') return this.itens[0] ?? null;
+      return null;
+    },
+    querySelectorAll() { return this.itens; },
+    append(item) {
+      if (item.className === 'empty') this.vazio = item;
+      else this.itens.push(item);
+    },
+    insertBefore(item, following) {
+      const index = this.itens.indexOf(following);
+      this.itens.splice(index < 0 ? this.itens.length : index, 0, item);
+    },
+  };
+  const formulario = { addEventListener() {} };
+  const campo = { value: '', focus() {} };
+  const botao = { disabled: false };
+  elementos.set('#status', { dataset: {} });
+  elementos.set('#status-text', { textContent: '' });
+  elementos.set('#feedback', { textContent: '' });
+  elementos.set('#event-form', formulario);
+  elementos.set('#message', campo);
+  elementos.set('#send', botao);
+  elementos.set('#events', lista);
+
+  const documentFalso = {
+    visibilityState: 'visible',
+    querySelector(seletor) { return elementos.get(seletor); },
+    createElement() { return { dataset: {}, append() {}, className: '', textContent: '' }; },
+    addEventListener(tipo, listener) {
+      if (tipo === 'visibilitychange') visibilityListeners.push(listener);
+    },
+  };
+
+  class WebSocketFalso {
+    static CONNECTING = 0;
+    static OPEN = 1;
+    static CLOSING = 2;
+    static CLOSED = 3;
+
+    constructor(url) {
+      this.url = url;
+      this.readyState = WebSocketFalso.CONNECTING;
+      this.listeners = new Map();
+      sockets.push(this);
+    }
+    addEventListener(tipo, listener) {
+      const listeners = this.listeners.get(tipo) ?? [];
+      listeners.push(listener);
+      this.listeners.set(tipo, listeners);
+    }
+    emitir(tipo, evento = {}) {
+      for (const listener of this.listeners.get(tipo) ?? []) listener(evento);
+    }
+    abrir() {
+      this.readyState = WebSocketFalso.OPEN;
+      this.emitir('open');
+    }
+    fechar() {
+      this.readyState = WebSocketFalso.CLOSED;
+      this.emitir('close');
+    }
+  }
+
+  const contexto = {
+    document: documentFalso,
+    location: { protocol: 'http:', host: '127.0.0.1:4175' },
+    WebSocket: WebSocketFalso,
+    fetch: async () => {
+      fetchCount += 1;
+      return { ok: true, json: async () => ({ events: [] }) };
+    },
+    setTimeout,
+    clearTimeout,
+    Math,
+    Date,
+    JSON,
+    Number,
+    String,
+    Error,
+  };
+  new Script(scriptText).runInNewContext(contexto);
+
+  assert.equal(sockets.length, 1, 'a página deve iniciar a primeira conexão');
+  sockets[0].abrir();
+  await new Promise(resolve => setImmediate(resolve));
+  assert.equal(fetchCount, 1, 'a conexão inicial deve carregar o histórico');
+
+  for (const listener of visibilityListeners) listener();
+  await new Promise(resolve => setImmediate(resolve));
+  assert.equal(fetchCount, 2, 'ao voltar à aba visível, o histórico deve ser sincronizado novamente');
+
+  sockets[0].fechar();
+  const limite = Date.now() + 2200;
+  while (sockets.length < 2 && Date.now() < limite) {
+    await new Promise(resolve => setTimeout(resolve, 25));
+  }
+  assert.equal(sockets.length, 2, 'a página deve criar outra conexão sem F5 após o fechamento do WebSocket');
+});
