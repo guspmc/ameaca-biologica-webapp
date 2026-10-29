@@ -2,7 +2,7 @@
 
 **Estado em 29/10/2026:** CI passou no commit `d3cc618ec7bde59208fd62cae053088573137c91`, incluindo testes automatizados e build do frontend. O reteste manual PC + Android foi relatado como aprovado para a LAN; a reconexão Android pode exigir recarga. A API de autenticação local continua experimental e não está conectada ao frontend.  
 **Objetivo:** provar a base técnica Node.js + SQLite + WebSocket sem depender de internet.  
-**Importante:** não é um servidor de campanha. Ainda não há contas, login, autorização por Mesa nem dados de RPG.
+**Importante:** não é um servidor de campanha. Existe uma API experimental de contas e sessões locais, mas ela ainda não está conectada ao frontend; não há autorização por Mesa nem dados de RPG.
 
 ## O que foi implementado neste incremento
 
@@ -84,6 +84,8 @@ A branch de desenvolvimento agora contém uma API de autenticação local separa
 - `GET /api/auth/me`: valida o token enviado no cabeçalho `Authorization: Bearer ...`.
 - `POST /api/auth/logout`: revoga a sessão atual.
 - Senhas são derivadas com scrypt e salt aleatório; o banco guarda o hash do token de sessão, não o token em si.
+- O esquema de autenticação tem uma tabela `schema_migrations` e registra a versão 1; a migração inicial usa transação e `CREATE TABLE IF NOT EXISTS` para não recriar tabelas já existentes.
+- Testes automatizados verificam o registro único da migração e a preservação de uma conta e sessão após reiniciar o servidor.
 - Testes automatizados dedicados cobrem cadastro, login, sessão, logout, senha curta, e-mail duplicado e limite de tentativas.
 - Limite experimental em memória por IP: até cinco tentativas por rota de cadastro/login em uma janela de dez minutos; ao exceder, responde HTTP 429 com `Retry-After`.
 
