@@ -5,6 +5,7 @@ import { mkdirSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { WebSocketServer, WebSocket } from 'ws';
+import { prepararAutenticacaoLocal, tratarRotaAutenticacao } from './auth-local.mjs';
 
 const PAGINA = readFileSync(new URL('./index.html', import.meta.url), 'utf8');
 const AVISO = 'Protótipo técnico sem autenticação. Não use dados reais de campanha, senhas ou segredos.';
@@ -78,6 +79,8 @@ export function createLocalServer({
     );
   `);
 
+  prepararAutenticacaoLocal(db);
+
   const listarEventos = db.prepare(
     'SELECT id, mensagem AS message, criado_em AS createdAt FROM eventos_prototipo ORDER BY id DESC LIMIT 50'
   );
@@ -105,6 +108,8 @@ export function createLocalServer({
     try {
       const url = new URL(req.url ?? '/', 'http://localhost');
       const metodo = req.method ?? 'GET';
+
+      if (await tratarRotaAutenticacao(req, res, url, db)) return;
 
       if (metodo === 'GET' && url.pathname === '/') {
         res.writeHead(200, {
