@@ -2,7 +2,7 @@
 
 **Data:** 28/10/2026  
 **Branch de trabalho:** `feat/origens-rascunho-alfa04`  
-**Estado:** preparação local avançada; autenticação de teste bloqueada por configuração da chave pública.  
+**Estado:** prévia local acessível; login e primeira verificação de persistência das notas concluídos com sucesso. Testes offline ainda pendentes.  
 **Regra de governança:** não fazer merge, publicar, alterar produção ou ampliar escopo sem aprovação explícita do Gus.
 
 ## Decisão de escopo
@@ -18,9 +18,9 @@ Até a versão local/offline ser testada, lançada e aprovada, trabalhar somente
 5. Validar a abertura offline do shell, a sessão previamente autenticada enquanto ainda válida, notas editáveis offline, dados compartilhados somente para consulta e comportamento após reconexão.
 6. Registrar resultados humanos e corrigir apenas defeitos que bloqueiem ou invalidem esses testes.
 
-## Bloqueio atual — `Invalid API key`
+## Bloqueio resolvido — `Invalid API key`
 
-A interface local abre e mostra a faixa de teste, mas o login retorna `Invalid API key`. Isso significa que a autenticação e os testes de ficha/notas ainda não foram validados.
+O login inicialmente retornava `Invalid API key` porque a chave pública no `.env.teste` tinha o prefixo `sb` duplicado. Gus corrigiu o valor localmente; não foi necessário alterar o código. O login agora funciona no projeto de teste.
 
 A configuração é carregada do arquivo local `.env.teste` com estas variáveis:
 - `VITE_AMBIENTE=teste`
@@ -29,13 +29,12 @@ A configuração é carregada do arquivo local `.env.teste` com estas variáveis
 
 O arquivo de exemplo contém intencionalmente o marcador `sb_publishable_SUBSTITUA_PELA_CHAVE_PUBLICA`; esse marcador não é uma chave utilizável. Verificar no computador local se foi substituído por uma chave pública válida do projeto de teste. Nunca enviar a chave ao chat, não usar `service_role`/secret key e não usar a chave de produção. Se não houver acesso ao projeto de teste, interromper aqui e pedir acesso; não contornar a proteção.
 
-## Próximo passo mínimo
+## Próximo passo concluído e sequência
 
-1. Parar a prévia com `Ctrl+C` na janela do PowerShell.
-2. Abrir `notepad .env.teste` e conferir a URL e se a chave deixou de ser o marcador de exemplo, sem copiar a chave para mensagens.
-3. Salvar o arquivo e refazer a compilação especial da PWA com `$env:VITE_PWA_TESTE = "true"`, `pnpm.cmd exec tsc --noEmit` e `pnpm.cmd exec vite build --mode teste`.
-4. Remover a variável temporária, iniciar `pnpm.cmd exec vite preview --host 127.0.0.1 --port 4174 --strictPort` e repetir o acesso local.
-5. Somente após o login conectar ao projeto de teste, continuar as partes D, E e F do roteiro humano.
+1. A chave pública do projeto de teste foi corrigida localmente, recompilada e a autenticação foi confirmada.
+2. A Mesa de teste e a ficha da Claire abriram normalmente na conta de Jogador.
+3. A primeira nota pessoal foi salva, a ficha foi fechada/reaberta e a nota reapareceu corretamente.
+4. Próximos passos: validar isolamento da nota na interface do Mestre e após nova sessão; depois concluir os testes de isolamento por ficha/conta e comportamento offline.
 
 ## Evidências já observadas
 
@@ -44,8 +43,10 @@ O arquivo de exemplo contém intencionalmente o marcador `sb_publishable_SUBSTIT
 - Build normal: TypeScript e Vite concluídos.
 - Build em modo `teste`: TypeScript e Vite concluídos.
 - Prévia local: abriu e mostrou `AMBIENTE DE TESTE`.
-- Autenticação de teste: **pendente**, por `Invalid API key`.
-- Testes humanos de notas e comportamento offline: **ainda não executados**.
+- Autenticação no projeto de teste: **confirmada** após corrigir o prefixo `sb` duplicado na chave pública local.
+- Mesa `Teste` e ficha da Claire: abriram normalmente na conta de Jogador.
+- Nota pessoal: texto de teste salvo e recuperado após fechar/reabrir a ficha (**E1 aprovado por relato do Gus**).
+- Isolamento entre personagens/contas, logout/login, cache PWA e comportamento offline: **pendentes**.
 
 ## Adiado até depois do lançamento e aprovação do modo local
 
