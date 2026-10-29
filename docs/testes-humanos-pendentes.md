@@ -4,7 +4,7 @@
 
 ## Fila atual
 
-1. **L1 — CI do commit atual (automático, bloqueador):** a suíte e o build passaram no commit ae300ed. A atualização de reconciliação ao retomar a aba e seu teste estão em execução no GitHub Actions; verificar o resultado antes do reteste humano.
+1. **L1 — CI (concluído para o código atual):** GitHub Actions passou no commit 9816838c86185a3aa1be327659a5dc2b762a5cf0: 266 testes passaram, nenhum falhou, e o build TypeScript + Vite terminou com sucesso. Se houver nova alteração de código, validar novamente.
 2. **L2 — inatividade visível (fácil e prioritário, após L1):** com servidor no PC e as páginas abertas/visíveis no PC e Android, esperar 3–5 minutos sem enviar mensagens. Enviar Android → PC e PC → Android. Aprovação exige chegada nos dois lados sem F5 e sem duplicatas.
 3. **L3 — recuperação após reinício do servidor:** com as páginas abertas, parar o Node com Ctrl+C e iniciá-lo novamente. Confirmar que o navegador volta a conectar sozinho e que as mensagens já gravadas continuam aparecendo sem F5 e sem duplicatas.
 4. **L4 — queda e retorno da rede:** mantendo o servidor ligado, desconectar e reconectar o Wi-Fi de um cliente. Confirmar reconexão automática e recuperação do histórico depois que a rede voltar.
@@ -16,7 +16,7 @@
 
 - O usuário relatou que o evento “Teste 2 - Android” só apareceu no PC depois de F5 e que o indicador do canal mudou para vermelho. Isso comprova apenas que o cliente sinalizou uma desconexão; não identifica a causa nem prova que o processo Node parou.
 - A versão anterior não tinha reconexão automática nem recuperação do histórico ao reconectar.
-- A versão de correção adiciona heartbeat WebSocket, reconexão com espera progressiva, reconciliação do histórico por ID e sincronização do histórico quando a aba volta ao primeiro plano. Isso está **implementado no código**; a nova rodada de CI e o reteste real nos dois dispositivos continuam **pendentes**.
+- A versão de correção adiciona heartbeat WebSocket, reconexão com espera progressiva, reconciliação do histórico por ID, sincronização quando a aba volta ao primeiro plano e teste automatizado de encerramento de clientes que não respondem ao ping. O código passou no CI do commit 9816838; o reteste real nos dois dispositivos continua **pendente**.
 - Não existe temporizador de desligamento do servidor por inatividade no protótipo. O heartbeat não mantém Wi-Fi, sistema operacional ou navegador acordados e não garante conexão física infinita.
 
 ---
