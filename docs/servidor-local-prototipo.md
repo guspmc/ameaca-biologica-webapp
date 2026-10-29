@@ -1,6 +1,6 @@
 # Protótipo do servidor local — primeiro teste LAN
 
-**Estado em 29/10/2026:** CI passou no commit `a079aa604c986a86a03004abe62312e0f76e4960` (271 testes e build); a etapa seguinte adiciona limitação experimental de tentativas de autenticação e requer nova validação de CI. Reteste manual PC + Android já foi relatado como aprovado para a LAN; a reconexão Android pode exigir recarga.  
+**Estado em 29/10/2026:** CI passou no commit `d3cc618ec7bde59208fd62cae053088573137c91`, incluindo testes automatizados e build do frontend. O reteste manual PC + Android foi relatado como aprovado para a LAN; a reconexão Android pode exigir recarga. A API de autenticação local continua experimental e não está conectada ao frontend.  
 **Objetivo:** provar a base técnica Node.js + SQLite + WebSocket sem depender de internet.  
 **Importante:** não é um servidor de campanha. Ainda não há contas, login, autorização por Mesa nem dados de RPG.
 
@@ -17,7 +17,7 @@
 - Deduplicação por ID e ordenação dos eventos para evitar repetição ou perda em corridas entre histórico e mensagens ao vivo.
 - Sincronização do histórico quando a aba volta ao primeiro plano, além da reconexão automática.
 - Diagnóstico no terminal para conexões/fechamentos WebSocket e clientes que não respondem ao heartbeat.
-- Nove testes específicos do protótipo LAN, incluindo conexão ociosa responsiva, encerramento de clientes sem resposta, validação sintática do script e simulação de reconexão/retorno ao primeiro plano. A suíte completa de 267 testes passou no CI para o código atual.
+- Nove testes específicos do protótipo LAN, incluindo conexão ociosa responsiva, encerramento de clientes sem resposta, validação sintática do script e simulação de reconexão/retorno ao primeiro plano. A suíte completa já passou no CI em incrementos anteriores; consulte o status do commit mais recente antes de considerar uma nova alteração validada.
 
 ## Requisitos
 
@@ -36,7 +36,7 @@ pnpm.cmd test
 pnpm.cmd run build
 ```
 
-Resultado esperado: instalação sem erro, testes concluídos com zero falhas e build concluído. O CI do commit `bb8835e` confirmou esse resultado para o código atual; se houver nova alteração de código, valide-a novamente. O módulo SQLite nativo do Node é experimental na linha Node 22 e é iniciado explicitamente com `--experimental-sqlite`.
+Resultado esperado: instalação sem erro, testes concluídos com zero falhas e build concluído. O CI confirma o resultado apenas para o commit que foi efetivamente executado; valide novamente após qualquer alteração de código. O módulo SQLite nativo do Node é experimental na linha Node 22 e é iniciado explicitamente com `--experimental-sqlite`.
 
 ## Teste local no mesmo PC
 
@@ -67,11 +67,11 @@ Se os dispositivos não se conectarem, confira primeiro se ambos estão na mesma
 
 ## Limites e segurança
 
-- **Não há autenticação.** Qualquer dispositivo que consiga alcançar o servidor pode ler e criar mensagens demonstrativas.
+- **As rotas demonstrativas `/api/events` não exigem autenticação.** Qualquer dispositivo que consiga alcançar o servidor pode ler e criar mensagens demonstrativas.
 - Não digite nomes reais, credenciais, segredos de campanha, anotações privadas ou dados de jogadores.
 - O servidor local usa HTTP sem TLS neste protótipo; use apenas uma rede privada e confiável para o teste.
 - O servidor só escuta na LAN quando `--host 0.0.0.0` é informado explicitamente. O padrão `127.0.0.1` não permite conexões de outros dispositivos.
-- Este marco não migra nem lê o Supabase, não cria contas locais e não altera o frontend atual da Alfa 0.4.
+- Este protótipo não migra nem lê o Supabase e não altera o frontend publicado da Alfa 0.4. A API experimental cria contas locais no SQLite, mas ainda não é usada pela interface React.
 - O fato de um teste automatizado estar escrito não significa que ele passou. Os resultados precisam vir da execução local ou do CI.
 - O protótipo ainda não foi validado como servidor no Android. Essa será uma etapa posterior, depois de comprovar o fluxo no PC.
 
