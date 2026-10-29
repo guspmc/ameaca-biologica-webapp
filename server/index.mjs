@@ -5,7 +5,7 @@ import { mkdirSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { WebSocketServer, WebSocket } from 'ws';
-import { prepararAutenticacaoLocal, tratarRotaAutenticacao } from './auth-local.mjs';
+import { prepararAutenticacaoLocal, tratarRotaAutenticacao, tratarRotaMesas } from './auth-local.mjs';
 
 const PAGINA = readFileSync(new URL('./index.html', import.meta.url), 'utf8');
 const AVISO = 'Protótipo LAN sem proteção de transporte. Use apenas dados fictícios e uma rede privada confiável; não use dados reais de campanha ou segredos.';
@@ -54,7 +54,7 @@ function enderecosIPv4() {
 /**
  * Cria uma instância isolada do protótipo LAN.
  * Este servidor mantém contas locais experimentais e o esquema inicial de
- * Mesas/participantes; ainda não oferece API de Mesas, fichas ou autorização.
+ * Mesas/participantes e API de Mesas com autorização por sessão; ainda não oferece fichas ou presença.
  */
 export function createLocalServer({
   host = '127.0.0.1',
@@ -109,7 +109,7 @@ export function createLocalServer({
       const url = new URL(req.url ?? '/', 'http://localhost');
       const metodo = req.method ?? 'GET';
 
-      if (await tratarRotaAutenticacao(req, res, url, db)) return;
+      if (await tratarRotaAutenticacao(req, res, url, db)) return;\n      if (await tratarRotaMesas(req, res, url, db)) return;
 
       if (metodo === 'GET' && url.pathname === '/') {
         res.writeHead(200, {
