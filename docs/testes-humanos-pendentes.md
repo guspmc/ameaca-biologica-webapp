@@ -1,3 +1,17 @@
+> **Atualização de direção — 29/10/2026:** os testes de notas locais abaixo continuam como evidência histórica do comportamento da implementação atual; não certificam a arquitetura-alvo. O objetivo agora é um servidor autoritativo em PC/notebook/Android, com clientes em rede local e sem requisito de internet. A trilha de testes genéricos de offline/PWA fica pausada até a arquitetura local/LAN ser implementada. Ver [checkpoint de arquitetura do servidor local/LAN](checkpoint-arquitetura-servidor-local-lan-2026-10-29.md).
+
+## Resultados humanos relatados em 29/10/2026 — rodada anterior de notas/PWA
+
+- **E1 — persistência da nota após fechar/reabrir a ficha:** aprovado pelo usuário.
+- **E2 — privacidade na troca Jogador → Mestre → Jogador:** aprovado pelo usuário; a anotação não apareceu para o Mestre e permaneceu na conta de Jogador.
+- **E3 — isolamento entre personagens:** aprovado pelo usuário com base na observação de que a nota da Claire não apareceu nas outras personagens. A segunda parte sugerida (criar uma nota distinta na outra ficha e retornar à Claire) não foi explicitamente confirmada, portanto não é evidência registrada.
+- **F1:** aprovado pelo usuário; o detalhe do cenário não foi repetido no relato e não deve ser inferido.
+- **F2:** parcial/pendente. Ao tentar o cenário, não apareceu indicação de modo offline/cópia local; a interface mostrou apenas “Atualizações ao vivo” com bolinha verde. Esse indicador não prova conexão com internet nem operação offline.
+- **F3:** observado, não aprovado como critério de aceitação. Com DevTools → Rede → Offline, a ficha continuou utilizável e nada pareceu desabilitado; não foi confirmado se alguma gravação compartilhada foi tentada.
+- **F4:** inconclusivo. O usuário não conseguiu afirmar se funcionou e não viu aviso ou erro.
+
+Esses testes foram realizados na prévia local da arquitetura atual, que ainda usa Supabase para autenticação e dados compartilhados. A opção Offline do DevTools pode bloquear novas requisições, mas continuar numa página já carregada não prova que existe um servidor LAN autoritativo. Não repetir essa bateria como se validasse a arquitetura-alvo; retomar somente quando houver um marco LAN executável e roteiro específico.
+
 # Testes humanos pendentes — roteiro consolidado
 
 ## Nova rodada enfileirada — offline e notas pessoais
