@@ -1,3 +1,5 @@
+> **Atualização de direção — 29/10/2026:** este checkpoint descreve a rodada anterior de notas locais/PWA e fica preservado como histórico. A direção de produto agora é **servidor local autoritativo + clientes pela rede LAN, sem requisito de internet**; a interface do Mestre pode rodar no mesmo dispositivo servidor ou em outro. A arquitetura cloud-first atual baseada no Supabase hospedado não atende, sozinha, a esse objetivo. O trabalho futuro deve seguir o [checkpoint de arquitetura do servidor local/LAN](checkpoint-arquitetura-servidor-local-lan-2026-10-29.md), que prevalece sobre o congelamento de escopo abaixo quanto à direção técnica. Nenhuma migração de backend foi implementada neste registro.
+
 # Checkpoint — escopo congelado até lançamento do modo local
 
 **Data:** 28/10/2026  
