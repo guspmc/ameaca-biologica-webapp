@@ -27,9 +27,13 @@ async function abrirWebSocket(url, origin = 'http://127.0.0.1') {
   return new Promise((resolve, reject) => {
     const ws = new WebSocket(url, { headers: { Origin: origin } });
     let concluido = false;
+    const primeiraMensagem = new Promise((resolveMensagem, rejectMensagem) => {
+      ws.once('message', dados => resolveMensagem(JSON.parse(dados.toString('utf8'))));
+      ws.once('error', rejectMensagem);
+    });
     ws.once('open', () => {
       concluido = true;
-      resolve({ ws, status: 101 });
+      resolve({ ws, status: 101, primeiraMensagem });
     });
     ws.once('unexpected-response', (_req, resposta) => {
       concluido = true;
@@ -292,10 +296,7 @@ test('handshake WebSocket exige ticket, valida origem, uso único e sessão ativ
 
   const conexao = await abrirWebSocket(wsBase + '/ws?ticket=' + ticket);
   assert.equal(conexao.status, 101);
-  const primeiraMensagem = await new Promise((resolve, reject) => {
-    conexao.ws.once('message', dados => resolve(JSON.parse(dados.toString('utf8'))));
-    conexao.ws.once('error', reject);
-  });
+  const primeiraMensagem = await conexao.primeiraMensagem;
   assert.equal(primeiraMensagem.type, 'ready');
   conexao.ws.close();
 
