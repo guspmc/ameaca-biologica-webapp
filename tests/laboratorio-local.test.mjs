@@ -136,7 +136,7 @@ test('aplica Treinamento gratuito da Origem e libera a outra Perícia para ponto
 
 test('respeita o limite de Mestre e não permite gastar pontos fora das opções', () => {
   assert.equal(distribuicaoPericiasValida('Agente','Atleta','Acrobacia',{
-    Atletismo: 2, Investigação: 1, Luta: 1,
+    Acrobacia: 2, Investigação: 1, Luta: 1,
   }), false);
   assert.equal(distribuicaoPericiasValida('Agente','Atleta','Acrobacia',{
     Atletismo: 1, Medicina: 1, Luta: 1, Percepção: 1,
@@ -152,4 +152,11 @@ test('Amnésico escolhe duas Perícias distintas e inclui a segunda nas opções
   assert.equal(distribuicaoPericiasValida('Operador','Amnésico','Medicina',{
     Atletismo: 1, Fortitude: 1, Investigação: 1,
   },'Medicina'), false);
+});
+
+
+test('permite deixar pontos de Perícia da Classe sem gastar', () => {
+  assert.equal(distribuicaoPericiasValida('Agente','Atleta','Acrobacia',{
+    Investigação: 1, Luta: 1,
+  }), true);
 });
