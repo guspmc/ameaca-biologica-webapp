@@ -107,3 +107,51 @@ Consequências:
 4. Só então propor o tipo/campo e o contrato de persistência da arma Operário, integrado à revisão estrutural e à ativação.
 
 **Nenhum código de aplicação, migration ou banco remoto foi alterado. Nenhum teste automatizado foi executado.**
+
+
+## 8. Conferência canônica adicional — armas elegíveis para Operário
+
+O livro J 50–51 lista estas Armas Corpo a Corpo e descreve explicitamente algumas como ferramentas:
+- **Cutelo:** “Ferramenta de cozinha”; 1 Espaço, 1 mão, Dano 1d8, crítico x3, Durabilidade 2, Arremessável.
+- **Martelo:** “Ferramenta simples de impacto”; 1 Espaço, 1 mão, Dano 1d6, crítico x2, Durabilidade 2.
+- **Machadinha:** descrita como “machado leve de uma mão”; 1 Espaço, 1 mão, Dano 1d6, crítico x3, Durabilidade 2, Arremessável.
+- **Machado:** “Ferramenta pesada de duas mãos”; 2 Espaços, 2 mãos, Dano 1d8, crítico x3, Durabilidade 3.
+- **Marreta:** “massa de duas mãos feita para quebrar materiais”; 2 Espaços, 2 mãos, Dano 3d4, crítico x2, Durabilidade 3.
+- **Motosserra:** descrita expressamente como “ferramenta motorizada”; 2 mãos? A tabela informa 2 mãos, 2 Espaços, Dano 3d6, crítico x2, Durabilidade 4; possui regra própria de ligar e ataques com Desvantagem.
+
+A tabela também lista armas que não são descritas como ferramentas (Bastão, Faca, Punhal, Réplicas, Cassetete, Faca de Combate, Hatchet e Machete). Não é seguro concluir apenas pelo nome que sejam elegíveis. O livro não traz uma lista fechada nem critério formal além de “semelhante a uma ferramenta”.
+
+**Ponto para decisão do responsável pelo cânone:** confirmar se a elegibilidade do Operário deve ser limitada às opções explicitamente descritas como ferramenta no livro (Cutelo, Martelo, Machadinha, Machado, Marreta e Motosserra), ou se alguma outra arma da tabela também deve ser aceita. Até essa decisão, a lista é candidata, não uma regra fechada.
+
+## 9. Conferência canônica adicional — coletes
+
+J 66–67 define:
+
+| Colete | Defesa | RD | Regra de AGI na Defesa | Aquisição |
+|---|---:|---:|---|---|
+| Acolchoado | +1 | 0 | contribuição total | 1 Moeda |
+| Balístico Leve | +1 | 1 | contribuição total | 2 Moedas |
+| Balístico Médio | +2 | 2 | AGI limitada a +2 | 3 Moedas |
+| Balístico Pesado | +3 | 3 | AGI não é somada | 4 Moedas |
+| Kendo — 0 placas | +1 | 0 | contribuição total | Característico |
+| Kendo — 1 placa | +1 | 1 | contribuição total | +1 Moeda por placa |
+| Kendo — 2 placas | +2 | 2 | AGI limitada a +2 | +1 Moeda por placa |
+| Kendo — 3 placas | +3 | 3 | AGI não é somada | +1 Moeda por placa |
+
+O livro diz que coletes não usam Durabilidade. Kendo começa com 0 placas, é característico do Operador, não pode ser comprado como colete normal e pode receber até 3 placas em Sala de Descanso ou com ferramentas adequadas.
+
+**Lacunas observadas no código local:**
+- O catálogo de compras iniciais oferece apenas Colete Acolchoado e Colete Balístico Leve; não oferece Médio ou Pesado.
+- O tipo de estado do Colete no plano registra apenas `equipado:false` e placas opcionais; não registra Defesa/RD/limite de AGI como dados estruturados.
+- O Kendo é materializado com 0 placas, mas não foi encontrado neste plano o fluxo de compra/aplicação de placas.
+- O cálculo de Defesa da conferência de criação é explicitamente Defesa básica sem colete; não há neste módulo cálculo de Defesa final com colete equipado.
+- A compra inicial não deve ser confundida com aquisição durante a campanha. O Planejamento v2.0 não autoriza compra/carrinho automático e prevê gestão de itens por operações explícitas.
+
+## 10. Correção importante na interpretação da capacidade
+
+A simulação TypeScript de compras começa com 2 Espaços (Erva Verde + Lanterna Simples), soma os itens comprados e acrescenta um Espaço para o saldo de moedas quando positivo. A função de planejamento depois materializa as moedas restantes em blocos de até 3. Isso parece coerente para o orçamento inicial de 3 moedas e o catálogo atual, mas precisa de teste de paridade para todos os casos.
+
+Há uma diferença que merece teste específico: a RPC SQL aceita quantidades de 0 a 3 para cada item e calcula Espaços de munição com `ceil(15 × quantidade / 30)`; a simulação TypeScript usa a mesma regra para 9 mm. Para demais itens, ambas contam um Espaço por unidade. O catálogo e a disponibilidade SQL, contudo, são mantidos separadamente do catálogo TypeScript, o que permite divergência futura.
+
+A capacidade aprovada no Planejamento v2.0 inclui a expansão ativa. O código atual calcula apenas `4 + FOR + Mochileiro` e a simulação não recebe um benefício de Bolsa/Pochete. Isso não afeta a criação inicial se nenhuma expansão ativa puder ser selecionada nesse momento, mas precisa ser resolvido antes de usar a mesma função para Inventário ativo.
+
