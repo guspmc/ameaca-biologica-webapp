@@ -104,3 +104,20 @@ test('valida somente uma arma pertencente à lista da Origem Operário', () => {
   assert.equal(armaOperarioValida('Pistola'), false);
   assert.equal(armaOperarioValida(null), false);
 });
+
+
+import { atributosIniciaisValidos, pontosRestantesAtributos } from '../src/atributosCriacao.ts';
+
+test('valida a distribuição inicial oficial de Atributos', () => {
+  assert.equal(atributosIniciaisValidos({ forca: 1, agilidade: 1, vigor: 1, astucia: 4 }), false);
+  assert.equal(atributosIniciaisValidos({ forca: 2, agilidade: 2, vigor: 2, astucia: 1 }), true);
+  assert.equal(atributosIniciaisValidos({ forca: 0, agilidade: 3, vigor: 2, astucia: 2 }), true);
+  assert.equal(atributosIniciaisValidos({ forca: 0, agilidade: 0, vigor: 3, astucia: 4 }), false);
+  assert.equal(atributosIniciaisValidos({ forca: 3, agilidade: 3, vigor: 1, astucia: 1 }), false);
+});
+
+test('calcula os pontos restantes sem alterar os Atributos', () => {
+  const iniciais = { forca: 1, agilidade: 1, vigor: 1, astucia: 1 };
+  assert.equal(pontosRestantesAtributos(iniciais), 3);
+  assert.deepEqual(iniciais, { forca: 1, agilidade: 1, vigor: 1, astucia: 1 });
+});
