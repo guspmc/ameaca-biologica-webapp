@@ -76,7 +76,6 @@ Características da Classe: PV por Nível = 8 + VIG; BI Base = 10; SA Máxima = 
 | Ambidestria | Básica | Com uma Pistola 9 mm em cada mão, ao Atacar com uma, uma vez por turno pode fazer Ataque adicional com a outra como Ação Bônus; esse ataque adiciona AGI ao Dano normalmente. Sacar simultaneamente ambas usa uma Interação Gratuita com Objeto. | PERM-ESP + COND | Duas pistolas 9 mm, mãos ocupadas, turno, ação bônus. |
 | Armeira Autodidata | Avançada | Armas de Fogo modificadas causam +1d4 de Dano por Peça Extra instalada. Não se aplica a armas Corpo a Corpo. Permite usar uma Pistola em cada mão para Aparar Ataques Corpo a Corpo. | COND + PERM-ESP | Arma de Fogo, peças extras instaladas, arma modificada; pistolas empunhadas para Aparar. |
 | Arsenal Improvável | Superior | Concede Proficiência com Magnums e estende Ambidestria a elas, permitindo empunhadura apropriada definida pela Habilidade. | PERM-ESP | Classe, Habilidade Ambidestria, tipo de arma e empunhadura. |
-| Reﬂexos de Sobrevivente | Superior (ramo Pau para Toda Obra no texto) | Uma vez por rodada, pode Esquivar sem gastar Reação; a próxima Ação Bônus fica comprometida. Pode atravessar espaços ocupados por jogadores ou inimigos Médios e menores sem provocar Ataque de Oportunidade. Ataques contra si podem usar Defesa ou 10 + Acrobacia, o que for maior. | PERM-ESP + COND | Rodada, Esquiva, Ação Bônus, tamanho/ocupação dos espaços, Defesa e Acrobacia. **Atenção:** o layout do PDF posiciona esta Habilidade junto à transição entre ramos; confirmar visualmente a associação exata antes de cadastrar no catálogo definitivo. |
 
 ### 4.2 Pau para Toda Obra
 
@@ -84,7 +83,7 @@ Características da Classe: PV por Nível = 8 + VIG; BI Base = 10; SA Máxima = 
 |---|---|---|---|---|
 | Curiosa | Básica | Com tempo para observar/investigar sem Pressão Imediata, Vantagem em Percepção e Investigação, mesmo sem Treinamento. Não vale em combate, perseguições, fugas ou quando não houver tempo. Uma vez por Descanso Completo, Teste de AST DT 12 pode pedir indicação simples de direção ou pista curta dedutível. | COND + PERM-ESP | Pressão/tempo, perícias, Descanso Completo, uso por descanso. |
 | Tentativa e Erro | Avançada | Permite Testes com Perícias não Treinadas, inclusive aplicações normalmente restritas a Treinamento, salvo requisito adicional expresso. Recebe +1 nesses Testes e escolhe uma Perícia adicional para Treinar. | PERM-ESP + PERM + ESCOLHA | Treinamento, aplicação, bônus +1 e perícia escolhida. |
-| Reﬂexos de Sobrevivente | Superior | Ver nota acima; texto aparece na página de transição entre ramos. | PENDENTE | Associação do ramo precisa ser confirmada na arte/página original. |
+| Reﬂexos de Sobrevivente | Superior | Uma vez por rodada, pode Esquivar sem gastar Reação; a próxima Ação Bônus fica comprometida. Pode atravessar espaços ocupados por jogadores ou inimigos Médios e menores sem provocar Ataque de Oportunidade. Ataques contra si podem usar Defesa ou 10 + Acrobacia, o que for maior. | PERM-ESP + COND | Rodada, Esquiva, Ação Bônus, tamanho/ocupação dos espaços, Defesa e Acrobacia. |
 
 ### 4.3 Socorrista
 
@@ -147,8 +146,7 @@ Classificação: PERM-ESP + COND. Requer regras específicas de dano base, apara
 
 ## 6. Pendências de interpretação e integridade do catálogo
 
-1. **Reﬂexos de Sobrevivente:** a extração textual coloca a Habilidade na página de transição entre Combatente e Pau para Toda Obra; a associação do ramo deve ser conferida visualmente no PDF antes de cadastrar como dado definitivo. Não presumir ramo.
-2. **Autodidata — Superior:** a sequência visual e a progressão de níveis devem ser confrontadas com a paginação/arte original para garantir que Reﬂexos de Sobrevivente não seja contado como habilidade extra ou duplicado.
+1. **Reﬂexos de Sobrevivente:** conferência visual da página 34 confirmou que a Habilidade fecha o ramo Pau para Toda Obra (Curiosa Básica → Tentativa e Erro Avançada → Reﬂexos de Sobrevivente Superior). A associação está resolvida.
 3. **Efeitos de regras gerais:** várias Habilidades remetem a Aparar, Esquivar, Finalizar, Ataque de Oportunidade, Rajada, Ajudar, Combinar Ervas e Fabricação. A implementação precisa integrar essas regras, não duplicar sua resolução dentro do catálogo.
 4. **Efeitos de Origem:** não fazem parte deste levantamento. Exemplo conhecido no livro: Policial +2 Defesa; Servidor Público concede benefício condicional ao Ajudar; Universitária +1 SA Máxima; Operário modifica ataque/dano com arma escolhida. Precisam de catálogo separado com suas próprias escolhas e gatilhos.
 5. **Evolução e perda de nível:** ao perder nível, retirar somente escolhas/benefícios cuja validade dependa do nível perdido e recalcular derivados. A reversão exata deve respeitar o registro de escolhas por nível; não apagar decisões válidas de níveis anteriores.
