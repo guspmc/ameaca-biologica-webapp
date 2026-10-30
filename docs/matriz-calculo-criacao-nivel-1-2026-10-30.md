@@ -222,15 +222,17 @@ Atributos FOR 2, AGI 1, VIG 2, AST 2; Operador; Básica Armeiro.
 6. **Regra da Casa:** fora do escopo desta matriz; seus campos personalizados e prévias precisam de contrato separado.
 7. **Nível > 1:** fora do escopo. Não extrapolar estes exemplos para evolução.
 
-## 9. Pergunta de decisão — pendência P-01
+## 9. Decisão P-01 — arma da Origem Operário
 
-**A Origem Operário exige que a arma escolhida seja registrada já durante a criação do personagem?**
+**Respondido pelo responsável pelo projeto em 30/10/2026:** a arma corpo a corpo semelhante a ferramenta deve ser escolhida obrigatoriamente durante a criação do personagem.
 
-O Arquivo do Jogador v1.0 diz “Escolha uma Arma Corpo a Corpo semelhante a uma ferramenta”, mas os campos TypeScript e a RPC de Origem examinados não apresentam essa escolha. Para a implementação, precisamos saber se:
-- a escolha é obrigatória na criação e deve ser persistida na ficha; ou
-- pode ser feita posteriormente, antes do primeiro uso da habilidade.
+Consequências para a implementação:
+- a escolha integra os dados estruturais da criação e precisa ser persistida na ficha;
+- a validação da criação de Operário deve impedir a conclusão enquanto a escolha estiver ausente ou inválida;
+- a ativação deve preservar a arma escolhida e vinculá-la ao benefício da Origem;
+- a escolha não pode ser adiada para o primeiro uso.
 
-A pergunta não bloqueia a matriz dos demais cálculos, mas bloqueia considerar a criação de Operário integralmente conferida.
+**Pendente de especificação técnica:** catálogo/valores válidos da escolha, formato de persistência e validação correspondente ainda precisam ser confrontados com o texto integral do benefício e o catálogo de armas. Não inventar opções nem aplicar o bônus genericamente a qualquer arma.
 
 ## 10. Decisões técnicas propostas para validação
 
@@ -244,8 +246,8 @@ A pergunta não bloqueia a matriz dos demais cálculos, mas bloqueia considerar 
 
 ## 11. Próximos passos
 
-1. Responder P-01 sobre a escolha de arma do Operário.
-2. Auditar `src/equipamento.ts`, `src/comprasIniciais.ts` e os catálogos SQL correspondentes, especialmente armaduras, estado equipado, capacidade e espaços.
+1. Auditar `src/equipamento.ts`, `src/comprasIniciais.ts`, `src/inventarioCriacao.ts` e as migrations correspondentes, especialmente armaduras, estado equipado, capacidade e espaços.
+2. Especificar a persistência obrigatória da arma escolhida pelo Operário após conferir o catálogo canônico.
 3. Conferir os 4 Passivos e todos os valores de Perícia contra o livro e o cálculo SQL.
 4. Fechar a matriz com os casos positivos/negativos e decisões pendentes.
 5. Só então propor a assinatura e os tipos da função pura, sem substituir RPCs nessa etapa.
