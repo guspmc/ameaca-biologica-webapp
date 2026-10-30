@@ -30,6 +30,18 @@ A classificação abaixo é baseada nos campos lidos/alterados pelas funções p
 | `revisao_compras`, `revisao_funcionamento` | Não incrementam a revisão geral por si sós | São contadores especializados. As alterações subjacentes a compras/configuração continuam cobertas pela allowlist quando relevante; verificar as RPCs que as mantêm. |
 | Colunas de recibos, sequência de contexto ou estado pertencentes a outras tabelas | Fora da função | São versionadas/validadas pelos contratos próprios da Mesa e das operações. |
 
+## Bônus automáticos e efeitos derivados de Habilidades
+
+A progressão não se limita às escolhas feitas pelo jogador. Habilidades selecionadas podem conceder bônus permanentes ou efeitos derivados que precisam ser recalculados automaticamente quando a ficha muda de nível ou quando uma escolha de Habilidade é concluída.
+
+- Separar **escolhas** (ex.: selecionar Habilidade, aumentar Atributo, gastar Ponto de Perícia) de **efeitos derivados** (ex.: bônus em Defesa, PV Máximos, SA Máximo, BI Máxima, Movimento, testes, dano, capacidade de Inventário ou proficiências).
+- O jogador escolhe apenas nos campos liberados para aquela etapa. O cliente não envia os valores finais dos bônus como autoridade; o servidor calcula os efeitos a partir das escolhas persistidas, da Classe, do nível, dos Atributos, dos equipamentos e das regras aplicáveis.
+- Recalcular sem duplicar bônus: a mesma fonte não pode ser aplicada duas vezes, salvo regra explícita de acumulação. Distinguir bônus permanentes, temporários e circunstanciais.
+- Ao perder nível (ex.: regra de Morte), reverter os benefícios daquele nível e recalcular os derivados, sem apagar escolhas e efeitos de outros níveis que continuem válidos.
+- O método Regra da Casa possui exceções aprovadas para valores derivados personalizados; não sobrescrever valores manuais automaticamente. O método Padrão mantém fórmulas e limites oficiais.
+
+A implementação deve mapear cada Habilidade do Arquivo do Jogador v1.0 e classificar seus efeitos. Não presumir que todo bônus de Habilidade altera uma coluna numérica: alguns efeitos são permissões, modificadores condicionais ou regras de disponibilidade.
+
 ## Regras funcionais de evolução confirmadas
 
 A evolução durante o jogo é distinta da criação de personagem experiente. O Planejamento v2.0 estabelece que:
