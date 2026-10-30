@@ -24,7 +24,8 @@ Permitir desenvolver e testar a ficha do Jogador e o Painel do Mestre em ambient
 - A interface avisa que os dados são fictícios, locais e não sincronizados. A primeira versão do personagem registra somente nome e Mesa associada; não é a ficha oficial nem aplica regras.
 - `src/styles.css` recebeu estilos específicos para a interface local.
 - `.github/workflows/pr-build.yml` agora executa também em push para a branch de desenvolvimento, permitindo validar TypeScript/Vite sem abrir PR ou publicar.
-- Criados testes automatizados em `tests/laboratorio-local.test.mjs` para inicialização, persistência, atualização, corrupção, versão inválida, remoção e falha de gravação.
+- Criados testes automatizados em `tests/laboratorio-local.test.mjs` para inicialização, persistência, atualização, corrupção, versão inválida, remoção, falha de gravação, arma do Operário e distribuição inicial de Atributos.
+- Criado `src/atributosCriacao.ts` com validação pura das regras oficiais de Atributos iniciais; a interface local permite distribuir os pontos e salva os quatro valores no rascunho.
 
 ## Estado dos testes
 - **Testes de persistência:** 7 testes específicos preparados; o teste de inicialização local foi observado na execução do servidor.
@@ -36,8 +37,8 @@ Permitir desenvolver e testar a ficha do Jogador e o Painel do Mestre em ambient
 - **Produção/Supabase:** nenhuma alteração solicitada ou executada; sem migration, mudança de RLS ou publicação.
 
 ## Limites conhecidos
-- A interface inicial cria Mesas fictícias e rascunhos simples de identidade; ainda não integra `FichasJogador.tsx` nem reproduz a ficha oficial.
-- Ainda não há edição/remoção visual de registros, distribuição de Atributos, seleção de Perícias/Habilidades, cálculo de recursos, Combate ou Inventário.
+- A interface local cria Mesas fictícias e rascunhos com Classe, Origem, arma obrigatória do Operário quando aplicável e distribuição inicial de Atributos. Ainda não integra `FichasJogador.tsx` nem reproduz a ficha oficial completa.
+- Ainda não há edição/remoção visual de registros, seleção/distribuição de Perícias, escolha de Habilidade, cálculo de recursos, Combate ou Inventário.
 - A lista de arma do Operário está validada na interface local, mas ainda não foi incorporada à persistência online/RPCs nem protegida por validação SQL; não tratar como concluída na ficha oficial.
 - O acesso é feito manualmente pela query `?laboratorio=local`; ainda não existe botão de entrada no portal principal.
 - O modo local não sincroniza com outros dispositivos e depende do armazenamento disponível no navegador.
@@ -47,7 +48,7 @@ Permitir desenvolver e testar a ficha do Jogador e o Painel do Mestre em ambient
 ## Próximo passo
 1. Confirmar os workflows dos commits recentes, especialmente a compilação após a entrada de Classe/Origem/arma do Operário.
 2. Quando os workflows passarem e Gus estiver no PC, testar `?laboratorio=local`, criar Mesa/personagem e recarregar para conferir persistência.
-3. Com a persistência confirmada, ampliar o rascunho local para as seis etapas oficiais da criação e reutilizar módulos puros já existentes.
+3. Com a persistência confirmada, ampliar o rascunho local com Perícias, Habilidade e revisão, reutilizando módulos puros já existentes.
 4. Depois, integrar os mesmos dados e validações na ficha online com persistência server-side, incluindo validação da arma do Operário no servidor.
 
 ## Roteiro humano
