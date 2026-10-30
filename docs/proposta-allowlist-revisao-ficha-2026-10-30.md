@@ -21,13 +21,29 @@ A classificação abaixo é baseada nos campos lidos/alterados pelas funções p
 | `origem`, `pericia_origem_treinada`, `pericia_origem_extra`, `pontos_pericia_classe`, `habilidade_basica` | Incrementa | Escolhas de origem, perícias e habilidade. |
 | `equipamento_inicial`, `compras_iniciais` | Incrementa | Fonte de materialização do inventário inicial. `revisao_compras` é uma revisão especializada e não deve, sozinha, acionar a revisão geral. |
 | `configuracao_funcionamento` | Incrementa por ora | É validada na ativação e integra os dados salvos da ficha; confirmar se o contrato deseja uma revisão própria no futuro. |
-| `pv_maximo`, `sa_maximo`, `bi_maximo`, `defesa` | Incrementa | Derivados validados contra as escolhas de criação; divergência deve invalidar conferência. |
-| `metodo_criacao`, `estado_ficha`, `jogador_id` | Incrementa | Não são escolhas da criação em sentido estrito, mas mudanças de ciclo/posse precisam invalidar pedidos antigos. Se mantidos na mesma revisão, o nome `revisao_criacao` é semanticamente estreito; documentar isso ou separar revisões no desenho futuro. |
-| `pv_atual`, `sa_atual`, `bi_atual` | **Não decidido para implementação** | Recursos operacionais mudam durante o jogo. Incluí-los pode gerar conflitos de edição sem relação com criação; excluí-los exige garantir que nenhuma conferência/ativação dependa da revisão geral para detectar mudanças de recursos. A função de validação verifica limites, mas não define por si só a política de concorrência. |
+| `pv_maximo`, `sa_maximo`, `bi_maximo`, `defesa` | Incrementa quando os derivados forem recalculados por criação/evolução | São resultados calculados, nunca campos de edição livre no Padrão. A evolução recalcula conforme Classe, Atributos, nível, Origem, Habilidades e demais modificadores aplicáveis. |
+| `metodo_criacao` | Incrementa quando alterar a regra estrutural aplicada à ficha | Campo de método de criação; confirmar o ciclo de alteração permitido antes de fechar a lista. |
+| `estado_ficha`, `jogador_id` | Não devem ser confundidos com edição estrutural | Mudanças de estado/posse precisam invalidar pedidos antigos por controle próprio do ciclo, sem fazer parecer que a criação foi refeita. A solução exata depende da revisão de ciclo/recibos já existente.
+| `pv_atual`, `sa_atual`, `bi_atual` | **Não incrementam revisão estrutural** | Na criação e na evolução, são ajustados automaticamente pelas regras. Durante o jogo, são recursos operacionais modificáveis. No Descanso Completo com evolução, PV atuais terminam no novo máximo e SA são recuperados; BI atual não é zerada automaticamente. Validar a aplicação atômica dessas regras no fluxo de descanso/evolução. |
 | `revisao_criacao` | Nunca comparar com si própria | É o contador mantido pelo trigger. |
 | `revisao_inventario` | Não incrementa revisão geral | Deve ser coberta pela revisão específica do inventário. Alterar inventário precisa invalidar conferência de arquivamento, mas não fingir que as escolhas de criação mudaram. |
 | `revisao_compras`, `revisao_funcionamento` | Não incrementam a revisão geral por si sós | São contadores especializados. As alterações subjacentes a compras/configuração continuam cobertas pela allowlist quando relevante; verificar as RPCs que as mantêm. |
 | Colunas de recibos, sequência de contexto ou estado pertencentes a outras tabelas | Fora da função | São versionadas/validadas pelos contratos próprios da Mesa e das operações. |
+
+## Regras funcionais de evolução confirmadas
+
+A evolução durante o jogo é distinta da criação de personagem experiente. O Planejamento v2.0 estabelece que:
+
+- O Mestre libera evolução coletivamente ou para personagens selecionadas, com autorização individual por ficha.
+- O Nível da Mesa é o teto; a liberação não concede níveis automaticamente nem permite ultrapassar esse teto.
+- O jogador recebe notificação e confirma se deseja iniciar a evolução.
+- As escolhas são aplicadas em sequência, durante Descanso Completo elegível em Sala de Descanso. Recursos atuais, Inventário e campos permitidos continuam utilizáveis enquanto há progressão pendente.
+- A tabela oficial de ganhos por nível é: 2 = Habilidade Básica/iniciar outro Ramo; 3 = +1 Atributo; 4 = Habilidade Avançada +1 Ponto de Perícia; 5 = +1 Atributo; 6 = Habilidade Avançada; 7 = +1 Atributo; 8 = Habilidade Superior +1 Ponto de Perícia; 9 = +1 Atributo; 10 = Habilidade Avassaladora.
+- Habilidade Avançada exige Habilidade Básica do mesmo Ramo; Superior exige a progressão anterior do mesmo Ramo. Ramos não são multiclasse.
+- Se a Mesa liberar vários níveis, cada nível deve ser aplicado em sequência, sem saltar escolhas ou validar apenas o nível final.
+- O Descanso Completo recupera PV e SA. Ao evoluir nesse descanso, PV atuais terminam no novo máximo; SA são recuperados. BI atual e demais consequências não são removidas automaticamente.
+
+A tabela é a matriz funcional inicial; antes de codificar validadores, cotejar cada opção com as listas, pré-requisitos e particularidades completas do Arquivo do Jogador v1.0. Não inventar escolhas ou efeitos ausentes do cânone.
 
 ## Proposta mínima de algoritmo
 
@@ -35,12 +51,17 @@ A classificação abaixo é baseada nos campos lidos/alterados pelas funções p
 2. Incrementar `new.revisao_criacao := old.revisao_criacao + 1` quando essa tupla mudar; caso contrário, preservar `old.revisao_criacao`.
 3. Não mexer no trigger de inventário nesta primeira alteração.
 4. Não incluir colunas desconhecidas por suposição: a lista final deve ser cotejada com o schema e com todos os UPDATEs/rotinas de escrita antes de editar a proposta SQL.
+5. O fluxo de evolução deve usar autorização individual do Mestre, nível máximo da Mesa, confirmação do jogador e conclusão de Descanso Completo em Sala de Descanso. O servidor revalida tudo na transação final.
+6. A ficha só libera os campos previstos para o nível que está sendo aplicado; recursos atuais e inventário continuam operacionais enquanto a progressão está pendente.
+7. Calcular máximos e derivados no servidor; no método Padrão, não aceitar valores máximos arbitrários do cliente.
+8. Aplicar múltiplos níveis em sequência, com validação de cada etapa e seus pré-requisitos.
 5. Manter a alteração dentro de `supabase/proposals/ativacao-integrada-local.sql`; não criar migration ativa nem executar SQL remoto.
 
 ## Pontos de segurança e ciclo que a lista precisa preservar
 
 - A ativação compara `revisao_criacao` com a revisão conferida, valida as escolhas e depois altera `estado_ficha` e `metodo_criacao`. O recibo exige que a revisão retornada avance.
-- Arquivar/assumir usa a revisão esperada e altera `estado_ficha`/`jogador_id`; essas mudanças precisam invalidar pedidos antigos.
+- Arquivar/assumir usa a revisão esperada e altera `estado_ficha`/`jogador_id`; essas mudanças precisam invalidar pedidos antigos sem depender semanticamente da revisão estrutural.
+- A evolução ainda não existe nas migrations/funções inspecionadas: não foi encontrado fluxo implementado de autorização do Mestre, confirmação do jogador, descanso completo ou progressão por nível.
 - O arquivamento move instâncias comuns para o Baú; esse fluxo deve incrementar `revisao_inventario`, mas não deve provocar incremento adicional de revisão da ficha apenas pelo movimento dos itens.
 - A saída/remoção apaga rascunhos e pode disparar exclusões em cascata. O trigger de inventário não pode tentar atualizar uma personagem já em processo de exclusão. Este ponto exige teste PostgreSQL e não é resolvido pela allowlist.
 - O transporte de ativação ainda não está integrado à aplicação conectada; esta proposta não autoriza integração, publicação ou execução remota.
@@ -62,5 +83,6 @@ A classificação abaixo é baseada nos campos lidos/alterados pelas funções p
 - **IMPLEMENTADO:** leitura estática dos triggers de revisão, materialização, ativação, arquivamento/retomada e exclusão de rascunho/saída.
 - **CONFIRMADO ESTATICAMENTE:** a comparação da linha inteira acopla `revisao_inventario` a `revisao_criacao`.
 - **HIPÓTESE A TESTAR:** as cascatas podem alcançar o trigger de inventário durante exclusões; o efeito depende da ordem e do contexto real do PostgreSQL.
-- **PENDENTE:** inspeção integral do schema e de todos os caminhos de escrita; decidir a política para PV/SA/BI atuais; editar a função; testes SQL locais; revisão do diff.
+- **CONFIRMADO PELO PLANEJAMENTO v2.0:** autorização individual do Mestre, Nível da Mesa como teto, confirmação do jogador, evolução em sequência durante Descanso Completo em Sala de Descanso; PV atuais no novo máximo, SA recuperado e BI não restaurada automaticamente.
+- **PENDENTE:** fechar allowlist após auditoria integral de escrita; desenhar revisão/controle próprio do ciclo; mapear validadores completos por nível/Ramo; implementar autorização, notificação, confirmação e aplicação atômica; testes SQL locais; revisão do diff.
 - **NÃO REALIZADO:** execução SQL, alteração de banco remoto, merge, PR ou publicação.
