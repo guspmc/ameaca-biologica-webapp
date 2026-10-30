@@ -23,9 +23,10 @@ async function setup(t) {
   });
   return { base: `http://127.0.0.1:${app.address.port}`, app, dataDir, fechar };
 }
-async function abrirWebSocket(url, origin = 'http://127.0.0.1') {
+async function abrirWebSocket(url, origin) {
+  const origem = origin ?? new URL(url.replace(/^ws:/, 'http:').replace(/^wss:/, 'https:')).origin;
   return new Promise((resolve, reject) => {
-    const ws = new WebSocket(url, { headers: { Origin: origin } });
+    const ws = new WebSocket(url, { headers: { Origin: origem } });
     let concluido = false;
     const primeiraMensagem = new Promise((resolveMensagem, rejectMensagem) => {
       ws.once('message', dados => resolveMensagem(JSON.parse(dados.toString('utf8'))));
@@ -170,7 +171,7 @@ test('migra Mesas e permite papéis diferentes para a mesma conta em Mesas disti
 
   const participacoes = app.db.prepare(
     'SELECT mesa_id, papel FROM participantes_mesa WHERE conta_id = ? ORDER BY mesa_id'
-  ).all('conta-teste');
+  ).all('conta-teste').map(registro => ({ ...registro }));
   assert.deepEqual(participacoes, [
     { mesa_id: 'mesa-a', papel: 'jogador' },
     { mesa_id: 'mesa-b', papel: 'mestre' },
