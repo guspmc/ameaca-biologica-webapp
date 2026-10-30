@@ -270,7 +270,7 @@ test('logout revoga tickets WebSocket ainda não consumidos da sessão', async t
 });
 
 test('handshake WebSocket exige ticket, valida origem, uso único e sessão ativa', async t => {
-  const { base } = await setup(t);
+  const { base, app } = await setup(t);
   const wsBase = base.replace(/^http/, 'ws');
   const credentials = { email: 'handshake@example.test', password: 'senha-local-comprida-2026' };
   assert.equal((await post(base, '/api/auth/register', credentials)).status, 201);
@@ -301,6 +301,11 @@ test('handshake WebSocket exige ticket, valida origem, uso único e sessão ativ
 
   const repetido = await abrirWebSocket(wsBase + '/ws?ticket=' + ticket);
   assert.equal(repetido.status, 401);
+
+  const ticketExpirado = await emitir();
+  app.db.prepare("UPDATE tickets_websocket_locais SET expira_em = ?").run(new Date(Date.now() - 1000).toISOString());
+  const expirado = await abrirWebSocket(wsBase + '/ws?ticket=' + ticketExpirado);
+  assert.equal(expirado.status, 401);
 
   const ticketRevogado = await emitir();
   assert.equal((await post(base, '/api/auth/logout', {}, token)).status, 200);
