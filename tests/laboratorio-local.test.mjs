@@ -121,3 +121,35 @@ test('calcula os pontos restantes sem alterar os Atributos', () => {
   assert.equal(pontosRestantesAtributos(iniciais), 3);
   assert.deepEqual(iniciais, { forca: 1, agilidade: 1, vigor: 1, astucia: 1 });
 });
+
+
+import { distribuicaoPericiasValida, periciasPermitidasNaCriacao } from '../src/periciasCriacao.ts';
+
+test('aplica Treinamento gratuito da Origem e libera a outra Perícia para pontos da Classe', () => {
+  const permitidas = periciasPermitidasNaCriacao('Agente','Atleta','Acrobacia');
+  assert.equal(permitidas.includes('Atletismo'), true);
+  assert.equal(permitidas.includes('Acrobacia'), true);
+  assert.equal(distribuicaoPericiasValida('Agente','Atleta','Acrobacia',{
+    Atletismo: 1, Investigação: 1, Luta: 1, Percepção: 1,
+  }), true);
+});
+
+test('respeita o limite de Mestre e não permite gastar pontos fora das opções', () => {
+  assert.equal(distribuicaoPericiasValida('Agente','Atleta','Acrobacia',{
+    Atletismo: 2, Investigação: 1, Luta: 1,
+  }), false);
+  assert.equal(distribuicaoPericiasValida('Agente','Atleta','Acrobacia',{
+    Atletismo: 1, Medicina: 1, Luta: 1, Percepção: 1,
+  }), false);
+});
+
+test('Amnésico escolhe duas Perícias distintas e inclui a segunda nas opções da Classe', () => {
+  const permitidas = periciasPermitidasNaCriacao('Operador','Amnésico','Medicina','Acrobacia');
+  assert.equal(permitidas.includes('Acrobacia'), true);
+  assert.equal(distribuicaoPericiasValida('Operador','Amnésico','Medicina',{
+    Acrobacia: 1, Atletismo: 1, Fortitude: 1,
+  },'Acrobacia'), true);
+  assert.equal(distribuicaoPericiasValida('Operador','Amnésico','Medicina',{
+    Atletismo: 1, Fortitude: 1, Investigação: 1,
+  },'Medicina'), false);
+});
