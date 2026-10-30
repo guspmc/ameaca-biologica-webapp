@@ -234,7 +234,8 @@ export function createLocalServer({
   });
 
   wss.on('connection', (cliente, req, conta) => {
-    cliente.contaId = conta.id;\n    console.info('[WebSocket] Conta autenticada conectada. Clientes ativos: ' + wss.clients.size + '.');
+    cliente.contaId = conta.id;
+    console.info('[WebSocket] Conta autenticada conectada. Clientes ativos: ' + wss.clients.size + '.');
     cliente.on('close', (codigo, motivo) => {
       const descricao = motivo.toString('utf8').trim() || '(sem motivo informado)';
       console.info('[WebSocket] Cliente desconectado. Código: ' + codigo + '; motivo: ' + descricao + '; clientes restantes: ' + wss.clients.size + '.');
