@@ -9,6 +9,7 @@ import { HABILIDADES_BASICAS } from './habilidades';
 import EquipamentoRascunho from './EquipamentoRascunho';
 import IdentidadeRascunho from './IdentidadeRascunho';
 import { ORIGENS } from './origens';
+import { dadosDaClasse } from './classesFicha';
 import RevisaoCriacao from './RevisaoCriacao';
 import { classePersonagem, termoPersonagem } from './textoPersonagem';
 
@@ -406,6 +407,20 @@ export default function FichasJogador({supabase,usuarioId,mesas,sinalAtualizacao
               <div><small>NÍVEL</small><strong>{ficha.nivel}</strong></div>
               <div><small>ESTADO</small><strong>Rascunho</strong></div>
             </div>
+            {dadosDaClasse(ficha.classe)&&<details>
+              <summary>Características da Classe · referência do Arquivo do Jogador</summary>
+              <div className="ficha-fatos">
+                <div><small>PV POR NÍVEL</small><strong>{dadosDaClasse(ficha.classe)!.pvPorNivel}</strong></div>
+                <div><small>BI BASE</small><strong>{dadosDaClasse(ficha.classe)!.biBase}</strong></div>
+                <div><small>SA MÁXIMA</small><strong>{dadosDaClasse(ficha.classe)!.saMaxima}</strong></div>
+                <div><small>PONTOS DE PERÍCIA</small><strong>{dadosDaClasse(ficha.classe)!.pontosPericia}</strong></div>
+              </div>
+              <p><strong>Identidade:</strong> {dadosDaClasse(ficha.classe)!.identidade}</p>
+              <p><strong>Ramos:</strong> {dadosDaClasse(ficha.classe)!.ramos.join(' · ')}</p>
+              <p><strong>Proficiências:</strong></p>
+              <ul>{dadosDaClasse(ficha.classe)!.proficiencias.map(item=><li key={item}>{item}</li>)}</ul>
+              <p><strong>Itens Característicos:</strong> {dadosDaClasse(ficha.classe)!.itensCaracteristicos.join(' · ')}. Não ocupam Espaços de Inventário.</p>
+            </details>}
             <details>
               <summary>Origem e benefício {ficha.origem?'· '+termo(ficha.origem):'· pendente'}</summary>
               {ficha.origem&&<p><strong>Benefício:</strong> {ORIGENS.find(o=>o.nome===ficha.origem)?.beneficio}</p>}
