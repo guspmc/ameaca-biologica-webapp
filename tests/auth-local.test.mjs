@@ -98,7 +98,7 @@ test('registra a migração de autenticação uma única vez', async t => {
   });
   assert.deepEqual(
     reiniciado.db.prepare('SELECT version FROM schema_migrations ORDER BY version').all().map(row => row.version),
-    [1, 2],
+    [1, 2, 3],
   );
 });
 
