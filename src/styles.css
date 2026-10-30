@@ -274,3 +274,16 @@ footer { margin-top:45px; border-top:1px solid #dce2df; padding-top:19px; color:
 .notas-pessoais-campo { display:grid; gap:8px; font-size:12px; font-weight:800; color:#4b4338; }
 .notas-pessoais-campo textarea { display:block; width:100%; min-height:130px; resize:vertical; border:1px solid #b7a68e; border-radius:5px; padding:11px; color:#252725; background:#fffaf0; font:13px/1.6 ui-monospace, SFMono-Regular, Consolas, monospace; }
 .notas-pessoais-campo textarea:focus-visible { outline:3px solid #a5263e; outline-offset:2px; }
+
+
+/* Laboratório local: interface isolada, sem controles de campanha online. */
+.lab-alerta{margin:0 0 28px;padding:17px 19px;border:1px solid #d6b66e;border-left:5px solid #a97919;border-radius:8px;background:#fff8e6;color:#59471f;line-height:1.6;font-size:13px}
+.lab-alerta strong{display:block;margin-bottom:5px;color:#6d4c0c;letter-spacing:.07em;font-size:11px}
+.lab-alerta p{margin:0}
+.lab-lista{margin-top:30px;padding-top:18px;border-top:1px solid #e1e7e4}
+.lab-lista h3{margin:0 0 12px;font-size:15px;color:#35464b}
+.lab-linha{cursor:default}
+.lab-mensagem{margin-top:20px}
+.lab-nota{margin-top:22px;color:#78868b;font-size:12px;line-height:1.6}
+.laboratorio-local .central{padding-top:34px}
+@media(max-width:520px){.lab-alerta{font-size:12px;padding:14px}.lab-lista{margin-top:22px}}
