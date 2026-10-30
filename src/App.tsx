@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react';
+import LaboratorioLocal from './LaboratorioLocal';
 import { createClient, type Session, type SupabaseClient } from '@supabase/supabase-js';
 import Convites, { CONVITE_LOCAL } from './Convites';
 import Participantes from './Participantes';
@@ -341,7 +342,7 @@ function Lobby({ supabase, sessao }: { supabase: SupabaseClient; sessao: Session
   </main>;
 }
 
-export default function App(){
+function AplicacaoOnline(){
   useEffect(() => {
     const fragmento = new URLSearchParams(window.location.hash.replace(/^#/, ''));
     const codigo = fragmento.get('convite')?.trim();
@@ -411,4 +412,11 @@ export default function App(){
       sessao && supabase?<Lobby supabase={supabase} sessao={sessao}/>:
       supabase?<Autenticacao supabase={supabase}/>:null}
   </div>;
+}
+
+
+export default function App() {
+  const parametros = new URLSearchParams(window.location.search);
+  if (parametros.get('laboratorio') === 'local') return <LaboratorioLocal />;
+  return <AplicacaoOnline />;
 }
