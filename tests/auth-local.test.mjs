@@ -87,7 +87,7 @@ test('registra a migração de autenticação uma única vez', async t => {
   const { app, dataDir, fechar } = await setup(t);
   assert.deepEqual(
     app.db.prepare('SELECT version FROM schema_migrations ORDER BY version').all().map(row => row.version),
-    [1, 2, 3],
+    [1, 2, 3, 4],
   );
   await fechar();
 
@@ -98,7 +98,7 @@ test('registra a migração de autenticação uma única vez', async t => {
   });
   assert.deepEqual(
     reiniciado.db.prepare('SELECT version FROM schema_migrations ORDER BY version').all().map(row => row.version),
-    [1, 2, 3],
+    [1, 2, 3, 4],
   );
 });
 
@@ -233,6 +233,21 @@ test('emite ticket WebSocket autenticado, temporário e de uso único', async t 
   assert.ok(primeira);
   assert.equal(primeira.email, credentials.email);
   assert.equal(consumirTicketWebSocketLocal(app.db, dados.ticket), null);
+});
+
+test('logout revoga tickets WebSocket ainda não consumidos da sessão', async t => {
+  const { base, app } = await setup(t);
+  const credentials = { email: 'revogar-ws@example.test', password: 'senha-local-comprida-2026' };
+  assert.equal((await post(base, '/api/auth/register', credentials)).status, 201);
+  const login = await post(base, '/api/auth/login', credentials);
+  const { token } = await login.json();
+  const emissao = await post(base, '/api/auth/ws-ticket', {}, token);
+  assert.equal(emissao.status, 201);
+  const { ticket } = await emissao.json();
+
+  assert.equal((await post(base, '/api/auth/logout', {}, token)).status, 200);
+  assert.equal(consumirTicketWebSocketLocal(app.db, ticket), null);
+  assert.equal(app.db.prepare('SELECT COUNT(*) AS total FROM tickets_websocket_locais').get().total, 0);
 });
 
 test('ticket WebSocket inválido ou desconhecido não autentica conexão', async t => {
