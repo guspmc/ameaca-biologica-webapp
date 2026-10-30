@@ -4,6 +4,7 @@ import { mkdtemp, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { createLocalServer } from '../server/index.mjs';
+import { WebSocket } from 'ws';
 import { consumirTicketWebSocketLocal } from '../server/auth-local.mjs';
 
 async function setup(t) {
@@ -21,6 +22,24 @@ async function setup(t) {
     await rm(dataDir, { recursive: true, force: true });
   });
   return { base: `http://127.0.0.1:${app.address.port}`, app, dataDir, fechar };
+}
+async function abrirWebSocket(url, origin = 'http://127.0.0.1') {
+  return new Promise((resolve, reject) => {
+    const ws = new WebSocket(url, { headers: { Origin: origin } });
+    let concluido = false;
+    ws.once('open', () => {
+      concluido = true;
+      resolve({ ws, status: 101 });
+    });
+    ws.once('unexpected-response', (_req, resposta) => {
+      concluido = true;
+      resposta.resume();
+      resolve({ ws: null, status: resposta.statusCode });
+    });
+    ws.once('error', erro => {
+      if (!concluido) reject(erro);
+    });
+  });
 }
 async function post(base, path, body, token) {
   return fetch(base + path, {
@@ -248,6 +267,45 @@ test('logout revoga tickets WebSocket ainda não consumidos da sessão', async t
   assert.equal((await post(base, '/api/auth/logout', {}, token)).status, 200);
   assert.equal(consumirTicketWebSocketLocal(app.db, ticket), null);
   assert.equal(app.db.prepare('SELECT COUNT(*) AS total FROM tickets_websocket_locais').get().total, 0);
+});
+
+test('handshake WebSocket exige ticket, valida origem, uso único e sessão ativa', async t => {
+  const { base } = await setup(t);
+  const wsBase = base.replace(/^http/, 'ws');
+  const credentials = { email: 'handshake@example.test', password: 'senha-local-comprida-2026' };
+  assert.equal((await post(base, '/api/auth/register', credentials)).status, 201);
+  const login = await post(base, '/api/auth/login', credentials);
+  const { token } = await login.json();
+
+  const semTicket = await abrirWebSocket(wsBase + '/ws');
+  assert.equal(semTicket.status, 401);
+
+  const emitir = async () => {
+    const resposta = await post(base, '/api/auth/ws-ticket', {}, token);
+    assert.equal(resposta.status, 201);
+    return (await resposta.json()).ticket;
+  };
+
+  const ticket = await emitir();
+  const origemErrada = await abrirWebSocket(wsBase + '/ws?ticket=' + ticket, 'http://outro-host.example');
+  assert.equal(origemErrada.status, 403);
+
+  const conexao = await abrirWebSocket(wsBase + '/ws?ticket=' + ticket);
+  assert.equal(conexao.status, 101);
+  const primeiraMensagem = await new Promise((resolve, reject) => {
+    conexao.ws.once('message', dados => resolve(JSON.parse(dados.toString('utf8'))));
+    conexao.ws.once('error', reject);
+  });
+  assert.equal(primeiraMensagem.type, 'ready');
+  conexao.ws.close();
+
+  const repetido = await abrirWebSocket(wsBase + '/ws?ticket=' + ticket);
+  assert.equal(repetido.status, 401);
+
+  const ticketRevogado = await emitir();
+  assert.equal((await post(base, '/api/auth/logout', {}, token)).status, 200);
+  const aposLogout = await abrirWebSocket(wsBase + '/ws?ticket=' + ticketRevogado);
+  assert.equal(aposLogout.status, 401);
 });
 
 test('ticket WebSocket inválido ou desconhecido não autentica conexão', async t => {
