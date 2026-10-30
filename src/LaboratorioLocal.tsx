@@ -33,7 +33,7 @@ export default function LaboratorioLocal() {
   const mesas = estado?.registros.filter(registro => registro.tipo === 'mesa') ?? [];
   const personagens = estado?.registros.filter(registro => registro.tipo === 'personagem') ?? [];
 
-  function gravar(tipo: 'mesa' | 'personagem', nome: string, dados: Record<string, unknown>) {
+  function gravar(tipo: 'mesa' | 'personagem', nome: string, dados: Record<string, unknown>): boolean {
     setErro(''); setAviso(''); setOcupado(true);
     try {
       const registro = {
@@ -43,8 +43,10 @@ export default function LaboratorioLocal() {
       const proximo = gravarRegistroLaboratorio(armazenamento, registro);
       setEstado(proximo);
       setAviso(tipo === 'mesa' ? 'Mesa fictícia gravada neste dispositivo.' : 'Rascunho fictício gravado neste dispositivo.');
+      return true;
     } catch (problema) {
       setErro(problema instanceof Error ? problema.message : 'Não foi possível salvar. Nenhum sucesso foi indicado.');
+      return false;
     } finally { setOcupado(false); }
   }
 
@@ -52,8 +54,7 @@ export default function LaboratorioLocal() {
     evento.preventDefault();
     const nome = nomeMesa.trim();
     if (nome.length < 2 || nome.length > 80) { setErro('O nome da Mesa deve ter entre 2 e 80 caracteres.'); return; }
-    gravar('mesa', nome, { ficticio: true });
-    setNomeMesa('');
+    if (gravar('mesa', nome, { ficticio: true })) setNomeMesa('');
   }
 
   function criarPersonagem(evento: FormEvent<HTMLFormElement>) {
@@ -62,8 +63,7 @@ export default function LaboratorioLocal() {
     if (!mesaSelecionada || nome.length < 2 || nome.length > 80) { setErro('Selecione uma Mesa e informe um nome entre 2 e 80 caracteres.'); return; }
     if (!origemPersonagem) { setErro('Escolha uma Origem para o personagem.'); return; }
     if (origemPersonagem === 'Operário' && !armaOperarioValida(armaOperario)) { setErro('A Origem Operário exige a escolha de uma das seis armas permitidas.'); return; }
-    gravar('personagem', nome, { mesaId: mesaSelecionada, classe: classePersonagem, origem: origemPersonagem, armaOperario: origemPersonagem === 'Operário' ? armaOperario : null, ficticio: true, etapa: 'rascunho-identidade' });
-    setNomePersonagem('');
+    if (gravar('personagem', nome, { mesaId: mesaSelecionada, classe: classePersonagem, origem: origemPersonagem, armaOperario: origemPersonagem === 'Operário' ? armaOperario : null, ficticio: true, etapa: 'rascunho-identidade' })) setNomePersonagem('');
   }
 
   return <div className="aplicativo laboratorio-local">
