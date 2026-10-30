@@ -3,6 +3,8 @@ import { gravarRegistroLaboratorio, lerLaboratorio, type ArmazenamentoLocal, typ
 import { ORIGENS } from './origens';
 import { ARMAS_OPERARIO, armaOperarioValida } from './armaOperario';
 import { atributosIniciaisValidos, pontosRestantesAtributos, type AtributosIniciais } from './atributosCriacao';
+import { NOMES_PERICIAS, periciasPermitidasNaCriacao, distribuicaoPericiasValida, pontosGastosPericias } from './periciasCriacao';
+import { PONTOS_CLASSE } from './pericias';
 
 const armazenamento: ArmazenamentoLocal = {
   getItem: chave => window.localStorage.getItem(chave),
@@ -23,6 +25,9 @@ export default function LaboratorioLocal() {
   const [origemPersonagem, setOrigemPersonagem] = useState('');
   const [armaOperario, setArmaOperario] = useState('');
   const [atributos, setAtributos] = useState<AtributosIniciais>({ forca: 1, agilidade: 1, vigor: 1, astucia: 1 });
+  const [periciaTreinada, setPericiaTreinada] = useState('');
+  const [periciaExtraAmnesico, setPericiaExtraAmnesico] = useState('');
+  const [distribuicaoPericias, setDistribuicaoPericias] = useState<Record<string, number>>({});
   const [erro, setErro] = useState('');
   const [aviso, setAviso] = useState('');
   const [ocupado, setOcupado] = useState(false);
@@ -69,14 +74,29 @@ export default function LaboratorioLocal() {
     });
   }
 
+  const periciasPermitidas = periciasPermitidasNaCriacao(classePersonagem, origemPersonagem, periciaTreinada, periciaExtraAmnesico);
+  const pontosClasse = PONTOS_CLASSE[classePersonagem] ?? 0;
+  const pontosGastos = pontosGastosPericias(distribuicaoPericias);
+
+  function alterarGrauPericia(nome: string, delta: -1 | 1) {
+    setDistribuicaoPericias(anteriores => {
+      const atual = anteriores[nome] ?? 0;
+      const maximo = nome === periciaTreinada ? 1 : 2;
+      if (atual + delta < 0 || atual + delta > maximo) return anteriores;
+      if (delta === 1 && pontosGastosPericias(anteriores) >= pontosClasse) return anteriores;
+      return { ...anteriores, [nome]: atual + delta };
+    });
+  }
+
   function criarPersonagem(evento: FormEvent<HTMLFormElement>) {
     evento.preventDefault();
     const nome = nomePersonagem.trim();
     if (!mesaSelecionada || nome.length < 2 || nome.length > 80) { setErro('Selecione uma Mesa e informe um nome entre 2 e 80 caracteres.'); return; }
     if (!origemPersonagem) { setErro('Escolha uma Origem para o personagem.'); return; }
     if (!atributosIniciaisValidos(atributos)) { setErro('Distribua os 3 pontos iniciais entre os quatro Atributos. Você pode reduzir apenas um deles a 0.'); return; }
+    if (!distribuicaoPericiasValida(classePersonagem, origemPersonagem, periciaTreinada, distribuicaoPericias, periciaExtraAmnesico)) { setErro('Escolha o Treinamento da Origem e distribua todos os Pontos de Perícia da Classe, respeitando as opções permitidas.'); return; }
     if (origemPersonagem === 'Operário' && !armaOperarioValida(armaOperario)) { setErro('A Origem Operário exige a escolha de uma das seis armas permitidas.'); return; }
-    if (gravar('personagem', nome, { mesaId: mesaSelecionada, classe: classePersonagem, origem: origemPersonagem, armaOperario: origemPersonagem === 'Operário' ? armaOperario : null, atributos, ficticio: true, etapa: 'rascunho-identidade-atributos' })) setNomePersonagem('');
+    if (gravar('personagem', nome, { mesaId: mesaSelecionada, classe: classePersonagem, origem: origemPersonagem, armaOperario: origemPersonagem === 'Operário' ? armaOperario : null, atributos, periciaOrigemTreinada: periciaTreinada, periciaOrigemExtra: origemPersonagem === 'Amnésico' ? periciaExtraAmnesico : null, distribuicaoPericias, ficticio: true, etapa: 'rascunho-criacao-inicial' })) setNomePersonagem('');
   }
 
   return <div className="aplicativo laboratorio-local">
@@ -116,8 +136,28 @@ export default function LaboratorioLocal() {
               <option value="">Selecione uma Mesa local</option>{mesas.map(mesa => <option key={mesa.id} value={mesa.id}>{mesa.nome}</option>)}
             </select></label>
             <label>Classe <select value={classePersonagem} onChange={e => setClassePersonagem(e.target.value)} disabled={!estado || ocupado}><option value="Agente">Agente</option><option value="Autodidata">Autodidata</option><option value="Operador">Operador</option></select></label>
-            <label>Origem <select required value={origemPersonagem} onChange={e => { setOrigemPersonagem(e.target.value); setArmaOperario(''); }} disabled={!estado || ocupado}><option value="">Selecione uma Origem</option>{ORIGENS.map(origem => <option key={origem.nome} value={origem.nome}>{origem.nome}</option>)}</select></label>
+            <label>Origem <select required value={origemPersonagem} onChange={e => { setOrigemPersonagem(e.target.value); setArmaOperario(''); setPericiaTreinada(''); setPericiaExtraAmnesico(''); setDistribuicaoPericias({}); }} disabled={!estado || ocupado}><option value="">Selecione uma Origem</option>{ORIGENS.map(origem => <option key={origem.nome} value={origem.nome}>{origem.nome}</option>)}</select></label>
             {origemPersonagem === 'Operário' && <label>Arma Corpo a Corpo semelhante a ferramenta <select required value={armaOperario} onChange={e => setArmaOperario(e.target.value)} disabled={!estado || ocupado}><option value="">Escolha uma arma</option>{ARMAS_OPERARIO.map(arma => <option key={arma} value={arma}>{arma}</option>)}</select><small>Escolha obrigatória na criação. A arma recebe +1 no Teste de Ataque e soma 2 × FOR ao dano, conforme a regra da Origem.</small></label>}
+            {origemPersonagem && <div className="criar-pericias">
+              <strong>Treinamento da Origem</strong>
+              <p className="ajuda-atributos">Escolha uma das Perícias da Origem para receber Treinamento gratuito. A outra entra nas opções para distribuir os pontos da Classe.</p>
+              <label>Perícia Treinada <select required value={periciaTreinada} onChange={e => { setPericiaTreinada(e.target.value); setDistribuicaoPericias({}); }} disabled={!estado || ocupado}>
+                <option value="">Escolha a Perícia Treinada</option>{(origemPersonagem === 'Amnésico' ? NOMES_PERICIAS : (ORIGENS.find(o => o.nome === origemPersonagem)?.pericias ?? [])).map(nome => <option key={nome} value={nome}>{nome}</option>)}
+              </select></label>
+              {origemPersonagem === 'Amnésico' && <label>Segunda Perícia da Origem <select required value={periciaExtraAmnesico} onChange={e => { setPericiaExtraAmnesico(e.target.value); setDistribuicaoPericias({}); }} disabled={!estado || ocupado}>
+                <option value="">Escolha outra Perícia</option>{NOMES_PERICIAS.filter(nome => nome !== periciaTreinada).map(nome => <option key={nome} value={nome}>{nome}</option>)}
+              </select></label>}
+              <div className="criar-linha"><strong>Pontos de Perícia · {classePersonagem}</strong><span className={pontosGastos === pontosClasse ? 'pontos-prontos' : 'pontos-restantes'}>{pontosGastos}/{pontosClasse} gastos</span></div>
+              <p className="ajuda-atributos">Cada ponto eleva uma Perícia Não Treinada a Treinada ou Treinada a Mestre. O máximo é Mestre. A Perícia gratuita da Origem já começa Treinada.</p>
+              {periciasPermitidas.length === 0 ? <p className="vazio">Escolha o Treinamento da Origem para liberar a distribuição.</p> :
+                <div className="lista-pericias-lab">{periciasPermitidas.map(nome => {
+                  const gasto = distribuicaoPericias[nome] ?? 0;
+                  const grau = gasto + (nome === periciaTreinada ? 1 : 0);
+                  return <div className="linha-pericia-lab" key={nome}><span><strong>{nome}</strong><small>{grau === 0 ? 'Não Treinada' : grau === 1 ? 'Treinada' : 'Mestre'}{nome === periciaTreinada ? ' · Origem' : ''}</small></span>
+                    <div className="controle-stat"><button type="button" aria-label={'Diminuir '+nome} onClick={() => alterarGrauPericia(nome,-1)} disabled={!estado || ocupado || gasto === 0}>−</button><b>{gasto}</b><button type="button" aria-label={'Aumentar '+nome} onClick={() => alterarGrauPericia(nome,1)} disabled={!estado || ocupado || gasto >= (nome === periciaTreinada ? 1 : 2) || pontosGastos >= pontosClasse}>+</button></div>
+                  </div>;
+                })}</div>}
+            </div>}
             <div className="criar-atributos">
               <div className="criar-linha"><strong>Atributos iniciais</strong><span className={pontosRestantesAtributos(atributos) === 0 ? 'pontos-prontos' : 'pontos-restantes'}>{pontosRestantesAtributos(atributos)} ponto(s) restante(s)</span></div>
               <p className="ajuda-atributos">Todos começam em 1. Distribua +3 pontos. Opcionalmente reduza um único Atributo a 0 para receber +1 ponto. Máximo 3 na criação.</p>
