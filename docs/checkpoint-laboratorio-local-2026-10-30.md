@@ -36,8 +36,8 @@ Permitir desenvolver e testar a ficha do Jogador e o Painel do Mestre em ambient
 - Nenhuma regra canônica foi alterada; os ajustes alinham o laboratório ao comportamento online existente.
 
 ## Estado dos testes — confirmado em 30/10/2026
-- <badge>APROVADO</badge> **Build, testes de regras/permissões e verificação de tipos:** GitHub Actions run `41133937803`, commit `7a02309e16f7f069325b2987025ab1348f54945f`. Todas as etapas concluídas com sucesso: instalação, testes em PostgreSQL local, compilação TypeScript/Vite e verificação de tipos dos cenários isolados.
-- <badge>APROVADO</badge> **Protótipo LAN:** GitHub Actions run `41133937656`, mesmo commit. Testes automatizados do servidor e compilação do frontend concluídos com sucesso.
+- **APROVADO** **Build, testes de regras/permissões e verificação de tipos:** GitHub Actions run `41133937803`, commit `7a02309e16f7f069325b2987025ab1348f54945f`. Todas as etapas concluídas com sucesso: instalação, testes em PostgreSQL local, compilação TypeScript/Vite e verificação de tipos dos cenários isolados.
+- **APROVADO** **Protótipo LAN:** GitHub Actions run `41133937656`, mesmo commit. Testes automatizados do servidor e compilação do frontend concluídos com sucesso.
 - Os workflows do commit anterior `061a54b8...` falharam; o commit seguinte corrigiu o caso de teste e alinhou a validação de pontos não utilizados. O resultado aprovado é o do HEAD acima.
 - Os testes aprovados são automatizados. **Não comprovam ainda o comportamento no navegador/dispositivo do Gus**, nem persistência após recarga em uso real.
 - **Teste humano:** pendente. Aguardar o usuário estar no PC; executar roteiro guiado, um passo por vez.
