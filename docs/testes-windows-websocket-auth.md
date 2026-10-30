@@ -39,11 +39,11 @@ Com uma sessão autenticada, fazer POST em `/api/auth/ws-ticket` enviando o cabe
 
 **Esperado:** segunda tentativa recusada com HTTP 401.
 
-### 3. Sessão revogada
+### 3. Revogação após logout — PENDENTE / BLOQUEADO
 
-Emitir ticket, executar logout da sessão que o originou e tentar consumir o ticket ainda não expirado.
+Não executar como critério de aprovação ainda. O ticket atual não está vinculado à sessão específica que o emitiu, e o logout não revoga tickets já emitidos. Isso é uma lacuna conhecida, não um teste aprovado.
 
-**Esperado:** conexão recusada. Se o ticket for aceito após logout, registrar como falha de segurança; não usar o servidor com dados reais.
+**Critério futuro:** após correção e teste automatizado, emitir ticket, fazer logout e tentar conectar. A conexão deve ser recusada.
 
 ### 4. Expiração
 
@@ -71,11 +71,12 @@ Encerrar o servidor com Ctrl+C e iniciar novamente.
 
 ## Critério para aprovação
 
-Não aprovar esta etapa enquanto os testes automatizados e os testes manuais 1 a 7 não forem registrados. Qualquer aceitação de ticket expirado, reutilizado ou originado de sessão revogada bloqueia a etapa.
+Esta etapa ainda NÃO está liberada para aprovação humana. Primeiro, os testes automatizados e o build precisam passar em evidência verificável. O cenário 3 permanece bloqueado até a revogação de tickets no logout ser implementada e testada. Qualquer aceitação de ticket expirado ou reutilizado bloqueia a etapa.
 
 ## Limitações conhecidas
 
-- O ticket autentica uma conta, mas o WebSocket ainda não está inscrito em uma Mesa nem aplica autorização por Mesa.
+- O ticket autentica uma conta, mas ainda não está vinculado à sessão específica que o emitiu; o logout não revoga tickets já emitidos. Essa lacuna bloqueia aprovação de segurança.
+- O WebSocket ainda não está inscrito em uma Mesa nem aplica autorização por Mesa.
 - O transporte ainda é HTTP/WS sem TLS. Usar apenas dados fictícios; não inserir credenciais reais de campanha em rede compartilhada.
 - O cliente de interface ainda precisa ser adaptado para solicitar ticket antes de abrir o WebSocket.
 - O canal não deve ser considerado pronto para sincronização de ficha.
