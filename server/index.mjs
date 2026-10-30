@@ -109,7 +109,8 @@ export function createLocalServer({
       const url = new URL(req.url ?? '/', 'http://localhost');
       const metodo = req.method ?? 'GET';
 
-      if (await tratarRotaAutenticacao(req, res, url, db)) return;\n      if (await tratarRotaMesas(req, res, url, db)) return;
+      if (await tratarRotaAutenticacao(req, res, url, db)) return;
+      if (await tratarRotaMesas(req, res, url, db)) return;
 
       if (metodo === 'GET' && url.pathname === '/') {
         res.writeHead(200, {
@@ -203,21 +204,12 @@ export function createLocalServer({
       return;
     }
 
-    // O ticket é temporário, de uso único e não é a credencial permanente da conta.
-    const ticket = url.searchParams.get('ticket');
-    const conta = consumirTicketWebSocketLocal(db, ticket);
-    if (!conta) {
-      socket.write('HTTP/1.1 401 Unauthorized\\r\\nConnection: close\\r\\n\\r\\n');
-      socket.destroy();
-      return;
-    }
-
-    // Navegadores devem conectar ao mesmo host que serviu a página.
+    // Validar a origem antes de consumir o ticket evita que uma origem inválida o queime.
     const origem = req.headers.origin;
     if (origem) {
       try {
         if (new URL(origem).host !== req.headers.host) {
-          socket.write('HTTP/1.1 403 Forbidden\r\n\r\n');
+          socket.write('HTTP/1.1 403 Forbidden\r\nConnection: close\r\n\r\n');
           socket.destroy();
           return;
         }
@@ -225,6 +217,15 @@ export function createLocalServer({
         socket.destroy();
         return;
       }
+    }
+
+    // O ticket é temporário, de uso único e não é a credencial permanente da conta.
+    const ticket = url.searchParams.get('ticket');
+    const conta = consumirTicketWebSocketLocal(db, ticket);
+    if (!conta) {
+      socket.write('HTTP/1.1 401 Unauthorized\r\nConnection: close\r\n\r\n');
+      socket.destroy();
+      return;
     }
 
     wss.handleUpgrade(req, socket, head, cliente => {
