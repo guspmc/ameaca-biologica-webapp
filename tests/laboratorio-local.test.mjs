@@ -89,3 +89,18 @@ test('se o navegador negar gravação, a operação falha em vez de indicar suce
   };
   assert.throws(() => salvarLaboratorio(storage, criarEstadoLaboratorio()), /QuotaExceededError/);
 });
+
+import { ARMAS_OPERARIO, armaOperarioValida } from '../src/armaOperario.ts';
+
+test('Origem Operário oferece exatamente as seis armas aprovadas', () => {
+  assert.deepEqual(ARMAS_OPERARIO, [
+    'Cutelo', 'Martelo', 'Machadinha', 'Machado', 'Marreta', 'Motosserra',
+  ]);
+});
+
+test('valida somente uma arma pertencente à lista da Origem Operário', () => {
+  for (const arma of ARMAS_OPERARIO) assert.equal(armaOperarioValida(arma), true);
+  assert.equal(armaOperarioValida('Faca'), false);
+  assert.equal(armaOperarioValida('Pistola'), false);
+  assert.equal(armaOperarioValida(null), false);
+});
