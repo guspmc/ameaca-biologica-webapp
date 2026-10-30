@@ -1,5 +1,7 @@
 import { useEffect, useState, type FormEvent } from 'react';
 import { gravarRegistroLaboratorio, lerLaboratorio, type ArmazenamentoLocal, type EstadoLaboratorio } from './laboratorioLocal';
+import { ORIGENS } from './origens';
+import { ARMAS_OPERARIO, armaOperarioValida } from './armaOperario';
 
 const armazenamento: ArmazenamentoLocal = {
   getItem: chave => window.localStorage.getItem(chave),
@@ -16,6 +18,9 @@ export default function LaboratorioLocal() {
   const [nomeMesa, setNomeMesa] = useState('');
   const [mesaSelecionada, setMesaSelecionada] = useState('');
   const [nomePersonagem, setNomePersonagem] = useState('');
+  const [classePersonagem, setClassePersonagem] = useState('Agente');
+  const [origemPersonagem, setOrigemPersonagem] = useState('');
+  const [armaOperario, setArmaOperario] = useState('');
   const [erro, setErro] = useState('');
   const [aviso, setAviso] = useState('');
   const [ocupado, setOcupado] = useState(false);
@@ -55,7 +60,9 @@ export default function LaboratorioLocal() {
     evento.preventDefault();
     const nome = nomePersonagem.trim();
     if (!mesaSelecionada || nome.length < 2 || nome.length > 80) { setErro('Selecione uma Mesa e informe um nome entre 2 e 80 caracteres.'); return; }
-    gravar('personagem', nome, { mesaId: mesaSelecionada, ficticio: true, etapa: 'rascunho-identidade' });
+    if (!origemPersonagem) { setErro('Escolha uma Origem para o personagem.'); return; }
+    if (origemPersonagem === 'Operário' && !armaOperarioValida(armaOperario)) { setErro('A Origem Operário exige a escolha de uma das seis armas permitidas.'); return; }
+    gravar('personagem', nome, { mesaId: mesaSelecionada, classe: classePersonagem, origem: origemPersonagem, armaOperario: origemPersonagem === 'Operário' ? armaOperario : null, ficticio: true, etapa: 'rascunho-identidade' });
     setNomePersonagem('');
   }
 
@@ -95,6 +102,9 @@ export default function LaboratorioLocal() {
             <label>Mesa do personagem <select required value={mesaSelecionada} onChange={e => setMesaSelecionada(e.target.value)} disabled={!estado || mesas.length === 0 || ocupado}>
               <option value="">Selecione uma Mesa local</option>{mesas.map(mesa => <option key={mesa.id} value={mesa.id}>{mesa.nome}</option>)}
             </select></label>
+            <label>Classe <select value={classePersonagem} onChange={e => setClassePersonagem(e.target.value)} disabled={!estado || ocupado}><option value="Agente">Agente</option><option value="Autodidata">Autodidata</option><option value="Operador">Operador</option></select></label>
+            <label>Origem <select required value={origemPersonagem} onChange={e => { setOrigemPersonagem(e.target.value); setArmaOperario(''); }} disabled={!estado || ocupado}><option value="">Selecione uma Origem</option>{ORIGENS.map(origem => <option key={origem.nome} value={origem.nome}>{origem.nome}</option>)}</select></label>
+            {origemPersonagem === 'Operário' && <label>Arma Corpo a Corpo semelhante a ferramenta <select required value={armaOperario} onChange={e => setArmaOperario(e.target.value)} disabled={!estado || ocupado}><option value="">Escolha uma arma</option>{ARMAS_OPERARIO.map(arma => <option key={arma} value={arma}>{arma}</option>)}</select><small>Escolha obrigatória na criação. A arma recebe +1 no Teste de Ataque e soma 2 × FOR ao dano, conforme a regra da Origem.</small></label>}
             <label>Nome do personagem <input value={nomePersonagem} onChange={e => setNomePersonagem(e.target.value)} minLength={2} maxLength={80} required disabled={!estado || mesas.length === 0 || ocupado} placeholder="Ex.: Alex Morgan" /></label>
             <button className="acao" type="submit" disabled={!estado || mesas.length === 0 || ocupado}>Criar rascunho local <span>→</span></button>
           </form>
@@ -102,7 +112,7 @@ export default function LaboratorioLocal() {
             {personagens.length === 0 ? <p className="vazio">Nenhum rascunho de personagem.</p> :
               <ul className="lista-mesas">{personagens.map(personagem => {
                 const mesa = mesas.find(item => item.id === personagem.dados.mesaId);
-                return <li key={personagem.id}><div className="linha-mesa lab-linha"><span className="sigla">P</span><span className="detalhes-mesa"><strong>{personagem.nome}</strong><small>{mesa?.nome ?? 'Mesa não encontrada'} · RASCUNHO LOCAL</small></span></div></li>;
+                return <li key={personagem.id}><div className="linha-mesa lab-linha"><span className="sigla">P</span><span className="detalhes-mesa"><strong>{personagem.nome}</strong><small>{mesa?.nome ?? 'Mesa não encontrada'} · {String(personagem.dados.classe ?? 'Classe pendente')} · {String(personagem.dados.origem ?? 'Origem pendente')}{personagem.dados.armaOperario ? ' · '+String(personagem.dados.armaOperario) : ''} · RASCUNHO LOCAL</small></span></div></li>;
               })}</ul>}
           </div>
         </section>
