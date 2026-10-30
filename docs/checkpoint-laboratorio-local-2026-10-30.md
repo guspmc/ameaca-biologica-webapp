@@ -30,23 +30,25 @@ Permitir desenvolver e testar a ficha do Jogador e o Painel do Mestre em ambient
 - **Testes de persistência:** 7 testes específicos preparados; o teste de inicialização local foi observado na execução do servidor.
 - **Servidor LAN:** GitHub Actions run `41107822931`, commit `be21fdedc78c2f9c1cc88855c81865cf515e0bde`, concluído com sucesso: 288 testes aprovados, 0 falhas.
 - **Ajustes de testes:** comparação de registros SQLite normalizada; origem do teste WebSocket passou a usar a origem efetiva com porta; testes de heartbeat passaram a emitir ticket autenticado; expectativas antigas para a API de eventos desativada foram removidas.
-- **Build/TypeScript do WebApp:** workflow completo acionado pelo commit `e69660c2c3d93cc1a34e0b02259d1984b6b56b62`; resultado ainda pendente no momento deste checkpoint.
+- **Build/TypeScript do WebApp:** workflow `41131176588`, commit `e69660c2c3d93cc1a34e0b02259d1984b6b56b62`, concluído com sucesso: testes 288/288, Vite build concluído e verificação `tsc --noEmit -p tsconfig.ui.json` concluída.
+- **Validação das novas opções do Operário e interface atualizada:** workflows disparados após os commits `0d0fd00`, `9923077` e `e9b1985`; resultados ainda pendentes.
 - **Teste humano:** ainda não iniciado; aguardar validação do build antes de solicitar.
 - **Produção/Supabase:** nenhuma alteração solicitada ou executada; sem migration, mudança de RLS ou publicação.
 
 ## Limites conhecidos
 - A interface inicial cria Mesas fictícias e rascunhos simples de identidade; ainda não integra `FichasJogador.tsx` nem reproduz a ficha oficial.
-- Ainda não há edição/remoção visual de registros, validação de regras, Atributos, Perícias, Habilidades, Combate ou Inventário.
+- Ainda não há edição/remoção visual de registros, distribuição de Atributos, seleção de Perícias/Habilidades, cálculo de recursos, Combate ou Inventário.
+- A lista de arma do Operário está validada na interface local, mas ainda não foi incorporada à persistência online/RPCs nem protegida por validação SQL; não tratar como concluída na ficha oficial.
 - O acesso é feito manualmente pela query `?laboratorio=local`; ainda não existe botão de entrada no portal principal.
 - O modo local não sincroniza com outros dispositivos e depende do armazenamento disponível no navegador.
 - A gravação é local ao navegador/dispositivo e não é sincronização entre dispositivos.
 - Não migrar dados reais para o laboratório e não habilitar edição offline da campanha.
 
 ## Próximo passo
-1. Aguardar o workflow completo de testes, TypeScript e Vite; corrigir apenas falhas comprovadas.
-2. Quando o build passar, pedir um teste humano único: abrir `?laboratorio=local`, criar uma Mesa e um rascunho e recarregar para conferir persistência.
-3. Com a persistência confirmada no navegador, evoluir o laboratório para reutilizar progressivamente os componentes da ficha oficial sem inicializar Supabase no modo local.
-4. Continuar a ficha do Jogador; revisar a seleção obrigatória de arma do Operário contra a lista aprovada antes de integrar esse fluxo.
+1. Confirmar os workflows dos commits recentes, especialmente a compilação após a entrada de Classe/Origem/arma do Operário.
+2. Quando os workflows passarem e Gus estiver no PC, testar `?laboratorio=local`, criar Mesa/personagem e recarregar para conferir persistência.
+3. Com a persistência confirmada, ampliar o rascunho local para as seis etapas oficiais da criação e reutilizar módulos puros já existentes.
+4. Depois, integrar os mesmos dados e validações na ficha online com persistência server-side, incluindo validação da arma do Operário no servidor.
 
 ## Roteiro humano
 Nenhum teste humano é solicitado neste checkpoint, pois a camada ainda não está ligada à interface. Quando a interface estiver pronta, os passos serão enviados um por vez, e o trabalho aguardará a aprovação ou reprovação do Gus antes de prosseguir para o próximo grupo.
