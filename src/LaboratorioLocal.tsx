@@ -2,6 +2,7 @@ import { useEffect, useState, type FormEvent } from 'react';
 import { gravarRegistroLaboratorio, lerLaboratorio, type ArmazenamentoLocal, type EstadoLaboratorio } from './laboratorioLocal';
 import { ORIGENS } from './origens';
 import { ARMAS_OPERARIO, armaOperarioValida } from './armaOperario';
+import { atributosIniciaisValidos, pontosRestantesAtributos, type AtributosIniciais } from './atributosCriacao';
 
 const armazenamento: ArmazenamentoLocal = {
   getItem: chave => window.localStorage.getItem(chave),
@@ -21,6 +22,7 @@ export default function LaboratorioLocal() {
   const [classePersonagem, setClassePersonagem] = useState('Agente');
   const [origemPersonagem, setOrigemPersonagem] = useState('');
   const [armaOperario, setArmaOperario] = useState('');
+  const [atributos, setAtributos] = useState<AtributosIniciais>({ forca: 1, agilidade: 1, vigor: 1, astucia: 1 });
   const [erro, setErro] = useState('');
   const [aviso, setAviso] = useState('');
   const [ocupado, setOcupado] = useState(false);
@@ -57,13 +59,24 @@ export default function LaboratorioLocal() {
     if (gravar('mesa', nome, { ficticio: true })) setNomeMesa('');
   }
 
+  function alterarAtributo(chave: keyof AtributosIniciais, delta: -1 | 1) {
+    setAtributos(anteriores => {
+      const valor = anteriores[chave] + delta;
+      if (valor < 0 || valor > 3) return anteriores;
+      if (delta === 1 && pontosRestantesAtributos(anteriores) <= 0) return anteriores;
+      if (valor === 0 && Object.entries(anteriores).some(([nome, atual]) => nome !== chave && atual === 0)) return anteriores;
+      return { ...anteriores, [chave]: valor };
+    });
+  }
+
   function criarPersonagem(evento: FormEvent<HTMLFormElement>) {
     evento.preventDefault();
     const nome = nomePersonagem.trim();
     if (!mesaSelecionada || nome.length < 2 || nome.length > 80) { setErro('Selecione uma Mesa e informe um nome entre 2 e 80 caracteres.'); return; }
     if (!origemPersonagem) { setErro('Escolha uma Origem para o personagem.'); return; }
+    if (!atributosIniciaisValidos(atributos)) { setErro('Distribua os 3 pontos iniciais entre os quatro Atributos. Você pode reduzir apenas um deles a 0.'); return; }
     if (origemPersonagem === 'Operário' && !armaOperarioValida(armaOperario)) { setErro('A Origem Operário exige a escolha de uma das seis armas permitidas.'); return; }
-    if (gravar('personagem', nome, { mesaId: mesaSelecionada, classe: classePersonagem, origem: origemPersonagem, armaOperario: origemPersonagem === 'Operário' ? armaOperario : null, ficticio: true, etapa: 'rascunho-identidade' })) setNomePersonagem('');
+    if (gravar('personagem', nome, { mesaId: mesaSelecionada, classe: classePersonagem, origem: origemPersonagem, armaOperario: origemPersonagem === 'Operário' ? armaOperario : null, atributos, ficticio: true, etapa: 'rascunho-identidade-atributos' })) setNomePersonagem('');
   }
 
   return <div className="aplicativo laboratorio-local">
@@ -105,6 +118,18 @@ export default function LaboratorioLocal() {
             <label>Classe <select value={classePersonagem} onChange={e => setClassePersonagem(e.target.value)} disabled={!estado || ocupado}><option value="Agente">Agente</option><option value="Autodidata">Autodidata</option><option value="Operador">Operador</option></select></label>
             <label>Origem <select required value={origemPersonagem} onChange={e => { setOrigemPersonagem(e.target.value); setArmaOperario(''); }} disabled={!estado || ocupado}><option value="">Selecione uma Origem</option>{ORIGENS.map(origem => <option key={origem.nome} value={origem.nome}>{origem.nome}</option>)}</select></label>
             {origemPersonagem === 'Operário' && <label>Arma Corpo a Corpo semelhante a ferramenta <select required value={armaOperario} onChange={e => setArmaOperario(e.target.value)} disabled={!estado || ocupado}><option value="">Escolha uma arma</option>{ARMAS_OPERARIO.map(arma => <option key={arma} value={arma}>{arma}</option>)}</select><small>Escolha obrigatória na criação. A arma recebe +1 no Teste de Ataque e soma 2 × FOR ao dano, conforme a regra da Origem.</small></label>}
+            <div className="criar-atributos">
+              <div className="criar-linha"><strong>Atributos iniciais</strong><span className={pontosRestantesAtributos(atributos) === 0 ? 'pontos-prontos' : 'pontos-restantes'}>{pontosRestantesAtributos(atributos)} ponto(s) restante(s)</span></div>
+              <p className="ajuda-atributos">Todos começam em 1. Distribua +3 pontos. Opcionalmente reduza um único Atributo a 0 para receber +1 ponto. Máximo 3 na criação.</p>
+              <div className="criar-grid">{([
+                ['forca','FOR'],['agilidade','AGI'],['vigor','VIG'],['astucia','AST']
+              ] as const).map(([chave, sigla]) => <div className="criar-stat" key={chave}>
+                <small>{sigla}</small><div className="controle-stat">
+                  <button type="button" aria-label={'Diminuir '+sigla} onClick={() => alterarAtributo(chave,-1)} disabled={!estado || ocupado || atributos[chave] === 0}>−</button>
+                  <b>{atributos[chave]}</b>
+                  <button type="button" aria-label={'Aumentar '+sigla} onClick={() => alterarAtributo(chave,1)} disabled={!estado || ocupado || atributos[chave] === 3 || pontosRestantesAtributos(atributos) === 0}>+</button>
+                </div></div>)}</div>
+            </div>
             <label>Nome do personagem <input value={nomePersonagem} onChange={e => setNomePersonagem(e.target.value)} minLength={2} maxLength={80} required disabled={!estado || mesas.length === 0 || ocupado} placeholder="Ex.: Alex Morgan" /></label>
             <button className="acao" type="submit" disabled={!estado || mesas.length === 0 || ocupado}>Criar rascunho local <span>→</span></button>
           </form>
