@@ -18,7 +18,7 @@ Consequências:
 - benefício fica vinculado à arma escolhida, não a qualquer arma corpo a corpo;
 - ativação precisa preservar a associação.
 
-**Pendente:** catálogo de armas elegíveis e tipo/coluna/RPC de persistência. Não presumir que qualquer item descrito como ferramenta seja elegível.
+**Decisão P-02 confirmada em 30/10/2026:** somente Cutelo, Martelo, Machadinha, Machado, Marreta e Motosserra são elegíveis. A lista é fechada para a Origem Operário; nenhuma outra arma corpo a corpo pode ser escolhida para esse benefício.
 
 ## 2. O que o código local já representa
 
@@ -121,7 +121,7 @@ O livro J 50–51 lista estas Armas Corpo a Corpo e descreve explicitamente algu
 
 A tabela também lista armas que não são descritas como ferramentas (Bastão, Faca, Punhal, Réplicas, Cassetete, Faca de Combate, Hatchet e Machete). Não é seguro concluir apenas pelo nome que sejam elegíveis. O livro não traz uma lista fechada nem critério formal além de “semelhante a uma ferramenta”.
 
-**Ponto para decisão do responsável pelo cânone:** confirmar se a elegibilidade do Operário deve ser limitada às opções explicitamente descritas como ferramenta no livro (Cutelo, Martelo, Machadinha, Machado, Marreta e Motosserra), ou se alguma outra arma da tabela também deve ser aceita. Até essa decisão, a lista é candidata, não uma regra fechada.
+**Decisão P-02 — respondida pelo responsável pelo projeto em 30/10/2026:** a elegibilidade fica restrita exclusivamente às seis opções acima: Cutelo, Martelo, Machadinha, Machado, Marreta e Motosserra. A lista é fechada; a interface e a validação no servidor devem rejeitar qualquer outra arma.
 
 ## 9. Conferência canônica adicional — coletes
 
