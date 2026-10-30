@@ -1,5 +1,5 @@
-import { PONTOS_CLASSE, PERICIAS_CLASSE, totalPontos } from './pericias';
-import { ORIGENS } from './origens';
+import { PONTOS_CLASSE, PERICIAS_CLASSE, totalPontos } from './pericias.ts';
+import { ORIGENS } from './origens.ts';
 
 export const NOMES_PERICIAS = [
   'Acrobacia','Atletismo','Fortitude','Furtividade','Investigação','Luta',
