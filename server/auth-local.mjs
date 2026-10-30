@@ -170,20 +170,40 @@ export function prepararAutenticacaoLocal(db) {
       throw erro;
     }
   }
+
+  if (versaoAtual < 4) {
+    db.exec('BEGIN IMMEDIATE');
+    try {
+      db.exec(`
+        ALTER TABLE tickets_websocket_locais ADD COLUMN session_token_hash TEXT;
+        DELETE FROM tickets_websocket_locais;
+      `);
+      db.prepare('INSERT INTO schema_migrations (version, applied_at) VALUES (?, ?)').run(4, new Date().toISOString());
+      db.exec('COMMIT');
+    } catch (erro) {
+      db.exec('ROLLBACK');
+      throw erro;
+    }
+  }
 }
 
 export function consumirTicketWebSocketLocal(db, ticket) {
   if (typeof ticket !== 'string' || !/^[A-Za-z0-9_-]{40,100}$/.test(ticket)) return null;
   const agora = new Date().toISOString();
+  const ticketHash = hashToken(ticket);
   db.exec('BEGIN IMMEDIATE');
   try {
     const registro = db.prepare(`
       SELECT c.id, c.email
       FROM tickets_websocket_locais t
       JOIN contas_locais c ON c.id = t.conta_id
+      JOIN sessoes_locais s
+        ON s.token_hash = t.session_token_hash
+       AND s.conta_id = t.conta_id
+       AND s.expira_em > ?
       WHERE t.token_hash = ? AND t.expira_em > ?
-    `).get(hashToken(ticket), agora);
-    db.prepare('DELETE FROM tickets_websocket_locais WHERE token_hash = ?').run(hashToken(ticket));
+    `).get(agora, ticketHash, agora);
+    db.prepare('DELETE FROM tickets_websocket_locais WHERE token_hash = ?').run(ticketHash);
     db.exec('COMMIT');
     return registro ? { id: registro.id, email: registro.email } : null;
   } catch (erro) {
@@ -192,17 +212,22 @@ export function consumirTicketWebSocketLocal(db, ticket) {
   }
 }
 
-export async function autenticarContaLocal(req, db) {
+function obterTokenSessao(req) {
   const cabecalho = req.headers.authorization ?? '';
   const correspondencia = /^Bearer ([A-Za-z0-9_-]{40,100})$/.exec(cabecalho);
-  if (!correspondencia) return null;
+  return correspondencia?.[1] ?? null;
+}
+
+export async function autenticarContaLocal(req, db) {
+  const token = obterTokenSessao(req);
+  if (!token) return null;
   const agora = new Date().toISOString();
   const sessao = db.prepare(`
-    SELECT c.id, c.email, s.expira_em
+    SELECT c.id, c.email
     FROM sessoes_locais s
     JOIN contas_locais c ON c.id = s.conta_id
     WHERE s.token_hash = ? AND s.expira_em > ?
-  `).get(hashToken(correspondencia[1]), agora);
+  `).get(hashToken(token), agora);
   return sessao ? { id: sessao.id, email: sessao.email } : null;
 }
 
@@ -276,12 +301,17 @@ export async function tratarRotaAutenticacao(req, res, url, db) {
         json(res, 401, { error: 'Sessão ausente ou expirada.' });
         return true;
       }
+      const tokenSessao = obterTokenSessao(req);
+      if (!tokenSessao) {
+        json(res, 401, { error: 'Sessão ausente ou expirada.' });
+        return true;
+      }
       const ticket = randomBytes(32).toString('base64url');
       const agora = new Date();
       const expira = new Date(agora.getTime() + 30_000);
       db.prepare('DELETE FROM tickets_websocket_locais WHERE expira_em <= ?').run(agora.toISOString());
-      db.prepare('INSERT INTO tickets_websocket_locais (token_hash, conta_id, criada_em, expira_em) VALUES (?, ?, ?, ?)')
-        .run(hashToken(ticket), conta.id, agora.toISOString(), expira.toISOString());
+      db.prepare('INSERT INTO tickets_websocket_locais (token_hash, conta_id, criada_em, expira_em, session_token_hash) VALUES (?, ?, ?, ?, ?)')
+        .run(hashToken(ticket), conta.id, agora.toISOString(), expira.toISOString(), hashToken(tokenSessao));
       json(res, 201, { ticket, expiresAt: expira.toISOString(), singleUse: true });
       return true;
     }
