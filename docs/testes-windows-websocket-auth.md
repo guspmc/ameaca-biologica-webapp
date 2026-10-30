@@ -19,7 +19,8 @@ Este roteiro deve ser executado depois que os testes automatizados do branch est
 - Ticket aleatório, com expiração curta e uso único.
 - Ticket inválido/desconhecido recusado.
 - Rotas antigas `/api/events` desativadas (HTTP 410).
-- Migração SQLite registrada e persistente após reinício.
+- Migrações SQLite 1–4 registradas e persistentes após reinício.
+- Revogação de ticket pendente quando a sessão emissora é encerrada (logout).
 
 ## Testes manuais no Windows
 
@@ -39,11 +40,11 @@ Com uma sessão autenticada, fazer POST em `/api/auth/ws-ticket` enviando o cabe
 
 **Esperado:** segunda tentativa recusada com HTTP 401.
 
-### 3. Revogação após logout — PENDENTE / BLOQUEADO
+### 3. Revogação após logout
 
-Não executar como critério de aprovação ainda. O ticket atual não está vinculado à sessão específica que o emitiu, e o logout não revoga tickets já emitidos. Isso é uma lacuna conhecida, não um teste aprovado.
+A migration 4 vincula cada ticket ao hash da sessão que o emitiu. O consumo exige que essa sessão ainda exista e não esteja expirada; o logout remove a sessão.
 
-**Critério futuro:** após correção e teste automatizado, emitir ticket, fazer logout e tentar conectar. A conexão deve ser recusada.
+**Esperado:** emitir ticket, fazer logout e tentar conectar. A conexão deve ser recusada com HTTP 401. O teste automatizado cobre a revogação no banco; a confirmação do handshake real ainda depende de teste automatizado de integração.
 
 ### 4. Expiração
 
@@ -71,11 +72,11 @@ Encerrar o servidor com Ctrl+C e iniciar novamente.
 
 ## Critério para aprovação
 
-Esta etapa ainda NÃO está liberada para aprovação humana. Primeiro, os testes automatizados e o build precisam passar em evidência verificável. O cenário 3 permanece bloqueado até a revogação de tickets no logout ser implementada e testada. Qualquer aceitação de ticket expirado ou reutilizado bloqueia a etapa.
+Esta etapa ainda NÃO está liberada para aprovação humana. A revogação por logout foi implementada e possui teste de unidade/integrado ao endpoint HTTP, mas os testes automatizados completos, o build e o handshake WebSocket real ainda precisam de evidência verificável. Qualquer aceitação de ticket expirado ou reutilizado bloqueia a etapa.
 
 ## Limitações conhecidas
 
-- O ticket autentica uma conta, mas ainda não está vinculado à sessão específica que o emitiu; o logout não revoga tickets já emitidos. Essa lacuna bloqueia aprovação de segurança.
+- O ticket está vinculado à sessão emissora por hash; o consumo rejeita tickets cuja sessão foi encerrada ou expirou. O handshake real ainda precisa de cobertura automatizada.
 - O WebSocket ainda não está inscrito em uma Mesa nem aplica autorização por Mesa.
 - O transporte ainda é HTTP/WS sem TLS. Usar apenas dados fictícios; não inserir credenciais reais de campanha em rede compartilhada.
 - O cliente de interface ainda precisa ser adaptado para solicitar ticket antes de abrir o WebSocket.
