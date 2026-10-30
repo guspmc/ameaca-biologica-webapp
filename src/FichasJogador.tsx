@@ -407,6 +407,18 @@ export default function FichasJogador({supabase,usuarioId,mesas,sinalAtualizacao
               <div><small>NÍVEL</small><strong>{ficha.nivel}</strong></div>
               <div><small>ESTADO</small><strong>Rascunho</strong></div>
             </div>
+            <details>
+              <summary>Valores derivados · fórmulas do Arquivo do Jogador</summary>
+              <div className="ficha-fatos">
+                <div><small>PV MÁXIMOS</small><strong>{ficha.pv_maximo??'—'}</strong></div>
+                <div><small>BI MÁXIMA</small><strong>{ficha.bi_maximo??'—'}</strong></div>
+                <div><small>SA MÁXIMA</small><strong>{ficha.sa_maximo??'—'}</strong></div>
+                <div><small>DEFESA</small><strong>{ficha.defesa??'—'}</strong></div>
+                <div><small>INVENTÁRIO</small><strong>{4+ficha.forca+(ficha.origem==='Mochileiro'?1:0)} Espaços</strong></div>
+                <div><small>MOVIMENTO</small><strong>9 m</strong></div>
+              </div>
+              <p className="ficha-dica">Referências: PV por Nível = base da Classe + VIG; BI Máxima = BI Base + AST + bônus aplicáveis; SA Máxima = AGI + AST + bônus; Defesa = 10 + AGI + modificadores aplicáveis; Inventário = 4 + FOR + expansões e bônus. Os máximos e a Defesa exibidos são os valores persistidos pelo servidor. Itens Característicos não ocupam Espaços.</p>
+            </details>
             {dadosDaClasse(ficha.classe)&&<details>
               <summary>Características da Classe · referência do Arquivo do Jogador</summary>
               <div className="ficha-fatos">
