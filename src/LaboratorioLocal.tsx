@@ -1,5 +1,5 @@
 import { useEffect, useState, type FormEvent } from 'react';
-import { gravarRegistroLaboratorio, lerLaboratorio, type ArmazenamentoLocal, type EstadoLaboratorio } from './laboratorioLocal';
+import { gravarRegistroLaboratorio, lerLaboratorio, type ArmazenamentoLocal, type EstadoLaboratorio } from './persistenciaLaboratorio';
 import { ORIGENS } from './origens';
 import { ARMAS_OPERARIO, armaOperarioValida } from './armaOperario';
 import { atributosIniciaisValidos, pontosRestantesAtributos, type AtributosIniciais } from './atributosCriacao';
