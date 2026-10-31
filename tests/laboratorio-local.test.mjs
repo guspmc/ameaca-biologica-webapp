@@ -8,7 +8,7 @@ import {
   gravarRegistroLaboratorio,
   removerRegistroLaboratorio,
   limparLaboratorio,
-} from '../src/laboratorioLocal.ts';
+} from '../src/persistenciaLaboratorio.ts';
 
 function armazenamentoFalso() {
   const dados = new Map();
