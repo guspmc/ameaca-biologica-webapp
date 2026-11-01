@@ -185,6 +185,37 @@ export function prepararAutenticacaoLocal(db) {
       throw erro;
     }
   }
+
+  if (versaoAtual < 6) {
+    db.exec('BEGIN IMMEDIATE');
+    try {
+      db.exec(`
+        CREATE TABLE solicitacoes_mesa_locais_nova (
+          id TEXT PRIMARY KEY,
+          mesa_id TEXT NOT NULL REFERENCES mesas(id) ON DELETE CASCADE,
+          conta_id TEXT NOT NULL REFERENCES contas_locais(id) ON DELETE CASCADE,
+          convite_id TEXT NOT NULL REFERENCES convites_mesa_locais(id) ON DELETE RESTRICT,
+          status TEXT NOT NULL CHECK (status IN ('pendente', 'aprovada', 'recusada')),
+          criada_em TEXT NOT NULL,
+          analisada_em TEXT,
+          analisada_por TEXT REFERENCES contas_locais(id) ON DELETE RESTRICT
+        );
+        INSERT INTO solicitacoes_mesa_locais_nova
+          (id, mesa_id, conta_id, convite_id, status, criada_em, analisada_em, analisada_por)
+        SELECT id, mesa_id, conta_id, convite_id, status, criada_em, analisada_em, analisada_por
+        FROM solicitacoes_mesa_locais;
+        DROP TABLE solicitacoes_mesa_locais;
+        ALTER TABLE solicitacoes_mesa_locais_nova RENAME TO solicitacoes_mesa_locais;
+        CREATE INDEX idx_solicitacoes_mesa_status
+          ON solicitacoes_mesa_locais(mesa_id, status, criada_em);
+        CREATE UNIQUE INDEX idx_solicitacoes_pendentes_unica
+          ON solicitacoes_mesa_locais(mesa_id, conta_id) WHERE status = 'pendente';
+      `);
+      db.prepare('INSERT INTO schema_migrations (version, applied_at) VALUES (?, ?)').run(6, new Date().toISOString());
+      db.exec('COMMIT');
+    } catch (erro) { db.exec('ROLLBACK'); throw erro; }
+  }
+
   if (versaoAtual < 5) {
     db.exec('BEGIN IMMEDIATE');
     try {
@@ -483,11 +514,22 @@ export async function tratarRotaMesas(req, res, url, db) {
       if (!convite) { json(res, 404, { error: 'Convite inválido ou indisponível.' }); return true; }
       const membro = db.prepare('SELECT 1 FROM participantes_mesa WHERE mesa_id = ? AND conta_id = ?').get(convite.mesa_id, conta.id);
       if (membro) { json(res, 409, { error: 'Sua conta já participa desta Mesa.' }); return true; }
-      const existente = db.prepare('SELECT status FROM solicitacoes_mesa_locais WHERE mesa_id = ? AND conta_id = ?').get(convite.mesa_id, conta.id);
-      if (existente) { json(res, 409, { error: existente.status === 'pendente' ? 'Sua solicitação já está pendente.' : 'Esta solicitação já foi analisada.' }); return true; }
       const id = randomBytes(16).toString('hex');
       const agora = new Date().toISOString();
-      db.prepare("INSERT INTO solicitacoes_mesa_locais (id, mesa_id, conta_id, convite_id, status, criada_em) VALUES (?, ?, ?, ?, 'pendente', ?)").run(id, convite.mesa_id, conta.id, convite.id, agora);
+      db.exec('BEGIN IMMEDIATE');
+      try {
+        const pendente = db.prepare("SELECT id FROM solicitacoes_mesa_locais WHERE mesa_id = ? AND conta_id = ? AND status = 'pendente'").get(convite.mesa_id, conta.id);
+        if (pendente) {
+          db.exec('ROLLBACK');
+          json(res, 409, { error: 'Sua solicitação já está pendente.' });
+          return true;
+        }
+        db.prepare("INSERT INTO solicitacoes_mesa_locais (id, mesa_id, conta_id, convite_id, status, criada_em) VALUES (?, ?, ?, ?, 'pendente', ?)").run(id, convite.mesa_id, conta.id, convite.id, agora);
+        db.exec('COMMIT');
+      } catch (erro) {
+        db.exec('ROLLBACK');
+        throw erro;
+      }
       json(res, 202, { request: { id, status: 'pendente', createdAt: agora } });
       return true;
     }
