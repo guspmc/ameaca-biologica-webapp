@@ -6,6 +6,8 @@ import { atributosIniciaisValidos, pontosRestantesAtributos, type AtributosInici
 import { NOMES_PERICIAS, periciasPermitidasNaCriacao, distribuicaoPericiasValida, pontosGastosPericias } from './periciasCriacao';
 import { PONTOS_CLASSE } from './pericias';
 import FichaLocal from './FichaLocal';
+import { HABILIDADES_BASICAS } from './habilidades';
+import { opcoesEquipamento } from './equipamento';
 
 const armazenamento: ArmazenamentoLocal = {
   getItem: chave => window.localStorage.getItem(chave),
@@ -26,6 +28,8 @@ export default function LaboratorioLocal() {
   const [classePersonagem, setClassePersonagem] = useState('Agente');
   const [origemPersonagem, setOrigemPersonagem] = useState('');
   const [armaOperario, setArmaOperario] = useState('');
+  const [habilidadeBasica, setHabilidadeBasica] = useState('');
+  const [equipamentoInicial, setEquipamentoInicial] = useState('');
   const [atributos, setAtributos] = useState<AtributosIniciais>({ forca: 1, agilidade: 1, vigor: 1, astucia: 1 });
   const [periciaTreinada, setPericiaTreinada] = useState('');
   const [periciaExtraAmnesico, setPericiaExtraAmnesico] = useState('');
@@ -99,7 +103,7 @@ export default function LaboratorioLocal() {
     if (!atributosIniciaisValidos(atributos)) { setErro('Distribua os 3 pontos iniciais entre os quatro Atributos. Você pode reduzir apenas um deles a 0.'); return; }
     if (!distribuicaoPericiasValida(classePersonagem, origemPersonagem, periciaTreinada, distribuicaoPericias, periciaExtraAmnesico)) { setErro('Escolha o Treinamento da Origem e distribua os pontos que desejar, sem ultrapassar o limite da Classe nem os graus permitidos.'); return; }
     if (origemPersonagem === 'Operário' && !armaOperarioValida(armaOperario)) { setErro('A Origem Operário exige a escolha de uma das seis armas permitidas.'); return; }
-    if (gravar('personagem', nome, { mesaId: mesaSelecionada, classe: classePersonagem, origem: origemPersonagem, armaOperario: origemPersonagem === 'Operário' ? armaOperario : null, atributos, periciaOrigemTreinada: periciaTreinada, periciaOrigemExtra: origemPersonagem === 'Amnésico' ? periciaExtraAmnesico : null, distribuicaoPericias, ficticio: true, etapa: 'rascunho-criacao-inicial' }, personagemEmEdicao ?? undefined)) {
+    if (gravar('personagem', nome, { mesaId: mesaSelecionada, classe: classePersonagem, origem: origemPersonagem, armaOperario: origemPersonagem === 'Operário' ? armaOperario : null, atributos, periciaOrigemTreinada: periciaTreinada, periciaOrigemExtra: origemPersonagem === 'Amnésico' ? periciaExtraAmnesico : null, distribuicaoPericias, habilidadeBasica: habilidadeBasica || null, equipamentoInicial: equipamentoInicial || null, ficticio: true, etapa: 'rascunho-criacao-inicial' }, personagemEmEdicao ?? undefined)) {
       setNomePersonagem('');
       setPersonagemEmEdicao(null);
       setAviso(personagemEmEdicao ? 'Rascunho atualizado sem criar outro registro.' : 'Rascunho criado neste dispositivo.');
@@ -142,7 +146,7 @@ export default function LaboratorioLocal() {
             <label>Mesa do personagem <select required value={mesaSelecionada} onChange={e => setMesaSelecionada(e.target.value)} disabled={!estado || mesas.length === 0 || ocupado}>
               <option value="">Selecione uma Mesa local</option>{mesas.map(mesa => <option key={mesa.id} value={mesa.id}>{mesa.nome}</option>)}
             </select></label>
-            <label>Classe <select value={classePersonagem} onChange={e => { setClassePersonagem(e.target.value); setDistribuicaoPericias({}); }} disabled={!estado || ocupado}><option value="Agente">Agente</option><option value="Autodidata">Autodidata</option><option value="Operador">Operador</option></select></label>
+            <label>Classe <select value={classePersonagem} onChange={e => { setClassePersonagem(e.target.value); setDistribuicaoPericias({}); setHabilidadeBasica(''); setEquipamentoInicial(''); }} disabled={!estado || ocupado}><option value="Agente">Agente</option><option value="Autodidata">Autodidata</option><option value="Operador">Operador</option></select></label>
             <label>Origem <select required value={origemPersonagem} onChange={e => { setOrigemPersonagem(e.target.value); setArmaOperario(''); setPericiaTreinada(''); setPericiaExtraAmnesico(''); setDistribuicaoPericias({}); }} disabled={!estado || ocupado}><option value="">Selecione uma Origem</option>{ORIGENS.map(origem => <option key={origem.nome} value={origem.nome}>{origem.nome}</option>)}</select></label>
             {origemPersonagem === 'Operário' && <label>Arma Corpo a Corpo semelhante a ferramenta <select required value={armaOperario} onChange={e => setArmaOperario(e.target.value)} disabled={!estado || ocupado}><option value="">Escolha uma arma</option>{ARMAS_OPERARIO.map(arma => <option key={arma} value={arma}>{arma}</option>)}</select><small>Escolha obrigatória na criação. A arma recebe +1 no Teste de Ataque e soma 2 × FOR ao dano, conforme a regra da Origem.</small></label>}
             {origemPersonagem && <div className="criar-pericias">
@@ -165,6 +169,12 @@ export default function LaboratorioLocal() {
                   </div>;
                 })}</div>}
             </div>}
+            <label>Habilidade Básica <select value={habilidadeBasica} onChange={e => setHabilidadeBasica(e.target.value)} disabled={!estado || ocupado}>
+              <option value="">Selecione uma Habilidade Básica</option>{HABILIDADES_BASICAS.filter(habilidade => habilidade.classe === classePersonagem).map(habilidade => <option key={habilidade.id} value={habilidade.id}>{habilidade.nome} · {habilidade.ramo}</option>)}
+            </select><small>Escolha uma Habilidade Básica da Classe. Os efeitos são informativos nesta etapa; não são executados automaticamente.</small></label>
+            <label>Equipamento Inicial <select value={equipamentoInicial} onChange={e => setEquipamentoInicial(e.target.value)} disabled={!estado || ocupado}>
+              <option value="">Selecione um conjunto inicial</option>{opcoesEquipamento(classePersonagem).map(opcao => <option key={opcao.id} value={opcao.id}>{opcao.id} · {opcao.nome}</option>)}
+            </select><small>O conjunto C exige compras personalizadas, que ainda serão integradas ao laboratório.</small></label>
             <div className="criar-atributos">
               <div className="criar-linha"><strong>Atributos iniciais</strong><span className={pontosRestantesAtributos(atributos) === 0 ? 'pontos-prontos' : 'pontos-restantes'}>{pontosRestantesAtributos(atributos)} ponto(s) restante(s)</span></div>
               <p className="ajuda-atributos">Todos começam em 1. Distribua +3 pontos. Opcionalmente reduza um único Atributo a 0 para receber +1 ponto. Máximo 3 na criação.</p>
@@ -192,6 +202,8 @@ export default function LaboratorioLocal() {
                   setMesaSelecionada(String(dados.mesaId ?? ''));
                   setClassePersonagem(String(dados.classe ?? 'Agente'));
                   setOrigemPersonagem(String(dados.origem ?? ''));
+                  setHabilidadeBasica(String(dados.habilidadeBasica ?? ''));
+                  setEquipamentoInicial(String(dados.equipamentoInicial ?? ''));
                   setArmaOperario(String(dados.armaOperario ?? ''));
                   setAtributos((dados.atributos as AtributosIniciais) ?? { forca: 1, agilidade: 1, vigor: 1, astucia: 1 });
                   setPericiaTreinada(String(dados.periciaOrigemTreinada ?? ''));
