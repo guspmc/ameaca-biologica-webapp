@@ -152,6 +152,21 @@ export default function ConexaoServidorLocal() {
     } finally { setConsultando(false); }
   }
 
+  async function revogarConvite(mesa: MesaLocal) {
+    if (!sessao || mesa.role !== 'mestre') return;
+    setErro(''); setAviso(''); setConsultando(true);
+    try {
+      const resposta = await criarClienteServidorLocal({ baseUrl: endereco.trim(), token: sessao.token }).revogarConvite(mesa.id);
+      setConvitesGerados(atual => { const novo = { ...atual }; delete novo[mesa.id]; return novo; });
+      setAviso(resposta.revoked
+        ? 'Convite ativo revogado. Códigos anteriores não permitem novas solicitações; participantes atuais permanecem na Mesa.'
+        : 'Não havia convite ativo para revogar.');
+    } catch (problema) {
+      if (problema instanceof ErroServidorLocal && problema.status === 401) encerrarSessao('A sessão expirou ou foi encerrada no servidor. Entre novamente.');
+      else setErro(problema instanceof Error ? problema.message : 'Não foi possível revogar o convite.');
+    } finally { setConsultando(false); }
+  }
+
   async function copiarConvite(codigo: string) {
     try {
       if (!navigator.clipboard?.writeText) throw new Error('Área de transferência indisponível neste contexto.');
@@ -282,7 +297,8 @@ export default function ConexaoServidorLocal() {
             {mesas.filter(mesa => mesa.role === 'mestre').map(mesa => <section className="servidor-local-controle-mesa" key={mesa.id}>
               <h4>Administração · {mesa.name}</h4>
               <div className="servidor-local-botoes">
-                <button className="botao-claro" type="button" disabled={consultando} onClick={() => void gerarConvite(mesa)}>Gerar convite</button>
+                <button className="botao-claro" type="button" disabled={consultando} onClick={() => void gerarConvite(mesa)}>{convitesGerados[mesa.id] ? 'Renovar convite' : 'Gerar convite'}</button>
+                <button className="botao-claro" type="button" disabled={consultando} onClick={() => void revogarConvite(mesa)}>Revogar convite ativo</button>
                 <button className="botao-claro" type="button" disabled={consultando} onClick={() => void carregarSolicitacoes(mesa)}>Ver solicitações</button>
               </div>
               {convitesGerados[mesa.id] && <div className="servidor-local-codigo"><label>Código de convite<input readOnly value={convitesGerados[mesa.id]} /></label><button className="botao-claro" type="button" onClick={() => void copiarConvite(convitesGerados[mesa.id])}>Copiar código</button></div>}
