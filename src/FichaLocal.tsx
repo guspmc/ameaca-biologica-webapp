@@ -20,6 +20,7 @@ type DadosFichaLocal = {
   equipamentoInicial?: unknown;
   distribuicaoPericias?: unknown;
   comprasIniciais?: unknown;
+  revisaoCompras?: unknown;
 };
 
 type Props = {
