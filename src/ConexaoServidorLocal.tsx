@@ -152,6 +152,15 @@ export default function ConexaoServidorLocal() {
     } finally { setConsultando(false); }
   }
 
+  async function copiarConvite(codigo: string) {
+    try {
+      if (!navigator.clipboard?.writeText) throw new Error('Área de transferência indisponível neste contexto.');
+      await navigator.clipboard.writeText(codigo);
+      setAviso('Código copiado.'); setErro('');
+    } catch {
+      setAviso(''); setErro('Não foi possível copiar automaticamente. Selecione o código exibido e copie manualmente.');
+    }
+  }
   async function carregarSolicitacoes(mesa: MesaLocal) {
     if (!sessao || mesa.role !== 'mestre') return;
     setErro(''); setAviso(''); setConsultando(true);
@@ -276,7 +285,7 @@ export default function ConexaoServidorLocal() {
                 <button className="botao-claro" type="button" disabled={consultando} onClick={() => void gerarConvite(mesa)}>Gerar convite</button>
                 <button className="botao-claro" type="button" disabled={consultando} onClick={() => void carregarSolicitacoes(mesa)}>Ver solicitações</button>
               </div>
-              {convitesGerados[mesa.id] && <div className="servidor-local-codigo"><label>Código de convite<input readOnly value={convitesGerados[mesa.id]} /></label><button className="botao-claro" type="button" onClick={() => { void navigator.clipboard.writeText(convitesGerados[mesa.id]); setAviso('Código copiado.'); }}>Copiar código</button></div>}
+              {convitesGerados[mesa.id] && <div className="servidor-local-codigo"><label>Código de convite<input readOnly value={convitesGerados[mesa.id]} /></label><button className="botao-claro" type="button" onClick={() => void copiarConvite(convitesGerados[mesa.id])}>Copiar código</button></div>}
               {(solicitacoes[mesa.id] ?? []).length ? <ul className="servidor-local-lista-mesas">{solicitacoes[mesa.id].map(pedido => <li key={pedido.id}><div><strong>{pedido.email}</strong><small>Solicitação pendente</small></div><div className="servidor-local-botoes"><button className="botao-claro" type="button" disabled={consultando} onClick={() => void decidirSolicitacao(mesa, pedido.id, 'aprovar')}>Aprovar</button><button className="botao-claro" type="button" disabled={consultando} onClick={() => void decidirSolicitacao(mesa, pedido.id, 'recusar')}>Recusar</button></div></li>)}</ul> : solicitacoes[mesa.id] ? <p className="servidor-local-vazio">Nenhuma solicitação pendente.</p> : null}
             </section>)}
             <form className="formulario servidor-local-form-mesa" onSubmit={ingressarPorConvite}>
