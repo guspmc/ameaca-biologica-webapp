@@ -442,7 +442,7 @@ export async function tratarRotaMesas(req, res, url, db) {
       return true;
     }
 
-    const criarConvite = /^\\/api\\/mesas\\/([a-f0-9]{32})\\/convites$/.exec(rota);
+    const criarConvite = /^\/api\/mesas\/([a-f0-9]{32})\/convites$/.exec(rota);
     if (metodo === 'POST' && criarConvite) {
       const mesaId = criarConvite[1];
       const mestre = db.prepare("SELECT 1 FROM participantes_mesa WHERE mesa_id = ? AND conta_id = ? AND papel = 'mestre'").get(mesaId, conta.id);
@@ -472,7 +472,7 @@ export async function tratarRotaMesas(req, res, url, db) {
       return true;
     }
 
-    const solicitacoes = /^\\/api\\/mesas\\/([a-f0-9]{32})\\/solicitacoes$/.exec(rota);
+    const solicitacoes = /^\/api\/mesas\/([a-f0-9]{32})\/solicitacoes$/.exec(rota);
     if (metodo === 'GET' && solicitacoes) {
       const mesaId = solicitacoes[1];
       const mestre = db.prepare("SELECT 1 FROM participantes_mesa WHERE mesa_id = ? AND conta_id = ? AND papel = 'mestre'").get(mesaId, conta.id);
@@ -482,7 +482,7 @@ export async function tratarRotaMesas(req, res, url, db) {
       return true;
     }
 
-    const analisar = /^\\/api\\/mesas\\/([a-f0-9]{32})\\/solicitacoes\\/([a-f0-9]{32})\\/(aprovar|recusar)$/.exec(rota);
+    const analisar = /^\/api\/mesas\/([a-f0-9]{32})\/solicitacoes\/([a-f0-9]{32})\/(aprovar|recusar)$/.exec(rota);
     if (metodo === 'POST' && analisar) {
       const [, mesaId, solicitacaoId, acao] = analisar;
       db.exec('BEGIN IMMEDIATE');
