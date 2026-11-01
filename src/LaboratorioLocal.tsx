@@ -103,7 +103,7 @@ export default function LaboratorioLocal() {
     });
   }
 
-  function carregarEdicao(id: string, nome: string, dados: Record<string, unknown>) {
+  function carregarEdicao(id: string, nome: string, dados: Record<string, unknown>, secao: 'caracteristicas' | 'pericias' | 'inventario' = 'caracteristicas') {
     setPersonagemEmEdicao(id);
     setNomePersonagem(nome);
     setMesaSelecionada(String(dados.mesaId ?? ''));
@@ -123,7 +123,8 @@ export default function LaboratorioLocal() {
     setErro('');
     setAviso('Rascunho carregado para edição. As alterações só serão gravadas ao salvar.');
     setFichaAberta(null);
-    document.querySelector('.laboratorio-local .formulario')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    const destino = secao === 'pericias' ? 'laboratorio-pericias' : secao === 'inventario' ? 'laboratorio-inventario' : 'laboratorio-caracteristicas';
+    document.getElementById(destino)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
   function salvarPersonagem(evento: FormEvent<HTMLFormElement>) {
@@ -236,7 +237,7 @@ export default function LaboratorioLocal() {
           </div>
         </section>
       </div>
-      {fichaAberta && <FichaLocal nome={fichaAberta.nome} mesa={fichaAberta.mesa} dados={fichaAberta.dados} aoFechar={() => setFichaAberta(null)} aoEditar={() => carregarEdicao(fichaAberta.id, fichaAberta.nome, fichaAberta.dados)} />}
+      {fichaAberta && <FichaLocal nome={fichaAberta.nome} mesa={fichaAberta.mesa} dados={fichaAberta.dados} aoFechar={() => setFichaAberta(null)} aoEditar={secao => carregarEdicao(fichaAberta.id, fichaAberta.nome, fichaAberta.dados, secao)} />}
       {erro && <p className="erro lab-mensagem" role="alert">{erro}</p>}
       {aviso && <p className="sucesso lab-mensagem" role="status">{aviso}</p>}
       <p className="lab-nota">A gravação só é confirmada quando o navegador conclui o armazenamento local. Os dados permanecem neste dispositivo até serem apagados pelo usuário no próprio navegador.</p>
