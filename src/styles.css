@@ -381,3 +381,21 @@ footer { margin-top:45px; border-top:1px solid #dce2df; padding-top:19px; color:
 .ficha-local-editor .linha-pericia-lab small{font-size:10px;color:#756b5c}
 .ficha-local-editor [role=status]{margin:0;font-size:12px;font-weight:700}
 @media(max-width:560px){.ficha-local-editor{padding:11px}.ficha-local-editor .criar-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+
+/* Diagnóstico isolado do servidor local */
+.servidor-local-pagina{max-width:1000px}
+.servidor-local-cartao{max-width:720px;margin:24px 0}
+.servidor-local-cartao h2{margin:0 0 10px;font:800 24px Georgia,serif}
+.servidor-local-resultado{margin-top:20px;padding:15px;border:1px solid #82917a;background:#edf2e8}
+.servidor-local-resultado .sucesso{margin:0 0 12px;color:#315c37}
+.servidor-local-resultado dl{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:0}
+.servidor-local-resultado dl>div{padding:9px;background:#fffdf6;border:1px solid #d3d9ca;min-width:0}
+.servidor-local-resultado dt{font:800 9px monospace;color:#756b5c;text-transform:uppercase}
+.servidor-local-resultado dd{margin:5px 0 0;font-size:12px;font-weight:750;overflow-wrap:anywhere}
+.servidor-local-aviso{margin:12px 0 0;padding:10px;border-left:4px solid #98744b;background:#f8eddd;font-size:11px;line-height:1.55}
+.servidor-local-limites{max-width:720px}
+.servidor-local-limites p{font-size:12px;line-height:1.6}
+.servidor-local-voltar{max-width:720px;margin:20px 0;font-size:12px}
+.servidor-local-voltar a{color:#87333d;font-weight:800}
+@media(max-width:560px){.servidor-local-cartao{margin:14px 0}.servidor-local-resultado dl{grid-template-columns:1fr}}
