@@ -11,7 +11,9 @@ function enderecoInicial(): string {
 export default function ConexaoServidorLocal() {
   const [endereco, setEndereco] = useState(enderecoInicial);
   const [saude, setSaude] = useState<SaudeServidorLocal | null>(null);
-  const [sessao, setSessao] = useState<SessaoLocal | null>(null);\n  const [mesas, setMesas] = useState<MesaLocal[]>([]);\n  const [nomeMesa, setNomeMesa] = useState('');
+  const [sessao, setSessao] = useState<SessaoLocal | null>(null);
+  const [mesas, setMesas] = useState<MesaLocal[]>([]);
+  const [nomeMesa, setNomeMesa] = useState('');
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
   const [modoCadastro, setModoCadastro] = useState(false);
@@ -21,6 +23,7 @@ export default function ConexaoServidorLocal() {
 
   function encerrarSessao(mensagem: string) {
     setSessao(null);
+    setMesas([]);
     setAviso(mensagem);
   }
 
