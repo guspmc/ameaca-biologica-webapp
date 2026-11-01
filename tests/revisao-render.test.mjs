@@ -32,7 +32,8 @@ test('revisao renderizada resume escolhas, destaca pendencias e mantem rascunho 
  assert.ok(completo.includes('BI após ataque infectante: A definir'));
  assert.ok(completo.includes('Durabilidade ao Aparar: A definir'));
  assert.ok(!completo.includes('Salvar Funcionamento'));
- assert.ok(completo.includes('descartada ao fechar a ficha'));
+ assert.ok(completo.includes('As escolhas são aplicadas ao formulário.'));
+ assert.ok(completo.includes('Aplicar ao rascunho'));
  const vazio=render({...ficha,equipamento_inicial:'C',compras_iniciais:{},revisao_compras:0});
  assert.ok(vazio.includes('Plano inicial sem compras'));
  assert.ok(!vazio.includes('Salve o plano para confirmar'));
@@ -43,7 +44,7 @@ test('funcionamento preparado para salvar: renderiza estado carregado sem chamad
  const inicial={modo:'manual',preferenciasMisto:{municao:false,inventario:true,duracaoEfeitos:true,biInfectante:null,durabilidadeAparar:false}};
  const antes=structuredClone(inicial);let chamadas=0;
  const html=renderToStaticMarkup(React.createElement(Funcionamento,{inicial,revisaoInicial:4,aoSalvar:async()=>{chamadas++;return 5;}}));
- assert.ok(html.includes('Salvar Preferências'));assert.ok(html.includes('Versão carregada: 4'));
+ assert.ok(html.includes('Aplicar ao rascunho'));assert.ok(!html.includes('Salvar Preferências'));assert.ok(html.includes('Versão carregada: 4'));
  assert.ok(html.includes('a configuração já salva permanece'));assert.ok(html.includes('Munição após disparos registrados: Desabilitado'));
  assert.equal(chamadas,0);assert.deepEqual(inicial,antes);
 });
@@ -52,6 +53,6 @@ test('revisao conecta configuracao carregada e botao de salvamento sem efeitos a
  let chamadas=0;
  const config={modo:'manual',preferenciasMisto:{municao:false,inventario:true,duracaoEfeitos:true,biInfectante:null,durabilidadeAparar:false}};
  const html=renderToStaticMarkup(React.createElement(Revisao,{ficha,irPara:()=>{},funcionamento:{inicial:config,revisaoInicial:2,aoSalvar:async()=>{chamadas++;return 3;}}}));
- assert.ok(html.includes('Salvar Preferências'));assert.ok(html.includes('Versão carregada: 2'));
+ assert.ok(html.includes('Aplicar ao rascunho'));assert.ok(!html.includes('Salvar Preferências'));assert.ok(html.includes('Versão carregada: 2'));
  assert.ok(!html.includes('Funcionamento da ficha · prévia não salva'));assert.equal(chamadas,0);
 });
