@@ -135,14 +135,28 @@ export default function FichaLocal({ nome, mesa, dados, aoFechar, aoEditar, aoSa
         </section>
 
         <section id="ficha-local-combate" className="ficha-local-secao">
-          <h2><span>03</span> Combate</h2>
+          <div className="ficha-local-titulo-secao"><h2><span>03</span> Combate</h2><span className="ficha-local-selo">PREPARAÇÃO</span></div>
+          <p className="ficha-local-legenda">Resumo operacional da personagem. Os valores abaixo são informativos: esta seção ainda não inicia nem resolve um combate.</p>
+
+          <h3 className="ficha-local-subtitulo">Defesa e deslocamento</h3>
           <div className="ficha-local-grade">
             <div><small>DEFESA BÁSICA</small><strong>{defesa}</strong><p>10 + AGI{origem === 'Policial' ? ' + 2 da Origem Policial' : ''}. Equipamentos ainda não aplicados.</p></div>
-            <div><small>MOVIMENTO</small><strong>9 m</strong><p>Movimento base.</p></div>
-            <div><small>HABILIDADE DE CLASSE</small><strong>{habilidade?.nome ?? 'Não selecionada'}</strong><p>{habilidade ? habilidade.efeito : 'Os efeitos de combate não são executados nesta ficha de rascunho.'}</p></div>
-            <div><small>ARMAS</small><strong>Não equipadas</strong><p>A escolha de arma e a resolução de Ataques serão integradas ao módulo de equipamento/combate.</p></div>
+            <div><small>MOVIMENTO BASE</small><strong>9 m</strong><p>Deslocamento base informado pela ficha.</p></div>
           </div>
-          <p className="ficha-local-aviso">Combate ativo, iniciativa, ações, Ataques, Dano, munição e Condições ainda não estão implementados aqui. Nenhuma rolagem ou efeito é simulado.</p>
+
+          <h3 className="ficha-local-subtitulo">Habilidade e equipamento</h3>
+          <div className="ficha-local-grade">
+            <div><small>HABILIDADE BÁSICA</small><strong>{habilidade?.nome ?? 'Não selecionada'}</strong><p>{habilidade ? habilidade.efeito : 'Nenhuma Habilidade Básica foi selecionada.'}</p></div>
+            <div><small>ARMAMENTO</small><strong>Não equipado</strong><p>{kit ? 'Conjunto inicial selecionado: ' + kit.nome + '. A escolha faz parte do planejamento do inventário e não significa que uma arma esteja equipada.' : 'Selecione um conjunto inicial na seção Inventário. A seleção não equipa automaticamente uma arma.'}</p></div>
+          </div>
+
+          <h3 className="ficha-local-subtitulo">Combate ativo</h3>
+          <div className="ficha-local-grade">
+            <div><small>INICIATIVA E AÇÕES</small><strong>A integrar</strong><p>O acompanhamento de turnos, ações, reações e movimentação em combate ainda não está implementado.</p></div>
+            <div><small>CONDIÇÕES E EFEITOS</small><strong>A integrar</strong><p>Esta ficha ainda não registra nem aplica Condições ou efeitos temporários.</p></div>
+            <div><small>ATAQUES E DANO</small><strong>A integrar</strong><p>Resolução de Testes, Defesa de alvos, Dano e consumo de munição não estão implementados nesta seção.</p></div>
+          </div>
+          <p className="ficha-local-aviso">Nenhuma rolagem, ação, alteração de recurso ou efeito é simulado nesta versão. PV, SA e BI máximos aparecem no cabeçalho da ficha; valores atuais e seus ajustes ainda dependem da implementação da persistência de combate.</p>
         </section>
 
         <section id="ficha-local-inventario" className="ficha-local-secao">
