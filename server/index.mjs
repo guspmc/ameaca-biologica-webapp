@@ -11,6 +11,7 @@ const PAGINA = readFileSync(new URL('./index.html', import.meta.url), 'utf8');
 const AVISO = 'Protótipo LAN sem proteção de transporte. Use apenas dados fictícios e uma rede privada confiável; não use dados reais de campanha ou segredos.';
 const LIMITE_MENSAGEM = 280;
 const INTERVALO_HEARTBEAT_MS = 25_000;
+const ORIGENS_CORS_PADRAO = ['https://guspmc.github.io', 'http://localhost:5173', 'http://127.0.0.1:5173'];
 
 function respostaJson(res, status, dados) {
   res.writeHead(status, {
@@ -61,10 +62,19 @@ export function createLocalServer({
   port = 4175,
   dataDir = resolve(process.cwd(), '.ameaca-local'),
   heartbeatIntervalMs = INTERVALO_HEARTBEAT_MS,
+  allowedOrigins = ORIGENS_CORS_PADRAO,
 } = {}) {
   if (!Number.isInteger(heartbeatIntervalMs) || heartbeatIntervalMs < 10) {
     throw new Error('heartbeatIntervalMs deve ser um inteiro igual ou superior a 10 ms.');
   }
+  if (!Array.isArray(allowedOrigins) || allowedOrigins.some(origem => typeof origem !== 'string' || origem === '*' || origem === 'null')) {
+    throw new Error('allowedOrigins deve ser uma lista explícita de origens HTTP/HTTPS; curingas não são permitidos.');
+  }
+  const origensPermitidas = new Set(allowedOrigins.map(origem => {
+    const url = new URL(origem);
+    if (!['http:', 'https:'].includes(url.protocol) || url.origin !== origem) throw new Error('Cada origem permitida deve conter somente protocolo e host.');
+    return url.origin;
+  }));
 
   mkdirSync(dataDir, { recursive: true });
   const caminhoBanco = resolve(dataDir, 'servidor-prototipo.sqlite');
@@ -108,6 +118,24 @@ export function createLocalServer({
     try {
       const url = new URL(req.url ?? '/', 'http://localhost');
       const metodo = req.method ?? 'GET';
+      const origem = req.headers.origin;
+      if (origem) {
+        if (!origensPermitidas.has(origem)) {
+          respostaJson(res, 403, { error: 'Origem não autorizada para acessar o servidor local.' });
+          return;
+        }
+        res.setHeader('access-control-allow-origin', origem);
+        res.setHeader('vary', 'Origin');
+        res.setHeader('access-control-allow-methods', 'GET, POST, OPTIONS');
+        res.setHeader('access-control-allow-headers', 'Accept, Authorization, Content-Type');
+        res.setHeader('access-control-max-age', '600');
+      }
+      if (metodo === 'OPTIONS') {
+        if (!origem) { respostaJson(res, 400, { error: 'Preflight sem origem.' }); return; }
+        res.writeHead(204, { 'cache-control': 'no-store' });
+        res.end();
+        return;
+      }
 
       if (await tratarRotaAutenticacao(req, res, url, db)) return;
       if (await tratarRotaMesas(req, res, url, db)) return;
