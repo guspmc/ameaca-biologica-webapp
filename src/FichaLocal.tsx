@@ -6,6 +6,7 @@ import { HABILIDADES_BASICAS } from './habilidades';
 import type { AtributosIniciais } from './atributosCriacao';
 import { planejarInventarioCriacao } from './inventarioCriacao';
 import EditorAtributosPericiasLocal from './EditorAtributosPericiasLocal';
+import EditorCaracteristicasLocal from './EditorCaracteristicasLocal';
 
 type DadosFichaLocal = {
   classe?: unknown;
@@ -27,6 +28,7 @@ type Props = {
   aoFechar: () => void;
   aoEditar: (secao: 'caracteristicas' | 'pericias' | 'inventario') => void;
   aoSalvarAtributosPericias: (dados: { atributos: AtributosIniciais; periciaOrigemTreinada: string; periciaOrigemExtra: string | null; distribuicaoPericias: Record<string, number> }) => Promise<boolean>;
+  aoSalvarCaracteristicas: (dados: { classe: string; origem: string; armaOperario: string; habilidadeBasica: string; equipamentoInicial: string }) => Promise<boolean>;
 };
 
 const ATRIBUTOS: { chave: keyof AtributosIniciais; sigla: string; nome: string }[] = [
@@ -40,7 +42,7 @@ function numero(valor: unknown): number {
   return typeof valor === 'number' && Number.isFinite(valor) ? valor : 0;
 }
 
-export default function FichaLocal({ nome, mesa, dados, aoFechar, aoEditar, aoSalvarAtributosPericias }: Props) {
+export default function FichaLocal({ nome, mesa, dados, aoFechar, aoEditar, aoSalvarAtributosPericias, aoSalvarCaracteristicas }: Props) {
   const ficha = dados as DadosFichaLocal;
   const classe = typeof ficha.classe === 'string' ? ficha.classe : '';
   const origem = typeof ficha.origem === 'string' ? ficha.origem : '';
@@ -101,6 +103,7 @@ export default function FichaLocal({ nome, mesa, dados, aoFechar, aoEditar, aoSa
 
         <section id="ficha-local-caracteristicas" className="ficha-local-secao">
           <div className="ficha-local-titulo-secao"><h2><span>01</span> Características</h2><button type="button" className="ficha-local-editar-secao" onClick={() => aoEditar("caracteristicas")}>Editar seção ↗</button></div>
+          <EditorCaracteristicasLocal iniciais={{ classe, origem, armaOperario: typeof ficha.armaOperario === 'string' ? ficha.armaOperario : '', habilidadeBasica: typeof ficha.habilidadeBasica === 'string' ? ficha.habilidadeBasica : '', equipamentoInicial: kitSelecionado }} aoSalvar={aoSalvarCaracteristicas} />
           <div className="ficha-local-grade">
             <div><small>CLASSE</small><strong>{classe || 'Pendente'}</strong><p>{dadosClasse?.identidade ?? 'Dados da Classe ainda não definidos.'}</p></div>
             <div><small>ORIGEM</small><strong>{origem || 'Pendente'}</strong><p>{dadosOrigem?.beneficio ?? 'Benefício da Origem ainda não definido.'}</p></div>
