@@ -4,6 +4,7 @@ import { ORIGENS } from './origens';
 import { capacidadeInventario, caracteristicos, equipamentoInicial as itensDoKit, opcoesEquipamento, espacosOcupados } from './equipamento';
 import { HABILIDADES_BASICAS } from './habilidades';
 import type { AtributosIniciais } from './atributosCriacao';
+import { planejarInventarioCriacao } from './inventarioCriacao';
 
 type DadosFichaLocal = {
   classe?: unknown;
@@ -15,6 +16,7 @@ type DadosFichaLocal = {
   habilidadeBasica?: unknown;
   equipamentoInicial?: unknown;
   distribuicaoPericias?: unknown;
+  comprasIniciais?: unknown;
 };
 
 type Props = {
@@ -61,6 +63,8 @@ export default function FichaLocal({ nome, mesa, dados, aoFechar }: Props) {
   const kit = opcoesEquipamento(classe).find(item => item.id === kitSelecionado);
   const itensKit = itensDoKit(classe, kitSelecionado);
   const espacosKit = espacosOcupados(itensKit);
+  let inventarioPlanejado: ReturnType<typeof planejarInventarioCriacao> | null = null;
+  try { inventarioPlanejado = planejarInventarioCriacao({ classe, equipamento_inicial: kitSelecionado, forca: numero(atributos.forca), origem: origem || null, nivel: 1, estado_ficha: 'rascunho', compras_iniciais: (ficha.comprasIniciais as Record<string, number>) ?? {} }); } catch { inventarioPlanejado = null; }
   const ramo = dadosClasse?.ramos ?? [];
 
   return <div className="ficha-local-fundo" role="dialog" aria-modal="true" aria-labelledby="ficha-local-titulo">
@@ -138,9 +142,9 @@ export default function FichaLocal({ nome, mesa, dados, aoFechar }: Props) {
             <strong>Itens característicos</strong>
             {itensClasse.length ? itensClasse.map(item => <div key={item.id}><strong>{item.nome}</strong><small>{item.detalhe} · Característico · 0 Espaços</small></div>) : <p>Itens característicos ainda não definidos para esta Classe.</p>}
             <strong>Conjunto inicial · {kit ? kit.id + ' — ' + kit.nome : 'Não selecionado'}</strong>
-            {itensKit.length ? itensKit.map(item => <div key={item.id}><strong>{item.nome}</strong><small>{item.detalhe} · {item.espacos} Espaço(s)</small></div>) : <p>Nenhum conjunto inicial selecionado.</p>}
+            {inventarioPlanejado ? inventarioPlanejado.itens.map(item => <div key={item.chaveCriacao}><strong>{item.nome} × {item.quantidade}</strong><small>{item.local === 'caracteristico' ? 'Característico · vinculado à Classe' : 'Inventário · ' + item.espacos + ' Espaço(s)'} · {item.estado.tipo.replace('_',' ')}</small></div>) : <p>Não foi possível montar a prévia do inventário. Confira Classe, Origem, kit e compras do rascunho.</p>}
           </div>
-          <p className="ficha-local-legenda">A capacidade considera 4 + FOR{origem === 'Mochileiro' ? ' + 1 de Mochileiro' : ''} = {capacidade} Espaços. O conjunto selecionado ocupa {espacosKit} Espaço(s). Compras personalizadas do conjunto C, estado de equipamento e operações de Inventário ainda não estão integrados.</p>
+          <p className="ficha-local-legenda">A capacidade considera 4 + FOR{origem === 'Mochileiro' ? ' + 1 de Mochileiro' : ''} = {capacidade} Espaços. O conjunto selecionado ocupa {inventarioPlanejado?.ocupados ?? espacosKit} de {capacidade} Espaços. Os itens aparecem em estado inicial guardado/não equipado; operações de Inventário ainda não estão integradas.</p>
         </section>
 
         <footer className="ficha-local-rodape">AMEAÇA BIOLÓGICA RPG · DADOS LOCAIS · RASCUNHO NÃO ATIVO</footer>
