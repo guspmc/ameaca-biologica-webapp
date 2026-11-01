@@ -131,9 +131,9 @@ export default function ConexaoServidorLocal() {
         <p className="secundario">Informe o endereço HTTP/HTTPS da máquina que está executando o servidor local. Em outro dispositivo da mesma rede, use o IP da máquina servidora e a porta configurada.</p>
         <form className="formulario" onSubmit={evento => { evento.preventDefault(); void verificar(); }}>
           <label>URL do servidor
-            <input type="url" required value={endereco} onChange={evento => { setEndereco(evento.target.value); setSaude(null); setSessao(null); }} placeholder="http://127.0.0.1:4175" />
+            <input type="url" required disabled={Boolean(sessao) || consultando} value={endereco} onChange={evento => { setEndereco(evento.target.value); setSaude(null); }} placeholder="http://127.0.0.1:4175" />
           </label>
-          <button className="acao" type="submit" disabled={consultando || !endereco.trim()}>
+          <button className="acao" type="submit" disabled={consultando || Boolean(sessao) || !endereco.trim()}>
             {consultando ? 'Verificando...' : 'Verificar conexão'} <span>→</span>
           </button>
         </form>
