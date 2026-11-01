@@ -399,3 +399,13 @@ footer { margin-top:45px; border-top:1px solid #dce2df; padding-top:19px; color:
 .servidor-local-voltar{max-width:720px;margin:20px 0;font-size:12px}
 .servidor-local-voltar a{color:#87333d;font-weight:800}
 @media(max-width:560px){.servidor-local-cartao{margin:14px 0}.servidor-local-resultado dl{grid-template-columns:1fr}}
+
+
+/* Autenticação experimental do servidor local */
+.servidor-local-auth{max-width:720px;margin:18px 0 24px}
+.servidor-local-auth h2{margin:0 0 10px;font:800 24px Georgia,serif}
+.servidor-local-expira{padding:12px;border-left:4px solid #98744b;background:#f8eddd;color:#5d5142;font-size:12px;line-height:1.6}
+.servidor-local-botoes{display:flex;flex-wrap:wrap;gap:10px;margin-top:16px}
+.servidor-local-alternar{margin-top:15px;padding:8px 0;border:0;background:transparent;color:#87333d;text-align:left;text-decoration:underline;font-size:12px;font-weight:800}
+.servidor-local-feedback{max-width:720px;margin:12px 0;padding:12px 14px}
+@media(max-width:560px){.servidor-local-botoes{display:grid}.servidor-local-botoes>*{width:100%}}
