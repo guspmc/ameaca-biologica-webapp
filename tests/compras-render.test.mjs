@@ -29,7 +29,7 @@ test('previa React renderiza sem compra real e com controles iniciais consistent
   assert.ok(!html.includes('<form'));
   let chamadas=0;
   const salvo=renderToStaticMarkup(React.createElement(Previa,{capacidade:4,planoSalvo:{'municao-9mm':3},revisaoSalva:2,aoSalvar:async()=>{chamadas++;return 3;}}));
-  assert.match(salvo,/Aplicar ao rascunho/);assert.ok(!salvo.includes('Salvar Plano de Compras'));assert.match(salvo,/45 unidade/);assert.match(salvo,/Versão carregada: 2/);assert.ok(salvo.includes('0/3 Moedas restantes'));assert.equal(chamadas,0);
+  assert.match(salvo,/Aplicar ao rascunho/);assert.ok(!salvo.includes('Salvar Plano de Compras'));assert.match(salvo,/45 unidade/);assert.match(salvo,/Revisão local do formulário: 2/);assert.ok(salvo.includes('0/3 Moedas restantes'));assert.equal(chamadas,0);
   const {default:Equipamento}=await import(pathToFileURL(join(destino,'EquipamentoRascunho.mjs')).href);
   const grade=renderToStaticMarkup(React.createElement(Equipamento,{supabase:{rpc:async()=>{throw Error('Nao deve chamar RPC ao renderizar');}},ficha:{id:'fixture',classe:'Operador',forca:0,origem:null,nivel:1,estado_ficha:'rascunho',equipamento_inicial:'C',compras_iniciais:{'municao-9mm':3},revisao_compras:2},dona:true,recarregar:async()=>{}}));
   assert.ok(grade.includes('4 / 4 ESPAÇOS'));assert.match(grade,/grid-column:span 2/);assert.match(grade,/45 unidade/);
