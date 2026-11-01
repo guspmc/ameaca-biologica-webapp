@@ -177,7 +177,7 @@ export default function LaboratorioLocal() {
             </div>
             <label>Nome do personagem <input value={nomePersonagem} onChange={e => setNomePersonagem(e.target.value)} minLength={2} maxLength={80} required disabled={!estado || mesas.length === 0 || ocupado} placeholder="Ex.: Alex Morgan" /></label>
             <button className="acao" type="submit" disabled={!estado || mesas.length === 0 || ocupado}>{personagemEmEdicao ? 'Salvar alterações do rascunho' : 'Criar rascunho local'} <span>→</span></button>
-            {personagemEmEdicao && <button className="botao-claro" type="button" disabled={ocupado} onClick={() => { setPersonagemEmEdicao(null); setNomePersonagem(''); setAviso('Edição cancelada. O rascunho salvo foi preservado.'); }}>Cancelar edição</button>}
+            {personagemEmEdicao && <button className="botao-claro" type="button" disabled={ocupado} onClick={() => { setPersonagemEmEdicao(null); setMesaSelecionada(''); setNomePersonagem(''); setClassePersonagem('Agente'); setOrigemPersonagem(''); setArmaOperario(''); setAtributos({ forca: 1, agilidade: 1, vigor: 1, astucia: 1 }); setPericiaTreinada(''); setPericiaExtraAmnesico(''); setDistribuicaoPericias({}); setErro(''); setAviso('Edição cancelada. O rascunho salvo foi preservado; o formulário foi limpo para uma nova criação.'); }}>Cancelar edição</button>}
           </form>
           <div className="lab-lista"><h3>Rascunhos ({personagens.length})</h3>
             {personagens.length === 0 ? <p className="vazio">Nenhum rascunho de personagem.</p> :
