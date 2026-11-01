@@ -5,6 +5,7 @@ import { ARMAS_OPERARIO, armaOperarioValida } from './armaOperario';
 import { atributosIniciaisValidos, pontosRestantesAtributos, type AtributosIniciais } from './atributosCriacao';
 import { NOMES_PERICIAS, periciasPermitidasNaCriacao, distribuicaoPericiasValida, pontosGastosPericias } from './periciasCriacao';
 import { PONTOS_CLASSE } from './pericias';
+import FichaLocal from './FichaLocal';
 
 const armazenamento: ArmazenamentoLocal = {
   getItem: chave => window.localStorage.getItem(chave),
@@ -32,6 +33,7 @@ export default function LaboratorioLocal() {
   const [erro, setErro] = useState('');
   const [aviso, setAviso] = useState('');
   const [ocupado, setOcupado] = useState(false);
+  const [fichaAberta, setFichaAberta] = useState<{ nome: string; mesa: string; dados: Record<string, unknown> } | null>(null);
 
   useEffect(() => {
     try { setEstado(lerLaboratorio(armazenamento)); }
@@ -183,7 +185,7 @@ export default function LaboratorioLocal() {
             {personagens.length === 0 ? <p className="vazio">Nenhum rascunho de personagem.</p> :
               <ul className="lista-mesas">{personagens.map(personagem => {
                 const mesa = mesas.find(item => item.id === personagem.dados.mesaId);
-                return <li key={personagem.id}><div className="linha-mesa lab-linha"><span className="sigla">P</span><span className="detalhes-mesa"><strong>{personagem.nome}</strong><small>{mesa?.nome ?? 'Mesa não encontrada'} · {String(personagem.dados.classe ?? 'Classe pendente')} · {String(personagem.dados.origem ?? 'Origem pendente')}{personagem.dados.armaOperario ? ' · '+String(personagem.dados.armaOperario) : ''} · RASCUNHO LOCAL</small></span><button className="botao-claro" type="button" disabled={ocupado} onClick={() => {
+                return <li key={personagem.id}><div className="linha-mesa lab-linha"><span className="sigla">P</span><span className="detalhes-mesa"><strong>{personagem.nome}</strong><small>{mesa?.nome ?? 'Mesa não encontrada'} · {String(personagem.dados.classe ?? 'Classe pendente')} · {String(personagem.dados.origem ?? 'Origem pendente')}{personagem.dados.armaOperario ? ' · '+String(personagem.dados.armaOperario) : ''} · RASCUNHO LOCAL</small></span><button className="botao-claro" type="button" onClick={() => setFichaAberta({ nome: personagem.nome, mesa: mesa?.nome ?? 'Mesa não encontrada', dados: personagem.dados })}>Abrir ficha</button><button className="botao-claro" type="button" disabled={ocupado} onClick={() => {
                   const dados = personagem.dados;
                   setPersonagemEmEdicao(personagem.id);
                   setNomePersonagem(personagem.nome);
@@ -201,6 +203,7 @@ export default function LaboratorioLocal() {
           </div>
         </section>
       </div>
+      {fichaAberta && <FichaLocal nome={fichaAberta.nome} mesa={fichaAberta.mesa} dados={fichaAberta.dados} aoFechar={() => setFichaAberta(null)} />}
       {erro && <p className="erro lab-mensagem" role="alert">{erro}</p>}
       {aviso && <p className="sucesso lab-mensagem" role="status">{aviso}</p>}
       <p className="lab-nota">A gravação só é confirmada quando o navegador conclui o armazenamento local. Os dados permanecem neste dispositivo até serem apagados pelo usuário no próprio navegador.</p>
