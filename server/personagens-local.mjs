@@ -62,24 +62,6 @@ function serializar(registro) {
 }
 
 
-export function prepararPersonagensLocal(db) {
-  db.exec(`
-    CREATE TABLE IF NOT EXISTS personagens_locais (
-      id TEXT PRIMARY KEY,
-      mesa_id TEXT NOT NULL REFERENCES mesas(id) ON DELETE CASCADE,
-      conta_id TEXT NOT NULL REFERENCES contas_locais(id) ON DELETE CASCADE,
-      nome TEXT NOT NULL CHECK (length(trim(nome)) BETWEEN 1 AND 80),
-      dados_json TEXT NOT NULL CHECK (json_valid(dados_json) AND json_type(dados_json) = 'object'),
-      criada_em TEXT NOT NULL,
-      atualizada_em TEXT NOT NULL,
-      FOREIGN KEY (mesa_id, conta_id)
-        REFERENCES participantes_mesa(mesa_id, conta_id) ON DELETE CASCADE
-    );
-    CREATE INDEX IF NOT EXISTS idx_personagens_mesa_conta_atualizacao
-      ON personagens_locais(mesa_id, conta_id, atualizada_em DESC);
-  `);
-}
-
 export async function tratarRotaPersonagensLocal(req, res, url, db) {
   const rota = url.pathname;
   if (!rota.startsWith('/api/mesas/') && !rota.startsWith('/api/personagens/')) return false;
