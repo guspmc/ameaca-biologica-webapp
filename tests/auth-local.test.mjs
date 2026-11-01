@@ -11,17 +11,23 @@ async function setup(t) {
   const dataDir = await mkdtemp(join(tmpdir(), 'ameaca-auth-local-'));
   const app = createLocalServer({ host: '127.0.0.1', port: 0, dataDir });
   await app.listen();
-  let fechado = false;
-  const fechar = async () => {
-    if (fechado) return;
-    await app.close();
-    fechado = true;
+  const servidores = new Set([app]);
+  const servidoresFechados = new WeakSet();
+  const fecharServidor = async servidor => {
+    if (servidoresFechados.has(servidor)) return;
+    await servidor.close();
+    servidoresFechados.add(servidor);
+  };
+  const fechar = () => fecharServidor(app);
+  const registrarServidor = servidor => {
+    servidores.add(servidor);
+    return () => fecharServidor(servidor);
   };
   t.after(async () => {
-    await fechar();
+    for (const servidor of servidores) await fecharServidor(servidor);
     await rm(dataDir, { recursive: true, force: true });
   });
-  return { base: `http://127.0.0.1:${app.address.port}`, app, dataDir, fechar };
+  return { base: `http://127.0.0.1:${app.address.port}`, app, dataDir, fechar, registrarServidor };
 }
 async function abrirWebSocket(url, origin) {
   const origem = origin ?? new URL(url.replace(/^ws:/, 'http:').replace(/^wss:/, 'https:')).origin;
@@ -108,7 +114,7 @@ test('limita tentativas repetidas de cadastro por IP e informa quando tentar nov
 });
 
 test('registra a migração de autenticação uma única vez', async t => {
-  const { app, dataDir, fechar } = await setup(t);
+  const { app, dataDir, fechar, registrarServidor } = await setup(t);
   assert.deepEqual(
     app.db.prepare('SELECT version FROM schema_migrations ORDER BY version').all().map(row => row.version),
     [1, 2, 3, 4],
@@ -117,9 +123,7 @@ test('registra a migração de autenticação uma única vez', async t => {
 
   const reiniciado = createLocalServer({ host: '127.0.0.1', port: 0, dataDir });
   await reiniciado.listen();
-  t.after(async () => {
-    await reiniciado.close();
-  });
+  registrarServidor(reiniciado);
   assert.deepEqual(
     reiniciado.db.prepare('SELECT version FROM schema_migrations ORDER BY version').all().map(row => row.version),
     [1, 2, 3, 4],
@@ -127,7 +131,7 @@ test('registra a migração de autenticação uma única vez', async t => {
 });
 
 test('preserva conta e sessão existentes ao reiniciar o servidor e reaplicar migrações', async t => {
-  const { base, app, dataDir, fechar } = await setup(t);
+  const { base, app, dataDir, fechar, registrarServidor } = await setup(t);
   const credentials = { email: 'preservar@example.test', password: 'senha-local-comprida-2026' };
   assert.equal((await post(base, '/api/auth/register', credentials)).status, 201);
   const login = await post(base, '/api/auth/login', credentials);
@@ -141,9 +145,7 @@ test('preserva conta e sessão existentes ao reiniciar o servidor e reaplicar mi
 
   const reiniciado = createLocalServer({ host: '127.0.0.1', port: 0, dataDir });
   await reiniciado.listen();
-  t.after(async () => {
-    await reiniciado.close();
-  });
+  registrarServidor(reiniciado);
   const resposta = await fetch(`http://127.0.0.1:${reiniciado.address.port}/api/auth/me`, {
     headers: { authorization: `Bearer ${token}` },
   });
