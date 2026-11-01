@@ -14,6 +14,9 @@ export default function ConexaoServidorLocal() {
   const [sessao, setSessao] = useState<SessaoLocal | null>(null);
   const [mesas, setMesas] = useState<MesaLocal[]>([]);
   const [nomeMesa, setNomeMesa] = useState('');
+  const [codigoConvite, setCodigoConvite] = useState('');
+  const [convitesGerados, setConvitesGerados] = useState<Record<string, string>>({});
+  const [solicitacoes, setSolicitacoes] = useState<Record<string, { id: string; status: 'pendente'; createdAt: string; accountId: string; email: string }[]>>({});
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
   const [modoCadastro, setModoCadastro] = useState(false);
@@ -134,6 +137,64 @@ export default function ConexaoServidorLocal() {
     } finally { setConsultando(false); }
   }
 
+
+  async function gerarConvite(mesa: MesaLocal) {
+    if (!sessao || mesa.role !== 'mestre') return;
+    setErro(''); setAviso(''); setConsultando(true);
+    try {
+      const cliente = criarClienteServidorLocal({ baseUrl: endereco.trim(), token: sessao.token });
+      const resposta = await cliente.criarConvite(mesa.id);
+      setConvitesGerados(atual => ({ ...atual, [mesa.id]: resposta.invitation.code }));
+      setAviso('Convite gerado. Copie e compartilhe o código; ele identifica a Mesa, mas não concede acesso automaticamente.');
+    } catch (problema) {
+      if (problema instanceof ErroServidorLocal && problema.status === 401) encerrarSessao('A sessão expirou ou foi encerrada no servidor. Entre novamente.');
+      else setErro(problema instanceof Error ? problema.message : 'Não foi possível gerar o convite.');
+    } finally { setConsultando(false); }
+  }
+
+  async function carregarSolicitacoes(mesa: MesaLocal) {
+    if (!sessao || mesa.role !== 'mestre') return;
+    setErro(''); setAviso(''); setConsultando(true);
+    try {
+      const resposta = await criarClienteServidorLocal({ baseUrl: endereco.trim(), token: sessao.token }).listarSolicitacoes(mesa.id);
+      setSolicitacoes(atual => ({ ...atual, [mesa.id]: resposta.requests }));
+      setAviso('Solicitações pendentes consultadas no servidor.');
+    } catch (problema) {
+      if (problema instanceof ErroServidorLocal && problema.status === 401) encerrarSessao('A sessão expirou ou foi encerrada no servidor. Entre novamente.');
+      else setErro(problema instanceof Error ? problema.message : 'Não foi possível consultar as solicitações.');
+    } finally { setConsultando(false); }
+  }
+
+  async function decidirSolicitacao(mesa: MesaLocal, id: string, decisao: 'aprovar' | 'recusar') {
+    if (!sessao || mesa.role !== 'mestre') return;
+    setErro(''); setAviso(''); setConsultando(true);
+    try {
+      const cliente = criarClienteServidorLocal({ baseUrl: endereco.trim(), token: sessao.token });
+      await cliente.analisarSolicitacao(mesa.id, id, decisao);
+      const [lista, pedidos] = await Promise.all([cliente.listarMesas(), cliente.listarSolicitacoes(mesa.id)]);
+      setMesas(lista.mesas);
+      setSolicitacoes(atual => ({ ...atual, [mesa.id]: pedidos.requests }));
+      setAviso(decisao === 'aprovar' ? 'Participante aprovado e vínculo confirmado pelo servidor.' : 'Solicitação recusada pelo servidor.');
+    } catch (problema) {
+      if (problema instanceof ErroServidorLocal && problema.status === 401) encerrarSessao('A sessão expirou ou foi encerrada no servidor. Entre novamente.');
+      else setErro(problema instanceof Error ? problema.message : 'Não foi possível analisar a solicitação.');
+    } finally { setConsultando(false); }
+  }
+
+  async function ingressarPorConvite(evento: FormEvent<HTMLFormElement>) {
+    evento.preventDefault();
+    if (!sessao || !codigoConvite.trim()) return;
+    setErro(''); setAviso(''); setConsultando(true);
+    try {
+      await criarClienteServidorLocal({ baseUrl: endereco.trim(), token: sessao.token }).solicitarIngresso(codigoConvite.trim());
+      setCodigoConvite('');
+      setAviso('Solicitação enviada. O acesso à Mesa só será liberado após aprovação do Mestre.');
+    } catch (problema) {
+      if (problema instanceof ErroServidorLocal && problema.status === 401) encerrarSessao('A sessão expirou ou foi encerrada no servidor. Entre novamente.');
+      else setErro(problema instanceof Error ? problema.message : 'Não foi possível solicitar ingresso.');
+    } finally { setConsultando(false); }
+  }
+
   async function consultarSessao() {
     if (!sessao) return;
     setErro(''); setAviso(''); setConsultando(true);
@@ -209,13 +270,26 @@ export default function ConexaoServidorLocal() {
                 <span className={mesa.role === 'mestre' ? 'papel-mestre' : 'papel-jogador'}>{mesa.role === 'mestre' ? 'MESTRE' : 'JOGADOR'}</span>
               </li>)}
             </ul> : <p className="servidor-local-vazio">Nenhuma Mesa vinculada a esta conta ainda.</p>}
+            {mesas.filter(mesa => mesa.role === 'mestre').map(mesa => <section className="servidor-local-controle-mesa" key={mesa.id}>
+              <h4>Administração · {mesa.name}</h4>
+              <div className="servidor-local-botoes">
+                <button className="botao-claro" type="button" disabled={consultando} onClick={() => void gerarConvite(mesa)}>Gerar convite</button>
+                <button className="botao-claro" type="button" disabled={consultando} onClick={() => void carregarSolicitacoes(mesa)}>Ver solicitações</button>
+              </div>
+              {convitesGerados[mesa.id] && <div className="servidor-local-codigo"><label>Código de convite<input readOnly value={convitesGerados[mesa.id]} /></label><button className="botao-claro" type="button" onClick={() => { void navigator.clipboard.writeText(convitesGerados[mesa.id]); setAviso('Código copiado.'); }}>Copiar código</button></div>}
+              {(solicitacoes[mesa.id] ?? []).length ? <ul className="servidor-local-lista-mesas">{solicitacoes[mesa.id].map(pedido => <li key={pedido.id}><div><strong>{pedido.email}</strong><small>Solicitação pendente</small></div><div className="servidor-local-botoes"><button className="botao-claro" type="button" disabled={consultando} onClick={() => void decidirSolicitacao(mesa, pedido.id, 'aprovar')}>Aprovar</button><button className="botao-claro" type="button" disabled={consultando} onClick={() => void decidirSolicitacao(mesa, pedido.id, 'recusar')}>Recusar</button></div></li>)}</ul> : solicitacoes[mesa.id] ? <p className="servidor-local-vazio">Nenhuma solicitação pendente.</p> : null}
+            </section>)}
+            <form className="formulario servidor-local-form-mesa" onSubmit={ingressarPorConvite}>
+              <label>Código de convite recebido<input value={codigoConvite} onChange={evento => setCodigoConvite(evento.target.value)} autoComplete="off" /></label>
+              <button className="acao" type="submit" disabled={consultando || !codigoConvite.trim()}>Solicitar ingresso <span>→</span></button>
+            </form>
             <form className="formulario servidor-local-form-mesa" onSubmit={criarNovaMesa}>
               <label>Nome da nova Mesa
                 <input value={nomeMesa} onChange={evento => setNomeMesa(evento.target.value)} maxLength={80} required placeholder="Ex.: Operação Raccoon City" />
               </label>
               <button className="acao" type="submit" disabled={consultando || !nomeMesa.trim()}>Criar Mesa <span>→</span></button>
             </form>
-            <p className="servidor-local-explica-mesa">Ao criar uma Mesa, sua conta recebe o papel de Mestre. Ingresso de outros participantes ainda não está disponível nesta etapa.</p>
+            <p className="servidor-local-explica-mesa">Ao criar uma Mesa, sua conta recebe o papel de Mestre. Convites identificam a Mesa, mas cada ingresso depende de aprovação.</p>
           </div>
         </> : <>
           <h2>{modoCadastro ? 'Criar conta local' : 'Entrar no servidor'}</h2>
