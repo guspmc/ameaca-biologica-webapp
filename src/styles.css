@@ -365,3 +365,19 @@ footer { margin-top:45px; border-top:1px solid #dce2df; padding-top:19px; color:
 .ficha-local-itens small{font-size:11px;color:#756b5c;line-height:1.5}
 .ficha-local-rodape{padding:18px 0 8px;text-align:center;border-top:1px solid #bdae95;font:9px monospace;letter-spacing:.07em;color:#827765}
 @media(max-width:560px){.ficha-local-fundo{padding:0}.ficha-local{height:100dvh;border:0;border-radius:0;width:100%}.ficha-local-corpo{padding:14px 14px 35px}.ficha-local-topo{padding:10px}.ficha-local-selo{font-size:8px}.ficha-local-recursos{gap:4px}.ficha-local-recursos>div{padding:9px 2px}.ficha-local-recursos strong{font-size:21px}.ficha-local-nav a{font-size:8px;padding:8px 1px}.ficha-local-grade{grid-template-columns:1fr}.ficha-local-pericias{grid-template-columns:1fr}.ficha-local-secao h2{font-size:20px}}
+
+
+/* Editor contextual de Atributos e Perícias na ficha local */
+.ficha-local-editor{display:grid;gap:11px;margin:16px 0;padding:15px;border:1px solid #bdae95;background:#f7efdf}
+.ficha-local-editor h3{margin:0;font:800 18px Georgia,serif;color:#87333d}
+.ficha-local-editor>p{margin:0;font-size:12px;line-height:1.5;color:#675d50}
+.ficha-local-editor label{display:grid;gap:6px;font-size:12px;font-weight:800}
+.ficha-local-editor select{width:100%;min-height:42px;padding:8px;border:1px solid #bdae95;border-radius:4px;background:#fffaf0;color:#282a27}
+.ficha-local-editor .criar-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px}
+.ficha-local-editor .criar-stat{display:grid;gap:6px;justify-items:center;padding:9px 3px;background:#262d2c;color:#fff0dc}
+.ficha-local-editor .criar-stat small{font:9px monospace;text-align:center}
+.ficha-local-editor .linha-pericia-lab{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #d4c6ae}
+.ficha-local-editor .linha-pericia-lab>span{display:grid;gap:3px;font-size:12px}
+.ficha-local-editor .linha-pericia-lab small{font-size:10px;color:#756b5c}
+.ficha-local-editor [role=status]{margin:0;font-size:12px;font-weight:700}
+@media(max-width:560px){.ficha-local-editor{padding:11px}.ficha-local-editor .criar-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
