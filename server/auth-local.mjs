@@ -460,7 +460,7 @@ export async function tratarRotaMesas(req, res, url, db) {
       return true;
     }
 
-    const revogarConvite = /^\\/api\\/mesas\\/([a-f0-9]{32})\\/convites\\/ativo$/.exec(rota);
+    const revogarConvite = /^\/api\/mesas\/([a-f0-9]{32})\/convites\/ativo$/.exec(rota);
     if (metodo === 'DELETE' && revogarConvite) {
       const mesaId = revogarConvite[1];
       db.exec('BEGIN IMMEDIATE');
