@@ -5,6 +5,7 @@ import { capacidadeInventario, caracteristicos, equipamentoInicial as itensDoKit
 import { HABILIDADES_BASICAS } from './habilidades';
 import type { AtributosIniciais } from './atributosCriacao';
 import { planejarInventarioCriacao } from './inventarioCriacao';
+import EditorAtributosPericiasLocal from './EditorAtributosPericiasLocal';
 
 type DadosFichaLocal = {
   classe?: unknown;
@@ -25,6 +26,7 @@ type Props = {
   dados: Record<string, unknown>;
   aoFechar: () => void;
   aoEditar: (secao: 'caracteristicas' | 'pericias' | 'inventario') => void;
+  aoSalvarAtributosPericias: (dados: { atributos: AtributosIniciais; periciaOrigemTreinada: string; periciaOrigemExtra: string | null; distribuicaoPericias: Record<string, number> }) => Promise<boolean>;
 };
 
 const ATRIBUTOS: { chave: keyof AtributosIniciais; sigla: string; nome: string }[] = [
@@ -38,7 +40,7 @@ function numero(valor: unknown): number {
   return typeof valor === 'number' && Number.isFinite(valor) ? valor : 0;
 }
 
-export default function FichaLocal({ nome, mesa, dados, aoFechar, aoEditar }: Props) {
+export default function FichaLocal({ nome, mesa, dados, aoFechar, aoEditar, aoSalvarAtributosPericias }: Props) {
   const ficha = dados as DadosFichaLocal;
   const classe = typeof ficha.classe === 'string' ? ficha.classe : '';
   const origem = typeof ficha.origem === 'string' ? ficha.origem : '';
@@ -110,6 +112,7 @@ export default function FichaLocal({ nome, mesa, dados, aoFechar, aoEditar }: Pr
 
         <section id="ficha-local-pericias" className="ficha-local-secao">
           <div className="ficha-local-titulo-secao"><h2><span>02</span> Atributos e Perícias</h2><button type="button" className="ficha-local-editar-secao" onClick={() => aoEditar("pericias")}>Editar seção ↗</button></div>
+          <EditorAtributosPericiasLocal key={JSON.stringify([atributos, treinada, extra, distribuicao])} classe={classe} origem={origem} atributosIniciais={atributos} treinadaInicial={treinada} extraInicial={extra} distribuicaoInicial={distribuicao} aoSalvar={aoSalvarAtributosPericias} />
           <div className="ficha-local-atributos">
             {ATRIBUTOS.map(item => <div key={item.chave}><small>{item.sigla}</small><strong>{numero(atributos[item.chave])}</strong><span>{item.nome}</span></div>)}
           </div>
