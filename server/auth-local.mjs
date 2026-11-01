@@ -251,7 +251,7 @@ export function prepararAutenticacaoLocal(db) {
     db.exec('BEGIN IMMEDIATE');
     try {
       db.exec(`
-        CREATE TABLE personagens_locais (
+        CREATE TABLE IF NOT EXISTS personagens_locais (
           id TEXT PRIMARY KEY,
           mesa_id TEXT NOT NULL REFERENCES mesas(id) ON DELETE CASCADE,
           conta_id TEXT NOT NULL REFERENCES contas_locais(id) ON DELETE CASCADE,
@@ -262,7 +262,7 @@ export function prepararAutenticacaoLocal(db) {
           FOREIGN KEY (mesa_id, conta_id)
             REFERENCES participantes_mesa(mesa_id, conta_id) ON DELETE CASCADE
         );
-        CREATE INDEX idx_personagens_mesa_conta_atualizacao
+        CREATE INDEX IF NOT EXISTS idx_personagens_mesa_conta_atualizacao
           ON personagens_locais(mesa_id, conta_id, atualizada_em DESC);
       `);
       db.prepare('INSERT INTO schema_migrations (version, applied_at) VALUES (?, ?)').run(7, new Date().toISOString());
