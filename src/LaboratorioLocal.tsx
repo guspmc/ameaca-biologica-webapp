@@ -45,7 +45,7 @@ export default function LaboratorioLocal() {
   const [erro, setErro] = useState('');
   const [aviso, setAviso] = useState('');
   const [ocupado, setOcupado] = useState(false);
-  const [fichaAberta, setFichaAberta] = useState<{ nome: string; mesa: string; dados: Record<string, unknown> } | null>(null);
+  const [fichaAberta, setFichaAberta] = useState<{ id: string; nome: string; mesa: string; dados: Record<string, unknown> } | null>(null);
 
   useEffect(() => {
     try { setEstado(lerLaboratorio(armazenamento)); }
@@ -231,12 +231,12 @@ export default function LaboratorioLocal() {
             {personagens.length === 0 ? <p className="vazio">Nenhum rascunho de personagem.</p> :
               <ul className="lista-mesas">{personagens.map(personagem => {
                 const mesa = mesas.find(item => item.id === personagem.dados.mesaId);
-                return <li key={personagem.id}><div className="linha-mesa lab-linha"><span className="sigla">P</span><span className="detalhes-mesa"><strong>{personagem.nome}</strong><small>{mesa?.nome ?? 'Mesa não encontrada'} · {String(personagem.dados.classe ?? 'Classe pendente')} · {String(personagem.dados.origem ?? 'Origem pendente')}{personagem.dados.armaOperario ? ' · '+String(personagem.dados.armaOperario) : ''} · RASCUNHO LOCAL</small></span><button className="botao-claro" type="button" onClick={() => setFichaAberta({ nome: personagem.nome, mesa: mesa?.nome ?? 'Mesa não encontrada', dados: personagem.dados })}>Abrir ficha</button><button className="botao-claro" type="button" disabled={ocupado} onClick={() => carregarEdicao(personagem.id, personagem.nome, personagem.dados)}>Continuar edição</button></div></li>;
+                return <li key={personagem.id}><div className="linha-mesa lab-linha"><span className="sigla">P</span><span className="detalhes-mesa"><strong>{personagem.nome}</strong><small>{mesa?.nome ?? 'Mesa não encontrada'} · {String(personagem.dados.classe ?? 'Classe pendente')} · {String(personagem.dados.origem ?? 'Origem pendente')}{personagem.dados.armaOperario ? ' · '+String(personagem.dados.armaOperario) : ''} · RASCUNHO LOCAL</small></span><button className="botao-claro" type="button" onClick={() => setFichaAberta({ id: personagem.id, nome: personagem.nome, mesa: mesa?.nome ?? 'Mesa não encontrada', dados: personagem.dados })}>Abrir ficha</button><button className="botao-claro" type="button" disabled={ocupado} onClick={() => carregarEdicao(personagem.id, personagem.nome, personagem.dados)}>Continuar edição</button></div></li>;
               })}</ul>}
           </div>
         </section>
       </div>
-      {fichaAberta && <FichaLocal nome={fichaAberta.nome} mesa={fichaAberta.mesa} dados={fichaAberta.dados} aoFechar={() => setFichaAberta(null)} aoEditar={() => { const registro = personagens.find(item => item.nome === fichaAberta.nome && item.dados === fichaAberta.dados); if (registro) carregarEdicao(registro.id, registro.nome, registro.dados); }} />}
+      {fichaAberta && <FichaLocal nome={fichaAberta.nome} mesa={fichaAberta.mesa} dados={fichaAberta.dados} aoFechar={() => setFichaAberta(null)} aoEditar={() => carregarEdicao(fichaAberta.id, fichaAberta.nome, fichaAberta.dados)} />}
       {erro && <p className="erro lab-mensagem" role="alert">{erro}</p>}
       {aviso && <p className="sucesso lab-mensagem" role="status">{aviso}</p>}
       <p className="lab-nota">A gravação só é confirmada quando o navegador conclui o armazenamento local. Os dados permanecem neste dispositivo até serem apagados pelo usuário no próprio navegador.</p>
