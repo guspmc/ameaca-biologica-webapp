@@ -152,7 +152,7 @@ export default function LaboratorioLocal() {
         </section>
         <section className="cartao cartao-padrao">
           <p className="rotulo">RASCUNHO NÃO OFICIAL</p><h2>Personagens de teste</h2>
-          <p className="secundario">Nesta etapa, o laboratório registra um rascunho inicial com Mesa, Classe, Origem, arma exigida para Operário, Atributos e Perícias. Ainda não é a ficha oficial completa.</p>
+          <p className="secundario">O laboratório registra um rascunho com Mesa, Classe, Origem, Atributos, Perícias, Habilidade Básica, equipamento, compras e preferências de funcionamento. Ainda não é a ficha oficial ativa.</p>
           <form className="formulario" onSubmit={salvarPersonagem}>
             <label>Mesa do personagem <select required value={mesaSelecionada} onChange={e => setMesaSelecionada(e.target.value)} disabled={!estado || mesas.length === 0 || ocupado}>
               <option value="">Selecione uma Mesa local</option>{mesas.map(mesa => <option key={mesa.id} value={mesa.id}>{mesa.nome}</option>)}
@@ -185,7 +185,7 @@ export default function LaboratorioLocal() {
             </select><small>Escolha uma Habilidade Básica da Classe. Os efeitos são informativos nesta etapa; não são executados automaticamente.</small></label>
             <label>Equipamento Inicial <select value={equipamentoInicial} onChange={e => setEquipamentoInicial(e.target.value)} disabled={!estado || ocupado}>
               <option value="">Selecione um conjunto inicial</option>{opcoesEquipamento(classePersonagem).map(opcao => <option key={opcao.id} value={opcao.id}>{opcao.id} · {opcao.nome}</option>)}
-            </select><small>O conjunto C exige compras personalizadas, que ainda serão integradas ao laboratório.</small></label>
+            </select><small>O conjunto C abre um planejador de compras. O catálogo ainda é parcial; as escolhas entram no rascunho quando você salva o personagem.</small></label>
             <div className="criar-atributos">
               <div className="criar-linha"><strong>Atributos iniciais</strong><span className={pontosRestantesAtributos(atributos) === 0 ? 'pontos-prontos' : 'pontos-restantes'}>{pontosRestantesAtributos(atributos)} ponto(s) restante(s)</span></div>
               <p className="ajuda-atributos">Todos começam em 1. Distribua +3 pontos. Opcionalmente reduza um único Atributo a 0 para receber +1 ponto. Máximo 3 na criação.</p>
