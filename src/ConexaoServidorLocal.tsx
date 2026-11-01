@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { criarClienteServidorLocal, type SaudeServidorLocal } from './servidorLocal';
+import { useEffect, useState, type FormEvent } from 'react';
+import { criarClienteServidorLocal, ErroServidorLocal, type SaudeServidorLocal, type SessaoLocal } from './servidorLocal';
 
 const CHAVE_ENDERECO = 'ameaca-biologica:servidor-local:endereco:v1';
 
@@ -11,25 +11,105 @@ function enderecoInicial(): string {
 export default function ConexaoServidorLocal() {
   const [endereco, setEndereco] = useState(enderecoInicial);
   const [saude, setSaude] = useState<SaudeServidorLocal | null>(null);
+  const [sessao, setSessao] = useState<SessaoLocal | null>(null);
+  const [email, setEmail] = useState('');
+  const [senha, setSenha] = useState('');
+  const [modoCadastro, setModoCadastro] = useState(false);
   const [erro, setErro] = useState('');
+  const [aviso, setAviso] = useState('');
   const [consultando, setConsultando] = useState(false);
 
+  function encerrarSessao(mensagem: string) {
+    setSessao(null);
+    setAviso(mensagem);
+  }
+
+  useEffect(() => {
+    if (!sessao) return;
+    const verificarExpiracao = () => {
+      if (Date.parse(sessao.expiresAt) <= Date.now()) {
+        encerrarSessao('Sua sessão local expirou. Entre novamente para continuar.');
+      }
+    };
+    verificarExpiracao();
+    const intervalo = window.setInterval(verificarExpiracao, 15000);
+    return () => window.clearInterval(intervalo);
+  }, [sessao]);
+
   async function verificar() {
-    setErro('');
-    setSaude(null);
-    setConsultando(true);
+    setErro(''); setAviso(''); setSaude(null); setSessao(null); setConsultando(true);
     try {
       const cliente = criarClienteServidorLocal({ baseUrl: endereco.trim() });
       const resultado = await cliente.verificarSaude();
       if (!resultado.ok) throw new Error('O serviço respondeu, mas não confirmou estado saudável.');
       try { localStorage.setItem(CHAVE_ENDERECO, endereco.trim().replace(/\/$/, '')); }
-      catch { /* A configuração continua válida durante esta visita. */ }
+      catch { /* O endereço continua válido durante esta visita. */ }
       setSaude(resultado);
     } catch (problema) {
       setErro(problema instanceof Error ? problema.message : 'Não foi possível verificar o servidor.');
-    } finally {
-      setConsultando(false);
-    }
+    } finally { setConsultando(false); }
+  }
+
+  async function autenticar(evento: FormEvent<HTMLFormElement>) {
+    evento.preventDefault();
+    if (!saude) return;
+    setErro(''); setAviso(''); setConsultando(true);
+    try {
+      const cliente = criarClienteServidorLocal({ baseUrl: endereco.trim() });
+      if (modoCadastro) {
+        await cliente.cadastrar(email.trim(), senha);
+        setSenha('');
+        setModoCadastro(false);
+        setAviso('Conta criada. Agora entre com o e-mail e a senha cadastrados.');
+      } else {
+        const novaSessao = await cliente.entrar(email.trim(), senha);
+        const autenticado = criarClienteServidorLocal({ baseUrl: endereco.trim(), token: novaSessao.token });
+        const confirmacao = await autenticado.minhaConta();
+        if (confirmacao.account.id !== novaSessao.account.id) {
+          throw new Error('O servidor não confirmou a identidade da sessão recém-criada.');
+        }
+        if (Date.parse(novaSessao.expiresAt) <= Date.now()) {
+          throw new Error('O servidor retornou uma sessão já expirada. Tente entrar novamente.');
+        }
+        setSessao(novaSessao);
+        setSenha('');
+        setAviso('Sessão confirmada pelo servidor. O token ficará somente na memória desta página.');
+      }
+    } catch (problema) {
+      setErro(problema instanceof Error ? problema.message : 'Não foi possível concluir a autenticação.');
+    } finally { setConsultando(false); }
+  }
+
+  async function sair() {
+    if (!sessao) return;
+    setErro(''); setAviso(''); setConsultando(true);
+    try {
+      await criarClienteServidorLocal({ baseUrl: endereco.trim(), token: sessao.token }).sair();
+      setSessao(null);
+      setAviso('Sessão encerrada no servidor.');
+    } catch (problema) {
+      if (problema instanceof ErroServidorLocal && problema.status === 401) {
+        setSessao(null);
+        setAviso('A sessão já estava ausente ou expirada no servidor.');
+      } else {
+        setErro(problema instanceof Error ? problema.message : 'Não foi possível confirmar o encerramento da sessão.');
+      }
+    } finally { setConsultando(false); }
+  }
+
+  async function consultarSessao() {
+    if (!sessao) return;
+    setErro(''); setAviso(''); setConsultando(true);
+    try {
+      const resposta = await criarClienteServidorLocal({ baseUrl: endereco.trim(), token: sessao.token }).minhaConta();
+      if (resposta.account.id !== sessao.account.id) throw new Error('A conta confirmada não corresponde à sessão atual.');
+      setAviso('Sessão válida. O servidor confirmou a conta ' + resposta.account.email + '.');
+    } catch (problema) {
+      if (problema instanceof ErroServidorLocal && problema.status === 401) {
+        setSessao(null);
+        setAviso('O servidor informou que a sessão expirou ou foi encerrada. Entre novamente.');
+      } else setErro(problema instanceof Error ? problema.message : 'Falha ao consultar a sessão.');
+    } finally { setConsultando(false); }
   }
 
   return <div className="aplicativo">
@@ -42,18 +122,17 @@ export default function ConexaoServidorLocal() {
       <div className="cabecalho-central">
         <div><span className="sobretitulo"><i/> AMBIENTE EXPERIMENTAL</span>
           <h1>Conexão local</h1>
-          <p>Diagnóstico independente do ambiente online e do laboratório de rascunhos.</p>
+          <p>Diagnóstico e autenticação no servidor experimental da rede local.</p>
         </div>
       </div>
       <section className="cartao cartao-padrao servidor-local-cartao">
         <p className="rotulo">ETAPA 01 · CONECTIVIDADE</p>
         <h2>Endereço do servidor</h2>
-        <p className="secundario">Informe o endereço HTTP/HTTPS da máquina que está executando o servidor local. Em outro dispositivo da mesma rede, use o endereço IP da máquina servidora e a porta configurada.</p>
+        <p className="secundario">Informe o endereço HTTP/HTTPS da máquina que está executando o servidor local. Em outro dispositivo da mesma rede, use o IP da máquina servidora e a porta configurada.</p>
         <form className="formulario" onSubmit={evento => { evento.preventDefault(); void verificar(); }}>
           <label>URL do servidor
-            <input type="url" required value={endereco} onChange={evento => setEndereco(evento.target.value)} placeholder="http://127.0.0.1:4175" />
+            <input type="url" required value={endereco} onChange={evento => { setEndereco(evento.target.value); setSaude(null); setSessao(null); }} placeholder="http://127.0.0.1:4175" />
           </label>
-          {erro && <p className="erro" role="alert">{erro}</p>}
           <button className="acao" type="submit" disabled={consultando || !endereco.trim()}>
             {consultando ? 'Verificando...' : 'Verificar conexão'} <span>→</span>
           </button>
@@ -71,10 +150,44 @@ export default function ConexaoServidorLocal() {
           <p className="servidor-local-aviso">{saude.warning}</p>
         </div>}
       </section>
+
+      {saude && <section className="cartao cartao-padrao servidor-local-cartao servidor-local-auth">
+        <p className="rotulo">ETAPA 02 · CONTA LOCAL</p>
+        {sessao ? <>
+          <h2>Sessão autenticada</h2>
+          <p className="secundario">Conta confirmada: <strong>{sessao.account.email}</strong></p>
+          <p className="servidor-local-expira">Expira em {new Intl.DateTimeFormat('pt-BR', { dateStyle: 'short', timeStyle: 'short' }).format(new Date(sessao.expiresAt))}. O token não é salvo no navegador e será perdido ao recarregar ou fechar esta página.</p>
+          <div className="servidor-local-botoes">
+            <button className="botao-claro" type="button" disabled={consultando} onClick={() => void consultarSessao()}>Validar sessão</button>
+            <button className="acao" type="button" disabled={consultando} onClick={() => void sair()}>{consultando ? 'Aguarde...' : 'Encerrar sessão'}</button>
+          </div>
+        </> : <>
+          <h2>{modoCadastro ? 'Criar conta local' : 'Entrar no servidor'}</h2>
+          <p className="secundario">{modoCadastro ? 'Cadastre uma conta experimental neste servidor. A senha deve ter de 12 a 128 caracteres.' : 'Use a conta cadastrada neste servidor local.'}</p>
+          <form className="formulario" onSubmit={autenticar}>
+            <label>E-mail
+              <input type="email" required maxLength={254} autoComplete="email" value={email} onChange={evento => setEmail(evento.target.value)} />
+            </label>
+            <label>Senha
+              <input type="password" required minLength={modoCadastro ? 12 : 1} maxLength={128} autoComplete={modoCadastro ? 'new-password' : 'current-password'} value={senha} onChange={evento => setSenha(evento.target.value)} />
+            </label>
+            <button className="acao" type="submit" disabled={consultando || !email.trim() || !senha}>
+              {consultando ? 'Aguarde...' : modoCadastro ? 'Criar conta' : 'Entrar'} <span>→</span>
+            </button>
+          </form>
+          <button className="servidor-local-alternar" type="button" disabled={consultando} onClick={() => { setModoCadastro(!modoCadastro); setErro(''); setAviso(''); setSenha(''); }}>
+            {modoCadastro ? 'Já tenho uma conta — voltar ao login' : 'Ainda não tenho conta — cadastrar'}
+          </button>
+        </>}
+      </section>}
+
+      {erro && <p className="erro servidor-local-feedback" role="alert">{erro}</p>}
+      {aviso && <p className="sucesso servidor-local-feedback" role="status">{aviso}</p>}
       <section className="nota-etapa servidor-local-limites">
-        <strong>O QUE ESTA ETAPA FAZ — E O QUE NÃO FAZ</strong>
-        <p>Por enquanto, apenas consulta o endpoint público de saúde. Não cria conta, não inicia sessão e não envia dados de Mesa ou personagens.</p>
-        <p>O protótipo atual usa HTTP sem proteção de transporte. Use somente dados fictícios e uma rede privada confiável. Não informe senhas reais nem dados de campanha.</p>
+        <strong>AVISO IMPORTANTE DE SEGURANÇA</strong>
+        <p>Este protótipo usa HTTP sem proteção de transporte. Utilize apenas dados fictícios e uma rede privada confiável. Não use senhas reais, nem dados de campanha.</p>
+        <p>O token de sessão fica apenas na memória desta página: recarregar ou fechar a aba encerra o acesso no navegador, mas não revoga automaticamente o token no servidor. A sessão expira no servidor em até sete dias; use “Encerrar sessão” para revogá-la explicitamente.</p>
+        <p>Cadastro e login ainda não liberam criação ou ingresso em Mesas nesta etapa.</p>
       </section>
       <p className="servidor-local-voltar"><a href={import.meta.env.BASE_URL}>Voltar ao ambiente online</a> · <a href={import.meta.env.BASE_URL + '?laboratorio=local'}>Abrir laboratório fictício</a></p>
       <footer>AMEAÇA BIOLÓGICA RPG · SERVIDOR LOCAL EXPERIMENTAL</footer>
