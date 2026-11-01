@@ -27,6 +27,20 @@ export type SaudeServidorLocal = {
   warning: string;
 };
 
+
+export type ConviteMesaLocal = {
+  id: string;
+  code: string;
+  createdAt: string;
+};
+
+export type SolicitacaoMesaLocal = {
+  id: string;
+  status: 'pendente';
+  createdAt: string;
+  accountId: string;
+  email: string;
+};
 export type TicketWebSocketLocal = {
   ticket: string;
   expiresAt: string;
@@ -147,6 +161,26 @@ export function criarClienteServidorLocal({ baseUrl, token, fetcher = fetch }: O
         throw new Error('Identificador de Mesa inválido.');
       }
       return requisicao(`/api/mesas/${id}`, { autenticada: true });
+    },
+
+
+    criarConvite(mesaId: string): Promise<{ invitation: ConviteMesaLocal }> {
+      if (!/^[a-f0-9]{32}$/.test(mesaId)) throw new Error('Identificador de Mesa inválido.');
+      return requisicao(`/api/mesas/${mesaId}/convites`, { metodo: 'POST', corpo: {}, autenticada: true });
+    },
+
+    solicitarIngresso(code: string): Promise<{ request: { id: string; status: 'pendente'; createdAt: string } }> {
+      return requisicao('/api/convites/solicitar', { metodo: 'POST', corpo: { code }, autenticada: true });
+    },
+
+    listarSolicitacoes(mesaId: string): Promise<{ requests: SolicitacaoMesaLocal[] }> {
+      if (!/^[a-f0-9]{32}$/.test(mesaId)) throw new Error('Identificador de Mesa inválido.');
+      return requisicao(`/api/mesas/${mesaId}/solicitacoes`, { autenticada: true });
+    },
+
+    analisarSolicitacao(mesaId: string, solicitacaoId: string, decisao: 'aprovar' | 'recusar'): Promise<{ request: { id: string; status: 'aprovada' | 'recusada' } }> {
+      if (!/^[a-f0-9]{32}$/.test(mesaId) || !/^[a-f0-9]{32}$/.test(solicitacaoId)) throw new Error('Identificador inválido.');
+      return requisicao(`/api/mesas/${mesaId}/solicitacoes/${solicitacaoId}/${decisao}`, { metodo: 'POST', corpo: {}, autenticada: true });
     },
 
     emitirTicketWebSocket(): Promise<TicketWebSocketLocal> {
