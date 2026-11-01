@@ -16,11 +16,13 @@
 - O formulário passa a distinguir criação de edição.
 - Ao salvar edição, reutiliza o ID do rascunho selecionado; a função de persistência substitui o registro com o mesmo ID, evitando duplicação.
 - A edição pode ser cancelada sem gravar as alterações em andamento.
+- **Ajuste de UX posterior:** cancelar a edição agora limpa todos os campos do formulário e restaura os padrões de uma nova criação (Mesa vazia, Classe Agente, Origem/arma/Perícias vazias e Atributos em 1), preservando o rascunho já salvo.
 - Foi acrescentado teste automatizado de persistência que recupera um personagem, atualiza nome/Classe pelo mesmo ID e confirma que existe somente um registro e que os demais dados permanecem.
 - Nenhuma migration, chamada Supabase, alteração de Auth/RLS, merge ou publicação foi executada.
 
 ## Evidência e estado de validação
 - Commit da implementação: `fe726a63beb72605d2c9ff4b8ce7be271a03f9f9`.
+- Commit do ajuste de cancelamento: `4e35201bd6023fbd9bb411c1676ed9f6bf6b4116`.
 - Commit do teste de regressão: `9f219451c3c97266456e871cee1c0a03750cac86`.
 - A inspeção do diff confirma as alterações descritas.
 - **Automatizados: PENDENTES.** A conexão disponível permitiu editar e inspecionar arquivos no GitHub, mas não executar `pnpm test` ou `pnpm run build` neste ambiente. A consulta de workflows associada ao primeiro commit não retornou execuções.
@@ -40,4 +42,6 @@
 11. Relatar qualquer divergência antes de avançarmos para o próximo módulo.
 
 ## Próximo passo
-Aguardar CI/build e depois o teste humano. Só então fechar este incremento. Manter produção e Supabase intocados.
+1. Executar localmente os testes automatizados e o build na branch atual, sem reinstalar dependências se já estiverem disponíveis: `pnpm.cmd test` e `pnpm.cmd run build`.
+2. Fazer o teste humano no laboratório local: retomar rascunho, editar/salvar, recarregar e confirmar ausência de duplicata; depois retomar novamente, alterar sem salvar, cancelar e confirmar que o formulário foi limpo e o rascunho original permaneceu intacto.
+3. Só então fechar este incremento. Manter produção e Supabase intocados.
