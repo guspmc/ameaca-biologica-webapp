@@ -33,7 +33,7 @@ test('revisao renderizada resume escolhas, destaca pendencias e mantem rascunho 
  assert.ok(completo.includes('Durabilidade ao Aparar: A definir'));
  assert.ok(!completo.includes('Salvar Funcionamento'));
  assert.ok(completo.includes('Confira os dados já salvos.'));
- assert.ok(completo.includes('Aplicar ao rascunho'));
+ assert.ok(!completo.includes('Aplicar ao rascunho'));
  const vazio=render({...ficha,equipamento_inicial:'C',compras_iniciais:{},revisao_compras:0});
  assert.ok(vazio.includes('Plano inicial sem compras'));
  assert.ok(!vazio.includes('Salve o plano para confirmar'));
@@ -45,7 +45,7 @@ test('funcionamento preparado para salvar: renderiza estado carregado sem chamad
  const antes=structuredClone(inicial);let chamadas=0;
  const html=renderToStaticMarkup(React.createElement(Funcionamento,{inicial,revisaoInicial:4,aoSalvar:async()=>{chamadas++;return 5;}}));
  assert.ok(html.includes('Aplicar ao rascunho'));assert.ok(!html.includes('Salvar Preferências'));assert.ok(html.includes('Revisão local do formulário: 4'));
- assert.ok(html.includes('a configuração já salva permanece'));assert.ok(html.includes('Munição após disparos registrados: Desabilitado'));
+ assert.ok(html.includes('As escolhas são aplicadas ao formulário. Para persistir, salve o rascunho do personagem;'));assert.ok(html.includes('Munição após disparos registrados: Desabilitado'));
  assert.equal(chamadas,0);assert.deepEqual(inicial,antes);
 });
 
