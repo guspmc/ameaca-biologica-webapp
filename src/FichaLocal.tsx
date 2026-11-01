@@ -1,4 +1,4 @@
-import { DADOS_CLASSES, dadosDaClasse } from './classesFicha';
+import { dadosDaClasse } from './classesFicha';
 import { PERICIAS_CLASSE, bonusTreinamento } from './pericias';
 import { ORIGENS } from './origens';
 import { capacidadeInventario, caracteristicos } from './equipamento';
