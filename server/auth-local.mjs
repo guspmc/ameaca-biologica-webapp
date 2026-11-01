@@ -442,6 +442,71 @@ export async function tratarRotaMesas(req, res, url, db) {
       return true;
     }
 
+    const criarConvite = /^\\/api\\/mesas\\/([a-f0-9]{32})\\/convites$/.exec(rota);
+    if (metodo === 'POST' && criarConvite) {
+      const mesaId = criarConvite[1];
+      const mestre = db.prepare("SELECT 1 FROM participantes_mesa WHERE mesa_id = ? AND conta_id = ? AND papel = 'mestre'").get(mesaId, conta.id);
+      if (!mestre) { json(res, 404, { error: 'Mesa não encontrada.' }); return true; }
+      const codigo = randomBytes(32).toString('base64url');
+      const conviteId = randomBytes(16).toString('hex');
+      const agora = new Date().toISOString();
+      db.prepare('INSERT INTO convites_mesa_locais (id, mesa_id, token_hash, criado_por, criada_em) VALUES (?, ?, ?, ?, ?)').run(conviteId, mesaId, hashToken(codigo), conta.id, agora);
+      json(res, 201, { invitation: { id: conviteId, code: codigo, createdAt: agora } });
+      return true;
+    }
+
+    if (metodo === 'POST' && rota === '/api/convites/solicitar') {
+      const corpo = await corpoJson(req);
+      const codigo = typeof corpo.code === 'string' ? corpo.code.trim() : '';
+      if (!/^[A-Za-z0-9_-]{40,100}$/.test(codigo)) { json(res, 404, { error: 'Convite inválido ou indisponível.' }); return true; }
+      const convite = db.prepare('SELECT id, mesa_id FROM convites_mesa_locais WHERE token_hash = ? AND revogada_em IS NULL').get(hashToken(codigo));
+      if (!convite) { json(res, 404, { error: 'Convite inválido ou indisponível.' }); return true; }
+      const membro = db.prepare('SELECT 1 FROM participantes_mesa WHERE mesa_id = ? AND conta_id = ?').get(convite.mesa_id, conta.id);
+      if (membro) { json(res, 409, { error: 'Sua conta já participa desta Mesa.' }); return true; }
+      const existente = db.prepare('SELECT status FROM solicitacoes_mesa_locais WHERE mesa_id = ? AND conta_id = ?').get(convite.mesa_id, conta.id);
+      if (existente) { json(res, 409, { error: existente.status === 'pendente' ? 'Sua solicitação já está pendente.' : 'Esta solicitação já foi analisada.' }); return true; }
+      const id = randomBytes(16).toString('hex');
+      const agora = new Date().toISOString();
+      db.prepare("INSERT INTO solicitacoes_mesa_locais (id, mesa_id, conta_id, convite_id, status, criada_em) VALUES (?, ?, ?, ?, 'pendente', ?)").run(id, convite.mesa_id, conta.id, convite.id, agora);
+      json(res, 202, { request: { id, status: 'pendente', createdAt: agora } });
+      return true;
+    }
+
+    const solicitacoes = /^\\/api\\/mesas\\/([a-f0-9]{32})\\/solicitacoes$/.exec(rota);
+    if (metodo === 'GET' && solicitacoes) {
+      const mesaId = solicitacoes[1];
+      const mestre = db.prepare("SELECT 1 FROM participantes_mesa WHERE mesa_id = ? AND conta_id = ? AND papel = 'mestre'").get(mesaId, conta.id);
+      if (!mestre) { json(res, 404, { error: 'Mesa não encontrada.' }); return true; }
+      const pendentes = db.prepare("SELECT s.id, s.status, s.criada_em AS createdAt, c.id AS accountId, c.email FROM solicitacoes_mesa_locais s JOIN contas_locais c ON c.id = s.conta_id WHERE s.mesa_id = ? AND s.status = 'pendente' ORDER BY s.criada_em, s.id").all(mesaId);
+      json(res, 200, { requests: pendentes });
+      return true;
+    }
+
+    const analisar = /^\\/api\\/mesas\\/([a-f0-9]{32})\\/solicitacoes\\/([a-f0-9]{32})\\/(aprovar|recusar)$/.exec(rota);
+    if (metodo === 'POST' && analisar) {
+      const [, mesaId, solicitacaoId, acao] = analisar;
+      db.exec('BEGIN IMMEDIATE');
+      try {
+        const mestre = db.prepare("SELECT 1 FROM participantes_mesa WHERE mesa_id = ? AND conta_id = ? AND papel = 'mestre'").get(mesaId, conta.id);
+        if (!mestre) { db.exec('ROLLBACK'); json(res, 404, { error: 'Mesa não encontrada.' }); return true; }
+        const pedido = db.prepare("SELECT id, conta_id FROM solicitacoes_mesa_locais WHERE id = ? AND mesa_id = ? AND status = 'pendente'").get(solicitacaoId, mesaId);
+        if (!pedido) { db.exec('ROLLBACK'); json(res, 404, { error: 'Solicitação pendente não encontrada.' }); return true; }
+        const agora = new Date().toISOString();
+        if (acao === 'aprovar') {
+          const jaMembro = db.prepare('SELECT 1 FROM participantes_mesa WHERE mesa_id = ? AND conta_id = ?').get(mesaId, pedido.conta_id);
+          if (!jaMembro) {
+            const total = db.prepare("SELECT COUNT(*) AS total FROM participantes_mesa WHERE mesa_id = ? AND papel = 'jogador'").get(mesaId).total;
+            if (total >= 10) { db.exec('ROLLBACK'); json(res, 409, { error: 'Esta Mesa já atingiu o limite de 10 jogadores.' }); return true; }
+            db.prepare("INSERT INTO participantes_mesa (mesa_id, conta_id, papel, entrou_em) VALUES (?, ?, 'jogador', ?)").run(mesaId, pedido.conta_id, agora);
+          }
+        }
+        db.prepare('UPDATE solicitacoes_mesa_locais SET status = ?, analisada_em = ?, analisada_por = ? WHERE id = ?').run(acao === 'aprovar' ? 'aprovada' : 'recusada', agora, conta.id, solicitacaoId);
+        db.exec('COMMIT');
+        json(res, 200, { request: { id: solicitacaoId, status: acao === 'aprovar' ? 'aprovada' : 'recusada' } });
+        return true;
+      } catch (erro) { db.exec('ROLLBACK'); throw erro; }
+    }
+
     json(res, 404, { error: 'Rota de Mesa não encontrada.' });
     return true;
   } catch (erro) {
