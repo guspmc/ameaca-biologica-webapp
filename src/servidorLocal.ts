@@ -81,7 +81,7 @@ export function criarClienteServidorLocal({ baseUrl, token, fetcher = fetch }: O
   const base = normalizarBaseUrl(baseUrl);
 
   async function requisicao<T>(caminho: string, opcoes: {
-    metodo?: 'GET' | 'POST';
+    metodo?: 'GET' | 'POST' | 'DELETE';
     corpo?: unknown;
     autenticada?: boolean;
   } = {}): Promise<T> {
@@ -167,6 +167,11 @@ export function criarClienteServidorLocal({ baseUrl, token, fetcher = fetch }: O
     criarConvite(mesaId: string): Promise<{ invitation: ConviteMesaLocal }> {
       if (!/^[a-f0-9]{32}$/.test(mesaId)) throw new Error('Identificador de Mesa inválido.');
       return requisicao(`/api/mesas/${mesaId}/convites`, { metodo: 'POST', corpo: {}, autenticada: true });
+    },
+
+    revogarConvite(mesaId: string): Promise<{ revoked: boolean }> {
+      if (!/^[a-f0-9]{32}$/.test(mesaId)) throw new Error('Identificador de Mesa inválido.');
+      return requisicao(`/api/mesas/${mesaId}/convites/ativo`, { metodo: 'DELETE', autenticada: true });
     },
 
     solicitarIngresso(code: string): Promise<{ request: { id: string; status: 'pendente'; createdAt: string } }> {
