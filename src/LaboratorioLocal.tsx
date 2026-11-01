@@ -7,7 +7,10 @@ import { NOMES_PERICIAS, periciasPermitidasNaCriacao, distribuicaoPericiasValida
 import { PONTOS_CLASSE } from './pericias';
 import FichaLocal from './FichaLocal';
 import { HABILIDADES_BASICAS } from './habilidades';
-import { opcoesEquipamento } from './equipamento';
+import { opcoesEquipamento, capacidadeInventario } from './equipamento';
+import PreviaCompras from './PreviaCompras';
+import RevisaoCriacao from './RevisaoCriacao';
+import { simularCompras } from './comprasIniciais';
 
 const armazenamento: ArmazenamentoLocal = {
   getItem: chave => window.localStorage.getItem(chave),
@@ -30,6 +33,8 @@ export default function LaboratorioLocal() {
   const [armaOperario, setArmaOperario] = useState('');
   const [habilidadeBasica, setHabilidadeBasica] = useState('');
   const [equipamentoInicial, setEquipamentoInicial] = useState('');
+  const [comprasIniciais, setComprasIniciais] = useState<Record<string, number>>({});
+  const [revisaoCompras, setRevisaoCompras] = useState(0);
   const [atributos, setAtributos] = useState<AtributosIniciais>({ forca: 1, agilidade: 1, vigor: 1, astucia: 1 });
   const [periciaTreinada, setPericiaTreinada] = useState('');
   const [periciaExtraAmnesico, setPericiaExtraAmnesico] = useState('');
@@ -103,7 +108,10 @@ export default function LaboratorioLocal() {
     if (!atributosIniciaisValidos(atributos)) { setErro('Distribua os 3 pontos iniciais entre os quatro Atributos. Você pode reduzir apenas um deles a 0.'); return; }
     if (!distribuicaoPericiasValida(classePersonagem, origemPersonagem, periciaTreinada, distribuicaoPericias, periciaExtraAmnesico)) { setErro('Escolha o Treinamento da Origem e distribua os pontos que desejar, sem ultrapassar o limite da Classe nem os graus permitidos.'); return; }
     if (origemPersonagem === 'Operário' && !armaOperarioValida(armaOperario)) { setErro('A Origem Operário exige a escolha de uma das seis armas permitidas.'); return; }
-    if (gravar('personagem', nome, { mesaId: mesaSelecionada, classe: classePersonagem, origem: origemPersonagem, armaOperario: origemPersonagem === 'Operário' ? armaOperario : null, atributos, periciaOrigemTreinada: periciaTreinada, periciaOrigemExtra: origemPersonagem === 'Amnésico' ? periciaExtraAmnesico : null, distribuicaoPericias, habilidadeBasica: habilidadeBasica || null, equipamentoInicial: equipamentoInicial || null, ficticio: true, etapa: 'rascunho-criacao-inicial' }, personagemEmEdicao ?? undefined)) {
+    if (!habilidadeBasica || !HABILIDADES_BASICAS.some(h => h.id === habilidadeBasica && h.classe === classePersonagem)) { setErro('Escolha uma Habilidade Básica válida para a Classe.'); return; }
+    if (!opcoesEquipamento(classePersonagem).some(opcao => opcao.id === equipamentoInicial)) { setErro('Escolha um conjunto de Equipamento Inicial.'); return; }
+    if (equipamentoInicial === 'C') { const plano = simularCompras(comprasIniciais, capacidadeInventario(atributos.forca, origemPersonagem)); if (!plano.orcamentoValido || !plano.cabe || revisaoCompras < 1) { setErro('Confira e salve um plano válido de compras para o conjunto Personalizado.'); return; } }
+    if (gravar('personagem', nome, { mesaId: mesaSelecionada, classe: classePersonagem, origem: origemPersonagem, armaOperario: origemPersonagem === 'Operário' ? armaOperario : null, atributos, periciaOrigemTreinada: periciaTreinada, periciaOrigemExtra: origemPersonagem === 'Amnésico' ? periciaExtraAmnesico : null, distribuicaoPericias, habilidadeBasica, equipamentoInicial, comprasIniciais: equipamentoInicial === 'C' ? comprasIniciais : {}, revisaoCompras: equipamentoInicial === 'C' ? revisaoCompras : 0, ficticio: true, etapa: 'rascunho-criacao-inicial' }, personagemEmEdicao ?? undefined)) {
       setNomePersonagem('');
       setPersonagemEmEdicao(null);
       setAviso(personagemEmEdicao ? 'Rascunho atualizado sem criar outro registro.' : 'Rascunho criado neste dispositivo.');
@@ -146,10 +154,10 @@ export default function LaboratorioLocal() {
             <label>Mesa do personagem <select required value={mesaSelecionada} onChange={e => setMesaSelecionada(e.target.value)} disabled={!estado || mesas.length === 0 || ocupado}>
               <option value="">Selecione uma Mesa local</option>{mesas.map(mesa => <option key={mesa.id} value={mesa.id}>{mesa.nome}</option>)}
             </select></label>
-            <label>Classe <select value={classePersonagem} onChange={e => { setClassePersonagem(e.target.value); setDistribuicaoPericias({}); setHabilidadeBasica(''); setEquipamentoInicial(''); }} disabled={!estado || ocupado}><option value="Agente">Agente</option><option value="Autodidata">Autodidata</option><option value="Operador">Operador</option></select></label>
+            <label>Classe <select value={classePersonagem} onChange={e => { setClassePersonagem(e.target.value); setDistribuicaoPericias({}); setHabilidadeBasica(''); setEquipamentoInicial(''); setComprasIniciais({}); setRevisaoCompras(0); }} disabled={!estado || ocupado}><option value="Agente">Agente</option><option value="Autodidata">Autodidata</option><option value="Operador">Operador</option></select></label>
             <label>Origem <select required value={origemPersonagem} onChange={e => { setOrigemPersonagem(e.target.value); setArmaOperario(''); setPericiaTreinada(''); setPericiaExtraAmnesico(''); setDistribuicaoPericias({}); }} disabled={!estado || ocupado}><option value="">Selecione uma Origem</option>{ORIGENS.map(origem => <option key={origem.nome} value={origem.nome}>{origem.nome}</option>)}</select></label>
             {origemPersonagem === 'Operário' && <label>Arma Corpo a Corpo semelhante a ferramenta <select required value={armaOperario} onChange={e => setArmaOperario(e.target.value)} disabled={!estado || ocupado}><option value="">Escolha uma arma</option>{ARMAS_OPERARIO.map(arma => <option key={arma} value={arma}>{arma}</option>)}</select><small>Escolha obrigatória na criação. A arma recebe +1 no Teste de Ataque e soma 2 × FOR ao dano, conforme a regra da Origem.</small></label>}
-            {origemPersonagem && <div className="criar-pericias">
+            {origemPersonagem && <div className="criar-pericias" id="laboratorio-pericias">
               <strong>Treinamento da Origem</strong>
               <p className="ajuda-atributos">Escolha uma das Perícias da Origem para receber Treinamento gratuito. A outra entra nas opções para distribuir os pontos da Classe.</p>
               <label>Perícia Treinada <select required value={periciaTreinada} onChange={e => { setPericiaTreinada(e.target.value); setDistribuicaoPericias({}); }} disabled={!estado || ocupado}>
@@ -169,7 +177,7 @@ export default function LaboratorioLocal() {
                   </div>;
                 })}</div>}
             </div>}
-            <label>Habilidade Básica <select value={habilidadeBasica} onChange={e => setHabilidadeBasica(e.target.value)} disabled={!estado || ocupado}>
+            <label id="laboratorio-caracteristicas">Habilidade Básica <select value={habilidadeBasica} onChange={e => setHabilidadeBasica(e.target.value)} disabled={!estado || ocupado}>
               <option value="">Selecione uma Habilidade Básica</option>{HABILIDADES_BASICAS.filter(habilidade => habilidade.classe === classePersonagem).map(habilidade => <option key={habilidade.id} value={habilidade.id}>{habilidade.nome} · {habilidade.ramo}</option>)}
             </select><small>Escolha uma Habilidade Básica da Classe. Os efeitos são informativos nesta etapa; não são executados automaticamente.</small></label>
             <label>Equipamento Inicial <select value={equipamentoInicial} onChange={e => setEquipamentoInicial(e.target.value)} disabled={!estado || ocupado}>
@@ -187,9 +195,11 @@ export default function LaboratorioLocal() {
                   <button type="button" aria-label={'Aumentar '+sigla} onClick={() => alterarAtributo(chave,1)} disabled={!estado || ocupado || atributos[chave] === 3 || pontosRestantesAtributos(atributos) === 0}>+</button>
                 </div></div>)}</div>
             </div>
+            {equipamentoInicial === 'C' && <div id="laboratorio-inventario"><PreviaCompras key={personagemEmEdicao ?? 'novo'} capacidade={capacidadeInventario(atributos.forca, origemPersonagem)} planoSalvo={comprasIniciais} revisaoSalva={revisaoCompras} aoSalvar={async plano => { setComprasIniciais(plano); const nova = revisaoCompras + 1; setRevisaoCompras(nova); return nova; }} /></div>}
             <label>Nome do personagem <input value={nomePersonagem} onChange={e => setNomePersonagem(e.target.value)} minLength={2} maxLength={80} required disabled={!estado || mesas.length === 0 || ocupado} placeholder="Ex.: Alex Morgan" /></label>
+            <RevisaoCriacao ficha={{ nome: nomePersonagem, classe: classePersonagem, nivel: 1, forca: atributos.forca, agilidade: atributos.agilidade, vigor: atributos.vigor, astucia: atributos.astucia, origem: origemPersonagem || null, pericia_origem_treinada: periciaTreinada || null, pericia_origem_extra: periciaExtraAmnesico || null, pontos_pericia_classe: distribuicaoPericias, habilidade_basica: habilidadeBasica || null, equipamento_inicial: equipamentoInicial || null, compras_iniciais: comprasIniciais, revisao_compras: revisaoCompras, pv_maximo: null, sa_maximo: null, bi_maximo: null, defesa: null }} irPara={secao => document.getElementById(secao === 'itens' ? 'laboratorio-inventario' : secao === 'pericias' ? 'laboratorio-pericias' : 'laboratorio-caracteristicas')?.scrollIntoView({ behavior: 'smooth', block: 'start' })} />
             <button className="acao" type="submit" disabled={!estado || mesas.length === 0 || ocupado}>{personagemEmEdicao ? 'Salvar alterações do rascunho' : 'Criar rascunho local'} <span>→</span></button>
-            {personagemEmEdicao && <button className="botao-claro" type="button" disabled={ocupado} onClick={() => { setPersonagemEmEdicao(null); setMesaSelecionada(''); setNomePersonagem(''); setClassePersonagem('Agente'); setOrigemPersonagem(''); setArmaOperario(''); setHabilidadeBasica(''); setEquipamentoInicial(''); setAtributos({ forca: 1, agilidade: 1, vigor: 1, astucia: 1 }); setPericiaTreinada(''); setPericiaExtraAmnesico(''); setDistribuicaoPericias({}); setErro(''); setAviso('Edição cancelada. O rascunho salvo foi preservado; o formulário foi limpo para uma nova criação.'); }}>Cancelar edição</button>}
+            {personagemEmEdicao && <button className="botao-claro" type="button" disabled={ocupado} onClick={() => { setPersonagemEmEdicao(null); setMesaSelecionada(''); setNomePersonagem(''); setClassePersonagem('Agente'); setOrigemPersonagem(''); setArmaOperario(''); setHabilidadeBasica(''); setEquipamentoInicial(''); setComprasIniciais({}); setRevisaoCompras(0); setAtributos({ forca: 1, agilidade: 1, vigor: 1, astucia: 1 }); setPericiaTreinada(''); setPericiaExtraAmnesico(''); setDistribuicaoPericias({}); setErro(''); setAviso('Edição cancelada. O rascunho salvo foi preservado; o formulário foi limpo para uma nova criação.'); }}>Cancelar edição</button>}
           </form>
           <div className="lab-lista"><h3>Rascunhos ({personagens.length})</h3>
             {personagens.length === 0 ? <p className="vazio">Nenhum rascunho de personagem.</p> :
@@ -204,6 +214,8 @@ export default function LaboratorioLocal() {
                   setOrigemPersonagem(String(dados.origem ?? ''));
                   setHabilidadeBasica(String(dados.habilidadeBasica ?? ''));
                   setEquipamentoInicial(String(dados.equipamentoInicial ?? ''));
+                  setComprasIniciais((dados.comprasIniciais as Record<string, number>) ?? {});
+                  setRevisaoCompras(Number(dados.revisaoCompras ?? 0));
                   setArmaOperario(String(dados.armaOperario ?? ''));
                   setAtributos((dados.atributos as AtributosIniciais) ?? { forca: 1, agilidade: 1, vigor: 1, astucia: 1 });
                   setPericiaTreinada(String(dados.periciaOrigemTreinada ?? ''));
