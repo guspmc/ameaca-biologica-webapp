@@ -237,7 +237,32 @@ export default function LaboratorioLocal() {
           </div>
         </section>
       </div>
-      {fichaAberta && <FichaLocal nome={fichaAberta.nome} mesa={fichaAberta.mesa} dados={fichaAberta.dados} aoFechar={() => setFichaAberta(null)} aoEditar={secao => carregarEdicao(fichaAberta.id, fichaAberta.nome, fichaAberta.dados, secao)} aoSalvarAtributosPericias={async alteracoes => {
+      {fichaAberta && <FichaLocal nome={fichaAberta.nome} mesa={fichaAberta.mesa} dados={fichaAberta.dados} aoFechar={() => setFichaAberta(null)} aoEditar={secao => carregarEdicao(fichaAberta.id, fichaAberta.nome, fichaAberta.dados, secao)} aoSalvarCaracteristicas={async alteracoes => {
+        const dadosAtualizados = { ...fichaAberta.dados, ...alteracoes };
+        const classe = String(dadosAtualizados.classe ?? '');
+        const origem = String(dadosAtualizados.origem ?? '');
+        const arma = dadosAtualizados.armaOperario;
+        const habilidade = String(dadosAtualizados.habilidadeBasica ?? '');
+        const kit = String(dadosAtualizados.equipamentoInicial ?? '');
+        const treinada = String(dadosAtualizados.periciaOrigemTreinada ?? '');
+        const extra = String(dadosAtualizados.periciaOrigemExtra ?? '');
+        const distribuicao = (dadosAtualizados.distribuicaoPericias as Record<string, number>) ?? {};
+        const compras = (dadosAtualizados.comprasIniciais as Record<string, number>) ?? {};
+        const revisao = Number(dadosAtualizados.revisaoCompras ?? 0);
+        const forca = Number((dadosAtualizados.atributos as AtributosIniciais | undefined)?.forca ?? 1);
+        const compraValida = kit !== 'C' || (() => { const plano = simularCompras(compras, capacidadeInventario(forca, origem)); return plano.orcamentoValido && plano.cabe && revisao >= 1; })();
+        if (!ORIGENS.some(item => item.nome === origem) ||
+          !distribuicaoPericiasValida(classe, origem, treinada, distribuicao, extra) ||
+          !HABILIDADES_BASICAS.some(item => item.id === habilidade && item.classe === classe) ||
+          !opcoesEquipamento(classe).some(item => item.id === kit) ||
+          (origem === 'Operário' && !armaOperarioValida(arma)) || !compraValida) {
+          setErro('Características não salvas: uma escolha atual ficou incompatível. Ajuste primeiro Perícias ou Equipamento no formulário de edição; nenhuma informação foi apagada.');
+          return false;
+        }
+        const ok = gravar('personagem', fichaAberta.nome, dadosAtualizados, fichaAberta.id);
+        if (ok) setFichaAberta(atual => atual ? { ...atual, dados: dadosAtualizados } : atual);
+        return ok;
+      }} aoSalvarAtributosPericias={async alteracoes => {
         const dadosAtualizados = { ...fichaAberta.dados, ...alteracoes };
         const classe = String(dadosAtualizados.classe ?? '');
         const origem = String(dadosAtualizados.origem ?? '');
