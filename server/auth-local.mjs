@@ -185,6 +185,35 @@ export function prepararAutenticacaoLocal(db) {
       throw erro;
     }
   }
+  if (versaoAtual < 5) {
+    db.exec('BEGIN IMMEDIATE');
+    try {
+      db.exec(`
+        CREATE TABLE IF NOT EXISTS convites_mesa_locais (
+          id TEXT PRIMARY KEY,
+          mesa_id TEXT NOT NULL REFERENCES mesas(id) ON DELETE CASCADE,
+          token_hash TEXT NOT NULL UNIQUE,
+          criado_por TEXT NOT NULL REFERENCES contas_locais(id) ON DELETE RESTRICT,
+          criada_em TEXT NOT NULL,
+          revogada_em TEXT
+        );
+        CREATE TABLE IF NOT EXISTS solicitacoes_mesa_locais (
+          id TEXT PRIMARY KEY,
+          mesa_id TEXT NOT NULL REFERENCES mesas(id) ON DELETE CASCADE,
+          conta_id TEXT NOT NULL REFERENCES contas_locais(id) ON DELETE CASCADE,
+          convite_id TEXT NOT NULL REFERENCES convites_mesa_locais(id) ON DELETE RESTRICT,
+          status TEXT NOT NULL CHECK (status IN ('pendente', 'aprovada', 'recusada')),
+          criada_em TEXT NOT NULL,
+          analisada_em TEXT,
+          analisada_por TEXT REFERENCES contas_locais(id) ON DELETE RESTRICT,
+          UNIQUE (mesa_id, conta_id)
+        );
+        CREATE INDEX IF NOT EXISTS idx_solicitacoes_mesa_status ON solicitacoes_mesa_locais(mesa_id, status, criada_em);
+      `);
+      db.prepare('INSERT INTO schema_migrations (version, applied_at) VALUES (?, ?)').run(5, new Date().toISOString());
+      db.exec('COMMIT');
+    } catch (erro) { db.exec('ROLLBACK'); throw erro; }
+  }
 }
 
 export function consumirTicketWebSocketLocal(db, ticket) {
