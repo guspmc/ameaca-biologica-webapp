@@ -130,7 +130,7 @@ export default function LaboratorioLocal() {
         </section>
         <section className="cartao cartao-padrao">
           <p className="rotulo">RASCUNHO NÃO OFICIAL</p><h2>Personagens de teste</h2>
-          <p className="secundario">Nesta primeira etapa, o laboratório registra somente a identidade e a Mesa associada. Ainda não é a ficha oficial nem aplica regras.</p>
+          <p className="secundario">Nesta etapa, o laboratório registra um rascunho inicial com Mesa, Classe, Origem, arma exigida para Operário, Atributos e Perícias. Ainda não é a ficha oficial completa.</p>
           <form className="formulario" onSubmit={criarPersonagem}>
             <label>Mesa do personagem <select required value={mesaSelecionada} onChange={e => setMesaSelecionada(e.target.value)} disabled={!estado || mesas.length === 0 || ocupado}>
               <option value="">Selecione uma Mesa local</option>{mesas.map(mesa => <option key={mesa.id} value={mesa.id}>{mesa.nome}</option>)}
