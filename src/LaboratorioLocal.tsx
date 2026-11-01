@@ -21,6 +21,7 @@ export default function LaboratorioLocal() {
   const [nomeMesa, setNomeMesa] = useState('');
   const [mesaSelecionada, setMesaSelecionada] = useState('');
   const [nomePersonagem, setNomePersonagem] = useState('');
+  const [personagemEmEdicao, setPersonagemEmEdicao] = useState<string | null>(null);
   const [classePersonagem, setClassePersonagem] = useState('Agente');
   const [origemPersonagem, setOrigemPersonagem] = useState('');
   const [armaOperario, setArmaOperario] = useState('');
@@ -40,11 +41,11 @@ export default function LaboratorioLocal() {
   const mesas = estado?.registros.filter(registro => registro.tipo === 'mesa') ?? [];
   const personagens = estado?.registros.filter(registro => registro.tipo === 'personagem') ?? [];
 
-  function gravar(tipo: 'mesa' | 'personagem', nome: string, dados: Record<string, unknown>): boolean {
+  function gravar(tipo: 'mesa' | 'personagem', nome: string, dados: Record<string, unknown>, idExistente?: string): boolean {
     setErro(''); setAviso(''); setOcupado(true);
     try {
       const registro = {
-        id: globalThis.crypto.randomUUID(), tipo, nome,
+        id: idExistente ?? globalThis.crypto.randomUUID(), tipo, nome,
         atualizadoEm: new Date().toISOString(), dados,
       };
       const proximo = gravarRegistroLaboratorio(armazenamento, registro);
@@ -88,7 +89,7 @@ export default function LaboratorioLocal() {
     });
   }
 
-  function criarPersonagem(evento: FormEvent<HTMLFormElement>) {
+  function salvarPersonagem(evento: FormEvent<HTMLFormElement>) {
     evento.preventDefault();
     const nome = nomePersonagem.trim();
     if (!mesaSelecionada || nome.length < 2 || nome.length > 80) { setErro('Selecione uma Mesa e informe um nome entre 2 e 80 caracteres.'); return; }
@@ -96,7 +97,11 @@ export default function LaboratorioLocal() {
     if (!atributosIniciaisValidos(atributos)) { setErro('Distribua os 3 pontos iniciais entre os quatro Atributos. Você pode reduzir apenas um deles a 0.'); return; }
     if (!distribuicaoPericiasValida(classePersonagem, origemPersonagem, periciaTreinada, distribuicaoPericias, periciaExtraAmnesico)) { setErro('Escolha o Treinamento da Origem e distribua os pontos que desejar, sem ultrapassar o limite da Classe nem os graus permitidos.'); return; }
     if (origemPersonagem === 'Operário' && !armaOperarioValida(armaOperario)) { setErro('A Origem Operário exige a escolha de uma das seis armas permitidas.'); return; }
-    if (gravar('personagem', nome, { mesaId: mesaSelecionada, classe: classePersonagem, origem: origemPersonagem, armaOperario: origemPersonagem === 'Operário' ? armaOperario : null, atributos, periciaOrigemTreinada: periciaTreinada, periciaOrigemExtra: origemPersonagem === 'Amnésico' ? periciaExtraAmnesico : null, distribuicaoPericias, ficticio: true, etapa: 'rascunho-criacao-inicial' })) setNomePersonagem('');
+    if (gravar('personagem', nome, { mesaId: mesaSelecionada, classe: classePersonagem, origem: origemPersonagem, armaOperario: origemPersonagem === 'Operário' ? armaOperario : null, atributos, periciaOrigemTreinada: periciaTreinada, periciaOrigemExtra: origemPersonagem === 'Amnésico' ? periciaExtraAmnesico : null, distribuicaoPericias, ficticio: true, etapa: 'rascunho-criacao-inicial' }, personagemEmEdicao ?? undefined)) {
+      setNomePersonagem('');
+      setPersonagemEmEdicao(null);
+      setAviso(personagemEmEdicao ? 'Rascunho atualizado sem criar outro registro.' : 'Rascunho criado neste dispositivo.');
+    }
   }
 
   return <div className="aplicativo laboratorio-local">
@@ -131,7 +136,7 @@ export default function LaboratorioLocal() {
         <section className="cartao cartao-padrao">
           <p className="rotulo">RASCUNHO NÃO OFICIAL</p><h2>Personagens de teste</h2>
           <p className="secundario">Nesta etapa, o laboratório registra um rascunho inicial com Mesa, Classe, Origem, arma exigida para Operário, Atributos e Perícias. Ainda não é a ficha oficial completa.</p>
-          <form className="formulario" onSubmit={criarPersonagem}>
+          <form className="formulario" onSubmit={salvarPersonagem}>
             <label>Mesa do personagem <select required value={mesaSelecionada} onChange={e => setMesaSelecionada(e.target.value)} disabled={!estado || mesas.length === 0 || ocupado}>
               <option value="">Selecione uma Mesa local</option>{mesas.map(mesa => <option key={mesa.id} value={mesa.id}>{mesa.nome}</option>)}
             </select></label>
@@ -171,13 +176,27 @@ export default function LaboratorioLocal() {
                 </div></div>)}</div>
             </div>
             <label>Nome do personagem <input value={nomePersonagem} onChange={e => setNomePersonagem(e.target.value)} minLength={2} maxLength={80} required disabled={!estado || mesas.length === 0 || ocupado} placeholder="Ex.: Alex Morgan" /></label>
-            <button className="acao" type="submit" disabled={!estado || mesas.length === 0 || ocupado}>Criar rascunho local <span>→</span></button>
+            <button className="acao" type="submit" disabled={!estado || mesas.length === 0 || ocupado}>{personagemEmEdicao ? 'Salvar alterações do rascunho' : 'Criar rascunho local'} <span>→</span></button>
+            {personagemEmEdicao && <button className="botao-claro" type="button" disabled={ocupado} onClick={() => { setPersonagemEmEdicao(null); setNomePersonagem(''); setAviso('Edição cancelada. O rascunho salvo foi preservado.'); }}>Cancelar edição</button>}
           </form>
           <div className="lab-lista"><h3>Rascunhos ({personagens.length})</h3>
             {personagens.length === 0 ? <p className="vazio">Nenhum rascunho de personagem.</p> :
               <ul className="lista-mesas">{personagens.map(personagem => {
                 const mesa = mesas.find(item => item.id === personagem.dados.mesaId);
-                return <li key={personagem.id}><div className="linha-mesa lab-linha"><span className="sigla">P</span><span className="detalhes-mesa"><strong>{personagem.nome}</strong><small>{mesa?.nome ?? 'Mesa não encontrada'} · {String(personagem.dados.classe ?? 'Classe pendente')} · {String(personagem.dados.origem ?? 'Origem pendente')}{personagem.dados.armaOperario ? ' · '+String(personagem.dados.armaOperario) : ''} · RASCUNHO LOCAL</small></span></div></li>;
+                return <li key={personagem.id}><div className="linha-mesa lab-linha"><span className="sigla">P</span><span className="detalhes-mesa"><strong>{personagem.nome}</strong><small>{mesa?.nome ?? 'Mesa não encontrada'} · {String(personagem.dados.classe ?? 'Classe pendente')} · {String(personagem.dados.origem ?? 'Origem pendente')}{personagem.dados.armaOperario ? ' · '+String(personagem.dados.armaOperario) : ''} · RASCUNHO LOCAL</small></span><button className="botao-claro" type="button" disabled={ocupado} onClick={() => {
+                  const dados = personagem.dados;
+                  setPersonagemEmEdicao(personagem.id);
+                  setNomePersonagem(personagem.nome);
+                  setMesaSelecionada(String(dados.mesaId ?? ''));
+                  setClassePersonagem(String(dados.classe ?? 'Agente'));
+                  setOrigemPersonagem(String(dados.origem ?? ''));
+                  setArmaOperario(String(dados.armaOperario ?? ''));
+                  setAtributos((dados.atributos as AtributosIniciais) ?? { forca: 1, agilidade: 1, vigor: 1, astucia: 1 });
+                  setPericiaTreinada(String(dados.periciaOrigemTreinada ?? ''));
+                  setPericiaExtraAmnesico(String(dados.periciaOrigemExtra ?? ''));
+                  setDistribuicaoPericias((dados.distribuicaoPericias as Record<string, number>) ?? {});
+                  setErro(''); setAviso('Rascunho carregado para edição. As alterações só serão gravadas ao salvar.');
+                }}>Continuar edição</button></div></li>;
               })}</ul>}
           </div>
         </section>
