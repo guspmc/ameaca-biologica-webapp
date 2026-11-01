@@ -117,7 +117,7 @@ test('registra a migração de autenticação uma única vez', async t => {
   const { app, dataDir, fechar, registrarServidor } = await setup(t);
   assert.deepEqual(
     app.db.prepare('SELECT version FROM schema_migrations ORDER BY version').all().map(row => row.version),
-    [1, 2, 3, 4, 5],
+    [1, 2, 3, 4, 5, 6],
   );
   await fechar();
 
@@ -126,7 +126,7 @@ test('registra a migração de autenticação uma única vez', async t => {
   registrarServidor(reiniciado);
   assert.deepEqual(
     reiniciado.db.prepare('SELECT version FROM schema_migrations ORDER BY version').all().map(row => row.version),
-    [1, 2, 3, 4, 5],
+    [1, 2, 3, 4, 5, 6],
   );
 });
 
@@ -358,6 +358,51 @@ test('convite privado exige Mestre e aprovação antes de conceder acesso à Mes
   const detalhe = await fetch(base + `/api/mesas/${mesa.id}`, { headers: { authorization: `Bearer ${tokenJogador}` } });
   assert.equal(detalhe.status, 200);
   assert.equal((await detalhe.json()).mesa.role, 'jogador');
+});
+
+test('permite nova solicitação após recusa com convite válido e preserva o histórico', async t => {
+  const { base, app } = await setup(t);
+  const senha = 'senha-local-comprida-2026';
+  const entrar = async email => {
+    assert.equal((await post(base, '/api/auth/register', { email, password: senha })).status, 201);
+    const login = await post(base, '/api/auth/login', { email, password: senha });
+    return (await login.json()).token;
+  };
+  const tokenMestre = await entrar('mestre-reconvite@example.test');
+  const tokenJogador = await entrar('jogador-reconvite@example.test');
+  const { mesa } = await (await post(base, '/api/mesas', { name: 'Mesa nova tentativa' }, tokenMestre)).json();
+
+  const { invitation: primeiroConvite } = await (await post(base, `/api/mesas/${mesa.id}/convites`, {}, tokenMestre)).json();
+  const primeiraResposta = await post(base, '/api/convites/solicitar', { code: primeiroConvite.code }, tokenJogador);
+  assert.equal(primeiraResposta.status, 202);
+  const { request: primeira } = await primeiraResposta.json();
+
+  const recusa = await post(base, `/api/mesas/${mesa.id}/solicitacoes/${primeira.id}/recusar`, {}, tokenMestre);
+  assert.equal(recusa.status, 200);
+  assert.equal((await recusa.json()).request.status, 'recusada');
+
+  const { invitation: segundoConvite } = await (await post(base, `/api/mesas/${mesa.id}/convites`, {}, tokenMestre)).json();
+  const segundaResposta = await post(base, '/api/convites/solicitar', { code: segundoConvite.code }, tokenJogador);
+  assert.equal(segundaResposta.status, 202);
+  const { request: segunda } = await segundaResposta.json();
+  assert.notEqual(segunda.id, primeira.id);
+
+  const duplicada = await post(base, '/api/convites/solicitar', { code: segundoConvite.code }, tokenJogador);
+  assert.equal(duplicada.status, 409);
+  assert.equal((await duplicada.json()).error, 'Sua solicitação já está pendente.');
+
+  const historico = app.db.prepare(
+    'SELECT id, status FROM solicitacoes_mesa_locais WHERE mesa_id = ? AND conta_id = ? ORDER BY criada_em, id'
+  ).all(mesa.id, (await (await fetch(base + '/api/auth/me', { headers: { authorization: `Bearer ${tokenJogador}` } })).json()).account.id);
+  assert.deepEqual(historico.map(item => item.status), ['recusada', 'pendente']);
+  assert.notEqual(historico[0].id, historico[1].id);
+
+  const pendentes = await fetch(base + `/api/mesas/${mesa.id}/solicitacoes`, {
+    headers: { authorization: `Bearer ${tokenMestre}` },
+  });
+  assert.equal(pendentes.status, 200);
+  const { requests } = await pendentes.json();
+  assert.deepEqual(requests.map(item => item.id), [segunda.id]);
 });
 
 test('renovar convite invalida o anterior e revogar impede novos pedidos sem afetar membros', async t => {
