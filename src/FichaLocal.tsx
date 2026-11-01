@@ -24,6 +24,7 @@ type Props = {
   mesa: string;
   dados: Record<string, unknown>;
   aoFechar: () => void;
+  aoEditar: () => void;
 };
 
 const ATRIBUTOS: { chave: keyof AtributosIniciais; sigla: string; nome: string }[] = [
@@ -37,7 +38,7 @@ function numero(valor: unknown): number {
   return typeof valor === 'number' && Number.isFinite(valor) ? valor : 0;
 }
 
-export default function FichaLocal({ nome, mesa, dados, aoFechar }: Props) {
+export default function FichaLocal({ nome, mesa, dados, aoFechar, aoEditar }: Props) {
   const ficha = dados as DadosFichaLocal;
   const classe = typeof ficha.classe === 'string' ? ficha.classe : '';
   const origem = typeof ficha.origem === 'string' ? ficha.origem : '';
@@ -70,7 +71,7 @@ export default function FichaLocal({ nome, mesa, dados, aoFechar }: Props) {
   return <div className="ficha-local-fundo" role="dialog" aria-modal="true" aria-labelledby="ficha-local-titulo">
     <article className="ficha-local">
       <header className="ficha-local-topo">
-        <button type="button" className="ficha-local-voltar" onClick={aoFechar}>← Voltar</button>
+        <div className="ficha-local-acoes"><button type="button" className="ficha-local-voltar" onClick={aoFechar}>← Voltar</button><button type="button" className="botao-claro" onClick={aoEditar}>Editar rascunho</button></div>
         <div><strong>AMEAÇA BIOLÓGICA</strong><small>FICHA LOCAL · RASCUNHO</small></div>
         <span className="ficha-local-selo">NÃO ATIVA</span>
       </header>
