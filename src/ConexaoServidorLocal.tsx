@@ -1,5 +1,5 @@
 import { useEffect, useState, type FormEvent } from 'react';
-import { criarClienteServidorLocal, ErroServidorLocal, type SaudeServidorLocal, type SessaoLocal } from './servidorLocal';
+import { criarClienteServidorLocal, ErroServidorLocal, type MesaLocal, type SaudeServidorLocal, type SessaoLocal } from './servidorLocal';
 
 const CHAVE_ENDERECO = 'ameaca-biologica:servidor-local:endereco:v1';
 
@@ -11,7 +11,7 @@ function enderecoInicial(): string {
 export default function ConexaoServidorLocal() {
   const [endereco, setEndereco] = useState(enderecoInicial);
   const [saude, setSaude] = useState<SaudeServidorLocal | null>(null);
-  const [sessao, setSessao] = useState<SessaoLocal | null>(null);
+  const [sessao, setSessao] = useState<SessaoLocal | null>(null);\n  const [mesas, setMesas] = useState<MesaLocal[]>([]);\n  const [nomeMesa, setNomeMesa] = useState('');
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
   const [modoCadastro, setModoCadastro] = useState(false);
@@ -37,7 +37,7 @@ export default function ConexaoServidorLocal() {
   }, [sessao]);
 
   async function verificar() {
-    setErro(''); setAviso(''); setSaude(null); setSessao(null); setConsultando(true);
+    setErro(''); setAviso(''); setSaude(null); setSessao(null); setMesas([]); setConsultando(true);
     try {
       const cliente = criarClienteServidorLocal({ baseUrl: endereco.trim() });
       const resultado = await cliente.verificarSaude();
@@ -94,6 +94,40 @@ export default function ConexaoServidorLocal() {
       } else {
         setErro(problema instanceof Error ? problema.message : 'Não foi possível confirmar o encerramento da sessão.');
       }
+    } finally { setConsultando(false); }
+  }
+
+  async function atualizarMesas() {
+    if (!sessao) return;
+    setErro(''); setAviso(''); setConsultando(true);
+    try {
+      const resposta = await criarClienteServidorLocal({ baseUrl: endereco.trim(), token: sessao.token }).listarMesas();
+      setMesas(resposta.mesas);
+      setAviso('Lista de Mesas atualizada pelo servidor.');
+    } catch (problema) {
+      if (problema instanceof ErroServidorLocal && problema.status === 401) {
+        encerrarSessao('A sessão expirou ou foi encerrada no servidor. Entre novamente.');
+      } else setErro(problema instanceof Error ? problema.message : 'Não foi possível atualizar as Mesas.');
+    } finally { setConsultando(false); }
+  }
+
+  async function criarNovaMesa(evento: FormEvent<HTMLFormElement>) {
+    evento.preventDefault();
+    if (!sessao) return;
+    const nome = nomeMesa.trim();
+    if (!nome) return;
+    setErro(''); setAviso(''); setConsultando(true);
+    try {
+      const cliente = criarClienteServidorLocal({ baseUrl: endereco.trim(), token: sessao.token });
+      const resposta = await cliente.criarMesa(nome);
+      const lista = await cliente.listarMesas();
+      setMesas(lista.mesas);
+      setNomeMesa('');
+      setAviso('Mesa “' + resposta.mesa.name + '” criada e confirmada pelo servidor. Seu papel nesta Mesa é Mestre.');
+    } catch (problema) {
+      if (problema instanceof ErroServidorLocal && problema.status === 401) {
+        encerrarSessao('A sessão expirou ou foi encerrada no servidor. Entre novamente.');
+      } else setErro(problema instanceof Error ? problema.message : 'Não foi possível criar a Mesa.');
     } finally { setConsultando(false); }
   }
 
@@ -160,6 +194,25 @@ export default function ConexaoServidorLocal() {
           <div className="servidor-local-botoes">
             <button className="botao-claro" type="button" disabled={consultando} onClick={() => void consultarSessao()}>Validar sessão</button>
             <button className="acao" type="button" disabled={consultando} onClick={() => void sair()}>{consultando ? 'Aguarde...' : 'Encerrar sessão'}</button>
+          </div>
+          <div className="servidor-local-mesas">
+            <div className="servidor-local-mesas-topo">
+              <div><p className="rotulo">ETAPA 03 · SUAS MESAS</p><h3>Mesas vinculadas à conta</h3></div>
+              <button className="botao-claro" type="button" disabled={consultando} onClick={() => void atualizarMesas()}>Atualizar lista</button>
+            </div>
+            {mesas.length ? <ul className="servidor-local-lista-mesas">
+              {mesas.map(mesa => <li key={mesa.id}>
+                <div><strong>{mesa.name}</strong><small>Criada em {new Intl.DateTimeFormat('pt-BR', { dateStyle: 'short' }).format(new Date(mesa.createdAt))}</small></div>
+                <span className={mesa.role === 'mestre' ? 'papel-mestre' : 'papel-jogador'}>{mesa.role === 'mestre' ? 'MESTRE' : 'JOGADOR'}</span>
+              </li>)}
+            </ul> : <p className="servidor-local-vazio">Nenhuma Mesa vinculada a esta conta ainda.</p>}
+            <form className="formulario servidor-local-form-mesa" onSubmit={criarNovaMesa}>
+              <label>Nome da nova Mesa
+                <input value={nomeMesa} onChange={evento => setNomeMesa(evento.target.value)} maxLength={80} required placeholder="Ex.: Operação Raccoon City" />
+              </label>
+              <button className="acao" type="submit" disabled={consultando || !nomeMesa.trim()}>Criar Mesa <span>→</span></button>
+            </form>
+            <p className="servidor-local-explica-mesa">Ao criar uma Mesa, sua conta recebe o papel de Mestre. Ingresso de outros participantes ainda não está disponível nesta etapa.</p>
           </div>
         </> : <>
           <h2>{modoCadastro ? 'Criar conta local' : 'Entrar no servidor'}</h2>
