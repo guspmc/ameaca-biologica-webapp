@@ -7,6 +7,7 @@ import type { AtributosIniciais } from './atributosCriacao';
 import { planejarInventarioCriacao } from './inventarioCriacao';
 import EditorAtributosPericiasLocal from './EditorAtributosPericiasLocal';
 import EditorCaracteristicasLocal from './EditorCaracteristicasLocal';
+import EditorInventarioLocal from './EditorInventarioLocal';
 
 type DadosFichaLocal = {
   classe?: unknown;
@@ -29,6 +30,7 @@ type Props = {
   aoEditar: (secao: 'caracteristicas' | 'pericias' | 'inventario') => void;
   aoSalvarAtributosPericias: (dados: { atributos: AtributosIniciais; periciaOrigemTreinada: string; periciaOrigemExtra: string | null; distribuicaoPericias: Record<string, number> }) => Promise<boolean>;
   aoSalvarCaracteristicas: (dados: { classe: string; origem: string; armaOperario: string; habilidadeBasica: string; equipamentoInicial: string }) => Promise<boolean>;
+  aoSalvarInventario: (dados: { equipamentoInicial: string; comprasIniciais: Record<string, number>; revisaoCompras: number }) => Promise<boolean>;
 };
 
 const ATRIBUTOS: { chave: keyof AtributosIniciais; sigla: string; nome: string }[] = [
@@ -42,7 +44,7 @@ function numero(valor: unknown): number {
   return typeof valor === 'number' && Number.isFinite(valor) ? valor : 0;
 }
 
-export default function FichaLocal({ nome, mesa, dados, aoFechar, aoEditar, aoSalvarAtributosPericias, aoSalvarCaracteristicas }: Props) {
+export default function FichaLocal({ nome, mesa, dados, aoFechar, aoEditar, aoSalvarAtributosPericias, aoSalvarCaracteristicas, aoSalvarInventario }: Props) {
   const ficha = dados as DadosFichaLocal;
   const classe = typeof ficha.classe === 'string' ? ficha.classe : '';
   const origem = typeof ficha.origem === 'string' ? ficha.origem : '';
@@ -144,6 +146,7 @@ export default function FichaLocal({ nome, mesa, dados, aoFechar, aoEditar, aoSa
 
         <section id="ficha-local-inventario" className="ficha-local-secao">
           <div className="ficha-local-titulo-secao"><h2><span>04</span> Inventário</h2><button type="button" className="ficha-local-editar-secao" onClick={() => aoEditar("inventario")}>Editar seção ↗</button></div>
+          <EditorInventarioLocal key={JSON.stringify([classe, kitSelecionado, ficha.comprasIniciais, ficha.revisaoCompras, capacidade])} classe={classe} capacidade={capacidade} kitInicial={kitSelecionado} comprasIniciais={(ficha.comprasIniciais as Record<string, number>) ?? {}} revisaoCompras={numero(ficha.revisaoCompras)} aoSalvar={aoSalvarInventario} />
           <div className="ficha-local-inventario-topo"><span>CAPACIDADE BASE</span><strong>{capacidade} Espaços</strong></div>
           <div className="ficha-local-itens">
             <strong>Itens característicos</strong>
