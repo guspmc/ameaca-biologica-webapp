@@ -24,7 +24,7 @@ type Props = {
   mesa: string;
   dados: Record<string, unknown>;
   aoFechar: () => void;
-  aoEditar: () => void;
+  aoEditar: (secao: 'caracteristicas' | 'pericias' | 'inventario') => void;
 };
 
 const ATRIBUTOS: { chave: keyof AtributosIniciais; sigla: string; nome: string }[] = [
@@ -71,7 +71,7 @@ export default function FichaLocal({ nome, mesa, dados, aoFechar, aoEditar }: Pr
   return <div className="ficha-local-fundo" role="dialog" aria-modal="true" aria-labelledby="ficha-local-titulo">
     <article className="ficha-local">
       <header className="ficha-local-topo">
-        <div className="ficha-local-acoes"><button type="button" className="ficha-local-voltar" onClick={aoFechar}>← Voltar</button><button type="button" className="botao-claro" onClick={aoEditar}>Editar rascunho</button></div>
+        <div className="ficha-local-acoes"><button type="button" className="ficha-local-voltar" onClick={aoFechar}>← Voltar</button><button type="button" className="botao-claro" onClick={() => aoEditar("caracteristicas")}>Editar rascunho</button></div>
         <div><strong>AMEAÇA BIOLÓGICA</strong><small>FICHA LOCAL · RASCUNHO</small></div>
         <span className="ficha-local-selo">NÃO ATIVA</span>
       </header>
@@ -98,7 +98,7 @@ export default function FichaLocal({ nome, mesa, dados, aoFechar, aoEditar }: Pr
         </nav>
 
         <section id="ficha-local-caracteristicas" className="ficha-local-secao">
-          <h2><span>01</span> Características</h2>
+          <div className="ficha-local-titulo-secao"><h2><span>01</span> Características</h2><button type="button" className="ficha-local-editar-secao" onClick={() => aoEditar("caracteristicas")}>Editar seção ↗</button></div>
           <div className="ficha-local-grade">
             <div><small>CLASSE</small><strong>{classe || 'Pendente'}</strong><p>{dadosClasse?.identidade ?? 'Dados da Classe ainda não definidos.'}</p></div>
             <div><small>ORIGEM</small><strong>{origem || 'Pendente'}</strong><p>{dadosOrigem?.beneficio ?? 'Benefício da Origem ainda não definido.'}</p></div>
@@ -109,7 +109,7 @@ export default function FichaLocal({ nome, mesa, dados, aoFechar, aoEditar }: Pr
         </section>
 
         <section id="ficha-local-pericias" className="ficha-local-secao">
-          <h2><span>02</span> Atributos e Perícias</h2>
+          <div className="ficha-local-titulo-secao"><h2><span>02</span> Atributos e Perícias</h2><button type="button" className="ficha-local-editar-secao" onClick={() => aoEditar("pericias")}>Editar seção ↗</button></div>
           <div className="ficha-local-atributos">
             {ATRIBUTOS.map(item => <div key={item.chave}><small>{item.sigla}</small><strong>{numero(atributos[item.chave])}</strong><span>{item.nome}</span></div>)}
           </div>
@@ -137,7 +137,7 @@ export default function FichaLocal({ nome, mesa, dados, aoFechar, aoEditar }: Pr
         </section>
 
         <section id="ficha-local-inventario" className="ficha-local-secao">
-          <h2><span>04</span> Inventário</h2>
+          <div className="ficha-local-titulo-secao"><h2><span>04</span> Inventário</h2><button type="button" className="ficha-local-editar-secao" onClick={() => aoEditar("inventario")}>Editar seção ↗</button></div>
           <div className="ficha-local-inventario-topo"><span>CAPACIDADE BASE</span><strong>{capacidade} Espaços</strong></div>
           <div className="ficha-local-itens">
             <strong>Itens característicos</strong>
