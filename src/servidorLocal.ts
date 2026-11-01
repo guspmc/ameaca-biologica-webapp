@@ -1,0 +1,160 @@
+export type ContaLocal = {
+  id: string;
+  email: string;
+};
+
+export type SessaoLocal = {
+  account: ContaLocal;
+  token: string;
+  expiresAt: string;
+};
+
+export type MesaLocal = {
+  id: string;
+  name: string;
+  role: 'mestre' | 'jogador';
+  createdAt: string;
+};
+
+export type SaudeServidorLocal = {
+  ok: boolean;
+  service: string;
+  version: string;
+  storage: string;
+  realtime: string;
+  internetRequired: boolean;
+  authentication: string;
+  warning: string;
+};
+
+export type TicketWebSocketLocal = {
+  ticket: string;
+  expiresAt: string;
+  singleUse: true;
+};
+
+export class ErroServidorLocal extends Error {
+  readonly status: number;
+
+  constructor(message: string, status: number) {
+    super(message);
+    this.name = 'ErroServidorLocal';
+    this.status = status;
+  }
+}
+
+type OpcoesCliente = {
+  baseUrl: string;
+  token?: string;
+  fetcher?: typeof fetch;
+};
+
+function normalizarBaseUrl(valor: string): string {
+  let url: URL;
+  try {
+    url = new URL(valor);
+  } catch {
+    throw new Error('Informe o endereço completo do servidor local.');
+  }
+  if (!['http:', 'https:'].includes(url.protocol) || url.username || url.password ||
+      url.search || url.hash) {
+    throw new Error('O endereço do servidor local deve usar HTTP ou HTTPS e não pode conter credenciais, consulta ou fragmento.');
+  }
+  return url.toString().replace(/\/$/, '');
+}
+
+export function criarClienteServidorLocal({ baseUrl, token, fetcher = fetch }: OpcoesCliente) {
+  const base = normalizarBaseUrl(baseUrl);
+
+  async function requisicao<T>(caminho: string, opcoes: {
+    metodo?: 'GET' | 'POST';
+    corpo?: unknown;
+    autenticada?: boolean;
+  } = {}): Promise<T> {
+    const headers = new Headers({ accept: 'application/json' });
+    if (opcoes.corpo !== undefined) headers.set('content-type', 'application/json');
+    if (opcoes.autenticada && token) headers.set('authorization', `Bearer ${token}`);
+
+    let resposta: Response;
+    try {
+      resposta = await fetcher(base + caminho, {
+        method: opcoes.metodo ?? 'GET',
+        headers,
+        body: opcoes.corpo === undefined ? undefined : JSON.stringify(opcoes.corpo),
+        cache: 'no-store',
+        credentials: 'omit',
+      });
+    } catch {
+      throw new ErroServidorLocal('Não foi possível alcançar o servidor local. Confira o endereço e a conexão de rede.', 0);
+    }
+
+    const dados = await resposta.json().catch(() => null) as Record<string, unknown> | null;
+    if (!resposta.ok) {
+      const mensagem = typeof dados?.error === 'string'
+        ? dados.error
+        : 'O servidor local respondeu com um erro inesperado.';
+      throw new ErroServidorLocal(mensagem, resposta.status);
+    }
+    if (dados === null) throw new ErroServidorLocal('O servidor local retornou uma resposta inválida.', resposta.status);
+    return dados as T;
+  }
+
+  return {
+    verificarSaude(): Promise<SaudeServidorLocal> {
+      return requisicao('/api/health');
+    },
+
+    cadastrar(email: string, password: string): Promise<{ account: ContaLocal }> {
+      return requisicao('/api/auth/register', {
+        metodo: 'POST',
+        corpo: { email, password },
+      });
+    },
+
+    entrar(email: string, password: string): Promise<SessaoLocal> {
+      return requisicao('/api/auth/login', {
+        metodo: 'POST',
+        corpo: { email, password },
+      });
+    },
+
+    minhaConta(): Promise<{ account: ContaLocal }> {
+      return requisicao('/api/auth/me', { autenticada: true });
+    },
+
+    sair(): Promise<{ ok: boolean }> {
+      return requisicao('/api/auth/logout', {
+        metodo: 'POST',
+        corpo: {},
+        autenticada: true,
+      });
+    },
+
+    listarMesas(): Promise<{ mesas: MesaLocal[] }> {
+      return requisicao('/api/mesas', { autenticada: true });
+    },
+
+    criarMesa(name: string): Promise<{ mesa: MesaLocal }> {
+      return requisicao('/api/mesas', {
+        metodo: 'POST',
+        corpo: { name },
+        autenticada: true,
+      });
+    },
+
+    consultarMesa(id: string): Promise<{ mesa: MesaLocal }> {
+      if (!/^[a-f0-9]{32}$/.test(id)) {
+        throw new Error('Identificador de Mesa inválido.');
+      }
+      return requisicao(`/api/mesas/${id}`, { autenticada: true });
+    },
+
+    emitirTicketWebSocket(): Promise<TicketWebSocketLocal> {
+      return requisicao('/api/auth/ws-ticket', {
+        metodo: 'POST',
+        corpo: {},
+        autenticada: true,
+      });
+    },
+  };
+}
