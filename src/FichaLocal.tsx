@@ -103,7 +103,7 @@ export default function FichaLocal({ nome, mesa, dados, aoFechar, aoEditar, aoSa
 
         <section id="ficha-local-caracteristicas" className="ficha-local-secao">
           <div className="ficha-local-titulo-secao"><h2><span>01</span> Características</h2><button type="button" className="ficha-local-editar-secao" onClick={() => aoEditar("caracteristicas")}>Editar seção ↗</button></div>
-          <EditorCaracteristicasLocal iniciais={{ classe, origem, armaOperario: typeof ficha.armaOperario === 'string' ? ficha.armaOperario : '', habilidadeBasica: typeof ficha.habilidadeBasica === 'string' ? ficha.habilidadeBasica : '', equipamentoInicial: kitSelecionado }} aoSalvar={aoSalvarCaracteristicas} />
+          <EditorCaracteristicasLocal key={JSON.stringify([classe, origem, ficha.armaOperario, ficha.habilidadeBasica, kitSelecionado])} iniciais={{ classe, origem, armaOperario: typeof ficha.armaOperario === 'string' ? ficha.armaOperario : '', habilidadeBasica: typeof ficha.habilidadeBasica === 'string' ? ficha.habilidadeBasica : '', equipamentoInicial: kitSelecionado }} aoSalvar={aoSalvarCaracteristicas} />
           <div className="ficha-local-grade">
             <div><small>CLASSE</small><strong>{classe || 'Pendente'}</strong><p>{dadosClasse?.identidade ?? 'Dados da Classe ainda não definidos.'}</p></div>
             <div><small>ORIGEM</small><strong>{origem || 'Pendente'}</strong><p>{dadosOrigem?.beneficio ?? 'Benefício da Origem ainda não definido.'}</p></div>
