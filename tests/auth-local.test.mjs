@@ -117,7 +117,7 @@ test('registra a migração de autenticação uma única vez', async t => {
   const { app, dataDir, fechar, registrarServidor } = await setup(t);
   assert.deepEqual(
     app.db.prepare('SELECT version FROM schema_migrations ORDER BY version').all().map(row => row.version),
-    [1, 2, 3, 4],
+    [1, 2, 3, 4, 5],
   );
   await fechar();
 
@@ -126,7 +126,7 @@ test('registra a migração de autenticação uma única vez', async t => {
   registrarServidor(reiniciado);
   assert.deepEqual(
     reiniciado.db.prepare('SELECT version FROM schema_migrations ORDER BY version').all().map(row => row.version),
-    [1, 2, 3, 4],
+    [1, 2, 3, 4, 5],
   );
 });
 
