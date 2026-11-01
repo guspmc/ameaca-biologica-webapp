@@ -140,8 +140,8 @@ export function createLocalServer({
       }
 
       if (await tratarRotaAutenticacao(req, res, url, db)) return;
-      if (await tratarRotaMesas(req, res, url, db)) return;
       if (await tratarRotaPersonagensLocal(req, res, url, db)) return;
+      if (await tratarRotaMesas(req, res, url, db)) return;
 
       if (metodo === 'GET' && url.pathname === '/') {
         res.writeHead(200, {
