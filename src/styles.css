@@ -409,3 +409,21 @@ footer { margin-top:45px; border-top:1px solid #dce2df; padding-top:19px; color:
 .servidor-local-alternar{margin-top:15px;padding:8px 0;border:0;background:transparent;color:#87333d;text-align:left;text-decoration:underline;font-size:12px;font-weight:800}
 .servidor-local-feedback{max-width:720px;margin:12px 0;padding:12px 14px}
 @media(max-width:560px){.servidor-local-botoes{display:grid}.servidor-local-botoes>*{width:100%}}
+
+
+/* Listagem e criação de Mesas no servidor local */
+.servidor-local-mesas{margin-top:22px;padding-top:20px;border-top:1px solid #d4c6ae}
+.servidor-local-mesas-topo{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.servidor-local-mesas-topo h3{margin:0;font:800 18px Georgia,serif}
+.servidor-local-lista-mesas{display:grid;gap:8px;margin:14px 0;padding:0;list-style:none}
+.servidor-local-lista-mesas li{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px;border:1px solid #cbbda6;background:#fffaf0}
+.servidor-local-lista-mesas li>div{display:grid;gap:5px;min-width:0}
+.servidor-local-lista-mesas li strong{overflow-wrap:anywhere;font-size:14px}
+.servidor-local-lista-mesas li small{color:#756b5c;font-size:10px}
+.servidor-local-lista-mesas li>span{flex:none;padding:5px 7px;font:800 9px monospace;letter-spacing:.06em}
+.servidor-local-lista-mesas .papel-mestre{background:#87333d;color:#fff0dc}
+.servidor-local-lista-mesas .papel-jogador{background:#e4e0d5;color:#343832}
+.servidor-local-vazio{padding:13px;background:#f3eddf;color:#675d50;font-size:12px}
+.servidor-local-form-mesa{margin-top:16px}
+.servidor-local-explica-mesa{font-size:11px;line-height:1.55;color:#756b5c}
+@media(max-width:560px){.servidor-local-mesas-topo{align-items:flex-start;flex-direction:column}.servidor-local-lista-mesas li{align-items:flex-start;flex-direction:column}}
