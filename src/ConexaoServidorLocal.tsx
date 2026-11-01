@@ -27,6 +27,8 @@ export default function ConexaoServidorLocal() {
   function encerrarSessao(mensagem: string) {
     setSessao(null);
     setMesas([]);
+    setConvitesGerados({});
+    setSolicitacoes({});
     setAviso(mensagem);
   }
 
@@ -43,7 +45,7 @@ export default function ConexaoServidorLocal() {
   }, [sessao]);
 
   async function verificar() {
-    setErro(''); setAviso(''); setSaude(null); setSessao(null); setMesas([]); setConsultando(true);
+    setErro(''); setAviso(''); setSaude(null); encerrarSessao(''); setConsultando(true);
     try {
       const cliente = criarClienteServidorLocal({ baseUrl: endereco.trim() });
       const resultado = await cliente.verificarSaude();
@@ -91,12 +93,10 @@ export default function ConexaoServidorLocal() {
     setErro(''); setAviso(''); setConsultando(true);
     try {
       await criarClienteServidorLocal({ baseUrl: endereco.trim(), token: sessao.token }).sair();
-      setSessao(null);
-      setAviso('Sessão encerrada no servidor.');
+      encerrarSessao('Sessão encerrada no servidor.');
     } catch (problema) {
       if (problema instanceof ErroServidorLocal && problema.status === 401) {
-        setSessao(null);
-        setAviso('A sessão já estava ausente ou expirada no servidor.');
+        encerrarSessao('A sessão já estava ausente ou expirada no servidor.');
       } else {
         setErro(problema instanceof Error ? problema.message : 'Não foi possível confirmar o encerramento da sessão.');
       }
@@ -125,15 +125,27 @@ export default function ConexaoServidorLocal() {
     setErro(''); setAviso(''); setConsultando(true);
     try {
       const cliente = criarClienteServidorLocal({ baseUrl: endereco.trim(), token: sessao.token });
-      const resposta = await cliente.criarMesa(nome);
-      const lista = await cliente.listarMesas();
-      setMesas(lista.mesas);
+      let resposta;
+      try {
+        resposta = await cliente.criarMesa(nome);
+      } catch (problema) {
+        if (problema instanceof ErroServidorLocal && problema.status === 401) {
+          encerrarSessao('A sessão expirou ou foi encerrada no servidor. Entre novamente.');
+        } else setErro(problema instanceof Error ? problema.message : 'Não foi possível criar a Mesa.');
+        return;
+      }
       setNomeMesa('');
-      setAviso('Mesa “' + resposta.mesa.name + '” criada e confirmada pelo servidor. Seu papel nesta Mesa é Mestre.');
-    } catch (problema) {
-      if (problema instanceof ErroServidorLocal && problema.status === 401) {
-        encerrarSessao('A sessão expirou ou foi encerrada no servidor. Entre novamente.');
-      } else setErro(problema instanceof Error ? problema.message : 'Não foi possível criar a Mesa.');
+      try {
+        const lista = await cliente.listarMesas();
+        setMesas(lista.mesas);
+        setAviso('Mesa “' + resposta.mesa.name + '” criada e confirmada pelo servidor. Seu papel nesta Mesa é Mestre.');
+      } catch (problema) {
+        if (problema instanceof ErroServidorLocal && problema.status === 401) {
+          encerrarSessao('Mesa criada e confirmada pelo servidor, mas a sessão expirou antes da atualização da lista. Entre novamente para consultar o estado atual.');
+        } else {
+          setAviso('Mesa “' + resposta.mesa.name + '” criada e confirmada pelo servidor, mas não foi possível atualizar a lista. Use “Atualizar lista” para consultar o estado atual.');
+        }
+      }
     } finally { setConsultando(false); }
   }
 
@@ -195,10 +207,22 @@ export default function ConexaoServidorLocal() {
     try {
       const cliente = criarClienteServidorLocal({ baseUrl: endereco.trim(), token: sessao.token });
       await cliente.analisarSolicitacao(mesa.id, id, decisao);
-      const [lista, pedidos] = await Promise.all([cliente.listarMesas(), cliente.listarSolicitacoes(mesa.id)]);
-      setMesas(lista.mesas);
-      setSolicitacoes(atual => ({ ...atual, [mesa.id]: pedidos.requests }));
-      setAviso(decisao === 'aprovar' ? 'Participante aprovado e vínculo confirmado pelo servidor.' : 'Solicitação recusada pelo servidor.');
+      const confirmacao = decisao === 'aprovar'
+        ? 'Participante aprovado e vínculo confirmado pelo servidor.'
+        : 'Solicitação recusada pelo servidor.';
+      setAviso(confirmacao);
+      const [lista, pedidos] = await Promise.allSettled([cliente.listarMesas(), cliente.listarSolicitacoes(mesa.id)]);
+      if (lista.status === 'fulfilled') setMesas(lista.value.mesas);
+      if (pedidos.status === 'fulfilled') setSolicitacoes(atual => ({ ...atual, [mesa.id]: pedidos.value.requests }));
+      const falhas = [lista, pedidos].filter(resultado => resultado.status === 'rejected');
+      if (falhas.length) {
+        const expirou = falhas.some(resultado => resultado.status === 'rejected' && resultado.reason instanceof ErroServidorLocal && resultado.reason.status === 401);
+        if (expirou) {
+          encerrarSessao(confirmacao + ' Porém, a sessão expirou antes da atualização da tela. Entre novamente para consultar o estado atual.');
+        } else {
+          setAviso(confirmacao + ' A decisão foi confirmada, mas a atualização da tela falhou; consulte novamente para conferir o estado atual.');
+        }
+      }
     } catch (problema) {
       if (problema instanceof ErroServidorLocal && problema.status === 401) encerrarSessao('A sessão expirou ou foi encerrada no servidor. Entre novamente.');
       else setErro(problema instanceof Error ? problema.message : 'Não foi possível analisar a solicitação.');
@@ -228,8 +252,7 @@ export default function ConexaoServidorLocal() {
       setAviso('Sessão válida. O servidor confirmou a conta ' + resposta.account.email + '.');
     } catch (problema) {
       if (problema instanceof ErroServidorLocal && problema.status === 401) {
-        setSessao(null);
-        setAviso('O servidor informou que a sessão expirou ou foi encerrada. Entre novamente.');
+        encerrarSessao('O servidor informou que a sessão expirou ou foi encerrada. Entre novamente.');
       } else setErro(problema instanceof Error ? problema.message : 'Falha ao consultar a sessão.');
     } finally { setConsultando(false); }
   }
