@@ -6,7 +6,7 @@ import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { WebSocketServer, WebSocket } from 'ws';
 import { consumirTicketWebSocketLocal, prepararAutenticacaoLocal, tratarRotaAutenticacao, tratarRotaMesas } from './auth-local.mjs';
-import { prepararPersonagensLocal, tratarRotaPersonagensLocal } from './personagens-local.mjs';
+import { tratarRotaPersonagensLocal } from './personagens-local.mjs';
 
 const PAGINA = readFileSync(new URL('./index.html', import.meta.url), 'utf8');
 const AVISO = 'Protótipo LAN sem proteção de transporte. Use apenas dados fictícios e uma rede privada confiável; não use dados reais de campanha ou segredos.';
@@ -91,7 +91,6 @@ export function createLocalServer({
   `);
 
   prepararAutenticacaoLocal(db);
-  prepararPersonagensLocal(db);
 
   const listarEventos = db.prepare(
     'SELECT id, mensagem AS message, criado_em AS createdAt FROM eventos_prototipo ORDER BY id DESC LIMIT 50'
