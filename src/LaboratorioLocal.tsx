@@ -237,7 +237,25 @@ export default function LaboratorioLocal() {
           </div>
         </section>
       </div>
-      {fichaAberta && <FichaLocal nome={fichaAberta.nome} mesa={fichaAberta.mesa} dados={fichaAberta.dados} aoFechar={() => setFichaAberta(null)} aoEditar={secao => carregarEdicao(fichaAberta.id, fichaAberta.nome, fichaAberta.dados, secao)} />}
+      {fichaAberta && <FichaLocal nome={fichaAberta.nome} mesa={fichaAberta.mesa} dados={fichaAberta.dados} aoFechar={() => setFichaAberta(null)} aoEditar={secao => carregarEdicao(fichaAberta.id, fichaAberta.nome, fichaAberta.dados, secao)} aoSalvarAtributosPericias={async alteracoes => {
+        const dadosAtualizados = { ...fichaAberta.dados, ...alteracoes };
+        const classe = String(dadosAtualizados.classe ?? '');
+        const origem = String(dadosAtualizados.origem ?? '');
+        const attrs = dadosAtualizados.atributos as AtributosIniciais;
+        const treinada = String(dadosAtualizados.periciaOrigemTreinada ?? '');
+        const extra = String(dadosAtualizados.periciaOrigemExtra ?? '');
+        const distribuicao = (dadosAtualizados.distribuicaoPericias as Record<string, number>) ?? {};
+        if (!atributosIniciaisValidos(attrs) || !distribuicaoPericiasValida(classe, origem, treinada, distribuicao, extra)) {
+          setErro('A edição foi recusada: confira Atributos e Perícias conforme as regras da criação.');
+          return false;
+        }
+        const ok = gravar('personagem', fichaAberta.nome, dadosAtualizados, fichaAberta.id);
+        if (ok) {
+          setFichaAberta(atual => atual ? { ...atual, dados: dadosAtualizados } : atual);
+          setAviso('Atributos e Perícias atualizados no rascunho local.');
+        }
+        return ok;
+      }} />}
       {erro && <p className="erro lab-mensagem" role="alert">{erro}</p>}
       {aviso && <p className="sucesso lab-mensagem" role="status">{aviso}</p>}
       <p className="lab-nota">A gravação só é confirmada quando o navegador conclui o armazenamento local. Os dados permanecem neste dispositivo até serem apagados pelo usuário no próprio navegador.</p>
