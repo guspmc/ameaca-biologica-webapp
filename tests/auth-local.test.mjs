@@ -323,6 +323,69 @@ test('ticket WebSocket inválido ou desconhecido não autentica conexão', async
   assert.equal(consumirTicketWebSocketLocal(app.db, 'A'.repeat(43)), null);
 });
 
+test('convite privado exige Mestre e aprovação antes de conceder acesso à Mesa', async t => {
+  const { base } = await setup(t);
+  const senha = 'senha-local-comprida-2026';
+  const entrar = async email => {
+    assert.equal((await post(base, '/api/auth/register', { email, password: senha })).status, 201);
+    const login = await post(base, '/api/auth/login', { email, password: senha });
+    return (await login.json()).token;
+  };
+  const tokenMestre = await entrar('mestre-convite@example.test');
+  const tokenJogador = await entrar('jogador-convite@example.test');
+  const criarMesa = await post(base, '/api/mesas', { name: 'Mesa privada' }, tokenMestre);
+  const { mesa } = await criarMesa.json();
+  assert.equal((await post(base, `/api/mesas/${mesa.id}/convites`, {}, tokenJogador)).status, 404);
+  const conviteResposta = await post(base, `/api/mesas/${mesa.id}/convites`, {}, tokenMestre);
+  assert.equal(conviteResposta.status, 201);
+  const { invitation } = await conviteResposta.json();
+  assert.match(invitation.code, /^[A-Za-z0-9_-]{40,100}$/);
+  assert.equal((await post(base, '/api/convites/solicitar', { code: 'codigo-invalido' }, tokenJogador)).status, 404);
+  const pedido = await post(base, '/api/convites/solicitar', { code: invitation.code }, tokenJogador);
+  assert.equal(pedido.status, 202);
+  const { request } = await pedido.json();
+  assert.equal(request.status, 'pendente');
+  assert.equal((await post(base, '/api/convites/solicitar', { code: invitation.code }, tokenJogador)).status, 409);
+  assert.deepEqual((await (await fetch(base + '/api/mesas', { headers: { authorization: `Bearer ${tokenJogador}` } })).json()).mesas, []);
+  assert.equal((await fetch(base + `/api/mesas/${mesa.id}`, { headers: { authorization: `Bearer ${tokenJogador}` } })).status, 404);
+  const lista = await fetch(base + `/api/mesas/${mesa.id}/solicitacoes`, { headers: { authorization: `Bearer ${tokenMestre}` } });
+  assert.equal(lista.status, 200);
+  assert.equal((await lista.json()).requests[0].id, request.id);
+  assert.equal((await post(base, `/api/mesas/${mesa.id}/solicitacoes/${request.id}/aprovar`, {}, tokenJogador)).status, 404);
+  const aprovar = await post(base, `/api/mesas/${mesa.id}/solicitacoes/${request.id}/aprovar`, {}, tokenMestre);
+  assert.equal(aprovar.status, 200);
+  assert.equal((await aprovar.json()).request.status, 'aprovada');
+  const detalhe = await fetch(base + `/api/mesas/${mesa.id}`, { headers: { authorization: `Bearer ${tokenJogador}` } });
+  assert.equal(detalhe.status, 200);
+  assert.equal((await detalhe.json()).mesa.role, 'jogador');
+});
+
+test('aprovação de ingresso respeita limite de dez jogadores no servidor', async t => {
+  const { base, app } = await setup(t);
+  const senha = 'senha-local-comprida-2026';
+  const entrar = async email => {
+    assert.equal((await post(base, '/api/auth/register', { email, password: senha })).status, 201);
+    const login = await post(base, '/api/auth/login', { email, password: senha });
+    return (await login.json()).token;
+  };
+  const tokenMestre = await entrar('mestre-limite@example.test');
+  const tokenSolicitante = await entrar('solicitante-limite@example.test');
+  const { mesa } = await (await post(base, '/api/mesas', { name: 'Mesa cheia' }, tokenMestre)).json();
+  const { invitation } = await (await post(base, `/api/mesas/${mesa.id}/convites`, {}, tokenMestre)).json();
+  const pedido = await post(base, '/api/convites/solicitar', { code: invitation.code }, tokenSolicitante);
+  const { request } = await pedido.json();
+  const agora = new Date().toISOString();
+  for (let i = 0; i < 10; i += 1) {
+    const id = `jogador-limite-${i}`;
+    app.db.prepare('INSERT INTO contas_locais (id, email, senha_salt, senha_hash, criada_em) VALUES (?, ?, ?, ?, ?)').run(id, `${id}@example.test`, 'salt', 'hash', agora);
+    app.db.prepare("INSERT INTO participantes_mesa (mesa_id, conta_id, papel, entrou_em) VALUES (?, ?, 'jogador', ?)").run(mesa.id, id, agora);
+  }
+  const resposta = await post(base, `/api/mesas/${mesa.id}/solicitacoes/${request.id}/aprovar`, {}, tokenMestre);
+  assert.equal(resposta.status, 409);
+  assert.equal((await resposta.json()).error, 'Esta Mesa já atingiu o limite de 10 jogadores.');
+  assert.equal(app.db.prepare("SELECT status FROM solicitacoes_mesa_locais WHERE id = ?").get(request.id).status, 'pendente');
+});
+
 test('rotas antigas de eventos demonstrativos ficam desativadas', async t => {
   const { base } = await setup(t);
   assert.equal((await fetch(base + '/api/events')).status, 410);
