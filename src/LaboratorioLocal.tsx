@@ -238,7 +238,7 @@ export default function LaboratorioLocal() {
         </section>
       </div>
       {fichaAberta && <FichaLocal nome={fichaAberta.nome} mesa={fichaAberta.mesa} dados={fichaAberta.dados} aoFechar={() => setFichaAberta(null)} aoEditar={secao => carregarEdicao(fichaAberta.id, fichaAberta.nome, fichaAberta.dados, secao)} aoSalvarCaracteristicas={async alteracoes => {
-        const dadosAtualizados = { ...fichaAberta.dados, ...alteracoes };
+        const dadosAtualizados: Record<string, unknown> = { ...fichaAberta.dados, ...alteracoes };
         const classe = String(dadosAtualizados.classe ?? '');
         const origem = String(dadosAtualizados.origem ?? '');
         const arma = dadosAtualizados.armaOperario;
@@ -263,7 +263,7 @@ export default function LaboratorioLocal() {
         if (ok) setFichaAberta(atual => atual ? { ...atual, dados: dadosAtualizados } : atual);
         return ok;
       }} aoSalvarInventario={async alteracoes => {
-        const dadosAtualizados = { ...fichaAberta.dados, ...alteracoes };
+        const dadosAtualizados: Record<string, unknown> = { ...fichaAberta.dados, ...alteracoes };
         const classe = String(dadosAtualizados.classe ?? '');
         const kit = String(dadosAtualizados.equipamentoInicial ?? '');
         const attrs = (dadosAtualizados.atributos as AtributosIniciais | undefined) ?? { forca: 1, agilidade: 1, vigor: 1, astucia: 1 };
@@ -291,7 +291,7 @@ export default function LaboratorioLocal() {
         if (ok) setFichaAberta(atual => atual ? { ...atual, dados: dadosAtualizados } : atual);
         return ok;
       }} aoSalvarAtributosPericias={async alteracoes => {
-        const dadosAtualizados = { ...fichaAberta.dados, ...alteracoes };
+        const dadosAtualizados: Record<string, unknown> = { ...fichaAberta.dados, ...alteracoes };
         const classe = String(dadosAtualizados.classe ?? '');
         const origem = String(dadosAtualizados.origem ?? '');
         const attrs = dadosAtualizados.atributos as AtributosIniciais;
