@@ -342,7 +342,7 @@ export default function ConexaoServidorLocal() {
         <strong>AVISO IMPORTANTE DE SEGURANÇA</strong>
         <p>Este protótipo usa HTTP sem proteção de transporte. Utilize apenas dados fictícios e uma rede privada confiável. Não use senhas reais, nem dados de campanha.</p>
         <p>O token de sessão fica apenas na memória desta página: recarregar ou fechar a aba encerra o acesso no navegador, mas não revoga automaticamente o token no servidor. A sessão expira no servidor em até sete dias; use “Encerrar sessão” para revogá-la explicitamente.</p>
-        <p>Este protótipo permite criar Mesas, gerar convites, solicitar ingresso e aprovar participantes. Diretório público, renovação/revogação de convites e bloqueios ainda não estão disponíveis.</p>
+        <p>Este protótipo permite criar Mesas, gerar, renovar e revogar convites, solicitar ingresso e aprovar ou recusar participantes. Diretório público e bloqueio de participantes ainda não estão disponíveis.</p>
       </section>
       <p className="servidor-local-voltar"><a href={import.meta.env.BASE_URL}>Voltar ao ambiente online</a> · <a href={import.meta.env.BASE_URL + '?laboratorio=local'}>Abrir laboratório fictício</a></p>
       <footer>AMEAÇA BIOLÓGICA RPG · SERVIDOR LOCAL EXPERIMENTAL</footer>
