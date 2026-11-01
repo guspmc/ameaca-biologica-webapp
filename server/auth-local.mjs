@@ -380,7 +380,7 @@ export async function tratarRotaAutenticacao(req, res, url, db) {
 export async function tratarRotaMesas(req, res, url, db) {
   const metodo = req.method ?? 'GET';
   const rota = url.pathname;
-  if (rota !== '/api/mesas' && !rota.startsWith('/api/mesas/')) return false;
+  if (rota !== '/api/mesas' && !rota.startsWith('/api/mesas/') && rota !== '/api/convites/solicitar') return false;
 
   const conta = await autenticarContaLocal(req, db);
   if (!conta) {
