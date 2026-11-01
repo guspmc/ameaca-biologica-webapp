@@ -450,9 +450,29 @@ export async function tratarRotaMesas(req, res, url, db) {
       const codigo = randomBytes(32).toString('base64url');
       const conviteId = randomBytes(16).toString('hex');
       const agora = new Date().toISOString();
-      db.prepare('INSERT INTO convites_mesa_locais (id, mesa_id, token_hash, criado_por, criada_em) VALUES (?, ?, ?, ?, ?)').run(conviteId, mesaId, hashToken(codigo), conta.id, agora);
+      db.exec('BEGIN IMMEDIATE');
+      try {
+        db.prepare('UPDATE convites_mesa_locais SET revogada_em = ? WHERE mesa_id = ? AND revogada_em IS NULL').run(agora, mesaId);
+        db.prepare('INSERT INTO convites_mesa_locais (id, mesa_id, token_hash, criado_por, criada_em) VALUES (?, ?, ?, ?, ?)').run(conviteId, mesaId, hashToken(codigo), conta.id, agora);
+        db.exec('COMMIT');
+      } catch (erro) { db.exec('ROLLBACK'); throw erro; }
       json(res, 201, { invitation: { id: conviteId, code: codigo, createdAt: agora } });
       return true;
+    }
+
+    const revogarConvite = /^\\/api\\/mesas\\/([a-f0-9]{32})\\/convites\\/ativo$/.exec(rota);
+    if (metodo === 'DELETE' && revogarConvite) {
+      const mesaId = revogarConvite[1];
+      db.exec('BEGIN IMMEDIATE');
+      try {
+        const mestre = db.prepare("SELECT 1 FROM participantes_mesa WHERE mesa_id = ? AND conta_id = ? AND papel = 'mestre'").get(mesaId, conta.id);
+        if (!mestre) { db.exec('ROLLBACK'); json(res, 404, { error: 'Mesa não encontrada.' }); return true; }
+        const agora = new Date().toISOString();
+        const resultado = db.prepare('UPDATE convites_mesa_locais SET revogada_em = ? WHERE mesa_id = ? AND revogada_em IS NULL').run(agora, mesaId);
+        db.exec('COMMIT');
+        json(res, 200, { revoked: resultado.changes > 0 });
+        return true;
+      } catch (erro) { db.exec('ROLLBACK'); throw erro; }
     }
 
     if (metodo === 'POST' && rota === '/api/convites/solicitar') {
