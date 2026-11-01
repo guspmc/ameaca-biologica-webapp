@@ -1,7 +1,8 @@
 import { dadosDaClasse } from './classesFicha';
 import { PERICIAS_CLASSE, bonusTreinamento } from './pericias';
 import { ORIGENS } from './origens';
-import { capacidadeInventario, caracteristicos } from './equipamento';
+import { capacidadeInventario, caracteristicos, equipamentoInicial as itensDoKit, opcoesEquipamento, espacosOcupados } from './equipamento';
+import { HABILIDADES_BASICAS } from './habilidades';
 import type { AtributosIniciais } from './atributosCriacao';
 
 type DadosFichaLocal = {
@@ -11,6 +12,8 @@ type DadosFichaLocal = {
   atributos?: unknown;
   periciaOrigemTreinada?: unknown;
   periciaOrigemExtra?: unknown;
+  habilidadeBasica?: unknown;
+  equipamentoInicial?: unknown;
   distribuicaoPericias?: unknown;
 };
 
@@ -53,6 +56,11 @@ export default function FichaLocal({ nome, mesa, dados, aoFechar }: Props) {
   const capacidade = capacidadeInventario(numero(atributos.forca), origem);
   const listaPericias = [...new Set([...(PERICIAS_CLASSE[classe] ?? []), ...(dadosOrigem?.pericias ?? []), ...(extra ? [extra] : [])])].sort();
   const itensClasse = caracteristicos(classe);
+  const habilidade = HABILIDADES_BASICAS.find(item => item.id === ficha.habilidadeBasica && item.classe === classe);
+  const kitSelecionado = typeof ficha.equipamentoInicial === 'string' ? ficha.equipamentoInicial : '';
+  const kit = opcoesEquipamento(classe).find(item => item.id === kitSelecionado);
+  const itensKit = itensDoKit(classe, kitSelecionado);
+  const espacosKit = espacosOcupados(itensKit);
   const ramo = dadosClasse?.ramos ?? [];
 
   return <div className="ficha-local-fundo" role="dialog" aria-modal="true" aria-labelledby="ficha-local-titulo">
@@ -92,7 +100,7 @@ export default function FichaLocal({ nome, mesa, dados, aoFechar }: Props) {
             <div><small>RAMOS DA CLASSE</small><strong>{ramo.length ? ramo.join(' · ') : 'Pendente'}</strong><p>Ramos disponíveis para desenvolvimento futuro. Nenhum foi escolhido nesta etapa.</p></div>
             <div><small>PROFICIÊNCIAS</small><strong>{dadosClasse?.proficiencias.length ?? 0} registros</strong><p>{dadosClasse?.proficiencias.join(' · ') ?? 'Pendente'}</p></div>
           </div>
-          <div className="ficha-local-nota"><strong>Habilidade Básica</strong><p>Ainda não selecionada neste fluxo local. A escolha será integrada sem presumir uma habilidade para o personagem.</p></div>
+          <div className="ficha-local-nota"><strong>Habilidade Básica · {habilidade?.nome ?? 'Não selecionada'}</strong><p>{habilidade ? habilidade.efeito : 'Ainda não selecionada. Nenhuma habilidade foi presumida para o personagem.'}</p></div>
         </section>
 
         <section id="ficha-local-pericias" className="ficha-local-secao">
@@ -117,7 +125,7 @@ export default function FichaLocal({ nome, mesa, dados, aoFechar }: Props) {
           <div className="ficha-local-grade">
             <div><small>DEFESA BÁSICA</small><strong>{defesa}</strong><p>10 + AGI{origem === 'Policial' ? ' + 2 da Origem Policial' : ''}. Equipamentos ainda não aplicados.</p></div>
             <div><small>MOVIMENTO</small><strong>9 m</strong><p>Movimento base.</p></div>
-            <div><small>HABILIDADE DE CLASSE</small><strong>Não selecionada</strong><p>Os efeitos de combate não são executados nesta ficha de rascunho.</p></div>
+            <div><small>HABILIDADE DE CLASSE</small><strong>{habilidade?.nome ?? 'Não selecionada'}</strong><p>{habilidade ? habilidade.efeito : 'Os efeitos de combate não são executados nesta ficha de rascunho.'}</p></div>
             <div><small>ARMAS</small><strong>Não equipadas</strong><p>A escolha de arma e a resolução de Ataques serão integradas ao módulo de equipamento/combate.</p></div>
           </div>
           <p className="ficha-local-aviso">Combate ativo, iniciativa, ações, Ataques, Dano, munição e Condições ainda não estão implementados aqui. Nenhuma rolagem ou efeito é simulado.</p>
@@ -127,9 +135,12 @@ export default function FichaLocal({ nome, mesa, dados, aoFechar }: Props) {
           <h2><span>04</span> Inventário</h2>
           <div className="ficha-local-inventario-topo"><span>CAPACIDADE BASE</span><strong>{capacidade} Espaços</strong></div>
           <div className="ficha-local-itens">
+            <strong>Itens característicos</strong>
             {itensClasse.length ? itensClasse.map(item => <div key={item.id}><strong>{item.nome}</strong><small>{item.detalhe} · Característico · 0 Espaços</small></div>) : <p>Itens característicos ainda não definidos para esta Classe.</p>}
+            <strong>Conjunto inicial · {kit ? kit.id + ' — ' + kit.nome : 'Não selecionado'}</strong>
+            {itensKit.length ? itensKit.map(item => <div key={item.id}><strong>{item.nome}</strong><small>{item.detalhe} · {item.espacos} Espaço(s)</small></div>) : <p>Nenhum conjunto inicial selecionado.</p>}
           </div>
-          <p className="ficha-local-legenda">A capacidade considera 4 + FOR{origem === 'Mochileiro' ? ' + 1 de Mochileiro' : ''}. O kit inicial, compras, espaços ocupados, itens carregados e operações de Inventário ainda não foram escolhidos ou ativados neste rascunho.</p>
+          <p className="ficha-local-legenda">A capacidade considera 4 + FOR{origem === 'Mochileiro' ? ' + 1 de Mochileiro' : ''} = {capacidade} Espaços. O conjunto selecionado ocupa {espacosKit} Espaço(s). Compras personalizadas do conjunto C, estado de equipamento e operações de Inventário ainda não estão integrados.</p>
         </section>
 
         <footer className="ficha-local-rodape">AMEAÇA BIOLÓGICA RPG · DADOS LOCAIS · RASCUNHO NÃO ATIVO</footer>
