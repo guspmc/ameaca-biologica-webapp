@@ -262,6 +262,34 @@ export default function LaboratorioLocal() {
         const ok = gravar('personagem', fichaAberta.nome, dadosAtualizados, fichaAberta.id);
         if (ok) setFichaAberta(atual => atual ? { ...atual, dados: dadosAtualizados } : atual);
         return ok;
+      }} aoSalvarInventario={async alteracoes => {
+        const dadosAtualizados = { ...fichaAberta.dados, ...alteracoes };
+        const classe = String(dadosAtualizados.classe ?? '');
+        const kit = String(dadosAtualizados.equipamentoInicial ?? '');
+        const attrs = (dadosAtualizados.atributos as AtributosIniciais | undefined) ?? { forca: 1, agilidade: 1, vigor: 1, astucia: 1 };
+        const origem = String(dadosAtualizados.origem ?? '');
+        if (!opcoesEquipamento(classe).some(item => item.id === kit)) {
+          setErro('Planejamento não salvo: conjunto inicial incompatível com a Classe.');
+          return false;
+        }
+        if (kit === 'C') {
+          try {
+            const plano = simularCompras(alteracoes.comprasIniciais, capacidadeInventario(attrs.forca, origem));
+            if (!plano.orcamentoValido || !plano.cabe || alteracoes.revisaoCompras < 1) {
+              setErro('Planejamento não salvo: confira orçamento, capacidade e aplicação das compras.');
+              return false;
+            }
+          } catch {
+            setErro('Planejamento não salvo: o plano de compras é inválido.');
+            return false;
+          }
+        } else if (Object.keys(alteracoes.comprasIniciais).length || alteracoes.revisaoCompras !== 0) {
+          setErro('Planejamento não salvo: kits A e B não podem manter compras personalizadas.');
+          return false;
+        }
+        const ok = gravar('personagem', fichaAberta.nome, dadosAtualizados, fichaAberta.id);
+        if (ok) setFichaAberta(atual => atual ? { ...atual, dados: dadosAtualizados } : atual);
+        return ok;
       }} aoSalvarAtributosPericias={async alteracoes => {
         const dadosAtualizados = { ...fichaAberta.dados, ...alteracoes };
         const classe = String(dadosAtualizados.classe ?? '');
