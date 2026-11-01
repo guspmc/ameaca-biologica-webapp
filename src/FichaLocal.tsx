@@ -49,14 +49,14 @@ export default function FichaLocal({ nome, mesa, dados, aoFechar }: Props) {
   const extra = typeof ficha.periciaOrigemExtra === 'string' ? ficha.periciaOrigemExtra : '';
   const dadosClasse = dadosDaClasse(classe);
   const dadosOrigem = ORIGENS.find(item => item.nome === origem);
-  const pv = (classe === 'Agente' ? 10 : classe === 'Autodidata' ? 8 : classe === 'Operador' ? 12 : 0) + numero(atributos.vigor);
+  const habilidade = HABILIDADES_BASICAS.find(item => item.id === ficha.habilidadeBasica && item.classe === classe);
+  const pv = (classe === 'Agente' ? 10 : classe === 'Autodidata' ? 8 : classe === 'Operador' ? 12 : 0) + numero(atributos.vigor) + (habilidade?.id === 'parrudo' ? 5 : 0);
   const sa = numero(atributos.agilidade) + numero(atributos.astucia) + (origem === 'Universitária' ? 1 : 0);
-  const bi = (classe === 'Agente' ? 8 : classe === 'Autodidata' ? 10 : classe === 'Operador' ? 6 : 0) + numero(atributos.astucia) + (origem === 'Cobaia' ? 2 : 0);
+  const bi = (classe === 'Agente' ? 8 : classe === 'Autodidata' ? 10 : classe === 'Operador' ? 6 : 0) + numero(atributos.astucia) + (origem === 'Cobaia' ? 2 : 0) + (habilidade?.id === 'parrudo' ? 3 : 0);
   const defesa = 10 + numero(atributos.agilidade) + (origem === 'Policial' ? 2 : 0);
   const capacidade = capacidadeInventario(numero(atributos.forca), origem);
   const listaPericias = [...new Set([...(PERICIAS_CLASSE[classe] ?? []), ...(dadosOrigem?.pericias ?? []), ...(extra ? [extra] : [])])].sort();
   const itensClasse = caracteristicos(classe);
-  const habilidade = HABILIDADES_BASICAS.find(item => item.id === ficha.habilidadeBasica && item.classe === classe);
   const kitSelecionado = typeof ficha.equipamentoInicial === 'string' ? ficha.equipamentoInicial : '';
   const kit = opcoesEquipamento(classe).find(item => item.id === kitSelecionado);
   const itensKit = itensDoKit(classe, kitSelecionado);
