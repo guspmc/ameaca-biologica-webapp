@@ -3,6 +3,7 @@ import type { AtributosIniciais } from './atributosCriacao';
 import { atributosIniciaisValidos, pontosRestantesAtributos } from './atributosCriacao';
 import { NOMES_PERICIAS, periciasPermitidasNaCriacao, distribuicaoPericiasValida, pontosGastosPericias } from './periciasCriacao';
 import { PONTOS_CLASSE } from './pericias';
+import { ORIGENS } from './origens';
 
 type Props = {
   classe: string; origem: string; atributosIniciais: AtributosIniciais;
@@ -53,7 +54,7 @@ export default function EditorAtributosPericias(props: Props) {
     <p>As alterações ficam nesta ficha até você salvar. As regras e os limites da criação são os mesmos do formulário inicial.</p>
     <strong>Atributos · {pontosRestantesAtributos(atributos)} ponto(s) restante(s)</strong>
     <div className="criar-grid">{chaves.map(item => <div className="criar-stat" key={item.chave}><small>{item.sigla} · {item.nome}</small><div className="controle-stat"><button type="button" onClick={() => mudarAtributo(item.chave,-1)} disabled={ocupado || atributos[item.chave] === 0}>−</button><b>{atributos[item.chave]}</b><button type="button" onClick={() => mudarAtributo(item.chave,1)} disabled={ocupado || atributos[item.chave] === 3 || pontosRestantesAtributos(atributos) === 0}>+</button></div></div>)}</div>
-    <label>Perícia treinada pela Origem<select value={treinada} onChange={e => {setTreinada(e.target.value);setDistribuicao({});}} disabled={ocupado}><option value="">Escolha uma Perícia</option>{(props.origem === 'Amnésico' ? NOMES_PERICIAS : (periciasPermitidasNaCriacao(props.classe,props.origem,treinada,extra).length ? permitidas : [])).map(p=><option key={p} value={p}>{p}</option>)}</select></label>
+    <label>Perícia treinada pela Origem<select value={treinada} onChange={e => {setTreinada(e.target.value);setDistribuicao({});}} disabled={ocupado}><option value="">Escolha uma Perícia</option>{(props.origem === 'Amnésico' ? NOMES_PERICIAS : (ORIGENS.find(o => o.nome === props.origem)?.pericias ?? [])).map(p=><option key={p} value={p}>{p}</option>)}</select></label>
     {props.origem === 'Amnésico' && <label>Segunda Perícia da Origem<select value={extra} onChange={e=>{setExtra(e.target.value);setDistribuicao({});}} disabled={ocupado}><option value="">Escolha outra Perícia</option>{NOMES_PERICIAS.filter(p=>p!==treinada).map(p=><option key={p} value={p}>{p}</option>)}</select></label>}
     <strong>Distribuição de Perícias · {gastos}/{limite} pontos</strong>
     {permitidas.map(nome=>{const gasto=distribuicao[nome]??0;const grau=gasto+(nome===treinada?1:0);return <div className="linha-pericia-lab" key={nome}><span><strong>{nome}</strong><small>{grau===0?'Não Treinada':grau===1?'Treinada':'Mestre'}</small></span><div className="controle-stat"><button type="button" onClick={()=>mudarPericia(nome,-1)} disabled={ocupado||gasto===0}>−</button><b>{gasto}</b><button type="button" onClick={()=>mudarPericia(nome,1)} disabled={ocupado||gasto >= (nome===treinada?1:2)||gastos>=limite}>+</button></div></div>})}
