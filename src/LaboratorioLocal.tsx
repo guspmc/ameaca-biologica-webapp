@@ -94,7 +94,7 @@ export default function LaboratorioLocal() {
     if (!mesaSelecionada || nome.length < 2 || nome.length > 80) { setErro('Selecione uma Mesa e informe um nome entre 2 e 80 caracteres.'); return; }
     if (!origemPersonagem) { setErro('Escolha uma Origem para o personagem.'); return; }
     if (!atributosIniciaisValidos(atributos)) { setErro('Distribua os 3 pontos iniciais entre os quatro Atributos. Você pode reduzir apenas um deles a 0.'); return; }
-    if (!distribuicaoPericiasValida(classePersonagem, origemPersonagem, periciaTreinada, distribuicaoPericias, periciaExtraAmnesico)) { setErro('Escolha o Treinamento da Origem e distribua todos os Pontos de Perícia da Classe, respeitando as opções permitidas.'); return; }
+    if (!distribuicaoPericiasValida(classePersonagem, origemPersonagem, periciaTreinada, distribuicaoPericias, periciaExtraAmnesico)) { setErro('Escolha o Treinamento da Origem e distribua os pontos que desejar, sem ultrapassar o limite da Classe nem os graus permitidos.'); return; }
     if (origemPersonagem === 'Operário' && !armaOperarioValida(armaOperario)) { setErro('A Origem Operário exige a escolha de uma das seis armas permitidas.'); return; }
     if (gravar('personagem', nome, { mesaId: mesaSelecionada, classe: classePersonagem, origem: origemPersonagem, armaOperario: origemPersonagem === 'Operário' ? armaOperario : null, atributos, periciaOrigemTreinada: periciaTreinada, periciaOrigemExtra: origemPersonagem === 'Amnésico' ? periciaExtraAmnesico : null, distribuicaoPericias, ficticio: true, etapa: 'rascunho-criacao-inicial' })) setNomePersonagem('');
   }
@@ -148,7 +148,7 @@ export default function LaboratorioLocal() {
                 <option value="">Escolha outra Perícia</option>{NOMES_PERICIAS.filter(nome => nome !== periciaTreinada).map(nome => <option key={nome} value={nome}>{nome}</option>)}
               </select></label>}
               <div className="criar-linha"><strong>Pontos de Perícia · {classePersonagem}</strong><span className={pontosGastos === pontosClasse ? 'pontos-prontos' : 'pontos-restantes'}>{pontosGastos}/{pontosClasse} gastos</span></div>
-              <p className="ajuda-atributos">Cada ponto eleva uma Perícia Não Treinada a Treinada ou Treinada a Mestre. O máximo é Mestre. A Perícia gratuita da Origem já começa Treinada.</p>
+              <p className="ajuda-atributos">Cada ponto eleva uma Perícia Não Treinada a Treinada ou Treinada a Mestre. O máximo é Mestre. A Perícia gratuita da Origem já começa Treinada. Você pode deixar pontos da Classe sem gastar.</p>
               {periciasPermitidas.length === 0 ? <p className="vazio">Escolha o Treinamento da Origem para liberar a distribuição.</p> :
                 <div className="lista-pericias-lab">{periciasPermitidas.map(nome => {
                   const gasto = distribuicaoPericias[nome] ?? 0;
