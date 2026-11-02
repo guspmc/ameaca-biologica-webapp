@@ -130,6 +130,38 @@ test('registra a migração de autenticação uma única vez', async t => {
   );
 });
 
+test('migração 7 recupera o registro se a tabela de personagens já existir', async t => {
+  const { app, dataDir, fechar, registrarServidor } = await setup(t);
+  const agora = new Date().toISOString();
+  app.db.prepare('INSERT INTO contas_locais (id, email, senha_salt, senha_hash, criada_em) VALUES (?, ?, ?, ?, ?)')
+    .run('conta-migracao-7', 'migracao-7@example.test', 'salt', 'hash', agora);
+  app.db.prepare('INSERT INTO mesas (id, nome, criada_por, criada_em) VALUES (?, ?, ?, ?)')
+    .run('mesa-migracao-7', 'Mesa migração 7', 'conta-migracao-7', agora);
+  app.db.prepare('INSERT INTO participantes_mesa (mesa_id, conta_id, papel, entrou_em) VALUES (?, ?, ?, ?)')
+    .run('mesa-migracao-7', 'conta-migracao-7', 'jogador', agora);
+  app.db.prepare(`
+    INSERT INTO personagens_locais
+      (id, mesa_id, conta_id, nome, dados_json, criada_em, atualizada_em)
+    VALUES (?, ?, ?, ?, ?, ?, ?)
+  `).run('personagem-migracao-7', 'mesa-migracao-7', 'conta-migracao-7', 'Claire', '{"atributos":{}}', agora, agora);
+
+  app.db.prepare('DELETE FROM schema_migrations WHERE version = 7').run();
+  await fechar();
+
+  const reiniciado = createLocalServer({ host: '127.0.0.1', port: 0, dataDir });
+  await reiniciado.listen();
+  registrarServidor(reiniciado);
+
+  assert.deepEqual(
+    reiniciado.db.prepare('SELECT version FROM schema_migrations ORDER BY version').all().map(row => row.version),
+    [1, 2, 3, 4, 5, 6, 7],
+  );
+  assert.equal(
+    reiniciado.db.prepare('SELECT nome FROM personagens_locais WHERE id = ?').get('personagem-migracao-7').nome,
+    'Claire',
+  );
+});
+
 test('preserva conta e sessão existentes ao reiniciar o servidor e reaplicar migrações', async t => {
   const { base, app, dataDir, fechar, registrarServidor } = await setup(t);
   const credentials = { email: 'preservar@example.test', password: 'senha-local-comprida-2026' };
