@@ -47,6 +47,25 @@ export type TicketWebSocketLocal = {
   singleUse: true;
 };
 
+export type PersonagemRascunhoLocal = {
+  id: string;
+  mesaId: string;
+  name: string;
+  status: 'rascunho';
+  data: Record<string, unknown>;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type ResumoPersonagemLocal = {
+  id: string;
+  mesaId: string;
+  name: string;
+  status: 'rascunho';
+  createdAt: string;
+  updatedAt: string;
+};
+
 export class ErroServidorLocal extends Error {
   readonly status: number;
 
@@ -81,7 +100,7 @@ export function criarClienteServidorLocal({ baseUrl, token, fetcher = fetch }: O
   const base = normalizarBaseUrl(baseUrl);
 
   async function requisicao<T>(caminho: string, opcoes: {
-    metodo?: 'GET' | 'POST' | 'DELETE';
+    metodo?: 'GET' | 'POST' | 'PUT' | 'DELETE';
     corpo?: unknown;
     autenticada?: boolean;
   } = {}): Promise<T> {
@@ -186,6 +205,30 @@ export function criarClienteServidorLocal({ baseUrl, token, fetcher = fetch }: O
     analisarSolicitacao(mesaId: string, solicitacaoId: string, decisao: 'aprovar' | 'recusar'): Promise<{ request: { id: string; status: 'aprovada' | 'recusada' } }> {
       if (!/^[a-f0-9]{32}$/.test(mesaId) || !/^[a-f0-9]{32}$/.test(solicitacaoId)) throw new Error('Identificador inválido.');
       return requisicao(`/api/mesas/${mesaId}/solicitacoes/${solicitacaoId}/${decisao}`, { metodo: 'POST', corpo: {}, autenticada: true });
+    },
+
+    listarPersonagens(mesaId: string): Promise<{ personagens: ResumoPersonagemLocal[] }> {
+      if (!/^[a-f0-9]{32}$/.test(mesaId)) throw new Error('Identificador de Mesa inválido.');
+      return requisicao(`/api/mesas/${mesaId}/personagens`, { autenticada: true });
+    },
+
+    criarPersonagem(mesaId: string, name: string, data: Record<string, unknown>): Promise<{ personagem: PersonagemRascunhoLocal }> {
+      if (!/^[a-f0-9]{32}$/.test(mesaId)) throw new Error('Identificador de Mesa inválido.');
+      return requisicao(`/api/mesas/${mesaId}/personagens`, {
+        metodo: 'POST', corpo: { name, data }, autenticada: true,
+      });
+    },
+
+    consultarPersonagem(id: string): Promise<{ personagem: PersonagemRascunhoLocal }> {
+      if (!/^[a-f0-9]{32}$/.test(id)) throw new Error('Identificador de personagem inválido.');
+      return requisicao(`/api/personagens/${id}`, { autenticada: true });
+    },
+
+    atualizarPersonagem(id: string, name: string, data: Record<string, unknown>): Promise<{ personagem: PersonagemRascunhoLocal }> {
+      if (!/^[a-f0-9]{32}$/.test(id)) throw new Error('Identificador de personagem inválido.');
+      return requisicao(`/api/personagens/${id}`, {
+        metodo: 'PUT', corpo: { name, data }, autenticada: true,
+      });
     },
 
     emitirTicketWebSocket(): Promise<TicketWebSocketLocal> {
