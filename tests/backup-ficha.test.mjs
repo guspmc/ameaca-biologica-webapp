@@ -1,0 +1,40 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { criarBackup, lerArquivoBackup, serializarBackup, validarBackup } from '../src/backupFicha.ts';
+
+const ficha = (id = 'char-1') => ({
+  id, nome: 'Claire Redfield',
+  criadoEm: '2026-11-03T10:00:00.000Z',
+  atualizadoEm: '2026-11-03T11:00:00.000Z',
+  dados: { classe: 'Agente', atributos: { forca: 1, agilidade: 2, vigor: 2, astucia: 2 }, recursos: { pv: 12, sa: 4, bi: 10 } },
+});
+
+test('gera backup versionado e recupera todos os dados sem alterar a origem', () => {
+  const origem = [ficha()];
+  const backup = criarBackup(origem, '2026-11-03T12:00:00.000Z');
+  const texto = serializarBackup(backup);
+  const recuperado = lerArquivoBackup(texto);
+  assert.equal(recuperado.formato, 'ameaca-biologica-backup');
+  assert.equal(recuperado.versao, 1);
+  assert.deepEqual(recuperado.personagens, origem);
+  assert.equal(origem.length, 1);
+});
+
+test('recusa JSON corrompido, formato estranho e versão futura', () => {
+  assert.throws(() => lerArquivoBackup('{quebrado'), /JSON válido/);
+  assert.throws(() => validarBackup({ formato: 'outro', versao: 1, exportadoEm: '2026-11-03', personagens: [] }), /não é um backup/);
+  assert.throws(() => validarBackup({ formato: 'ameaca-biologica-backup', versao: 99, exportadoEm: '2026-11-03', personagens: [] }), /não é compatível/);
+});
+
+test('recusa ficha inválida e IDs duplicados sem gerar backup parcial', () => {
+  assert.throws(() => criarBackup([{ ...ficha(), nome: '' }]), /fichas inválidas/);
+  assert.throws(() => criarBackup([ficha(), ficha()]), /IDs duplicados/);
+  assert.throws(() => validarBackup({ formato: 'ameaca-biologica-backup', versao: 1, exportadoEm: '2026-11-03', personagens: [ficha(), ficha()] }), /duplicados/);
+});
+
+test('recupera o conteúdo de um backup importado com todos os campos aninhados', () => {
+  const original = ficha();
+  original.dados.combate = { armas: [{ id: 'pistola', municao: { atual: 9, reserva: 30 } }] };
+  const recuperado = lerArquivoBackup(serializarBackup(criarBackup([original])));
+  assert.deepEqual(recuperado.personagens[0], original);
+});
