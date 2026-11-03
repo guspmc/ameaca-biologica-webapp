@@ -2,7 +2,7 @@
 
 **Data:** 03/11/2026  
 **Branch:** `feat/offline-first-ficha`  
-**HEAD após as alterações:** `8fc5387ca6e3cf973f7e84dde4a733cff45b4fd5`
+**HEAD após as alterações:** `47a97924fa0bebb3894ff48190b8cca116131409`
 
 ## Objetivo desta etapa
 
