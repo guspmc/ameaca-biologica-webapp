@@ -106,7 +106,7 @@ export default function FichaOfflineApp() {
   if (selecionado) return <FichaLocal
     nome={selecionado.nome} mesa="DISPOSITIVO LOCAL" dados={selecionado.dados}
     aoFechar={() => { setSelecionado(null); setExclusaoPendente(null); }}
-    aoEditar={() => undefined}
+    aoEditar={secao => document.getElementById(secao === 'caracteristicas' ? 'ficha-local-caracteristicas' : secao === 'pericias' ? 'ficha-local-pericias' : 'ficha-local-inventario')?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
     aoSalvarCaracteristicas={salvarDados}
     aoSalvarAtributosPericias={salvarDados}
     aoSalvarInventario={salvarDados}
