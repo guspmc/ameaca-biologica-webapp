@@ -5,9 +5,9 @@ import { HABILIDADES_BASICAS } from './habilidades';
 import { opcoesEquipamento } from './equipamento';
 
 type Dados = { classe: string; origem: string; armaOperario: string; habilidadeBasica: string; equipamentoInicial: string };
-type Props = { iniciais: Dados; aoSalvar: (dados: Dados) => Promise<boolean> };
+type Props = { iniciais: Dados; aoSalvar: (dados: Dados) => Promise<boolean>; mensagemSucesso?: string };
 
-export default function EditorCaracteristicasLocal({ iniciais, aoSalvar }: Props) {
+export default function EditorCaracteristicasLocal({ iniciais, aoSalvar, mensagemSucesso }: Props) {
   const [dados, setDados] = useState(iniciais);
   const [mensagem, setMensagem] = useState('');
   const [ocupado, setOcupado] = useState(false);
@@ -22,7 +22,7 @@ export default function EditorCaracteristicasLocal({ iniciais, aoSalvar }: Props
     setOcupado(true); setMensagem('');
     try {
       const ok = await aoSalvar({ ...dados, armaOperario: dados.origem === 'Operário' ? dados.armaOperario : '' });
-      setMensagem(ok ? 'Características gravadas no rascunho local.' : 'Não foi possível gravar. Confira o aviso do laboratório.');
+      setMensagem(ok ? (mensagemSucesso ?? 'Características gravadas no rascunho local.') : 'Não foi possível gravar. Confira o aviso do laboratório.');
     } finally { setOcupado(false); }
   }
   return <div className="ficha-local-editor">
