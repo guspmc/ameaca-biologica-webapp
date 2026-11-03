@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 import type { FormEvent } from 'react';
 import FichaLocal from './FichaLocal';
-import { criarBackup, serializarBackup } from './backupFicha';
-import { excluirPersonagem, listarPersonagens, salvarPersonagem, type PersonagemLocal } from './persistenciaFicha';
+import { criarBackup, lerArquivoBackup, serializarBackup } from './backupFicha';
+import { excluirPersonagem, listarPersonagens, salvarPersonagem, substituirPersonagens, type PersonagemLocal } from './persistenciaFicha';
 
 function agora() { return new Date().toISOString(); }
 function novoId() { return globalThis.crypto?.randomUUID?.() ?? `personagem-${Date.now()}-${Math.random().toString(16).slice(2)}`; }
@@ -16,6 +16,8 @@ export default function FichaOfflineApp() {
   const [status, setStatus] = useState('Carregando fichas deste dispositivo…');
   const [erro, setErro] = useState('');
   const [exclusaoPendente, setExclusaoPendente] = useState<string | null>(null);
+  const [backupPendente, setBackupPendente] = useState<ReturnType<typeof lerArquivoBackup> | null>(null);
+  const [arquivoInputKey, setArquivoInputKey] = useState(0);
   const gravacao = useRef(false);
 
   async function atualizarLista() {
@@ -88,7 +90,51 @@ export default function FichaOfflineApp() {
     finally { setOcupado(false); }
   }
 
-    async function exportar() {
+    async function selecionarBackup(arquivo?: File) {
+    if (!arquivo) return;
+    setErro('');
+    try {
+      if (arquivo.size > 10 * 1024 * 1024) throw new Error('O backup excede o limite de 10 MB.');
+      const texto = await arquivo.text();
+      setBackupPendente(lerArquivoBackup(texto));
+      setStatus('Backup validado. Revise a prévia antes de importar.');
+    } catch (e) {
+      setErro(e instanceof Error ? e.message : 'Não foi possível ler o backup.');
+      setStatus('Importação não realizada.');
+    } finally {
+      setArquivoInputKey(k => k + 1);
+    }
+  }
+
+  async function importarBackup(modo: 'copias' | 'substituir') {
+    if (!backupPendente || ocupado) return;
+    setOcupado(true); setErro('');
+    try {
+      if (modo === 'substituir') {
+        await substituirPersonagens(backupPendente.personagens);
+      } else {
+        const existentes = await listarPersonagens();
+        const ids = new Set(existentes.map(p => p.id));
+        const copias = backupPendente.personagens.map(p => {
+          let id = novoId();
+          while (ids.has(id)) id = novoId();
+          ids.add(id);
+          return { ...p, id, nome: ids.has(p.id) ? p.nome + ' (cópia)' : p.nome };
+        });
+        for (const personagem of copias) await salvarPersonagem(personagem);
+      }
+      const lista = await atualizarLista();
+      setSelecionado(null);
+      setBackupPendente(null);
+      setStatus(modo === 'substituir' ? 'Backup restaurado. O conjunto local foi substituído.' : 'Cópias importadas e gravadas neste dispositivo.');
+      if (lista.length && modo === 'copias') setSelecionado(lista[0]);
+    } catch (e) {
+      setErro(e instanceof Error ? e.message : 'Falha ao importar backup.');
+      setStatus('A importação não foi confirmada.');
+    } finally { setOcupado(false); }
+  }
+
+  async function exportar() {
     setErro('');
     try {
       const backup = criarBackup(await listarPersonagens());
@@ -125,9 +171,10 @@ export default function FichaOfflineApp() {
         <p>As fichas são armazenadas localmente neste navegador. Não dependem de login ou conexão com a internet.</p>
       </div>
       <section className="offline-painel">
-        <div className="offline-painel-topo"><div><small>REGISTROS LOCAIS</small><h2>Personagens</h2></div><button type="button" className="offline-exportar" onClick={exportar} disabled={!personagens.length}>Exportar backup JSON ↓</button></div>
+        <div className="offline-painel-topo"><div><small>REGISTROS LOCAIS</small><h2>Personagens</h2></div><div className="offline-backup-acoes"><button type="button" className="offline-exportar" onClick={exportar} disabled={!personagens.length}>Exportar backup JSON ↓</button><label className="offline-exportar offline-importar" htmlFor="backup-json">Importar backup JSON ↑</label><input key={arquivoInputKey} id="backup-json" type="file" accept="application/json,.json" onChange={e=>void selecionarBackup(e.target.files?.[0])} hidden /></div></div>
         <p className="offline-status" role="status">{carregando ? 'Carregando…' : status}</p>
         {erro && <p className="offline-erro" role="alert">{erro}</p>}
+        {backupPendente && <section className="offline-importacao" aria-label="Prévia do backup"><div><small>BACKUP VALIDADO · V{backupPendente.versao}</small><h3>Prévia da restauração</h3><p>Exportado em {new Date(backupPendente.exportadoEm).toLocaleString("pt-BR")}</p><strong>{backupPendente.personagens.length} personagem(ns)</strong><ul>{backupPendente.personagens.map(p=><li key={p.id}>{p.nome}</li>)}</ul></div><p>Escolha como importar. Substituir apaga as fichas atuais deste navegador. A opção de cópias preserva as fichas atuais.</p><div><button type="button" onClick={()=>void importarBackup("copias")} disabled={ocupado}>Adicionar como cópias</button><button type="button" onClick={()=>void importarBackup("substituir")} disabled={ocupado}>Substituir fichas locais</button><button type="button" onClick={()=>setBackupPendente(null)} disabled={ocupado}>Cancelar</button></div></section>}
         {personagens.length ? <ul className="offline-lista">{personagens.map(p=><li key={p.id}>
           <button type="button" onClick={()=>{setSelecionado(p);setErro('');}}>
             <span className="offline-avatar">☣</span><span><strong>{p.nome}</strong><small>Atualizada em {new Date(p.atualizadoEm).toLocaleString('pt-BR')}</small></span><b>ABRIR →</b>
