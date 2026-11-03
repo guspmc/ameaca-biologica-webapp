@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import type { FormEvent } from 'react';
 import FichaLocal from './FichaLocal';
 import { criarBackup, serializarBackup } from './backupFicha';
 import { excluirPersonagem, listarPersonagens, salvarPersonagem, type PersonagemLocal } from './persistenciaFicha';
@@ -14,7 +15,7 @@ export default function FichaOfflineApp() {
   const [ocupado, setOcupado] = useState(false);
   const [status, setStatus] = useState('Carregando fichas deste dispositivo…');
   const [erro, setErro] = useState('');
-  const [confirmarExclusao, setConfirmarExclusao] = useState(false);
+  const [exclusaoPendente, setExclusaoPendente] = useState<string | null>(null);
   const gravacao = useRef(false);
 
   async function atualizarLista() {
@@ -34,7 +35,7 @@ export default function FichaOfflineApp() {
     return () => { ativo = false; };
   }, []);
 
-  async function criar(e: React.FormEvent) {
+  async function criar(e: FormEvent) {
     e.preventDefault();
     const nomeLimpo = nome.trim();
     if (!nomeLimpo || ocupado) return;
@@ -80,7 +81,7 @@ export default function FichaOfflineApp() {
     setOcupado(true); setErro('');
     try {
       await excluirPersonagem(selecionado.id);
-      setSelecionado(null); setConfirmarExclusao(false);
+      setSelecionado(null); setExclusaoPendente(null);
       await atualizarLista();
       setStatus('Ficha excluída deste dispositivo.');
     } catch (e) { setErro(e instanceof Error ? e.message : 'Falha ao excluir.'); }
@@ -131,6 +132,7 @@ export default function FichaOfflineApp() {
           <button type="button" onClick={()=>{setSelecionado(p);setErro('');}}>
             <span className="offline-avatar">☣</span><span><strong>{p.nome}</strong><small>Atualizada em {new Date(p.atualizadoEm).toLocaleString('pt-BR')}</small></span><b>ABRIR →</b>
           </button>
+          {exclusaoPendente === p.id ? <div className="offline-confirmar"><span>Excluir esta ficha deste dispositivo?</span><button type="button" onClick={()=>void excluirDaLista(p.id)} disabled={ocupado}>Confirmar exclusão</button><button type="button" onClick={()=>setExclusaoPendente(null)}>Cancelar</button></div> : <button type="button" className="offline-excluir" onClick={()=>setExclusaoPendente(p.id)}>Excluir</button>}
         </li>)}</ul> : !carregando && <div className="offline-vazio"><span>☣</span><strong>Nenhum registro encontrado</strong><p>Crie sua primeira ficha para começar. Ela ficará salva neste dispositivo.</p></div>}
         <form className="offline-criar" onSubmit={criar}>
           <label htmlFor="novo-personagem">Criar personagem</label>
