@@ -9,6 +9,7 @@ type Props = {
   classe: string; origem: string; atributosIniciais: AtributosIniciais;
   treinadaInicial: string; extraInicial: string; distribuicaoInicial: Record<string, number>;
   aoSalvar: (dados: { atributos: AtributosIniciais; periciaOrigemTreinada: string; periciaOrigemExtra: string | null; distribuicaoPericias: Record<string, number> }) => Promise<boolean>;
+  mensagemSucesso?: string;
 };
 const chaves: { chave: keyof AtributosIniciais; sigla: string; nome: string }[] = [
   { chave: 'forca', sigla: 'FOR', nome: 'Força' }, { chave: 'agilidade', sigla: 'AGI', nome: 'Agilidade' },
@@ -46,7 +47,7 @@ export default function EditorAtributosPericias(props: Props) {
     setOcupado(true); setMensagem('');
     try {
       const ok = await props.aoSalvar({ atributos, periciaOrigemTreinada: treinada, periciaOrigemExtra: props.origem === 'Amnésico' ? extra : null, distribuicaoPericias: distribuicao });
-      setMensagem(ok ? 'Alterações gravadas no rascunho local.' : 'Não foi possível gravar. Confira o aviso do laboratório.');
+      setMensagem(ok ? (props.mensagemSucesso ?? 'Alterações gravadas no rascunho local.') : 'Não foi possível gravar. Confira o aviso do laboratório.');
     } finally { setOcupado(false); }
   }
   return <div className="ficha-local-editor">
