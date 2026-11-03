@@ -90,7 +90,7 @@ export default function FichaOfflineApp() {
     finally { setOcupado(false); }
   }
 
-    async function selecionarBackup(arquivo?: File) {
+  async function selecionarBackup(arquivo?: File) {
     if (!arquivo) return;
     setErro('');
     try {
