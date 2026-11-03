@@ -4,7 +4,7 @@ on:
   pull_request:
     branches: [main]
   push:
-    branches: [fix/lan-websocket-reconnect-2026-10-29]
+    branches: [fix/lan-websocket-reconnect-2026-10-29, feat/offline-first-ficha]
 
 permissions:
   contents: read
