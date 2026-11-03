@@ -138,7 +138,6 @@ export default function FichaOfflineApp() {
           <label htmlFor="novo-personagem">Criar personagem</label>
           <div><input id="novo-personagem" value={nome} onChange={e=>setNome(e.target.value)} maxLength={80} placeholder="Nome do personagem" required disabled={ocupado || carregando}/><button type="submit" disabled={ocupado || carregando || !nome.trim()}>Criar ficha <span>＋</span></button></div>
         </form>
-        {selecionado && confirmarExclusao && <p>Confirme a exclusão no próprio registro.</p>}
       </section>
       <footer className="offline-rodape">ARMAZENAMENTO LOCAL · FAÇA BACKUPS REGULARES · A VERSÃO DESTA FICHA AINDA ESTÁ EM DESENVOLVIMENTO</footer>
     </section>
