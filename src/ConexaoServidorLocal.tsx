@@ -1,5 +1,5 @@
 import { useEffect, useState, type FormEvent } from 'react';
-import { criarClienteServidorLocal, ErroServidorLocal, type MesaLocal, type SaudeServidorLocal, type SessaoLocal } from './servidorLocal';
+import { criarClienteServidorLocal, ErroServidorLocal, type MesaLocal, type ResumoPersonagemLocal, type SaudeServidorLocal, type SessaoLocal } from './servidorLocal';
 
 const CHAVE_ENDERECO = 'ameaca-biologica:servidor-local:endereco:v1';
 
@@ -13,6 +13,8 @@ export default function ConexaoServidorLocal() {
   const [saude, setSaude] = useState<SaudeServidorLocal | null>(null);
   const [sessao, setSessao] = useState<SessaoLocal | null>(null);
   const [mesas, setMesas] = useState<MesaLocal[]>([]);
+  const [personagens, setPersonagens] = useState<Record<string, ResumoPersonagemLocal[]>>({});
+  const [nomesPersonagens, setNomesPersonagens] = useState<Record<string, string>>({});
   const [nomeMesa, setNomeMesa] = useState('');
   const [codigoConvite, setCodigoConvite] = useState('');
   const [convitesGerados, setConvitesGerados] = useState<Record<string, string>>({});
@@ -27,6 +29,8 @@ export default function ConexaoServidorLocal() {
   function encerrarSessao(mensagem: string) {
     setSessao(null);
     setMesas([]);
+    setPersonagens({});
+    setNomesPersonagens({});
     setConvitesGerados({});
     setSolicitacoes({});
     setAviso(mensagem);
@@ -149,6 +153,38 @@ export default function ConexaoServidorLocal() {
     } finally { setConsultando(false); }
   }
 
+
+  async function carregarPersonagens(mesa: MesaLocal) {
+    if (!sessao || mesa.role !== 'jogador') return;
+    setErro(''); setAviso(''); setConsultando(true);
+    try {
+      const resposta = await criarClienteServidorLocal({ baseUrl: endereco.trim(), token: sessao.token }).listarPersonagens(mesa.id);
+      setPersonagens(atual => ({ ...atual, [mesa.id]: resposta.personagens }));
+      setAviso('Rascunhos consultados e confirmados pelo servidor.');
+    } catch (problema) {
+      if (problema instanceof ErroServidorLocal && problema.status === 401) encerrarSessao('A sessão expirou ou foi encerrada no servidor. Entre novamente.');
+      else setErro(problema instanceof Error ? problema.message : 'Não foi possível consultar os personagens.');
+    } finally { setConsultando(false); }
+  }
+
+  async function criarPersonagem(mesa: MesaLocal, evento: FormEvent<HTMLFormElement>) {
+    evento.preventDefault();
+    if (!sessao || mesa.role !== 'jogador') return;
+    const nome = (nomesPersonagens[mesa.id] ?? '').trim();
+    if (!nome) return;
+    setErro(''); setAviso(''); setConsultando(true);
+    try {
+      const cliente = criarClienteServidorLocal({ baseUrl: endereco.trim(), token: sessao.token });
+      const resposta = await cliente.criarPersonagem(mesa.id, nome, {});
+      setNomesPersonagens(atual => ({ ...atual, [mesa.id]: '' }));
+      const lista = await cliente.listarPersonagens(mesa.id);
+      setPersonagens(atual => ({ ...atual, [mesa.id]: lista.personagens }));
+      setAviso('Rascunho “' + resposta.personagem.name + '” criado e confirmado pelo servidor.');
+    } catch (problema) {
+      if (problema instanceof ErroServidorLocal && problema.status === 401) encerrarSessao('A sessão expirou ou foi encerrada no servidor. Entre novamente.');
+      else setErro(problema instanceof Error ? problema.message : 'Não foi possível criar o rascunho.');
+    } finally { setConsultando(false); }
+  }
 
   async function gerarConvite(mesa: MesaLocal) {
     if (!sessao || mesa.role !== 'mestre') return;
@@ -317,6 +353,23 @@ export default function ConexaoServidorLocal() {
                 <span className={mesa.role === 'mestre' ? 'papel-mestre' : 'papel-jogador'}>{mesa.role === 'mestre' ? 'MESTRE' : 'JOGADOR'}</span>
               </li>)}
             </ul> : <p className="servidor-local-vazio">Nenhuma Mesa vinculada a esta conta ainda.</p>}
+            {mesas.filter(mesa => mesa.role === 'jogador').map(mesa => <section className="servidor-local-controle-mesa" key={mesa.id}>
+              <h4>Personagens · {mesa.name}</h4>
+              <p className="secundario">Os personagens começam como rascunhos e ficam vinculados a esta Mesa e à sua conta. A criação ainda não ativa o personagem nem abre a ficha completa.</p>
+              <form className="formulario servidor-local-form-mesa" onSubmit={evento => void criarPersonagem(mesa, evento)}>
+                <label>Nome do personagem
+                  <input value={nomesPersonagens[mesa.id] ?? ''} onChange={evento => setNomesPersonagens(atual => ({ ...atual, [mesa.id]: evento.target.value }))} maxLength={80} required placeholder="Ex.: Claire Redfield" />
+                </label>
+                <button className="acao" type="submit" disabled={consultando || !(nomesPersonagens[mesa.id] ?? '').trim()}>Criar rascunho <span>→</span></button>
+              </form>
+              <div className="servidor-local-botoes">
+                <button className="botao-claro" type="button" disabled={consultando} onClick={() => void carregarPersonagens(mesa)}>Consultar rascunhos</button>
+              </div>
+              {personagens[mesa.id] ? personagens[mesa.id].length ? <ul className="servidor-local-lista-mesas">{personagens[mesa.id].map(personagem => <li key={personagem.id}>
+                <div><strong>{personagem.name}</strong><small>Rascunho · atualizado em {new Intl.DateTimeFormat('pt-BR', { dateStyle: 'short', timeStyle: 'short' }).format(new Date(personagem.updatedAt))}</small></div>
+                <span className="papel-jogador">RASCUNHO</span>
+              </li>)}</ul> : <p className="servidor-local-vazio">Nenhum rascunho nesta Mesa.</p> : <p className="servidor-local-vazio">Consulte os rascunhos para carregar a lista do servidor.</p>}
+            </section>)}
             {mesas.filter(mesa => mesa.role === 'mestre').map(mesa => <section className="servidor-local-controle-mesa" key={mesa.id}>
               <h4>Administração · {mesa.name}</h4>
               <div className="servidor-local-botoes">
