@@ -53,6 +53,36 @@ test('atualizar um id substitui o registro em vez de duplicá-lo', () => {
   assert.equal(estado.registros[0].nome, 'Mesa Renomeada');
 });
 
+test('retomar e salvar um rascunho de personagem pelo mesmo id não cria duplicata', () => {
+  const storage = armazenamentoFalso();
+  const rascunho = {
+    id: 'personagem-1', tipo: 'personagem', nome: 'Claire',
+    atualizadoEm: '2026-10-30T12:00:00.000Z',
+    dados: {
+      mesaId: 'mesa-1', classe: 'Agente', origem: 'Atleta',
+      atributos: { forca: 1, agilidade: 2, vigor: 1, astucia: 2 },
+      periciaOrigemTreinada: 'Acrobacia',
+      distribuicaoPericias: { Atletismo: 1 },
+      ficticio: true, etapa: 'rascunho-criacao-inicial',
+    },
+  };
+  gravarRegistroLaboratorio(storage, rascunho, '2026-10-30T12:00:00.000Z');
+  const recuperado = lerLaboratorio(storage).registros.find(r => r.id === 'personagem-1');
+  assert.ok(recuperado);
+  gravarRegistroLaboratorio(storage, {
+    ...recuperado,
+    nome: 'Claire Valentine',
+    dados: { ...recuperado.dados, classe: 'Operador' },
+  }, '2026-10-30T12:05:00.000Z');
+  const final = lerLaboratorio(storage);
+  assert.equal(final.registros.length, 1);
+  assert.equal(final.registros[0].id, 'personagem-1');
+  assert.equal(final.registros[0].nome, 'Claire Valentine');
+  assert.equal(final.registros[0].dados.classe, 'Operador');
+  assert.equal(final.registros[0].dados.origem, 'Atleta');
+  assert.deepEqual(final.registros[0].dados.atributos, { forca: 1, agilidade: 2, vigor: 1, astucia: 2 });
+});
+
 test('recusa JSON corrompido sem sobrescrever o conteúdo original', () => {
   const storage = armazenamentoFalso();
   storage.setItem(CHAVE_LABORATORIO, '{quebrado');

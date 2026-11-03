@@ -263,3 +263,122 @@ test('cliente reconecta após fechamento e sincroniza histórico ao voltar à ab
   }
   assert.equal(sockets.length, 2, 'a página deve criar outra conexão sem F5 após o fechamento do WebSocket');
 });
+
+
+test('autenticação local confirma conta, protege Mesas e revoga a sessão no logout', async t => {
+  const instancia = await criarInstancia(t);
+  const origem = 'https://guspmc.github.io';
+  const credenciais = { email: 'conta-api@example.test', password: 'senha-local-comprida-2026' };
+
+  const cadastro = await fetch(`${instancia.url}/api/auth/register`, {
+    method: 'POST', headers: { origin: origem, 'content-type': 'application/json' },
+    body: JSON.stringify(credenciais),
+  });
+  assert.equal(cadastro.status, 201);
+  assert.equal(cadastro.headers.get('access-control-allow-origin'), origem);
+  const contaCriada = await cadastro.json();
+  assert.equal(typeof contaCriada.account.id, 'string');
+  assert.equal(contaCriada.account.email, credenciais.email);
+
+  const login = await fetch(`${instancia.url}/api/auth/login`, {
+    method: 'POST', headers: { origin: origem, 'content-type': 'application/json' },
+    body: JSON.stringify(credenciais),
+  });
+  assert.equal(login.status, 200);
+  const sessao = await login.json();
+  assert.equal(sessao.account.id, contaCriada.account.id);
+  assert.match(sessao.token, /^[A-Za-z0-9_-]{40,100}$/);
+  assert.ok(Date.parse(sessao.expiresAt) > Date.now());
+
+  const autorizacao = { origin: origem, authorization: `Bearer ${sessao.token}` };
+  const eu = await fetch(`${instancia.url}/api/auth/me`, { headers: autorizacao });
+  assert.equal(eu.status, 200);
+  assert.deepEqual((await eu.json()).account, contaCriada.account);
+
+  const mesas = await fetch(`${instancia.url}/api/mesas`, { headers: autorizacao });
+  assert.equal(mesas.status, 200);
+  assert.deepEqual((await mesas.json()).mesas, []);
+
+  const criada = await fetch(`${instancia.url}/api/mesas`, {
+    method: 'POST', headers: { ...autorizacao, 'content-type': 'application/json' },
+    body: JSON.stringify({ name: 'Mesa de teste' }),
+  });
+  assert.equal(criada.status, 201);
+  const dadosMesa = await criada.json();
+  assert.equal(dadosMesa.mesa.name, 'Mesa de teste');
+  assert.equal(dadosMesa.mesa.role, 'mestre');
+
+  const logout = await fetch(`${instancia.url}/api/auth/logout`, {
+    method: 'POST', headers: { ...autorizacao, 'content-type': 'application/json' }, body: '{}',
+  });
+  assert.equal(logout.status, 200);
+  assert.deepEqual(await logout.json(), { ok: true });
+
+  const depois = await fetch(`${instancia.url}/api/auth/me`, { headers: autorizacao });
+  assert.equal(depois.status, 401);
+  const mesasDepois = await fetch(`${instancia.url}/api/mesas`, { headers: autorizacao });
+  assert.equal(mesasDepois.status, 401);
+});
+
+test('CORS aceita apenas origens explicitamente permitidas e responde preflight', async t => {
+  const instancia = await criarInstancia(t);
+  const origemPermitida = 'https://guspmc.github.io';
+  const preflight = await fetch(`${instancia.url}/api/auth/login`, {
+    method: 'OPTIONS',
+    headers: {
+      origin: origemPermitida,
+      'access-control-request-method': 'POST',
+      'access-control-request-headers': 'authorization,content-type',
+    },
+  });
+  assert.equal(preflight.status, 204);
+  assert.equal(preflight.headers.get('access-control-allow-origin'), origemPermitida);
+  assert.match(preflight.headers.get('access-control-allow-methods') ?? '', /POST/);
+
+  const origemBloqueada = await fetch(`${instancia.url}/api/health`, {
+    headers: { origin: 'https://origem-nao-autorizada.example' },
+  });
+  assert.equal(origemBloqueada.status, 403);
+  assert.equal(origemBloqueada.headers.get('access-control-allow-origin'), null);
+});
+
+
+test('contas diferentes não enxergam nem consultam Mesas umas das outras', async t => {
+  const instancia = await criarInstancia(t);
+  const origem = 'https://guspmc.github.io';
+  async function cadastrarEEntrar(email) {
+    const credenciais = { email, password: 'senha-local-comprida-2026' };
+    const cadastro = await fetch(`${instancia.url}/api/auth/register`, {
+      method: 'POST', headers: { origin: origem, 'content-type': 'application/json' },
+      body: JSON.stringify(credenciais),
+    });
+    assert.equal(cadastro.status, 201);
+    const login = await fetch(`${instancia.url}/api/auth/login`, {
+      method: 'POST', headers: { origin: origem, 'content-type': 'application/json' },
+      body: JSON.stringify(credenciais),
+    });
+    assert.equal(login.status, 200);
+    return (await login.json()).token;
+  }
+
+  const tokenMestre = await cadastrarEEntrar('mestre-isolamento@example.test');
+  const tokenOutraConta = await cadastrarEEntrar('outra-conta@example.test');
+  const criar = await fetch(`${instancia.url}/api/mesas`, {
+    method: 'POST',
+    headers: { origin: origem, authorization: `Bearer ${tokenMestre}`, 'content-type': 'application/json' },
+    body: JSON.stringify({ name: 'Mesa privada' }),
+  });
+  assert.equal(criar.status, 201);
+  const { mesa } = await criar.json();
+
+  const listaAlheia = await fetch(`${instancia.url}/api/mesas`, {
+    headers: { origin: origem, authorization: `Bearer ${tokenOutraConta}` },
+  });
+  assert.equal(listaAlheia.status, 200);
+  assert.deepEqual((await listaAlheia.json()).mesas, []);
+
+  const detalheAlheio = await fetch(`${instancia.url}/api/mesas/${mesa.id}`, {
+    headers: { origin: origem, authorization: `Bearer ${tokenOutraConta}` },
+  });
+  assert.equal(detalheAlheio.status, 404);
+});

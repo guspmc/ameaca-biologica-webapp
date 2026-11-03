@@ -4,6 +4,9 @@ on:
     branches: [feat/origens-rascunho-alfa04, 'fix/**']
     paths:
       - 'server/**'
+      - 'src/**/*.ts'
+      - 'src/**/*.tsx'
+      - 'src/**/*.css'
       - 'tests/**'
       - 'package.json'
       - 'pnpm-lock.yaml'
@@ -15,6 +18,9 @@ on:
     branches: [main]
     paths:
       - 'server/**'
+      - 'src/**/*.ts'
+      - 'src/**/*.tsx'
+      - 'src/**/*.css'
       - 'tests/**'
       - 'package.json'
       - 'pnpm-lock.yaml'

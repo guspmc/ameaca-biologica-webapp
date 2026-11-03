@@ -14,12 +14,12 @@ export default function PreviaCompras({capacidade,planoSalvo={},revisaoSalva=0,a
   async function salvar(){
     if(!aoSalvar||salvando||!resultado.cabe||!resultado.orcamentoValido)return;
     setSalvando(true);setErro('');setAviso('');
-    try{const novaRevisao=await aoSalvar({...plano},revisao);setRevisao(novaRevisao);setAviso('Plano salvo. Reabrir a ficha carrega esta versão; a personagem continua em rascunho.');}
+    try{const novaRevisao=await aoSalvar({...plano},revisao);setRevisao(novaRevisao);setAviso('Plano aplicado ao formulário. Ele será gravado junto com o rascunho quando você salvar o personagem.');}
     catch(e){setErro(e instanceof Error?e.message:'Falha ao salvar compras.');}
     finally{setSalvando(false);}
   }
   return <details className="previa-compras"><summary>{aoSalvar?'Compras iniciais · plano e prévia':'Planejar compras · prévia não salva'}</summary>
-    <p>{aoSalvar?'Alterações só são gravadas ao clicar em Salvar Plano de Compras. Recarregar ou fechar descarta alterações ainda não salvas; o plano já salvo permanece.':'Simule o uso das 3 Moedas da opção Personalizado. Esta prévia não altera o kit salvo e é descartada ao fechar a ficha ou recarregar a página.'}</p>
+    <p>{aoSalvar?'As escolhas são aplicadas ao formulário. Para persistir, salve o rascunho do personagem; fechar ou pressionar F5 antes disso descarta as alterações.':'Simule o uso das 3 Moedas da opção Personalizado. Esta prévia não altera o kit salvo e é descartada ao fechar a ficha ou recarregar a página.'}</p>
     <p className="ficha-dica">Catálogo inicial parcial, com preços conferidos no livro. A compra depende dos itens liberados na Mesa; disponibilidade é validada pelo servidor. Salvar o plano não equipa, consome nem finaliza a personagem.</p>
     <label className="busca-compras">Buscar neste catálogo<input type="search" value={busca} onChange={e=>setBusca(e.target.value)} placeholder="Ex.: colete ou munição"/></label>
     <p className="saldo-compras"><strong>Prévia: {resultado.saldo}/3 Moedas restantes · {resultado.espacos}/{capacidade} Espaços</strong><br/>Inclui Erva Verde, Lanterna Simples e moedas restantes; Característicos ocupam zero.</p>
@@ -39,7 +39,7 @@ export default function PreviaCompras({capacidade,planoSalvo={},revisaoSalva=0,a
     <p className="ficha-dica">Armaduras da prévia continuam guardadas. Comprar munição de reserva não instala Peças nem aumenta o pente de uma arma.</p>
     {erro&&<p className="erro" role="alert">{erro} A prévia foi preservada. Se a versão estiver desatualizada, anote suas escolhas e recarregue para conferir o plano salvo.</p>}
     {aviso&&<p className="sucesso" role="status">{aviso}</p>}
-    <button type="button" className="botao-claro" disabled={salvando} onClick={()=>{setPlano({});setAviso(aoSalvar?'Prévia zerada. Salve para limpar o plano no servidor.':'');setErro('');}}>Limpar prévia de compras</button>
-    {aoSalvar&&<><p className="ficha-dica">Versão carregada: {revisao}. Limpar o plano e salvar é necessário antes de trocar o kit. Nenhum item é liberado automaticamente.</p><button type="button" className="acao" disabled={salvando||!resultado.cabe||!resultado.orcamentoValido} onClick={()=>{void salvar();}}>{salvando?'Salvando...':'Salvar Plano de Compras'}</button></>}
+    <button type="button" className="botao-claro" disabled={salvando} onClick={()=>{setPlano({});setAviso(aoSalvar?'Prévia zerada. Salve o rascunho para persistir a alteração.':'');setErro('');}}>Limpar prévia de compras</button>
+    {aoSalvar&&<><p className="ficha-dica">Revisão local do formulário: {revisao}. Limpar o plano e salvar o rascunho é necessário antes de trocar o kit. Nenhum item é liberado automaticamente.</p><button type="button" className="acao" disabled={salvando||!resultado.cabe||!resultado.orcamentoValido} onClick={()=>{void salvar();}}>{salvando?'Aplicando...':'Aplicar ao rascunho'}</button></>}
   </details>;
 }

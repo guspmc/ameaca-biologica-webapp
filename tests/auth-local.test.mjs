@@ -117,7 +117,7 @@ test('registra a migração de autenticação uma única vez', async t => {
   const { app, dataDir, fechar, registrarServidor } = await setup(t);
   assert.deepEqual(
     app.db.prepare('SELECT version FROM schema_migrations ORDER BY version').all().map(row => row.version),
-    [1, 2, 3, 4],
+    [1, 2, 3, 4, 5, 6, 7],
   );
   await fechar();
 
@@ -126,7 +126,39 @@ test('registra a migração de autenticação uma única vez', async t => {
   registrarServidor(reiniciado);
   assert.deepEqual(
     reiniciado.db.prepare('SELECT version FROM schema_migrations ORDER BY version').all().map(row => row.version),
-    [1, 2, 3, 4],
+    [1, 2, 3, 4, 5, 6, 7],
+  );
+});
+
+test('migração 7 recupera o registro se a tabela de personagens já existir', async t => {
+  const { app, dataDir, fechar, registrarServidor } = await setup(t);
+  const agora = new Date().toISOString();
+  app.db.prepare('INSERT INTO contas_locais (id, email, senha_salt, senha_hash, criada_em) VALUES (?, ?, ?, ?, ?)')
+    .run('conta-migracao-7', 'migracao-7@example.test', 'salt', 'hash', agora);
+  app.db.prepare('INSERT INTO mesas (id, nome, criada_por, criada_em) VALUES (?, ?, ?, ?)')
+    .run('mesa-migracao-7', 'Mesa migração 7', 'conta-migracao-7', agora);
+  app.db.prepare('INSERT INTO participantes_mesa (mesa_id, conta_id, papel, entrou_em) VALUES (?, ?, ?, ?)')
+    .run('mesa-migracao-7', 'conta-migracao-7', 'jogador', agora);
+  app.db.prepare(`
+    INSERT INTO personagens_locais
+      (id, mesa_id, conta_id, nome, dados_json, criada_em, atualizada_em)
+    VALUES (?, ?, ?, ?, ?, ?, ?)
+  `).run('personagem-migracao-7', 'mesa-migracao-7', 'conta-migracao-7', 'Claire', '{"atributos":{}}', agora, agora);
+
+  app.db.prepare('DELETE FROM schema_migrations WHERE version = 7').run();
+  await fechar();
+
+  const reiniciado = createLocalServer({ host: '127.0.0.1', port: 0, dataDir });
+  await reiniciado.listen();
+  registrarServidor(reiniciado);
+
+  assert.deepEqual(
+    reiniciado.db.prepare('SELECT version FROM schema_migrations ORDER BY version').all().map(row => row.version),
+    [1, 2, 3, 4, 5, 6, 7],
+  );
+  assert.equal(
+    reiniciado.db.prepare('SELECT nome FROM personagens_locais WHERE id = ?').get('personagem-migracao-7').nome,
+    'Claire',
   );
 });
 
@@ -321,6 +353,161 @@ test('ticket WebSocket inválido ou desconhecido não autentica conexão', async
   const { app } = await setup(t);
   assert.equal(consumirTicketWebSocketLocal(app.db, 'ticket-invalido'), null);
   assert.equal(consumirTicketWebSocketLocal(app.db, 'A'.repeat(43)), null);
+});
+
+test('convite privado exige Mestre e aprovação antes de conceder acesso à Mesa', async t => {
+  const { base } = await setup(t);
+  const senha = 'senha-local-comprida-2026';
+  const entrar = async email => {
+    assert.equal((await post(base, '/api/auth/register', { email, password: senha })).status, 201);
+    const login = await post(base, '/api/auth/login', { email, password: senha });
+    return (await login.json()).token;
+  };
+  const tokenMestre = await entrar('mestre-convite@example.test');
+  const tokenJogador = await entrar('jogador-convite@example.test');
+  const criarMesa = await post(base, '/api/mesas', { name: 'Mesa privada' }, tokenMestre);
+  const { mesa } = await criarMesa.json();
+  assert.equal((await post(base, `/api/mesas/${mesa.id}/convites`, {}, tokenJogador)).status, 404);
+  const conviteResposta = await post(base, `/api/mesas/${mesa.id}/convites`, {}, tokenMestre);
+  assert.equal(conviteResposta.status, 201);
+  const { invitation } = await conviteResposta.json();
+  assert.match(invitation.code, /^[A-Za-z0-9_-]{40,100}$/);
+  assert.equal((await post(base, '/api/convites/solicitar', { code: 'codigo-invalido' }, tokenJogador)).status, 404);
+  const pedido = await post(base, '/api/convites/solicitar', { code: invitation.code }, tokenJogador);
+  assert.equal(pedido.status, 202);
+  const { request } = await pedido.json();
+  assert.equal(request.status, 'pendente');
+  assert.equal((await post(base, '/api/convites/solicitar', { code: invitation.code }, tokenJogador)).status, 409);
+  assert.deepEqual((await (await fetch(base + '/api/mesas', { headers: { authorization: `Bearer ${tokenJogador}` } })).json()).mesas, []);
+  assert.equal((await fetch(base + `/api/mesas/${mesa.id}`, { headers: { authorization: `Bearer ${tokenJogador}` } })).status, 404);
+  const lista = await fetch(base + `/api/mesas/${mesa.id}/solicitacoes`, { headers: { authorization: `Bearer ${tokenMestre}` } });
+  assert.equal(lista.status, 200);
+  assert.equal((await lista.json()).requests[0].id, request.id);
+  assert.equal((await post(base, `/api/mesas/${mesa.id}/solicitacoes/${request.id}/aprovar`, {}, tokenJogador)).status, 404);
+  const aprovar = await post(base, `/api/mesas/${mesa.id}/solicitacoes/${request.id}/aprovar`, {}, tokenMestre);
+  assert.equal(aprovar.status, 200);
+  assert.equal((await aprovar.json()).request.status, 'aprovada');
+  const detalhe = await fetch(base + `/api/mesas/${mesa.id}`, { headers: { authorization: `Bearer ${tokenJogador}` } });
+  assert.equal(detalhe.status, 200);
+  assert.equal((await detalhe.json()).mesa.role, 'jogador');
+});
+
+test('permite nova solicitação após recusa com convite válido e preserva o histórico', async t => {
+  const { base, app } = await setup(t);
+  const senha = 'senha-local-comprida-2026';
+  const entrar = async email => {
+    assert.equal((await post(base, '/api/auth/register', { email, password: senha })).status, 201);
+    const login = await post(base, '/api/auth/login', { email, password: senha });
+    return (await login.json()).token;
+  };
+  const tokenMestre = await entrar('mestre-reconvite@example.test');
+  const tokenJogador = await entrar('jogador-reconvite@example.test');
+  const { mesa } = await (await post(base, '/api/mesas', { name: 'Mesa nova tentativa' }, tokenMestre)).json();
+
+  const { invitation: primeiroConvite } = await (await post(base, `/api/mesas/${mesa.id}/convites`, {}, tokenMestre)).json();
+  const primeiraResposta = await post(base, '/api/convites/solicitar', { code: primeiroConvite.code }, tokenJogador);
+  assert.equal(primeiraResposta.status, 202);
+  const { request: primeira } = await primeiraResposta.json();
+
+  const recusa = await post(base, `/api/mesas/${mesa.id}/solicitacoes/${primeira.id}/recusar`, {}, tokenMestre);
+  assert.equal(recusa.status, 200);
+  assert.equal((await recusa.json()).request.status, 'recusada');
+
+  const { invitation: segundoConvite } = await (await post(base, `/api/mesas/${mesa.id}/convites`, {}, tokenMestre)).json();
+  const segundaResposta = await post(base, '/api/convites/solicitar', { code: segundoConvite.code }, tokenJogador);
+  assert.equal(segundaResposta.status, 202);
+  const { request: segunda } = await segundaResposta.json();
+  assert.notEqual(segunda.id, primeira.id);
+
+  const duplicada = await post(base, '/api/convites/solicitar', { code: segundoConvite.code }, tokenJogador);
+  assert.equal(duplicada.status, 409);
+  assert.equal((await duplicada.json()).error, 'Sua solicitação já está pendente.');
+
+  const historico = app.db.prepare(
+    'SELECT id, status FROM solicitacoes_mesa_locais WHERE mesa_id = ? AND conta_id = ? ORDER BY criada_em, id'
+  ).all(mesa.id, (await (await fetch(base + '/api/auth/me', { headers: { authorization: `Bearer ${tokenJogador}` } })).json()).account.id);
+  assert.deepEqual(historico.map(item => item.status), ['recusada', 'pendente']);
+  assert.notEqual(historico[0].id, historico[1].id);
+
+  const pendentes = await fetch(base + `/api/mesas/${mesa.id}/solicitacoes`, {
+    headers: { authorization: `Bearer ${tokenMestre}` },
+  });
+  assert.equal(pendentes.status, 200);
+  const { requests } = await pendentes.json();
+  assert.deepEqual(requests.map(item => item.id), [segunda.id]);
+});
+
+test('renovar convite invalida o anterior e revogar impede novos pedidos sem afetar membros', async t => {
+  const { base } = await setup(t);
+  const senha = 'senha-local-comprida-2026';
+  const entrar = async email => {
+    assert.equal((await post(base, '/api/auth/register', { email, password: senha })).status, 201);
+    const login = await post(base, '/api/auth/login', { email, password: senha });
+    return (await login.json()).token;
+  };
+  const tokenMestre = await entrar('mestre-renovacao@example.test');
+  const tokenJogador = await entrar('jogador-renovacao@example.test');
+  const tokenIntruso = await entrar('intruso-renovacao@example.test');
+  const { mesa } = await (await post(base, '/api/mesas', { name: 'Mesa convites' }, tokenMestre)).json();
+
+  const primeiro = await (await post(base, `/api/mesas/${mesa.id}/convites`, {}, tokenMestre)).json();
+  const pedidoPrimeiro = await post(base, '/api/convites/solicitar', { code: primeiro.invitation.code }, tokenJogador);
+  assert.equal(pedidoPrimeiro.status, 202);
+  const { request } = await pedidoPrimeiro.json();
+  assert.equal((await post(base, `/api/mesas/${mesa.id}/solicitacoes/${request.id}/aprovar`, {}, tokenMestre)).status, 200);
+
+  const segundoResposta = await post(base, `/api/mesas/${mesa.id}/convites`, {}, tokenMestre);
+  assert.equal(segundoResposta.status, 201);
+  const { invitation: segundo } = await segundoResposta.json();
+  assert.notEqual(segundo.code, primeiro.invitation.code);
+  assert.equal((await post(base, '/api/convites/solicitar', { code: primeiro.invitation.code }, tokenIntruso)).status, 404);
+  assert.equal((await post(base, '/api/convites/solicitar', { code: segundo.code }, tokenIntruso)).status, 202);
+
+  const revogar = await fetch(base + `/api/mesas/${mesa.id}/convites/ativo`, {
+    method: 'DELETE', headers: { authorization: `Bearer ${tokenMestre}` },
+  });
+  assert.equal(revogar.status, 200);
+  assert.deepEqual(await revogar.json(), { revoked: true });
+  assert.equal((await post(base, '/api/convites/solicitar', { code: segundo.code }, await entrar('outro-intruso@example.test'))).status, 404);
+
+  const semAtivo = await fetch(base + `/api/mesas/${mesa.id}/convites/ativo`, {
+    method: 'DELETE', headers: { authorization: `Bearer ${tokenMestre}` },
+  });
+  assert.deepEqual(await semAtivo.json(), { revoked: false });
+  const detalheMembro = await fetch(base + `/api/mesas/${mesa.id}`, { headers: { authorization: `Bearer ${tokenJogador}` } });
+  assert.equal(detalheMembro.status, 200);
+  assert.equal((await detalheMembro.json()).mesa.role, 'jogador');
+
+  const naoMestre = await fetch(base + `/api/mesas/${mesa.id}/convites/ativo`, {
+    method: 'DELETE', headers: { authorization: `Bearer ${tokenJogador}` },
+  });
+  assert.equal(naoMestre.status, 404);
+});
+
+test('aprovação de ingresso respeita limite de dez jogadores no servidor', async t => {
+  const { base, app } = await setup(t);
+  const senha = 'senha-local-comprida-2026';
+  const entrar = async email => {
+    assert.equal((await post(base, '/api/auth/register', { email, password: senha })).status, 201);
+    const login = await post(base, '/api/auth/login', { email, password: senha });
+    return (await login.json()).token;
+  };
+  const tokenMestre = await entrar('mestre-limite@example.test');
+  const tokenSolicitante = await entrar('solicitante-limite@example.test');
+  const { mesa } = await (await post(base, '/api/mesas', { name: 'Mesa cheia' }, tokenMestre)).json();
+  const { invitation } = await (await post(base, `/api/mesas/${mesa.id}/convites`, {}, tokenMestre)).json();
+  const pedido = await post(base, '/api/convites/solicitar', { code: invitation.code }, tokenSolicitante);
+  const { request } = await pedido.json();
+  const agora = new Date().toISOString();
+  for (let i = 0; i < 10; i += 1) {
+    const id = `jogador-limite-${i}`;
+    app.db.prepare('INSERT INTO contas_locais (id, email, senha_salt, senha_hash, criada_em) VALUES (?, ?, ?, ?, ?)').run(id, `${id}@example.test`, 'salt', 'hash', agora);
+    app.db.prepare("INSERT INTO participantes_mesa (mesa_id, conta_id, papel, entrou_em) VALUES (?, ?, 'jogador', ?)").run(mesa.id, id, agora);
+  }
+  const resposta = await post(base, `/api/mesas/${mesa.id}/solicitacoes/${request.id}/aprovar`, {}, tokenMestre);
+  assert.equal(resposta.status, 409);
+  assert.equal((await resposta.json()).error, 'Esta Mesa já atingiu o limite de 10 jogadores.');
+  assert.equal(app.db.prepare("SELECT status FROM solicitacoes_mesa_locais WHERE id = ?").get(request.id).status, 'pendente');
 });
 
 test('rotas antigas de eventos demonstrativos ficam desativadas', async t => {

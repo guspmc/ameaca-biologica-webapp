@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react';
 import LaboratorioLocal from './LaboratorioLocal';
+import ConexaoServidorLocal from './ConexaoServidorLocal';
 import { createClient, type Session, type SupabaseClient } from '@supabase/supabase-js';
 import Convites, { CONVITE_LOCAL } from './Convites';
 import Participantes from './Participantes';
@@ -417,6 +418,7 @@ function AplicacaoOnline(){
 
 export default function App() {
   const parametros = new URLSearchParams(window.location.search);
+  if (parametros.get('servidor') === 'local') return <ConexaoServidorLocal />;
   if (parametros.get('laboratorio') === 'local') return <LaboratorioLocal />;
   return <AplicacaoOnline />;
 }

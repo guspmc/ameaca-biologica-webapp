@@ -1,0 +1,180 @@
+import { dadosDaClasse } from './classesFicha';
+import { PERICIAS_CLASSE, bonusTreinamento } from './pericias';
+import { ORIGENS } from './origens';
+import { capacidadeInventario, caracteristicos, equipamentoInicial as itensDoKit, opcoesEquipamento, espacosOcupados } from './equipamento';
+import { HABILIDADES_BASICAS } from './habilidades';
+import type { AtributosIniciais } from './atributosCriacao';
+import { planejarInventarioCriacao } from './inventarioCriacao';
+import EditorAtributosPericiasLocal from './EditorAtributosPericiasLocal';
+import EditorCaracteristicasLocal from './EditorCaracteristicasLocal';
+import EditorInventarioLocal from './EditorInventarioLocal';
+
+type DadosFichaLocal = {
+  classe?: unknown;
+  origem?: unknown;
+  armaOperario?: unknown;
+  atributos?: unknown;
+  periciaOrigemTreinada?: unknown;
+  periciaOrigemExtra?: unknown;
+  habilidadeBasica?: unknown;
+  equipamentoInicial?: unknown;
+  distribuicaoPericias?: unknown;
+  comprasIniciais?: unknown;
+  revisaoCompras?: unknown;
+};
+
+type Props = {
+  nome: string;
+  mesa: string;
+  dados: Record<string, unknown>;
+  aoFechar: () => void;
+  aoEditar: (secao: 'caracteristicas' | 'pericias' | 'inventario') => void;
+  aoSalvarAtributosPericias: (dados: { atributos: AtributosIniciais; periciaOrigemTreinada: string; periciaOrigemExtra: string | null; distribuicaoPericias: Record<string, number> }) => Promise<boolean>;
+  aoSalvarCaracteristicas: (dados: { classe: string; origem: string; armaOperario: string; habilidadeBasica: string; equipamentoInicial: string }) => Promise<boolean>;
+  aoSalvarInventario: (dados: { equipamentoInicial: string; comprasIniciais: Record<string, number>; revisaoCompras: number }) => Promise<boolean>;
+  origemDados?: 'local' | 'servidor';
+};
+
+const ATRIBUTOS: { chave: keyof AtributosIniciais; sigla: string; nome: string }[] = [
+  { chave: 'forca', sigla: 'FOR', nome: 'Força' },
+  { chave: 'agilidade', sigla: 'AGI', nome: 'Agilidade' },
+  { chave: 'vigor', sigla: 'VIG', nome: 'Vigor' },
+  { chave: 'astucia', sigla: 'AST', nome: 'Astúcia' },
+];
+
+function numero(valor: unknown): number {
+  return typeof valor === 'number' && Number.isFinite(valor) ? valor : 0;
+}
+
+export default function FichaLocal({ nome, mesa, dados, aoFechar, aoEditar, aoSalvarAtributosPericias, aoSalvarCaracteristicas, aoSalvarInventario, origemDados = 'local' }: Props) {
+  const ficha = dados as DadosFichaLocal;
+  const classe = typeof ficha.classe === 'string' ? ficha.classe : '';
+  const origem = typeof ficha.origem === 'string' ? ficha.origem : '';
+  const atributos = ficha.atributos && typeof ficha.atributos === 'object'
+    ? ficha.atributos as AtributosIniciais
+    : { forca: 1, agilidade: 1, vigor: 1, astucia: 1 };
+  const distribuicao = ficha.distribuicaoPericias && typeof ficha.distribuicaoPericias === 'object'
+    ? ficha.distribuicaoPericias as Record<string, number>
+    : {};
+  const treinada = typeof ficha.periciaOrigemTreinada === 'string' ? ficha.periciaOrigemTreinada : '';
+  const extra = typeof ficha.periciaOrigemExtra === 'string' ? ficha.periciaOrigemExtra : '';
+  const dadosClasse = dadosDaClasse(classe);
+  const dadosOrigem = ORIGENS.find(item => item.nome === origem);
+  const habilidade = HABILIDADES_BASICAS.find(item => item.id === ficha.habilidadeBasica && item.classe === classe);
+  const pv = (classe === 'Agente' ? 10 : classe === 'Autodidata' ? 8 : classe === 'Operador' ? 12 : 0) + numero(atributos.vigor) + (habilidade?.id === 'parrudo' ? 5 : 0);
+  const sa = numero(atributos.agilidade) + numero(atributos.astucia) + (origem === 'Universitária' ? 1 : 0);
+  const bi = (classe === 'Agente' ? 8 : classe === 'Autodidata' ? 10 : classe === 'Operador' ? 6 : 0) + numero(atributos.astucia) + (origem === 'Cobaia' ? 2 : 0) + (habilidade?.id === 'parrudo' ? 3 : 0);
+  const defesa = 10 + numero(atributos.agilidade) + (origem === 'Policial' ? 2 : 0);
+  const capacidade = capacidadeInventario(numero(atributos.forca), origem);
+  const listaPericias = [...new Set([...(PERICIAS_CLASSE[classe] ?? []), ...(dadosOrigem?.pericias ?? []), ...(extra ? [extra] : [])])].sort();
+  const itensClasse = caracteristicos(classe);
+  const kitSelecionado = typeof ficha.equipamentoInicial === 'string' ? ficha.equipamentoInicial : '';
+  const kit = opcoesEquipamento(classe).find(item => item.id === kitSelecionado);
+  const itensKit = itensDoKit(classe, kitSelecionado);
+  const espacosKit = espacosOcupados(itensKit);
+  let inventarioPlanejado: ReturnType<typeof planejarInventarioCriacao> | null = null;
+  try { inventarioPlanejado = planejarInventarioCriacao({ classe, equipamento_inicial: kitSelecionado, forca: numero(atributos.forca), origem: origem || null, nivel: 1, estado_ficha: 'rascunho', compras_iniciais: (ficha.comprasIniciais as Record<string, number>) ?? {} }); } catch { inventarioPlanejado = null; }
+  const ramo = dadosClasse?.ramos ?? [];
+
+  return <div className="ficha-local-fundo" role="dialog" aria-modal="true" aria-labelledby="ficha-local-titulo">
+    <article className="ficha-local">
+      <header className="ficha-local-topo">
+        <div className="ficha-local-acoes"><button type="button" className="ficha-local-voltar" onClick={aoFechar}>← Voltar</button><button type="button" className="botao-claro" onClick={() => aoEditar("caracteristicas")}>Editar rascunho</button></div>
+        <div><strong>AMEAÇA BIOLÓGICA</strong><small>{origemDados === 'servidor' ? 'FICHA NO SERVIDOR · RASCUNHO' : 'FICHA LOCAL · RASCUNHO'}</small></div>
+        <span className="ficha-local-selo">NÃO ATIVA</span>
+      </header>
+      <div className="ficha-local-corpo">
+        <div className="ficha-local-identidade">
+          <span>REGISTRO DO SOBREVIVENTE · {mesa || 'MESA LOCAL'}</span>
+          <h1 id="ficha-local-titulo">{nome}</h1>
+          <p>{classe || 'Classe pendente'} · {origem || 'Origem pendente'} · Nível 1 (criação)</p>
+          {origem === 'Operário' && typeof ficha.armaOperario === 'string' && <small>Arma escolhida: {ficha.armaOperario}</small>}
+        </div>
+
+        <div className="ficha-local-recursos">
+          <div><small>PV MÁX.</small><strong>{pv}</strong><span>Atual pendente</span></div>
+          <div><small>SA MÁX.</small><strong>{sa}</strong><span>Atual pendente</span></div>
+          <div><small>BI MÁX.</small><strong>{bi}</strong><span>Atual pendente</span></div>
+          <div><small>DEFESA</small><strong>{defesa}</strong><span>Sem equipamento</span></div>
+        </div>
+
+        <nav className="ficha-local-nav" aria-label="Seções da ficha">
+          <a href="#ficha-local-caracteristicas">Características</a>
+          <a href="#ficha-local-pericias">Atributos e Perícias</a>
+          <a href="#ficha-local-combate">Combate</a>
+          <a href="#ficha-local-inventario">Inventário</a>
+        </nav>
+
+        <section id="ficha-local-caracteristicas" className="ficha-local-secao">
+          <div className="ficha-local-titulo-secao"><h2><span>01</span> Características</h2><button type="button" className="ficha-local-editar-secao" onClick={() => aoEditar("caracteristicas")}>Editar seção ↗</button></div>
+          <EditorCaracteristicasLocal key={JSON.stringify([classe, origem, ficha.armaOperario, ficha.habilidadeBasica, kitSelecionado])} iniciais={{ classe, origem, armaOperario: typeof ficha.armaOperario === 'string' ? ficha.armaOperario : '', habilidadeBasica: typeof ficha.habilidadeBasica === 'string' ? ficha.habilidadeBasica : '', equipamentoInicial: kitSelecionado }} aoSalvar={aoSalvarCaracteristicas} mensagemSucesso={origemDados === 'servidor' ? 'Características confirmadas pelo servidor.' : undefined} />
+          <div className="ficha-local-grade">
+            <div><small>CLASSE</small><strong>{classe || 'Pendente'}</strong><p>{dadosClasse?.identidade ?? 'Dados da Classe ainda não definidos.'}</p></div>
+            <div><small>ORIGEM</small><strong>{origem || 'Pendente'}</strong><p>{dadosOrigem?.beneficio ?? 'Benefício da Origem ainda não definido.'}</p></div>
+            <div><small>RAMOS DA CLASSE</small><strong>{ramo.length ? ramo.join(' · ') : 'Pendente'}</strong><p>Ramos disponíveis para desenvolvimento futuro. Nenhum foi escolhido nesta etapa.</p></div>
+            <div><small>PROFICIÊNCIAS</small><strong>{dadosClasse?.proficiencias.length ?? 0} registros</strong><p>{dadosClasse?.proficiencias.join(' · ') ?? 'Pendente'}</p></div>
+          </div>
+          <div className="ficha-local-nota"><strong>Habilidade Básica · {habilidade?.nome ?? 'Não selecionada'}</strong><p>{habilidade ? habilidade.efeito : 'Ainda não selecionada. Nenhuma habilidade foi presumida para o personagem.'}</p></div>
+        </section>
+
+        <section id="ficha-local-pericias" className="ficha-local-secao">
+          <div className="ficha-local-titulo-secao"><h2><span>02</span> Atributos e Perícias</h2><button type="button" className="ficha-local-editar-secao" onClick={() => aoEditar("pericias")}>Editar seção ↗</button></div>
+          <EditorAtributosPericiasLocal key={JSON.stringify([atributos, treinada, extra, distribuicao])} classe={classe} origem={origem} atributosIniciais={atributos} treinadaInicial={treinada} extraInicial={extra} distribuicaoInicial={distribuicao} aoSalvar={aoSalvarAtributosPericias} mensagemSucesso={origemDados === 'servidor' ? 'Atributos e Perícias confirmados pelo servidor.' : undefined} />
+          <div className="ficha-local-atributos">
+            {ATRIBUTOS.map(item => <div key={item.chave}><small>{item.sigla}</small><strong>{numero(atributos[item.chave])}</strong><span>{item.nome}</span></div>)}
+          </div>
+          <div className="ficha-local-pontos"><span>Treinamento gratuito da Origem</span><strong>{treinada || 'Pendente'}</strong></div>
+          {origem === 'Amnésico' && <div className="ficha-local-pontos"><span>Segunda Perícia da Origem</span><strong>{extra || 'Pendente'}</strong></div>}
+          <div className="ficha-local-pericias">
+            {listaPericias.map(pericia => {
+              const grau = Math.min(2, Math.max(0, numero(distribuicao[pericia]) + (pericia === treinada ? 1 : 0)));
+              const rotulo = grau === 2 ? 'Mestre' : grau === 1 ? 'Treinada' : 'Não Treinada';
+              return <div key={pericia}><span>{pericia}<small>{rotulo}{pericia === treinada ? ' · Origem' : ''}</small></span><strong>+{bonusTreinamento(grau)}</strong></div>;
+            })}
+          </div>
+          <p className="ficha-local-legenda">O bônus exibido representa apenas o Treinamento. O total de cada Teste também depende do Atributo associado e de efeitos contextuais.</p>
+        </section>
+
+        <section id="ficha-local-combate" className="ficha-local-secao">
+          <div className="ficha-local-titulo-secao"><h2><span>03</span> Combate</h2><span className="ficha-local-selo">PREPARAÇÃO</span></div>
+          <p className="ficha-local-legenda">Resumo operacional da personagem. Os valores abaixo são informativos: esta seção ainda não inicia nem resolve um combate.</p>
+
+          <h3 className="ficha-local-subtitulo">Defesa e deslocamento</h3>
+          <div className="ficha-local-grade">
+            <div><small>DEFESA BÁSICA</small><strong>{defesa}</strong><p>10 + AGI{origem === 'Policial' ? ' + 2 da Origem Policial' : ''}. Equipamentos ainda não aplicados.</p></div>
+            <div><small>MOVIMENTO BASE</small><strong>9 m</strong><p>Deslocamento base informado pela ficha.</p></div>
+          </div>
+
+          <h3 className="ficha-local-subtitulo">Habilidade e equipamento</h3>
+          <div className="ficha-local-grade">
+            <div><small>HABILIDADE BÁSICA</small><strong>{habilidade?.nome ?? 'Não selecionada'}</strong><p>{habilidade ? habilidade.efeito : 'Nenhuma Habilidade Básica foi selecionada.'}</p></div>
+            <div><small>ARMAMENTO</small><strong>Não equipado</strong><p>{kit ? 'Conjunto inicial selecionado: ' + kit.nome + '. A escolha faz parte do planejamento do inventário e não significa que uma arma esteja equipada.' : 'Selecione um conjunto inicial na seção Inventário. A seleção não equipa automaticamente uma arma.'}</p></div>
+          </div>
+
+          <h3 className="ficha-local-subtitulo">Combate ativo</h3>
+          <div className="ficha-local-grade">
+            <div><small>INICIATIVA E AÇÕES</small><strong>A integrar</strong><p>O acompanhamento de turnos, ações, reações e movimentação em combate ainda não está implementado.</p></div>
+            <div><small>CONDIÇÕES E EFEITOS</small><strong>A integrar</strong><p>Esta ficha ainda não registra nem aplica Condições ou efeitos temporários.</p></div>
+            <div><small>ATAQUES E DANO</small><strong>A integrar</strong><p>Resolução de Testes, Defesa de alvos, Dano e consumo de munição não estão implementados nesta seção.</p></div>
+          </div>
+          <p className="ficha-local-aviso">Nenhuma rolagem, ação, alteração de recurso ou efeito é simulado nesta versão. PV, SA e BI máximos aparecem no cabeçalho da ficha; valores atuais e seus ajustes ainda dependem da implementação da persistência de combate.</p>
+        </section>
+
+        <section id="ficha-local-inventario" className="ficha-local-secao">
+          <div className="ficha-local-titulo-secao"><h2><span>04</span> Inventário</h2><button type="button" className="ficha-local-editar-secao" onClick={() => aoEditar("inventario")}>Editar seção ↗</button></div>
+          <EditorInventarioLocal key={JSON.stringify([classe, kitSelecionado, ficha.comprasIniciais, ficha.revisaoCompras, capacidade])} classe={classe} capacidade={capacidade} kitInicial={kitSelecionado} comprasIniciais={(ficha.comprasIniciais as Record<string, number>) ?? {}} revisaoCompras={numero(ficha.revisaoCompras)} aoSalvar={aoSalvarInventario} mensagemSucesso={origemDados === 'servidor' ? 'Planejamento do inventário confirmado pelo servidor.' : undefined} />
+          <div className="ficha-local-inventario-topo"><span>CAPACIDADE BASE</span><strong>{capacidade} Espaços</strong></div>
+          <div className="ficha-local-itens">
+            <strong>Itens característicos</strong>
+            {itensClasse.length ? itensClasse.map(item => <div key={item.id}><strong>{item.nome}</strong><small>{item.detalhe} · Característico · 0 Espaços</small></div>) : <p>Itens característicos ainda não definidos para esta Classe.</p>}
+            <strong>Conjunto inicial · {kit ? kit.id + ' — ' + kit.nome : 'Não selecionado'}</strong>
+            {inventarioPlanejado ? inventarioPlanejado.itens.map(item => <div key={item.chaveCriacao}><strong>{item.nome} × {item.quantidade}</strong><small>{item.local === 'caracteristico' ? 'Característico · vinculado à Classe' : 'Inventário · ' + item.espacos + ' Espaço(s)'} · {item.estado.tipo.replace('_',' ')}</small></div>) : <p>Não foi possível montar a prévia do inventário. Confira Classe, Origem, kit e compras do rascunho.</p>}
+          </div>
+          <p className="ficha-local-legenda">A capacidade considera 4 + FOR{origem === 'Mochileiro' ? ' + 1 de Mochileiro' : ''} = {capacidade} Espaços. O conjunto selecionado ocupa {inventarioPlanejado?.ocupados ?? espacosKit} de {capacidade} Espaços. Os itens aparecem em estado inicial guardado/não equipado; operações de Inventário ainda não estão integradas.</p>
+        </section>
+
+        <footer className="ficha-local-rodape">AMEAÇA BIOLÓGICA RPG · {origemDados === 'servidor' ? 'DADOS NO SERVIDOR' : 'DADOS LOCAIS'} · RASCUNHO NÃO ATIVO</footer>
+      </div>
+    </article>
+  </div>;
+}
