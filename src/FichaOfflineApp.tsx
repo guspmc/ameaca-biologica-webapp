@@ -76,19 +76,19 @@ export default function FichaOfflineApp() {
     } finally { gravacao.current = false; }
   }
 
-  async function excluir() {
-    if (!selecionado || ocupado) return;
+  async function excluirDaLista(id: string) {
+    if (ocupado) return;
     setOcupado(true); setErro('');
     try {
-      await excluirPersonagem(selecionado.id);
-      setSelecionado(null); setExclusaoPendente(null);
+      await excluirPersonagem(id);
+      setExclusaoPendente(null);
       await atualizarLista();
       setStatus('Ficha excluída deste dispositivo.');
     } catch (e) { setErro(e instanceof Error ? e.message : 'Falha ao excluir.'); }
     finally { setOcupado(false); }
   }
 
-  async function exportar() {
+    async function exportar() {
     setErro('');
     try {
       const backup = criarBackup(await listarPersonagens());
@@ -105,7 +105,7 @@ export default function FichaOfflineApp() {
 
   if (selecionado) return <FichaLocal
     nome={selecionado.nome} mesa="DISPOSITIVO LOCAL" dados={selecionado.dados}
-    aoFechar={() => { setSelecionado(null); setConfirmarExclusao(false); }}
+    aoFechar={() => { setSelecionado(null); setExclusaoPendente(null); }}
     aoEditar={() => undefined}
     aoSalvarCaracteristicas={salvarDados}
     aoSalvarAtributosPericias={salvarDados}
