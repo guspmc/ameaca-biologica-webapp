@@ -169,3 +169,20 @@ export function fecharBancoFicha(): void {
   void abertura.then(banco => banco.close()).catch(() => undefined);
   abertura = null;
 }
+
+/** Adiciona um lote inteiro em uma única transação, sem apagar fichas existentes. */
+export async function adicionarPersonagens(personagens: PersonagemLocal[]): Promise<void> {
+  if (!Array.isArray(personagens) || !personagens.every(validarPersonagem)
+    || new Set(personagens.map(item => item.id)).size !== personagens.length) {
+    throw new Error('O lote de fichas é inválido ou contém identificadores repetidos. Nada foi importado.');
+  }
+  try {
+    const banco = await abrirBanco();
+    const transacao = banco.transaction(STORE_PERSONAGENS, 'readwrite');
+    const store = transacao.objectStore(STORE_PERSONAGENS);
+    for (const personagem of personagens) store.add(structuredClone(personagem));
+    await aguardarTransacao(transacao);
+  } catch (erro) {
+    throw mensagemErro(erro);
+  }
+}
