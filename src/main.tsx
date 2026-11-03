@@ -1,6 +1,6 @@
 import React from 'react';
 import { createRoot } from 'react-dom/client';
-import App from './App';
+import FichaOfflineApp from './FichaOfflineApp';
 import './styles.css';
 
 // O cache offline guarda somente o shell estático; nunca dados pessoais/API.
@@ -19,4 +19,4 @@ else window.addEventListener('load', registrarShellOffline, { once: true });
 
 const root = document.querySelector<HTMLDivElement>('#root');
 if (!root) throw new Error('Elemento principal indisponível.');
-createRoot(root).render(<React.StrictMode><App /></React.StrictMode>);
+createRoot(root).render(<React.StrictMode><FichaOfflineApp /></React.StrictMode>);
