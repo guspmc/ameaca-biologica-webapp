@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import type { FormEvent } from 'react';
 import FichaLocal from './FichaLocal';
 import { criarBackup, lerArquivoBackup, serializarBackup } from './backupFicha';
-import { excluirPersonagem, listarPersonagens, salvarPersonagem, substituirPersonagens, type PersonagemLocal } from './persistenciaFicha';
+import { adicionarPersonagens, excluirPersonagem, listarPersonagens, salvarPersonagem, substituirPersonagens, type PersonagemLocal } from './persistenciaFicha';
 
 function agora() { return new Date().toISOString(); }
 function novoId() { return globalThis.crypto?.randomUUID?.() ?? `personagem-${Date.now()}-${Math.random().toString(16).slice(2)}`; }
@@ -116,12 +116,13 @@ export default function FichaOfflineApp() {
         const existentes = await listarPersonagens();
         const ids = new Set(existentes.map(p => p.id));
         const copias = backupPendente.personagens.map(p => {
+          const nomeJaExiste = existentes.some(atual => atual.id === p.id || atual.nome.toLocaleLowerCase() === p.nome.toLocaleLowerCase());
           let id = novoId();
           while (ids.has(id)) id = novoId();
           ids.add(id);
-          return { ...p, id, nome: ids.has(p.id) ? p.nome + ' (cópia)' : p.nome };
+          return { ...p, id, nome: nomeJaExiste ? p.nome + ' (cópia)' : p.nome };
         });
-        for (const personagem of copias) await salvarPersonagem(personagem);
+        await adicionarPersonagens(copias);
       }
       const lista = await atualizarLista();
       setSelecionado(null);
