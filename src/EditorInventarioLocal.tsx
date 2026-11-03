@@ -9,8 +9,9 @@ type Props = {
   comprasIniciais: Record<string, number>;
   revisaoCompras: number;
   aoSalvar: (dados: { equipamentoInicial: string; comprasIniciais: Record<string, number>; revisaoCompras: number }) => Promise<boolean>;
+  mensagemSucesso?: string;
 };
-export default function EditorInventarioLocal({ classe, capacidade, kitInicial, comprasIniciais, revisaoCompras, aoSalvar }: Props) {
+export default function EditorInventarioLocal({ classe, capacidade, kitInicial, comprasIniciais, revisaoCompras, aoSalvar, mensagemSucesso }: Props) {
   const [kit, setKit] = useState(kitInicial);
   const [plano, setPlano] = useState(comprasIniciais);
   const [revisao, setRevisao] = useState(revisaoCompras);
@@ -24,7 +25,7 @@ export default function EditorInventarioLocal({ classe, capacidade, kitInicial, 
     setOcupado(true); setMensagem('');
     try {
       const ok = await aoSalvar({ equipamentoInicial: kit, comprasIniciais: kit === 'C' ? plano : {}, revisaoCompras: kit === 'C' ? revisao : 0 });
-      setMensagem(ok ? 'Planejamento do inventário gravado no rascunho local.' : 'Não foi possível gravar. Confira o aviso do laboratório.');
+      setMensagem(ok ? (mensagemSucesso ?? 'Planejamento do inventário gravado no rascunho local.') : 'Não foi possível gravar. Confira o aviso do laboratório.');
     } finally { setOcupado(false); }
   }
   return <div className="ficha-local-editor">
