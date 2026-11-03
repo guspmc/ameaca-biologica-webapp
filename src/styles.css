@@ -437,3 +437,23 @@ footer { margin-top:45px; border-top:1px solid #dce2df; padding-top:19px; color:
 .servidor-local-codigo input{width:100%;min-width:0;padding:10px;border:1px solid #bdae95;background:#fffaf0;color:#282a27;font:11px ui-monospace,monospace}
 .servidor-local-controle-mesa .servidor-local-botoes{margin-top:10px}
 @media(max-width:560px){.servidor-local-codigo{grid-template-columns:1fr}.servidor-local-codigo button{width:100%}}
+
+/* Entrada independente da Ficha do Jogador offline */
+.offline-app{min-height:100vh;background:#171b1d;color:#e9e2d2;font-family:Georgia,serif}
+.offline-topo{min-height:76px;padding:14px clamp(18px,5vw,64px);display:flex;align-items:center;gap:14px;border-bottom:3px solid #8d2635;background:#101416}
+.offline-marca{width:42px;height:42px;display:grid;place-items:center;background:#8d2635;border:1px solid #c16b72;color:#fff;font:bold 14px Georgia}
+.offline-topo>div:nth-child(2){display:grid;gap:5px}.offline-topo strong{font-size:14px;letter-spacing:.12em}.offline-topo small,.offline-topo>span{font:10px 'Courier New',monospace;letter-spacing:.12em;color:#a9a18f}.offline-topo>span{margin-left:auto}
+.offline-conteudo{width:min(100% - 36px,980px);margin:auto;padding:58px 0 32px}
+.offline-intro>small,.offline-painel-topo small{font:10px 'Courier New',monospace;letter-spacing:.16em;color:#b04b55}
+.offline-intro h1{font-size:clamp(42px,7vw,68px);line-height:1.02;margin:17px 0;color:#eee5d2;font-weight:normal}
+.offline-intro h1 em{font-style:normal;color:#a83b48}.offline-intro p{max-width:540px;color:#b5b0a5;line-height:1.7;font-size:15px}
+.offline-painel{margin-top:38px;padding:clamp(20px,4vw,34px);background:#e9e2d2;color:#252727;border-top:4px solid #8d2635;box-shadow:0 18px 55px #0005}
+.offline-painel-topo{display:flex;justify-content:space-between;align-items:center;gap:16px}.offline-painel-topo h2{font-size:28px;margin:7px 0 0;font-weight:normal}
+.offline-exportar{background:transparent;border:1px solid #8b7e6a;padding:10px 13px;color:#51493e;font:11px 'Courier New',monospace}.offline-exportar:disabled{opacity:.4}
+.offline-status{font:11px 'Courier New',monospace;color:#766d5f;margin:20px 0 12px}.offline-erro{background:#f5dfe0;color:#822635;padding:12px;font:12px sans-serif}
+.offline-lista{list-style:none;margin:0;padding:0;display:grid;gap:8px}.offline-lista li button{width:100%;display:flex;align-items:center;gap:13px;text-align:left;padding:13px;background:#f3eee3;border:1px solid #d3c8b6;color:#282b29}.offline-lista li button:hover{border-color:#9c3442;background:#fffaf0}
+.offline-avatar{width:40px;height:40px;display:grid;place-items:center;background:#282d2d;color:#c7a78b;font-size:20px}.offline-lista li button>span:nth-child(2){display:grid;gap:5px;flex:1;min-width:0}.offline-lista strong{font-size:16px}.offline-lista small{font:10px 'Courier New',monospace;color:#777064}.offline-lista b{font:10px 'Courier New',monospace;color:#8d2635}
+.offline-vazio{padding:35px 15px;text-align:center;border:1px dashed #bcb09d;display:grid;justify-items:center;gap:9px;color:#655d51}.offline-vazio>span{font-size:27px;color:#8d2635}.offline-vazio p{font:13px sans-serif;margin:0;line-height:1.6}
+.offline-criar{border-top:1px solid #cfc4b3;margin-top:24px;padding-top:21px}.offline-criar label{display:block;font:11px 'Courier New',monospace;letter-spacing:.1em;color:#62594d;margin-bottom:9px}.offline-criar>div{display:flex;gap:9px}.offline-criar input{min-width:0;flex:1;border:1px solid #bdb19f;background:#f9f5eb;padding:13px;color:#292a28}.offline-criar button{border:0;background:#8d2635;color:white;padding:0 17px;font-size:12px;font-weight:bold}.offline-criar button:disabled{opacity:.5}
+.offline-rodape{margin-top:38px;padding-top:15px;border-top:1px solid #444746;color:#817e74;font:9px 'Courier New',monospace;letter-spacing:.1em;line-height:1.7}
+@media(max-width:560px){.offline-topo>span{display:none}.offline-conteudo{padding-top:38px}.offline-painel-topo{align-items:flex-start;flex-direction:column}.offline-criar>div{flex-direction:column}.offline-criar button{min-height:45px}.offline-lista li button>b{font-size:9px}}
