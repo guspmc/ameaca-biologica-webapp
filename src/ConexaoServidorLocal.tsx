@@ -1,5 +1,6 @@
-import { useEffect, useState, type FormEvent } from 'react';
-import { criarClienteServidorLocal, ErroServidorLocal, type MesaLocal, type ResumoPersonagemLocal, type SaudeServidorLocal, type SessaoLocal } from './servidorLocal';
+import { useEffect, useRef, useState, type FormEvent } from 'react';
+import { criarClienteServidorLocal, ErroServidorLocal, type MesaLocal, type ResumoPersonagemLocal, type SaudeServidorLocal, type SessaoLocal, type PersonagemRascunhoLocal } from './servidorLocal';
+import FichaLocal from './FichaLocal';
 
 const CHAVE_ENDERECO = 'ameaca-biologica:servidor-local:endereco:v1';
 
@@ -25,6 +26,9 @@ export default function ConexaoServidorLocal() {
   const [erro, setErro] = useState('');
   const [aviso, setAviso] = useState('');
   const [consultando, setConsultando] = useState(false);
+  const [fichaAberta, setFichaAberta] = useState<{ mesa: MesaLocal; personagem: PersonagemRascunhoLocal } | null>(null);
+  const [salvandoFicha, setSalvandoFicha] = useState(false);
+  const bloqueioSalvamentoFicha = useRef(false);
 
   function encerrarSessao(mensagem: string) {
     setSessao(null);
@@ -184,6 +188,43 @@ export default function ConexaoServidorLocal() {
       if (problema instanceof ErroServidorLocal && problema.status === 401) encerrarSessao('A sessão expirou ou foi encerrada no servidor. Entre novamente.');
       else setErro(problema instanceof Error ? problema.message : 'Não foi possível criar o rascunho.');
     } finally { setConsultando(false); }
+  }
+
+  async function abrirFicha(mesa: MesaLocal, personagem: ResumoPersonagemLocal) {
+    if (!sessao || mesa.role !== 'jogador') return;
+    setErro(''); setAviso(''); setConsultando(true);
+    try {
+      const resposta = await criarClienteServidorLocal({ baseUrl: endereco.trim(), token: sessao.token }).consultarPersonagem(personagem.id);
+      if (resposta.personagem.mesaId !== mesa.id) throw new Error('O servidor retornou um personagem vinculado a outra Mesa.');
+      setFichaAberta({ mesa, personagem: resposta.personagem });
+      setAviso('Ficha consultada e confirmada pelo servidor. As alterações continuam em estado de rascunho.');
+    } catch (problema) {
+      if (problema instanceof ErroServidorLocal && problema.status === 401) encerrarSessao('A sessão expirou ou foi encerrada no servidor. Entre novamente.');
+      else setErro(problema instanceof Error ? problema.message : 'Não foi possível abrir a ficha.');
+    } finally { setConsultando(false); }
+  }
+
+  async function salvarDadosFicha(delta: Record<string, unknown>): Promise<boolean> {
+    if (!sessao || !fichaAberta || fichaAberta.mesa.role !== 'jogador') return false;
+    if (bloqueioSalvamentoFicha.current) { setErro('Já existe um salvamento em andamento nesta ficha. Aguarde a confirmação antes de tentar novamente.'); return false; }
+    bloqueioSalvamentoFicha.current = true; setSalvandoFicha(true); setErro(''); setAviso('');
+    try {
+      const dadosAtualizados = { ...fichaAberta.personagem.data, ...delta };
+      const resposta = await criarClienteServidorLocal({ baseUrl: endereco.trim(), token: sessao.token }).atualizarPersonagem(fichaAberta.personagem.id, fichaAberta.personagem.name, dadosAtualizados);
+      if (resposta.personagem.id !== fichaAberta.personagem.id || resposta.personagem.mesaId !== fichaAberta.mesa.id) throw new Error('A confirmação do servidor não corresponde à ficha aberta. Reabra a ficha para consultar o estado atual.');
+      setFichaAberta(atual => atual ? { ...atual, personagem: resposta.personagem } : atual);
+      setAviso('Alterações recebidas e confirmadas pelo servidor. O personagem continua como rascunho não ativo.');
+      return true;
+    } catch (problema) {
+      if (problema instanceof ErroServidorLocal && problema.status === 401) encerrarSessao('A sessão expirou ou foi encerrada no servidor. Entre novamente.');
+      else setErro(problema instanceof Error ? problema.message : 'Não foi possível confirmar o salvamento no servidor.');
+      return false;
+    } finally { bloqueioSalvamentoFicha.current = false; setSalvandoFicha(false); }
+  }
+
+  function editarSecaoFicha(secao: 'caracteristicas' | 'pericias' | 'inventario') {
+    const ids = { caracteristicas: 'ficha-local-caracteristicas', pericias: 'ficha-local-pericias', inventario: 'ficha-local-inventario' };
+    document.getElementById(ids[secao])?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
   async function gerarConvite(mesa: MesaLocal) {
@@ -367,7 +408,7 @@ export default function ConexaoServidorLocal() {
               </div>
               {personagens[mesa.id] ? personagens[mesa.id].length ? <ul className="servidor-local-lista-mesas">{personagens[mesa.id].map(personagem => <li key={personagem.id}>
                 <div><strong>{personagem.name}</strong><small>Rascunho · atualizado em {new Intl.DateTimeFormat('pt-BR', { dateStyle: 'short', timeStyle: 'short' }).format(new Date(personagem.updatedAt))}</small></div>
-                <span className="papel-jogador">RASCUNHO</span>
+                <div className="servidor-local-botoes"><span className="papel-jogador">RASCUNHO</span><button className="botao-claro" type="button" disabled={consultando || salvandoFicha} onClick={() => void abrirFicha(mesa, personagem)}>Abrir ficha</button></div>
               </li>)}</ul> : <p className="servidor-local-vazio">Nenhum rascunho nesta Mesa.</p> : <p className="servidor-local-vazio">Consulte os rascunhos para carregar a lista do servidor.</p>}
             </section>)}
             {mesas.filter(mesa => mesa.role === 'mestre').map(mesa => <section className="servidor-local-controle-mesa" key={mesa.id}>
@@ -412,6 +453,18 @@ export default function ConexaoServidorLocal() {
         </>}
       </section>}
 
+      {fichaAberta && <FichaLocal
+        nome={fichaAberta.personagem.name}
+        mesa={fichaAberta.mesa.name}
+        dados={fichaAberta.personagem.data}
+        aoFechar={() => { if (!salvandoFicha) setFichaAberta(null); }}
+        aoEditar={editarSecaoFicha}
+        aoSalvarCaracteristicas={dados => salvarDadosFicha(dados)}
+        aoSalvarAtributosPericias={dados => salvarDadosFicha(dados)}
+        aoSalvarInventario={dados => salvarDadosFicha({ equipamentoInicial: dados.equipamentoInicial, comprasIniciais: dados.comprasIniciais, revisaoCompras: dados.revisaoCompras })}
+        origemDados="servidor"
+      />}
+      {salvandoFicha && <p className="servidor-local-feedback" role="status">Confirmando salvamento da ficha no servidor…</p>}
       {erro && <p className="erro servidor-local-feedback" role="alert">{erro}</p>}
       {aviso && <p className="sucesso servidor-local-feedback" role="status">{aviso}</p>}
       <section className="nota-etapa servidor-local-limites">
