@@ -131,3 +131,23 @@ Não há, nesta branch, evidência de teste automatizado com navegador real para
 - A lista local agora desabilita a abertura de fichas e a exportação/seleção de backup enquanto uma operação de gravação, exclusão ou importação está em andamento. Isso evita que uma ficha seja aberta durante sua exclusão ou que a importação substitua a lista enquanto o usuário navega para uma ficha.
 
 Essas mudanças foram commitadas na branch de desenvolvimento e aguardam confirmação do CI. Não houve teste humano nem publicação.
+
+## 11. Concorrência entre abas — risco confirmado pela estratégia de gravação
+
+A fila `criarFilaSerializada()` existe dentro da instância React de cada aba. Ela impede que os patches dessa mesma instância se sobreponham, mas não coordena duas abas ou duas janelas independentes.
+
+O caminho atual de edição lê `selecionadoRef.current`, monta um registro completo com `dados: { ...base.dados, ...patch }` e envia esse objeto para `salvarPersonagem()`, que executa um `put()` completo em uma transação IndexedDB. O IndexedDB serializa transações de escrita concorrentes na mesma store, mas isso, isoladamente, não atualiza o objeto `base` que a segunda aba já tinha em memória.
+
+Cenário possível:
+1. Aba A e aba B abrem a mesma ficha, ambas com a revisão R.
+2. Aba A altera Identificação e grava o registro completo R+A.
+3. Aba B altera Atributos usando sua cópia antiga R e grava o registro completo R+B.
+4. O segundo `put` pode substituir o registro R+A por R+B, perdendo a alteração de Identificação, embora ambas as gravações tenham sido confirmadas pelo IndexedDB.
+
+A fila local não evita esse cenário porque as filas são independentes. Também não há, no caminho inspecionado, canal entre abas, revisão otimista ou mesclagem de patch dentro da própria transação IndexedDB.
+
+**Classificação:** risco técnico confirmado pela leitura do fluxo; o cenário ainda não foi reproduzido em navegador real.
+
+**Correção recomendada:** mover a operação de patch para o módulo de persistência. Dentro de uma única transação `readwrite`, buscar a versão mais recente do registro, mesclar apenas as chaves da seção editada e gravar o resultado. Para alterações simultâneas na mesma chave, definir política explícita (detectar conflito usando revisão/base observada ou documentar último salvamento vence); não escolher silenciosamente. A UI deve receber o registro efetivamente gravado e atualizar seu estado.
+
+**Testes necessários antes da implementação:** duas conexões IndexedDB independentes, ambas lendo a mesma ficha; primeiro patch em uma conexão; segundo patch em outra; confirmar que alterações em chaves diferentes sobrevivem. Acrescentar caso de conflito na mesma chave e decidir a resposta esperada. A mudança exige teste de regressão para a fila de gravação da mesma aba.
