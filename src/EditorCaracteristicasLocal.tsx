@@ -28,7 +28,7 @@ export default function EditorCaracteristicasLocal({ iniciais, aoSalvar, aoAlter
   }
   return <div className="ficha-local-editor">
     <h3>Editar Características</h3>
-    <p>Alterar Classe ou Origem pode tornar Perícias, Habilidade ou Equipamento incompatíveis. O salvamento será recusado se alguma escolha existente deixar de ser válida; nada será apagado automaticamente.</p>
+    <p>Alterar Classe ou Origem pode tornar Perícias, Habilidade ou Equipamento incompatíveis. As escolhas anteriores são preservadas; revise os avisos e corrija incompatibilidades antes de considerar a criação conferida.</p>
     <label>Classe<select value={dados.classe} disabled={ocupado} onChange={e => { setDados(atual => ({ ...atual, classe: e.target.value })); aoAlterarPendencia(true); }}>
       <option>Agente</option><option>Autodidata</option><option>Operador</option>
     </select></label>
