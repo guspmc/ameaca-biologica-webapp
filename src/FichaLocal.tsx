@@ -38,6 +38,8 @@ type Props = {
   aoSalvarIdentidade?: (dados: { nome: string; identidade: Record<string, string> }) => Promise<boolean>;
   aoSalvarInventario: (dados: { equipamentoInicial: string; comprasIniciais: Record<string, number>; revisaoCompras: number }) => Promise<boolean>;
   origemDados?: 'local' | 'servidor';
+  status?: string;
+  erro?: string;
 };
 
 const ATRIBUTOS: { chave: keyof AtributosIniciais; sigla: string; nome: string }[] = [
@@ -51,7 +53,7 @@ function numero(valor: unknown): number {
   return typeof valor === 'number' && Number.isFinite(valor) ? valor : 0;
 }
 
-export default function FichaLocal({ nome, mesa, dados, aoFechar, aoEditar, aoSalvarAtributosPericias, aoSalvarCaracteristicas, aoSalvarIdentidade, aoSalvarInventario, origemDados = 'local' }: Props) {
+export default function FichaLocal({ nome, mesa, dados, aoFechar, aoEditar, aoSalvarAtributosPericias, aoSalvarCaracteristicas, aoSalvarIdentidade, aoSalvarInventario, origemDados = 'local', status, erro }: Props) {
   const ficha = dados as DadosFichaLocal;
   const classe = typeof ficha.classe === 'string' ? ficha.classe : '';
   const origem = typeof ficha.origem === 'string' ? ficha.origem : '';
@@ -98,6 +100,8 @@ export default function FichaLocal({ nome, mesa, dados, aoFechar, aoEditar, aoSa
         <span className="ficha-local-selo">NÃO ATIVA</span>
       </header>
       <div className="ficha-local-corpo">
+        {status && <p className="offline-status" role="status" aria-live="polite">{status}</p>}
+        {erro && <p className="offline-erro" role="alert">{erro}</p>}
         <div className="ficha-local-identidade">
           <span>{termo('REGISTRO DO SOBREVIVENTE')} · {mesa || 'MESA LOCAL'}</span>
           <h1 id="ficha-local-titulo">{nome}</h1>
