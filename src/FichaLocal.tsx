@@ -3,6 +3,7 @@ import { PERICIAS_CLASSE, bonusTreinamento } from './pericias';
 import { ORIGENS } from './origens';
 import { capacidadeInventario, caracteristicos, equipamentoInicial as itensDoKit, opcoesEquipamento, espacosOcupados } from './equipamento';
 import { HABILIDADES_BASICAS } from './habilidades';
+import { ARMAS_OPERARIO } from './armaOperario';
 import type { AtributosIniciais } from './atributosCriacao';
 import { planejarInventarioCriacao } from './inventarioCriacao';
 import EditorAtributosPericiasLocal from './EditorAtributosPericiasLocal';

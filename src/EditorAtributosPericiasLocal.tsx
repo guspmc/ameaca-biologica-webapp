@@ -37,7 +37,10 @@ export default function EditorAtributosPericias(props: Props) {
     setDistribuicao(atual => {
       const valor = (atual[nome] ?? 0) + delta;
       const maximo = nome === treinada ? 1 : 2;
-      if (valor < 0 || valor > maximo || (delta === 1 && pontosGastosPericias(atual) >= limite)) return atual;
+      if (delta === -1 && valor <= 0 && !validas.has(nome)) {
+        const proxima = { ...atual }; delete proxima[nome]; return proxima;
+      }
+      if (valor < 0 || valor > maximo || (delta === 1 && (!validas.has(nome) || pontosGastosPericias(atual) >= limite))) return atual;
       return { ...atual, [nome]: valor };
     });
   }
@@ -58,7 +61,7 @@ export default function EditorAtributosPericias(props: Props) {
     <label>Perícia treinada pela Origem<select value={treinada} onChange={e => {setTreinada(e.target.value);setDistribuicao({});}} disabled={ocupado}><option value="">Escolha uma Perícia</option>{(props.origem === 'Amnésico' ? NOMES_PERICIAS : (ORIGENS.find(o => o.nome === props.origem)?.pericias ?? [])).map(p=><option key={p} value={p}>{p}</option>)}</select></label>
     {props.origem === 'Amnésico' && <label>Segunda Perícia da Origem<select value={extra} onChange={e=>{setExtra(e.target.value);setDistribuicao({});}} disabled={ocupado}><option value="">Escolha outra Perícia</option>{NOMES_PERICIAS.filter(p=>p!==treinada).map(p=><option key={p} value={p}>{p}</option>)}</select></label>}
     <strong>Distribuição de Perícias · {gastos}/{limite} pontos</strong>
-    {permitidas.map(nome=>{const gasto=distribuicao[nome]??0;const grau=gasto+(nome===treinada?1:0);return <div className="linha-pericia-lab" key={nome}><span><strong>{nome}</strong><small>{grau===0?'Não Treinada':grau===1?'Treinada':'Mestre'}</small></span><div className="controle-stat"><button type="button" onClick={()=>mudarPericia(nome,-1)} disabled={ocupado||gasto===0}>−</button><b>{gasto}</b><button type="button" onClick={()=>mudarPericia(nome,1)} disabled={ocupado||gasto >= (nome===treinada?1:2)||gastos>=limite}>+</button></div></div>})}
+    {permitidas.map(nome=>{const gasto=distribuicao[nome]??0;const grau=gasto+(nome===treinada?1:0);return <div className="linha-pericia-lab" key={nome}><span><strong>{nome}</strong><small>{grau===0?'Não Treinada':grau===1?'Treinada':'Mestre'}</small></span><div className="controle-stat"><button type="button" onClick={()=>mudarPericia(nome,-1)} disabled={ocupado||(gasto===0&&validas.has(nome))} aria-label={gasto===0?'Remover Perícia incompatível '+nome:'Reduzir grau de '+nome}>−</button><b>{gasto}</b><button type="button" onClick={()=>mudarPericia(nome,1)} disabled={ocupado||gasto >= (nome===treinada?1:2)||gastos>=limite}>+</button></div></div>})}
     {mensagem && <p role="status">{mensagem}</p>}
     <button type="button" className="acao" onClick={salvar} disabled={ocupado}>Salvar alterações <span>→</span></button>
   </div>;
