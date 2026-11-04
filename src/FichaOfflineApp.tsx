@@ -3,7 +3,7 @@ import type { FormEvent } from 'react';
 import FichaLocal from './FichaLocal';
 import { criarFilaSerializada } from './filaSerializada';
 import { criarBackup, lerArquivoBackup, nomeDeCopiaUnico, serializarBackup } from './backupFicha';
-import { adicionarPersonagens, excluirPersonagem, listarPersonagens, salvarPersonagem, substituirPersonagens, type PersonagemLocal } from './persistenciaFicha';
+import { adicionarPersonagens, excluirPersonagem, listarPersonagens, salvarPersonagem, salvarPatchPersonagem, substituirPersonagens, type PersonagemLocal } from './persistenciaFicha';
 
 function agora() { return new Date().toISOString(); }
 function novoId() { return globalThis.crypto?.randomUUID?.() ?? `personagem-${Date.now()}-${Math.random().toString(16).slice(2)}`; }
@@ -82,13 +82,7 @@ export default function FichaOfflineApp() {
       if (!base) return false;
       setStatus('Salvando no dispositivo…'); setErro('');
       try {
-        const atualizado: PersonagemLocal = {
-          ...base,
-          nome: nomeAtualizado?.trim() || base.nome,
-          atualizadoEm: agora(),
-          dados: { ...base.dados, ...patch },
-        };
-        await salvarPersonagem(atualizado);
+        const atualizado = await salvarPatchPersonagem(base.id, patch, base.dados, nomeAtualizado);
         for (const campo of Object.keys(patch)) camposPendentesRef.current.delete(campo);
         const chavesCaracteristicas = ['classe', 'origem', 'armaOperario', 'habilidadeBasica'];
         if (chavesCaracteristicas.some(campo => campo in patch)) secoesNaoSalvasRef.current.delete('Características');
