@@ -169,7 +169,7 @@ export default function FichaOfflineApp() {
           ids.add(id);
           let nome = p.nome;
           if (nomes.has(nome.toLocaleLowerCase())) {
-            let sufixo = 1;
+            let sufixo = 0;
             do { sufixo += 1; nome = `${p.nome} (cópia ${sufixo})`; }
             while (nomes.has(nome.toLocaleLowerCase()));
           }
