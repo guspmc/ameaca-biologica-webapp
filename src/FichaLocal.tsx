@@ -67,7 +67,7 @@ export default function FichaLocal({ nome, mesa, dados, aoFechar, aoEditar, aoSa
   const bi = (classe === 'Agente' ? 8 : classe === 'Autodidata' ? 10 : classe === 'Operador' ? 6 : 0) + numero(atributos.astucia) + (origem === 'Cobaia' ? 2 : 0) + (habilidade?.id === 'parrudo' ? 3 : 0);
   const defesa = 10 + numero(atributos.agilidade) + (origem === 'Policial' ? 2 : 0);
   const capacidade = capacidadeInventario(numero(atributos.forca), origem);
-  const listaPericias = [...new Set([...(PERICIAS_CLASSE[classe] ?? []), ...(dadosOrigem?.pericias ?? []), ...(extra ? [extra] : [])])].sort();
+  const listaPericias = [...new Set([...(PERICIAS_CLASSE[classe] ?? []), ...(dadosOrigem?.pericias ?? []), ...(treinada ? [treinada] : []), ...(extra ? [extra] : []), ...Object.keys(distribuicao)])].sort();
   const itensClasse = caracteristicos(classe);
   const kitSelecionado = typeof ficha.equipamentoInicial === 'string' ? ficha.equipamentoInicial : '';
   const kit = opcoesEquipamento(classe).find(item => item.id === kitSelecionado);
@@ -120,7 +120,7 @@ export default function FichaLocal({ nome, mesa, dados, aoFechar, aoEditar, aoSa
 
         <section id="ficha-local-pericias" className="ficha-local-secao">
           <div className="ficha-local-titulo-secao"><h2><span>02</span> Atributos e Perícias</h2><button type="button" className="ficha-local-editar-secao" onClick={() => aoEditar("pericias")}>Editar seção ↗</button></div>
-          <EditorAtributosPericiasLocal key={JSON.stringify([atributos, treinada, extra, distribuicao])} classe={classe} origem={origem} atributosIniciais={atributos} treinadaInicial={treinada} extraInicial={extra} distribuicaoInicial={distribuicao} aoSalvar={aoSalvarAtributosPericias} mensagemSucesso={origemDados === 'servidor' ? 'Atributos e Perícias confirmados pelo servidor.' : undefined} />
+          <EditorAtributosPericiasLocal key={JSON.stringify([classe, origem, atributos, treinada, extra, distribuicao])} classe={classe} origem={origem} atributosIniciais={atributos} treinadaInicial={treinada} extraInicial={extra} distribuicaoInicial={distribuicao} aoSalvar={aoSalvarAtributosPericias} mensagemSucesso={origemDados === 'servidor' ? 'Atributos e Perícias confirmados pelo servidor.' : undefined} />
           <div className="ficha-local-atributos">
             {ATRIBUTOS.map(item => <div key={item.chave}><small>{item.sigla}</small><strong>{numero(atributos[item.chave])}</strong><span>{item.nome}</span></div>)}
           </div>
