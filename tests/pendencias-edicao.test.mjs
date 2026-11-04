@@ -79,5 +79,5 @@ test('lista bloqueia abertura, exportacao e selecao de backup enquanto uma opera
   const fonte = await ler('FichaOfflineApp.tsx');
   assert.match(fonte, /disabled=\{!personagens.length \|\| ocupado\}>Exportar backup JSON ↓/);
   assert.match(fonte, /type="file"[^>]*disabled=\{ocupado\}/);
-  assert.match(fonte, /onClick=\{\(\) => void abrirPersonagem\(p\.id\)\} disabled=\{ocupado\}/);
+  assert.match(fonte, /onClick=\{\s*\(\)\s*=>\s*void abrirPersonagem\(p\.id\)\}\s*disabled=\{ocupado\}/);
 });
