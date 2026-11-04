@@ -116,3 +116,11 @@ A implementação observada nesta branch, por sua vez, inicia diretamente em `Fi
 Isso é uma diferença arquitetural relevante entre o código atual e o produto especificado no Planejamento v2.0. Este registro não decide se a arquitetura local é uma etapa provisória de desenvolvimento ou uma mudança aprovada de produto. Até existir decisão documentada posterior, não se deve apresentar o fluxo local como implementação completa das regras de rascunho, conta, Mesa, autorização ou sincronização previstas no Planejamento v2.0.
 
 A validação e os testes desta branch devem continuar limitados ao comportamento local efetivamente implementado. A integração futura com conta/Mesa, sincronização, retenção e revogação exige projeto próprio e testes de autorização; não pode ser inferida a partir do IndexedDB local.
+
+## 9. Limites da cobertura de ciclo de vida encontrada
+
+A suíte contém `tests/ciclo-ficha.test.mjs`, mas esse arquivo monta PostgreSQL com PGlite, aplica migrations e propostas SQL, e verifica operações de ciclo de ficha no servidor (arquivamento, assunção, saída, exclusão, proveniência de inventário e autorização). Ele não simula o ciclo de vida da interface React nem o IndexedDB usado pela entrada atual `FichaOfflineApp`.
+
+A cobertura da ficha offline está distribuída por testes de persistência, fila, backup, integridade e verificações estáticas de componentes. Isso oferece evidência útil por unidade, mas ainda não comprova uma sequência integrada de interface: criar → editar várias seções → salvar em ordens diferentes → fechar/reabrir → exportar/importar → excluir.
+
+Não há, nesta branch, evidência de teste automatizado com navegador real para essa sequência, nem teste multiaba que detecte sobrescrita de uma ficha editada simultaneamente em duas abas. Esses pontos permanecem pendentes para homologação e/ou desenho técnico específico.
