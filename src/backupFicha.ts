@@ -3,6 +3,20 @@ import type { PersonagemLocal } from './persistenciaFicha';
 export const FORMATO_BACKUP = 'ameaca-biologica-backup';
 export const VERSAO_BACKUP = 1;
 
+/** Gera um nome de cópia único sem ultrapassar o limite da ficha. */
+export function nomeDeCopiaUnico(nomeOriginal: string, nomesExistentes: Iterable<string>): string {
+  const existentes = new Set([...nomesExistentes].map(nome => nome.trim().toLocaleLowerCase('pt-BR')));
+  let sufixo = 0;
+  let candidato = '';
+  do {
+    sufixo += 1;
+    const complemento = ` (cópia ${sufixo})`;
+    const base = nomeOriginal.trim().slice(0, 80 - complemento.length).trimEnd();
+    candidato = base + complemento;
+  } while (existentes.has(candidato.toLocaleLowerCase('pt-BR')));
+  return candidato;
+}
+
 export type BackupFicha = {
   formato: typeof FORMATO_BACKUP;
   versao: typeof VERSAO_BACKUP;
