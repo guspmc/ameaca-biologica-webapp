@@ -45,3 +45,12 @@ test('entradas alternativas da ficha também protegem edições pendentes ao fec
   assert.match(fonte, /pendenciasInternas\.current\.size > 0/);
   assert.match(fonte, /Há alterações não salvas em:/);
 });
+
+test('navegacao para fora alerta quando existem edicoes locais pendentes', async () => {
+  const fonte = await ler('FichaOfflineApp.tsx');
+  assert.match(fonte, /temEdicoesPendentes/);
+  assert.match(fonte, /window\.addEventListener\('beforeunload', prevenirSaida\)/);
+  assert.match(fonte, /evento\.preventDefault\(\)/);
+  assert.match(fonte, /evento\.returnValue = ''/);
+  assert.match(fonte, /window\.removeEventListener\('beforeunload', prevenirSaida\)/);
+});
