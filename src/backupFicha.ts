@@ -14,7 +14,7 @@ function personagemValido(valor: unknown): valor is PersonagemLocal {
   if (!valor || typeof valor !== 'object' || Array.isArray(valor)) return false;
   const p = valor as Partial<PersonagemLocal>;
   return typeof p.id === 'string' && p.id.trim().length > 0
-    && typeof p.nome === 'string' && p.nome.trim().length > 0
+    && typeof p.nome === 'string' && p.nome.trim().length >= 2 && p.nome.trim().length <= 80
     && typeof p.criadoEm === 'string' && !Number.isNaN(Date.parse(p.criadoEm))
     && typeof p.atualizadoEm === 'string' && !Number.isNaN(Date.parse(p.atualizadoEm))
     && !!p.dados && typeof p.dados === 'object' && !Array.isArray(p.dados);
