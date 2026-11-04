@@ -124,3 +124,10 @@ A suíte contém `tests/ciclo-ficha.test.mjs`, mas esse arquivo monta PostgreSQL
 A cobertura da ficha offline está distribuída por testes de persistência, fila, backup, integridade e verificações estáticas de componentes. Isso oferece evidência útil por unidade, mas ainda não comprova uma sequência integrada de interface: criar → editar várias seções → salvar em ordens diferentes → fechar/reabrir → exportar/importar → excluir.
 
 Não há, nesta branch, evidência de teste automatizado com navegador real para essa sequência, nem teste multiaba que detecte sobrescrita de uma ficha editada simultaneamente em duas abas. Esses pontos permanecem pendentes para homologação e/ou desenho técnico específico.
+
+## 10. Correções preventivas adicionadas após a auditoria
+
+- O editor de Identificação agora mescla os campos conhecidos editados ao objeto narrativo existente, em vez de reconstruí-lo do zero. Isso preserva chaves adicionais já armazenadas. Foi acrescentada uma verificação de regressão no teste de pendências.
+- A lista local agora desabilita a abertura de fichas e a exportação/seleção de backup enquanto uma operação de gravação, exclusão ou importação está em andamento. Isso evita que uma ficha seja aberta durante sua exclusão ou que a importação substitua a lista enquanto o usuário navega para uma ficha.
+
+Essas mudanças foram commitadas na branch de desenvolvimento e aguardam confirmação do CI. Não houve teste humano nem publicação.
