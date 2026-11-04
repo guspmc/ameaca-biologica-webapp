@@ -148,6 +148,59 @@ export async function salvarPersonagem(personagem: PersonagemLocal): Promise<Per
   }
 }
 
+
+/**
+ * Atualiza somente as chaves indicadas, lendo a versão mais recente dentro
+ * da mesma transação readwrite. Conflitos na mesma chave são recusados:
+ * alterações em chaves diferentes podem ser mescladas sem sobrescrita.
+ */
+export async function salvarPatchPersonagem(
+  id: string,
+  patch: Record<string, unknown>,
+  valoresBase: Record<string, unknown>,
+  nomeAtualizado?: string,
+): Promise<PersonagemLocal> {
+  try {
+    const banco = await abrirBanco();
+    const transacao = banco.transaction(STORE_PERSONAGENS, 'readwrite');
+    const store = transacao.objectStore(STORE_PERSONAGENS);
+    const requisicao = store.get(id);
+    let atualizado: PersonagemLocal | null = null;
+    let falha: Error | null = null;
+
+    requisicao.onsuccess = () => {
+      const atual = requisicao.result;
+      if (!validarPersonagem(atual)) {
+        falha = new Error('A ficha não existe mais ou possui formato inválido. Reabra a ficha antes de salvar.');
+        transacao.abort();
+        return;
+      }
+      for (const chave of Object.keys(patch)) {
+        const anterior = Object.prototype.hasOwnProperty.call(valoresBase, chave) ? valoresBase[chave] : undefined;
+        const vigente = Object.prototype.hasOwnProperty.call(atual.dados, chave) ? atual.dados[chave] : undefined;
+        if (JSON.stringify(anterior) !== JSON.stringify(vigente)) {
+          falha = new Error('Esta seção foi alterada em outra aba. Reabra a ficha e reaplique suas alterações para evitar sobrescrever dados.');
+          transacao.abort();
+          return;
+        }
+      }
+      atualizado = {
+        ...atual,
+        nome: nomeAtualizado?.trim() || atual.nome,
+        atualizadoEm: new Date().toISOString(),
+        dados: { ...atual.dados, ...structuredClone(patch) },
+      };
+      store.put(atualizado);
+    };
+
+    await aguardarTransacao(transacao);
+    if (!atualizado) throw falha ?? new Error('Não foi possível confirmar a atualização da ficha.');
+    return atualizado;
+  } catch (erro) {
+    throw mensagemErro(erro);
+  }
+}
+
 export async function excluirPersonagem(id: string): Promise<void> {
   try {
     const banco = await abrirBanco();
