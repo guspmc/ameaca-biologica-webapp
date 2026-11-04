@@ -56,7 +56,7 @@ export default function FichaOfflineApp() {
   async function criar(e: FormEvent) {
     e.preventDefault();
     const nomeLimpo = nome.trim();
-    if (!nomeLimpo || ocupado) return;
+    if (nomeLimpo.length < 2 || nomeLimpo.length > 80 || ocupado) { if (nomeLimpo.length < 2 || nomeLimpo.length > 80) setErro('O nome deve ter entre 2 e 80 caracteres.'); return; }
     setOcupado(true); setErro('');
     const instante = agora();
     const personagem: PersonagemLocal = {
@@ -258,7 +258,7 @@ export default function FichaOfflineApp() {
         </li>)}</ul> : !carregando && <div className="offline-vazio"><span>☣</span><strong>Nenhum registro encontrado</strong><p>Crie sua primeira ficha para começar. Ela ficará salva neste dispositivo.</p></div>}
         <form className="offline-criar" onSubmit={criar}>
           <label htmlFor="novo-personagem">Criar personagem</label>
-          <div><input id="novo-personagem" value={nome} onChange={e=>setNome(e.target.value)} maxLength={80} placeholder="Nome do personagem" required disabled={ocupado || carregando}/><button type="submit" disabled={ocupado || carregando || !nome.trim()}>Criar ficha <span>＋</span></button></div>
+          <div><input id="novo-personagem" value={nome} onChange={e=>setNome(e.target.value)} minLength={2} maxLength={80} placeholder="Nome do personagem" required disabled={ocupado || carregando}/><button type="submit" disabled={ocupado || carregando || !nome.trim()}>Criar ficha <span>＋</span></button></div>
         </form>
       </section>
       <footer className="offline-rodape">ARMAZENAMENTO LOCAL · FAÇA BACKUPS REGULARES · A VERSÃO DESTA FICHA AINDA ESTÁ EM DESENVOLVIMENTO</footer>
