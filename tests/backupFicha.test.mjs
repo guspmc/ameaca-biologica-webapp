@@ -56,10 +56,15 @@ test('rejeita personagens inválidos e identificadores duplicados', () => {
   }), /identificadores duplicados/);
 });
 
-test('rejeita datas inválidas no backup', () => {
+test('datas inválidas no backup são rejeitadas', () => {
   const base = criarBackup([personagem()]);
   assert.throws(() => validarBackup({
     ...base,
     exportadoEm: 'ontem',
   }), /data do backup/);
+});
+
+test('o limite de nome é consistente com a criação: até 80 caracteres', () => {
+  assert.doesNotThrow(() => criarBackup([personagem('p-80', 'A'.repeat(80))]));
+  assert.throws(() => criarBackup([personagem('p-81', 'A'.repeat(81))]), /fichas inválidas/);
 });
