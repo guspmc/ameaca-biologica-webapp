@@ -31,8 +31,8 @@ export default function IdentidadeLocal({ nome: nomeInicial, identidade: identid
   async function salvar(evento: FormEvent<HTMLFormElement>) {
     evento.preventDefault();
     const nomeLimpo = nome.trim();
-    if (nomeLimpo.length < 2 || nomeLimpo.length > 80) {
-      setMensagem('O nome deve ter entre 2 e 80 caracteres.');
+    if (nomeLimpo.length < 2 || nomeLimpo.length > 60) {
+      setMensagem('O nome deve ter entre 2 e 60 caracteres.');
       return;
     }
     const campoInvalido = CAMPOS.find(campo => (dados[campo.id] ?? '').length > campo.limite);
@@ -58,7 +58,7 @@ export default function IdentidadeLocal({ nome: nomeInicial, identidade: identid
     <p>Campos narrativos da personagem. São opcionais e não alteram Atributos ou recursos. Gênero se refere à personagem e auxilia a flexão dos textos da ficha.</p>
     <form className="ficha-local-identidade-form" onSubmit={salvar}>
       <label>Nome da personagem
-        <input value={nome} minLength={2} maxLength={80} required disabled={salvando} onChange={evento => { setNome(evento.target.value); setMensagem(''); }} />
+        <input value={nome} minLength={2} maxLength={60} required disabled={salvando} onChange={evento => { setNome(evento.target.value); setMensagem(''); }} />
       </label>
       {CAMPOS.map(campo => <label key={campo.id}>{campo.nome}
         {campo.limite > 120
