@@ -18,7 +18,9 @@ export default function FichaOfflineApp() {
   const [exclusaoPendente, setExclusaoPendente] = useState<string | null>(null);
   const [backupPendente, setBackupPendente] = useState<ReturnType<typeof lerArquivoBackup> | null>(null);
   const [arquivoInputKey, setArquivoInputKey] = useState(0);
-  const gravacao = useRef(false);
+  const filaGravacao = useRef<Promise<boolean>>(Promise.resolve(true));
+  const selecionadoRef = useRef<PersonagemLocal | null>(selecionado);
+  selecionadoRef.current = selecionado;
 
   async function atualizarLista() {
     const lista = await listarPersonagens();
@@ -58,24 +60,31 @@ export default function FichaOfflineApp() {
   }
 
   async function salvarDados(patch: Record<string, unknown>): Promise<boolean> {
-    if (!selecionado || gravacao.current) return false;
-    gravacao.current = true;
-    setStatus('Salvando no dispositivo…'); setErro('');
-    try {
-      const atualizado: PersonagemLocal = {
-        ...selecionado,
-        atualizadoEm: agora(),
-        dados: { ...selecionado.dados, ...patch },
-      };
-      await salvarPersonagem(atualizado);
-      setSelecionado(atualizado);
-      setPersonagens(lista => lista.map(p => p.id === atualizado.id ? atualizado : p).sort((a,b) => b.atualizadoEm.localeCompare(a.atualizadoEm)));
-      setStatus('Salvo neste dispositivo.');
-      return true;
-    } catch (e) {
-      setErro(e instanceof Error ? e.message : 'Falha ao salvar.'); setStatus('Não foi possível confirmar o salvamento.');
-      return false;
-    } finally { gravacao.current = false; }
+    // Serializa gravações rápidas para não descartar patches concorrentes.
+    const operacao = filaGravacao.current.catch(() => false).then(async () => {
+      const base = selecionadoRef.current;
+      if (!base) return false;
+      setStatus('Salvando no dispositivo…'); setErro('');
+      try {
+        const atualizado: PersonagemLocal = {
+          ...base,
+          atualizadoEm: agora(),
+          dados: { ...base.dados, ...patch },
+        };
+        await salvarPersonagem(atualizado);
+        selecionadoRef.current = atualizado;
+        setSelecionado(atualizado);
+        setPersonagens(lista => lista.map(p => p.id === atualizado.id ? atualizado : p).sort((a,b) => b.atualizadoEm.localeCompare(a.atualizadoEm)));
+        setStatus('Salvo neste dispositivo.');
+        return true;
+      } catch (e) {
+        setErro(e instanceof Error ? e.message : 'Falha ao salvar.');
+        setStatus('Não foi possível confirmar o salvamento.');
+        return false;
+      }
+    });
+    filaGravacao.current = operacao;
+    return operacao;
   }
 
   async function excluirDaLista(id: string) {
