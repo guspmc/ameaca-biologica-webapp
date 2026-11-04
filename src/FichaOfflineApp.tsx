@@ -87,10 +87,20 @@ export default function FichaOfflineApp() {
     return operacao;
   }
 
+  async function fecharFicha() {
+    setStatus('Concluindo salvamentos pendentes…');
+    await filaGravacao.current;
+    selecionadoRef.current = null;
+    setSelecionado(null);
+    setExclusaoPendente(null);
+    setStatus('Ficha fechada. Alterações confirmadas no dispositivo.');
+  }
+
   async function excluirDaLista(id: string) {
     if (ocupado) return;
     setOcupado(true); setErro('');
     try {
+      await filaGravacao.current;
       await excluirPersonagem(id);
       setExclusaoPendente(null);
       await atualizarLista();
@@ -119,6 +129,7 @@ export default function FichaOfflineApp() {
     if (!backupPendente || ocupado) return;
     setOcupado(true); setErro('');
     try {
+      await filaGravacao.current;
       if (modo === 'substituir') {
         await substituirPersonagens(backupPendente.personagens);
       } else {
@@ -170,7 +181,7 @@ export default function FichaOfflineApp() {
 
   if (selecionado) return <FichaLocal
     nome={selecionado.nome} mesa="DISPOSITIVO LOCAL" dados={selecionado.dados}
-    aoFechar={() => { setSelecionado(null); setExclusaoPendente(null); }}
+    aoFechar={() => { void fecharFicha(); }}
     aoEditar={secao => document.getElementById(secao === 'caracteristicas' ? 'ficha-local-caracteristicas' : secao === 'pericias' ? 'ficha-local-pericias' : 'ficha-local-inventario')?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
     aoSalvarCaracteristicas={salvarDados}
     aoSalvarAtributosPericias={salvarDados}
