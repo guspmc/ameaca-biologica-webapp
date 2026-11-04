@@ -124,12 +124,19 @@ export default function FichaOfflineApp() {
       } else {
         const existentes = await listarPersonagens();
         const ids = new Set(existentes.map(p => p.id));
+        const nomes = new Set(existentes.map(p => p.nome.toLocaleLowerCase()));
         const copias = backupPendente.personagens.map(p => {
-          const nomeJaExiste = existentes.some(atual => atual.id === p.id || atual.nome.toLocaleLowerCase() === p.nome.toLocaleLowerCase());
           let id = novoId();
           while (ids.has(id)) id = novoId();
           ids.add(id);
-          return { ...p, id, nome: nomeJaExiste ? p.nome + ' (cópia)' : p.nome };
+          let nome = p.nome;
+          if (nomes.has(nome.toLocaleLowerCase())) {
+            let sufixo = 1;
+            do { sufixo += 1; nome = `${p.nome} (cópia ${sufixo})`; }
+            while (nomes.has(nome.toLocaleLowerCase()));
+          }
+          nomes.add(nome.toLocaleLowerCase());
+          return { ...p, id, nome };
         });
         await adicionarPersonagens(copias);
       }
@@ -137,7 +144,7 @@ export default function FichaOfflineApp() {
       setSelecionado(null);
       setBackupPendente(null);
       setStatus(modo === 'substituir' ? 'Backup restaurado. O conjunto local foi substituído.' : 'Cópias importadas e gravadas neste dispositivo.');
-      if (lista.length && modo === 'copias') setSelecionado(lista[0]);
+
     } catch (e) {
       setErro(e instanceof Error ? e.message : 'Falha ao importar backup.');
       setStatus('A importação não foi confirmada.');
@@ -153,8 +160,10 @@ export default function FichaOfflineApp() {
       const link = document.createElement('a');
       link.href = url;
       link.download = `ameaca-biologica-backup-${new Date().toISOString().slice(0,10)}.json`;
+      document.body.appendChild(link);
       link.click();
-      URL.revokeObjectURL(url);
+      link.remove();
+      window.setTimeout(() => URL.revokeObjectURL(url), 1000);
       setStatus('Arquivo de backup preparado para download.');
     } catch (e) { setErro(e instanceof Error ? e.message : 'Não foi possível exportar o backup.'); }
   }
