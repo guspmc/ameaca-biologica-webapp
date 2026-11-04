@@ -61,3 +61,11 @@ test('alterar a prévia depois de aplicá-la invalida o plano aplicado', async (
   assert.match(fonte, /setPlanoAplicado\(true\)/);
   assert.match(fonte, /kit === 'C' && !planoAplicado/);
 });
+
+test('a confirmação local de salvamento limpa a seção correspondente antes do fechamento', async () => {
+  const fonte = await ler('FichaOfflineApp.tsx');
+  assert.match(fonte, /secoesNaoSalvasRef\.current\.delete\('Características'\)/);
+  assert.match(fonte, /secoesNaoSalvasRef\.current\.delete\('Atributos e Perícias'\)/);
+  assert.match(fonte, /secoesNaoSalvasRef\.current\.delete\('Identificação'\)/);
+  assert.match(fonte, /secoesNaoSalvasRef\.current\.delete\('Inventário'\)/);
+});
