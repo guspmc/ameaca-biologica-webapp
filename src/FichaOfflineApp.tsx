@@ -16,6 +16,7 @@ export default function FichaOfflineApp() {
   const [ocupado, setOcupado] = useState(false);
   const [status, setStatus] = useState('Carregando fichas deste dispositivo…');
   const [erro, setErro] = useState('');
+  const [temEdicoesPendentes, setTemEdicoesPendentes] = useState(false);
   const [exclusaoPendente, setExclusaoPendente] = useState<string | null>(null);
   const [backupPendente, setBackupPendente] = useState<ReturnType<typeof lerArquivoBackup> | null>(null);
   const [arquivoInputKey, setArquivoInputKey] = useState(0);
@@ -24,6 +25,16 @@ export default function FichaOfflineApp() {
   const secoesNaoSalvasRef = useRef(new Set<string>());
   const selecionadoRef = useRef<PersonagemLocal | null>(selecionado);
   selecionadoRef.current = selecionado;
+
+  useEffect(() => {
+    if (!temEdicoesPendentes) return;
+    function prevenirSaida(evento: BeforeUnloadEvent) {
+      evento.preventDefault();
+      evento.returnValue = '';
+    }
+    window.addEventListener('beforeunload', prevenirSaida);
+    return () => window.removeEventListener('beforeunload', prevenirSaida);
+  }, [temEdicoesPendentes]);
 
   async function atualizarLista() {
     const lista = await listarPersonagens();
@@ -56,6 +67,7 @@ export default function FichaOfflineApp() {
       await salvarPersonagem(personagem);
       await atualizarLista();
       secoesNaoSalvasRef.current.clear();
+      setTemEdicoesPendentes(false);
       setSelecionado(personagem);
       setNome('');
       setStatus('Ficha criada e gravada neste dispositivo.');
@@ -96,6 +108,7 @@ export default function FichaOfflineApp() {
   function registrarPendencia(secao: string, pendente: boolean) {
     if (pendente) secoesNaoSalvasRef.current.add(secao);
     else secoesNaoSalvasRef.current.delete(secao);
+    setTemEdicoesPendentes(secoesNaoSalvasRef.current.size > 0 || camposPendentesRef.current.size > 0);
   }
 
   async function fecharFicha() {
@@ -117,6 +130,7 @@ export default function FichaOfflineApp() {
       descartouAlteracoes = true;
     }
     secoesNaoSalvasRef.current.clear();
+    setTemEdicoesPendentes(false);
     selecionadoRef.current = null;
     setSelecionado(null);
     setExclusaoPendente(null);
