@@ -193,7 +193,11 @@ export async function salvarPatchPersonagem(
       store.put(atualizado);
     };
 
-    await aguardarTransacao(transacao);
+    try {
+      await aguardarTransacao(transacao);
+    } catch (erroTransacao) {
+      throw falha ?? erroTransacao;
+    }
     if (!atualizado) throw falha ?? new Error('Não foi possível confirmar a atualização da ficha.');
     return atualizado;
   } catch (erro) {
