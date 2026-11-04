@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import type { FormEvent } from 'react';
 import FichaLocal from './FichaLocal';
 import { criarFilaSerializada } from './filaSerializada';
-import { criarBackup, lerArquivoBackup, serializarBackup } from './backupFicha';
+import { criarBackup, lerArquivoBackup, nomeDeCopiaUnico, serializarBackup } from './backupFicha';
 import { adicionarPersonagens, excluirPersonagem, listarPersonagens, salvarPersonagem, substituirPersonagens, type PersonagemLocal } from './persistenciaFicha';
 
 function agora() { return new Date().toISOString(); }
@@ -181,13 +181,10 @@ export default function FichaOfflineApp() {
           let id = novoId();
           while (ids.has(id)) id = novoId();
           ids.add(id);
-          let nome = p.nome;
-          if (nomes.has(nome.toLocaleLowerCase())) {
-            let sufixo = 0;
-            do { sufixo += 1; nome = `${p.nome} (cópia ${sufixo})`; }
-            while (nomes.has(nome.toLocaleLowerCase()));
-          }
-          nomes.add(nome.toLocaleLowerCase());
+          const nome = nomes.has(p.nome.toLocaleLowerCase('pt-BR'))
+            ? nomeDeCopiaUnico(p.nome, nomes)
+            : p.nome;
+          nomes.add(nome.toLocaleLowerCase('pt-BR'));
           return { ...p, id, nome };
         });
         await adicionarPersonagens(copias);
