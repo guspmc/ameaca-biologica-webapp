@@ -38,3 +38,15 @@ test('recupera o conteúdo de um backup importado com todos os campos aninhados'
   const recuperado = lerArquivoBackup(serializarBackup(criarBackup([original])));
   assert.deepEqual(recuperado.personagens[0], original);
 });
+
+test('backup preserva os campos narrativos da identidade sem achatá-los', () => {
+  const original = ficha();
+  original.dados.identidade = {
+    idade: '31', genero: 'Feminino', ocupacao: 'Médica',
+    apelido: 'Claire', afiliacao: 'R.P.D.', aparencia: 'Cabelos castanhos',
+    personalidade: 'Corajosa', objetivo: 'Encontrar sobreviventes',
+    medo: 'Perder os amigos', lacos: 'Chris', historia: 'História de exemplo',
+  };
+  const recuperado = lerArquivoBackup(serializarBackup(criarBackup([original])));
+  assert.deepEqual(recuperado.personagens[0].dados.identidade, original.dados.identidade);
+});
