@@ -106,3 +106,13 @@ Antes de endurecer a validação, definir um contrato versionado para os dados i
 - tenha testes para rascunho vazio, cada seção isolada, ficha com todas as seções, dados antigos e campos futuros desconhecidos.
 
 **Nenhuma validação nova foi introduzida por este documento.** A proposta depende de revisão e testes antes de qualquer implementação.
+
+## 8. Divergência de escopo a acompanhar
+
+O Planejamento v2.0 descreve rascunhos privados por conta e por Mesa, salvamento automático no servidor e regras de retenção associadas à entrada, saída, remoção e encerramento da Mesa. Também define o offline de segurança como leitura previamente armazenada e escrita de anotações pessoais, sem alteração offline de estados compartilhados.
+
+A implementação observada nesta branch, por sua vez, inicia diretamente em `FichaOfflineApp`, cria fichas locais no IndexedDB sem contexto de conta/Mesa e permite editar localmente as seções da ficha em estado de rascunho.
+
+Isso é uma diferença arquitetural relevante entre o código atual e o produto especificado no Planejamento v2.0. Este registro não decide se a arquitetura local é uma etapa provisória de desenvolvimento ou uma mudança aprovada de produto. Até existir decisão documentada posterior, não se deve apresentar o fluxo local como implementação completa das regras de rascunho, conta, Mesa, autorização ou sincronização previstas no Planejamento v2.0.
+
+A validação e os testes desta branch devem continuar limitados ao comportamento local efetivamente implementado. A integração futura com conta/Mesa, sincronização, retenção e revogação exige projeto próprio e testes de autorização; não pode ser inferida a partir do IndexedDB local.
