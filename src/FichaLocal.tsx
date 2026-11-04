@@ -10,6 +10,7 @@ import EditorAtributosPericiasLocal from './EditorAtributosPericiasLocal';
 import EditorCaracteristicasLocal from './EditorCaracteristicasLocal';
 import EditorInventarioLocal from './EditorInventarioLocal';
 import IdentidadeLocal from './IdentidadeLocal';
+import { classePersonagem, termoPersonagem } from './textoPersonagem';
 
 type DadosFichaLocal = {
   classe?: unknown;
@@ -54,6 +55,8 @@ export default function FichaLocal({ nome, mesa, dados, aoFechar, aoEditar, aoSa
   const ficha = dados as DadosFichaLocal;
   const classe = typeof ficha.classe === 'string' ? ficha.classe : '';
   const origem = typeof ficha.origem === 'string' ? ficha.origem : '';
+  const genero = typeof (ficha.identidade as Record<string, unknown> | undefined)?.genero === 'string' ? (ficha.identidade as Record<string, string>).genero : undefined;
+  const termo = (valor: string) => termoPersonagem(valor, genero);
   const atributos = ficha.atributos && typeof ficha.atributos === 'object'
     ? ficha.atributos as AtributosIniciais
     : { forca: 1, agilidade: 1, vigor: 1, astucia: 1 };
@@ -96,9 +99,9 @@ export default function FichaLocal({ nome, mesa, dados, aoFechar, aoEditar, aoSa
       </header>
       <div className="ficha-local-corpo">
         <div className="ficha-local-identidade">
-          <span>REGISTRO DO SOBREVIVENTE · {mesa || 'MESA LOCAL'}</span>
+          <span>{termo('REGISTRO DO SOBREVIVENTE')} · {mesa || 'MESA LOCAL'}</span>
           <h1 id="ficha-local-titulo">{nome}</h1>
-          <p>{classe || 'Classe pendente'} · {origem || 'Origem pendente'} · Nível 1 (criação)</p>
+          <p>{classePersonagem(classe || null, genero)} · {termo(origem || 'Origem pendente')} · Nível 1 (criação)</p>
           {origem === 'Operário' && typeof ficha.armaOperario === 'string' && <small>Arma escolhida: {ficha.armaOperario}</small>}
         </div>
 
@@ -122,8 +125,8 @@ export default function FichaLocal({ nome, mesa, dados, aoFechar, aoEditar, aoSa
           <EditorCaracteristicasLocal key={JSON.stringify([classe, origem, ficha.armaOperario, ficha.habilidadeBasica, kitSelecionado])} iniciais={{ classe, origem, armaOperario: typeof ficha.armaOperario === 'string' ? ficha.armaOperario : '', habilidadeBasica: typeof ficha.habilidadeBasica === 'string' ? ficha.habilidadeBasica : '', equipamentoInicial: kitSelecionado }} aoSalvar={aoSalvarCaracteristicas} mensagemSucesso={origemDados === 'servidor' ? 'Características confirmadas pelo servidor.' : undefined} />
           {aoSalvarIdentidade && <IdentidadeLocal key={JSON.stringify([nome, ficha.identidade])} nome={nome} identidade={(ficha.identidade as Record<string, string>) ?? {}} aoSalvar={aoSalvarIdentidade} />}
           <div className="ficha-local-grade">
-            <div><small>CLASSE</small><strong>{classe || 'Pendente'}</strong><p>{dadosClasse?.identidade ?? 'Dados da Classe ainda não definidos.'}</p></div>
-            <div><small>ORIGEM</small><strong>{origem || 'Pendente'}</strong><p>{dadosOrigem?.beneficio ?? 'Benefício da Origem ainda não definido.'}</p></div>
+            <div><small>CLASSE</small><strong>{classePersonagem(classe || null, genero)}</strong><p>{dadosClasse?.identidade ?? 'Dados da Classe ainda não definidos.'}</p></div>
+            <div><small>ORIGEM</small><strong>{termo(origem || 'Pendente')}</strong><p>{dadosOrigem?.beneficio ?? 'Benefício da Origem ainda não definido.'}</p></div>
             <div><small>RAMOS DA CLASSE</small><strong>{ramo.length ? ramo.join(' · ') : 'Pendente'}</strong><p>Ramos disponíveis para desenvolvimento futuro. Nenhum foi escolhido nesta etapa.</p></div>
             <div><small>PROFICIÊNCIAS</small><strong>{dadosClasse?.proficiencias.length ?? 0} registros</strong><p>{dadosClasse?.proficiencias.join(' · ') ?? 'Pendente'}</p></div>
           </div>
