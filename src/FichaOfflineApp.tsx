@@ -21,6 +21,7 @@ export default function FichaOfflineApp() {
   const [arquivoInputKey, setArquivoInputKey] = useState(0);
   const filaGravacao = useRef(criarFilaSerializada());
   const camposPendentesRef = useRef(new Set<string>());
+  const secoesNaoSalvasRef = useRef(new Set<string>());
   const selecionadoRef = useRef<PersonagemLocal | null>(selecionado);
   selecionadoRef.current = selecionado;
 
@@ -54,6 +55,7 @@ export default function FichaOfflineApp() {
     try {
       await salvarPersonagem(personagem);
       await atualizarLista();
+      secoesNaoSalvasRef.current.clear();
       setSelecionado(personagem);
       setNome('');
       setStatus('Ficha criada e gravada neste dispositivo.');
@@ -91,6 +93,11 @@ export default function FichaOfflineApp() {
     return operacao;
   }
 
+  function registrarPendencia(secao: string, pendente: boolean) {
+    if (pendente) secoesNaoSalvasRef.current.add(secao);
+    else secoesNaoSalvasRef.current.delete(secao);
+  }
+
   async function fecharFicha() {
     setStatus('Concluindo salvamentos pendentes…');
     await filaGravacao.current.aguardar();
@@ -99,6 +106,15 @@ export default function FichaOfflineApp() {
       setStatus('Fechamento interrompido: há alterações não confirmadas.');
       return;
     }
+    if (secoesNaoSalvasRef.current.size > 0) {
+      const secoes = [...secoesNaoSalvasRef.current];
+      const descartar = window.confirm('Há alterações ainda não salvas em: ' + secoes.join(', ') + '.\\n\\nSe fechar agora, essas alterações serão descartadas. Deseja fechar mesmo assim?');
+      if (!descartar) {
+        setStatus('Ficha mantida aberta. Salve as alterações ou feche quando estiver pronto.');
+        return;
+      }
+    }
+    secoesNaoSalvasRef.current.clear();
     selecionadoRef.current = null;
     setSelecionado(null);
     setExclusaoPendente(null);
@@ -191,6 +207,7 @@ export default function FichaOfflineApp() {
   if (selecionado) return <FichaLocal
     nome={selecionado.nome} mesa="DISPOSITIVO LOCAL" dados={selecionado.dados}
     aoFechar={() => { void fecharFicha(); }}
+    aoAlterarPendencia={registrarPendencia}
     aoEditar={secao => document.getElementById(secao === 'caracteristicas' ? 'ficha-local-caracteristicas' : secao === 'pericias' ? 'ficha-local-pericias' : 'ficha-local-inventario')?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
     aoSalvarCaracteristicas={salvarDados}
     aoSalvarIdentidade={({ nome, identidade }) => salvarDados({ identidade }, nome)}
