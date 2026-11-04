@@ -6,7 +6,7 @@ const ler = async caminho => readFile(new URL('../src/' + caminho, import.meta.u
 
 test('a ficha offline usa o gênero declarado apenas para flexões previstas', async () => {
   const ficha = await ler('FichaLocal.tsx');
-  assert.match(ficha, /import \\{ classePersonagem, termoPersonagem \\} from '.\\/textoPersonagem'/);
+  assert.match(ficha, /import \{ classePersonagem, termoPersonagem \} from '.\/textoPersonagem'/);
   assert.match(ficha, /classePersonagem\(classe \|\| null, genero\)/);
   assert.match(ficha, /termo\('REGISTRO DO SOBREVIVENTE'\)/);
   assert.match(ficha, /termo\(origem \|\| 'Pendente'\)/);
@@ -23,7 +23,7 @@ test('o editor narrativo mantém os campos opcionais e envia nome e identidade n
   assert.match(ficha, /<IdentidadeLocal/);
   assert.doesNotMatch(ficha, /<IdentidadeLocal key=/);
   assert.match(app, /aoSalvarIdentidade=\{\(\{ nome, identidade \}\) => salvarDados\(\{ identidade \}, nome\)\}/);
-  assert.match(app, /nome: nomeAtualizado\\?\\.trim\\(\\) \\|\\| atual\\.nome/);
+  assert.match(app, /nome: nomeAtualizado\?\.trim\(\) \|\| atual\.nome/);
 });
 
 test('a identidade é armazenada nos dados locais sem alterar o esquema do IndexedDB', async () => {
