@@ -29,26 +29,22 @@ export default function EditorAtributosPericias(props: Props) {
   const gastos = pontosGastosPericias(distribuicao);
   const limite = PONTOS_CLASSE[props.classe] ?? 0;
   function mudarAtributo(chave: keyof AtributosIniciais, delta: -1 | 1) {
-    setAtributos(atual => {
-      const valor = atual[chave] + delta;
-      if (valor < 0 || valor > 3 || (delta === 1 && pontosRestantesAtributos(atual) <= 0)) return atual;
-      if (valor === 0 && Object.entries(atual).some(([k,v]) => k !== chave && v === 0)) return atual;
-      props.aoAlterarPendencia(true);
-      return { ...atual, [chave]: valor };
-    });
+    const valor = atributos[chave] + delta;
+    if (valor < 0 || valor > 3 || (delta === 1 && pontosRestantesAtributos(atributos) <= 0)) return;
+    if (valor === 0 && Object.entries(atributos).some(([k,v]) => k !== chave && v === 0)) return;
+    setAtributos({ ...atributos, [chave]: valor });
+    props.aoAlterarPendencia(true);
   }
   function mudarPericia(nome: string, delta: -1 | 1) {
-    setDistribuicao(atual => {
-      const valor = (atual[nome] ?? 0) + delta;
-      const maximo = nome === treinada ? 1 : 2;
-      if (delta === 1 && (!validas.has(nome) || pontosGastosPericias(atual) >= limite)) return atual;
-      if (valor < 0 || valor > maximo) return atual;
-      const proxima = { ...atual };
-      if (valor === 0) delete proxima[nome];
-      else proxima[nome] = valor;
-      props.aoAlterarPendencia(true);
-      return proxima;
-    });
+    const valor = (distribuicao[nome] ?? 0) + delta;
+    const maximo = nome === treinada ? 1 : 2;
+    if (delta === 1 && (!validas.has(nome) || pontosGastosPericias(distribuicao) >= limite)) return;
+    if (valor < 0 || valor > maximo) return;
+    const proxima = { ...distribuicao };
+    if (valor === 0) delete proxima[nome];
+    else proxima[nome] = valor;
+    setDistribuicao(proxima);
+    props.aoAlterarPendencia(true);
   }
   async function salvar() {
     if (!atributosIniciaisValidos(atributos)) { setMensagem('A distribuição dos Atributos não é válida.'); return; }
