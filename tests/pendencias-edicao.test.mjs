@@ -69,3 +69,8 @@ test('a confirmação local de salvamento limpa a seção correspondente antes d
   assert.match(fonte, /secoesNaoSalvasRef\.current\.delete\('Identificação'\)/);
   assert.match(fonte, /secoesNaoSalvasRef\.current\.delete\('Inventário'\)/);
 });
+
+test('salvar Identificação preserva chaves futuras já existentes no objeto narrativo', async () => {
+  const fonte = await ler('IdentidadeLocal.tsx');
+  assert.match(fonte, /const identidade = \{ \.\.\.identidadeInicial, \.\.\.Object\.fromEntries\(CAMPOS\.map/);
+});
