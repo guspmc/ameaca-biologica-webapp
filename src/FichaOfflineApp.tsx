@@ -82,7 +82,7 @@ export default function FichaOfflineApp() {
       if (!base) return false;
       setStatus('Salvando no dispositivo…'); setErro('');
       try {
-        const atualizado = await salvarPatchPersonagem(base.id, patch, base.dados, nomeAtualizado);
+        const atualizado = await salvarPatchPersonagem(base.id, patch, base.dados, nomeAtualizado, base.nome);
         for (const campo of Object.keys(patch)) camposPendentesRef.current.delete(campo);
         const chavesCaracteristicas = ['classe', 'origem', 'armaOperario', 'habilidadeBasica'];
         if (chavesCaracteristicas.some(campo => campo in patch)) secoesNaoSalvasRef.current.delete('Características');
