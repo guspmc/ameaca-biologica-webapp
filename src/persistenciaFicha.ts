@@ -20,7 +20,7 @@ function validarPersonagem(valor: unknown): valor is PersonagemLocal {
   if (!valor || typeof valor !== 'object' || Array.isArray(valor)) return false;
   const item = valor as Partial<PersonagemLocal>;
   return typeof item.id === 'string' && item.id.trim().length > 0
-    && typeof item.nome === 'string' && item.nome.trim().length > 0
+    && typeof item.nome === 'string' && item.nome.trim().length >= 2 && item.nome.trim().length <= 80
     && typeof item.criadoEm === 'string' && !Number.isNaN(Date.parse(item.criadoEm))
     && typeof item.atualizadoEm === 'string' && !Number.isNaN(Date.parse(item.atualizadoEm))
     && !!item.dados && typeof item.dados === 'object' && !Array.isArray(item.dados);
@@ -60,11 +60,8 @@ function abrirBanco(): Promise<IDBDatabase> {
       const banco = requisicao.result;
       banco.onversionchange = () => {
         banco.close();
-        // Uma conexão antiga não pode invalidar uma abertura mais recente.
         if (abertura === promessa) abertura = null;
       };
-      // Se outra aba bloqueou a abertura e depois liberou o banco, não
-      // deixamos uma conexão tardia aberta sem referência no módulo.
       if (aberturaBloqueada) {
         banco.close();
         return;
@@ -139,7 +136,7 @@ export async function obterPersonagem(id: string): Promise<PersonagemLocal | nul
 }
 
 export async function salvarPersonagem(personagem: PersonagemLocal): Promise<PersonagemLocal> {
-  if (!validarPersonagem(personagem)) throw new Error('Ficha inválida. Revise nome, identificador, datas e dados antes de salvar.');
+  if (!validarPersonagem(personagem)) throw new Error('Ficha inválida. Revise nome (2 a 80 caracteres), identificador, datas e dados antes de salvar.');
   try {
     const banco = await abrirBanco();
     const transacao = banco.transaction(STORE_PERSONAGENS, 'readwrite');
@@ -162,7 +159,6 @@ export async function excluirPersonagem(id: string): Promise<void> {
   }
 }
 
-/** Substituição atômica usada na restauração de backup. */
 export async function substituirPersonagens(personagens: PersonagemLocal[]): Promise<void> {
   if (!Array.isArray(personagens) || !personagens.every(validarPersonagem)
     || new Set(personagens.map(item => item.id)).size !== personagens.length) {
@@ -186,7 +182,6 @@ export function fecharBancoFicha(): void {
   abertura = null;
 }
 
-/** Adiciona um lote inteiro em uma única transação, sem apagar fichas existentes. */
 export async function adicionarPersonagens(personagens: PersonagemLocal[]): Promise<void> {
   if (!Array.isArray(personagens) || !personagens.every(validarPersonagem)
     || new Set(personagens.map(item => item.id)).size !== personagens.length) {
