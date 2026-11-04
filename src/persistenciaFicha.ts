@@ -5,21 +5,27 @@
  * autenticação, Supabase, fetch, servidor ou qualquer transporte de rede.
  */
 export const BANCO_FICHA = 'ameaca-biologica-ficha';
-export const VERSAO_BANCO_FICHA = 1;
+export const VERSAO_BANCO_FICHA = 2;
 export const STORE_PERSONAGENS = 'personagens';
 
 export type PersonagemLocal = {
   id: string;
+  geracao: string;
   nome: string;
   criadoEm: string;
   atualizadoEm: string;
   dados: Record<string, unknown>;
 };
 
+function novoTokenGeracao(): string {
+  return globalThis.crypto?.randomUUID?.() ?? `geracao-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+}
+
 function validarPersonagem(valor: unknown): valor is PersonagemLocal {
   if (!valor || typeof valor !== 'object' || Array.isArray(valor)) return false;
   const item = valor as Partial<PersonagemLocal>;
   return typeof item.id === 'string' && item.id.trim().length > 0
+    && typeof item.geracao === 'string' && item.geracao.trim().length > 0
     && typeof item.nome === 'string' && item.nome.trim().length >= 2 && item.nome.trim().length <= 80
     && typeof item.criadoEm === 'string' && !Number.isNaN(Date.parse(item.criadoEm))
     && typeof item.atualizadoEm === 'string' && !Number.isNaN(Date.parse(item.atualizadoEm))
@@ -49,11 +55,27 @@ function abrirBanco(): Promise<IDBDatabase> {
   let promessa: Promise<IDBDatabase>;
 
   promessa = new Promise((resolve, reject) => {
-    requisicao.onupgradeneeded = () => {
+    requisicao.onupgradeneeded = evento => {
       const banco = requisicao.result;
+      let store: IDBObjectStore;
       if (!banco.objectStoreNames.contains(STORE_PERSONAGENS)) {
-        const store = banco.createObjectStore(STORE_PERSONAGENS, { keyPath: 'id' });
+        store = banco.createObjectStore(STORE_PERSONAGENS, { keyPath: 'id' });
         store.createIndex('atualizadoEm', 'atualizadoEm', { unique: false });
+      } else {
+        store = requisicao.transaction!.objectStore(STORE_PERSONAGENS);
+      }
+      // Migração transparente: fichas anteriores recebem uma geração inicial.
+      if ((evento as IDBVersionChangeEvent).oldVersion < 2) {
+        const cursor = store.openCursor();
+        cursor.onsuccess = () => {
+          const atual = cursor.result;
+          if (!atual) return;
+          const registro = atual.value as Record<string, unknown>;
+          if (typeof registro.geracao !== 'string' || !registro.geracao) {
+            atual.update({ ...registro, geracao: novoTokenGeracao() });
+          }
+          atual.continue();
+        };
       }
     };
     requisicao.onsuccess = () => {
@@ -160,6 +182,7 @@ export async function salvarPatchPersonagem(
   valoresBase: Record<string, unknown>,
   nomeAtualizado?: string,
   nomeBase?: string,
+  geracaoBase?: string,
 ): Promise<PersonagemLocal> {
   try {
     const banco = await abrirBanco();
@@ -173,6 +196,11 @@ export async function salvarPatchPersonagem(
       const atual = requisicao.result;
       if (!validarPersonagem(atual)) {
         falha = new Error('A ficha não existe mais ou possui formato inválido. Reabra a ficha antes de salvar.');
+        transacao.abort();
+        return;
+      }
+      if (geracaoBase !== undefined && atual.geracao !== geracaoBase) {
+        falha = new Error('A ficha foi substituída por uma restauração ou alteração em outra aba. Recarregue a ficha antes de salvar.');
         transacao.abort();
         return;
       }
@@ -232,7 +260,7 @@ export async function substituirPersonagens(personagens: PersonagemLocal[]): Pro
     const transacao = banco.transaction(STORE_PERSONAGENS, 'readwrite');
     const store = transacao.objectStore(STORE_PERSONAGENS);
     store.clear();
-    for (const personagem of personagens) store.put(structuredClone(personagem));
+    for (const personagem of personagens) store.put({ ...structuredClone(personagem), geracao: novoTokenGeracao() });
     await aguardarTransacao(transacao);
   } catch (erro) {
     throw mensagemErro(erro);
@@ -254,7 +282,7 @@ export async function adicionarPersonagens(personagens: PersonagemLocal[]): Prom
     const banco = await abrirBanco();
     const transacao = banco.transaction(STORE_PERSONAGENS, 'readwrite');
     const store = transacao.objectStore(STORE_PERSONAGENS);
-    for (const personagem of personagens) store.add(structuredClone(personagem));
+    for (const personagem of personagens) store.add({ ...structuredClone(personagem), geracao: novoTokenGeracao() });
     await aguardarTransacao(transacao);
   } catch (erro) {
     throw mensagemErro(erro);
