@@ -108,7 +108,7 @@ export default function FichaOfflineApp() {
     }
     if (secoesNaoSalvasRef.current.size > 0) {
       const secoes = [...secoesNaoSalvasRef.current];
-      const descartar = window.confirm('Há alterações ainda não salvas em: ' + secoes.join(', ') + '.\\n\\nSe fechar agora, essas alterações serão descartadas. Deseja fechar mesmo assim?');
+      const descartar = window.confirm('Há alterações ainda não salvas em: ' + secoes.join(', ') + '.\n\nSe fechar agora, essas alterações serão descartadas. Deseja fechar mesmo assim?');
       if (!descartar) {
         setStatus('Ficha mantida aberta. Salve as alterações ou feche quando estiver pronto.');
         return;
