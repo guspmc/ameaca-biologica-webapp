@@ -54,3 +54,10 @@ test('navegacao para fora alerta quando existem edicoes locais pendentes', async
   assert.match(fonte, /evento\.returnValue = ''/);
   assert.match(fonte, /window\.removeEventListener\('beforeunload', prevenirSaida\)/);
 });
+
+test('alterar a prévia depois de aplicá-la invalida o plano aplicado', async () => {
+  const fonte = await ler('EditorInventarioLocal.tsx');
+  assert.match(fonte, /aoAlterarPendencia=\{pendente => \{ aoAlterarPendencia\(pendente\); if \(pendente\) setPlanoAplicado\(false\); \}\}/);
+  assert.match(fonte, /setPlanoAplicado\(true\)/);
+  assert.match(fonte, /kit === 'C' && !planoAplicado/);
+});
