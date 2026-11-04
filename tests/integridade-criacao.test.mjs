@@ -6,8 +6,8 @@ const ler = async caminho => readFile(new URL('../src/' + caminho, import.meta.u
 
 test('trocar Treinamento ou segunda Perícia preserva os pontos distribuídos', async () => {
   const fonte = await ler('EditorAtributosPericiasLocal.tsx');
-  assert.match(fonte, /setTreinada\(e\.target\.value\);setMensagem/);
-  assert.match(fonte, /setExtra\(e\.target\.value\);setMensagem/);
+  assert.match(fonte, /setTreinada\(e\.target\.value\);props\.aoAlterarPendencia\(true\);setMensagem/);
+  assert.match(fonte, /setExtra\(e\.target\.value\);props\.aoAlterarPendencia\(true\);setMensagem/);
   assert.doesNotMatch(fonte, /setDistribuicao\(\{\}\)/);
 });
 
