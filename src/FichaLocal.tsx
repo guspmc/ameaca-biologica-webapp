@@ -68,7 +68,7 @@ export default function FichaLocal({ nome, mesa, dados, aoFechar, aoAlterarPende
   function fecharFicha() {
     if (pendenciasInternas.current.size > 0) {
       const secoes = [...pendenciasInternas.current].join(', ');
-      if (!window.confirm(`Há alterações não salvas em: ${secoes}.\\n\\nSe fechar agora, essas alterações serão descartadas. Deseja fechar mesmo assim?`)) return;
+      if (!window.confirm(`Há alterações não salvas em: ${secoes}.\n\nSe fechar agora, essas alterações serão descartadas. Deseja fechar mesmo assim?`)) return;
     }
     pendenciasInternas.current.clear();
     aoFechar();
