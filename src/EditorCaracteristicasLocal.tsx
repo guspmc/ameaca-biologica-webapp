@@ -14,7 +14,7 @@ export default function EditorCaracteristicasLocal({ iniciais, aoSalvar, aoAlter
   const habilidades = HABILIDADES_BASICAS.filter(item => item.classe === dados.classe);
   const kits = opcoesEquipamento(dados.classe);
   async function salvar() {
-    if (!dados.origem || !habilidades.some(item => item.id === dados.habilidadeBasica) || !kits.some(item => item.id === dados.equipamentoInicial) ||
+    if (!ORIGENS.some(item => item.nome === dados.origem) || !habilidades.some(item => item.id === dados.habilidadeBasica) || !kits.some(item => item.id === dados.equipamentoInicial) ||
       (dados.origem === 'Operário' && !ARMAS_OPERARIO.includes(dados.armaOperario as never))) {
       setMensagem('Preencha Origem, Habilidade Básica, conjunto inicial e, para Operário, a arma obrigatória.');
       return;
