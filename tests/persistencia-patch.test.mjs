@@ -51,7 +51,7 @@ function instalarBancoCompartilhado() {
 }
 
 const ficha = {
-  id: 'claire', nome: 'Claire',
+  id: 'claire', geracao: 'geracao-original', nome: 'Claire',
   criadoEm: '2026-11-01T10:00:00.000Z',
   atualizadoEm: '2026-11-02T10:00:00.000Z',
   dados: { identidade: { apelido: 'Claire' }, atributos: { vigor: 2 } },
@@ -63,8 +63,8 @@ test('patches de abas distintas preservam alterações em chaves diferentes', as
   const abaA = await import('../src/persistenciaFicha.ts?aba=A');
   const abaB = await import('../src/persistenciaFicha.ts?aba=B');
 
-  await abaA.salvarPatchPersonagem('claire', { identidade: { apelido: 'Redfield' } }, ficha.dados);
-  await abaB.salvarPatchPersonagem('claire', { atributos: { vigor: 3 } }, ficha.dados);
+  await abaA.salvarPatchPersonagem('claire', { identidade: { apelido: 'Redfield' } }, ficha.dados, undefined, undefined, ficha.geracao);
+  await abaB.salvarPatchPersonagem('claire', { atributos: { vigor: 3 } }, ficha.dados, undefined, undefined, ficha.geracao);
 
   const final = registros.get('claire');
   assert.deepEqual(final.dados.identidade, { apelido: 'Redfield' });
@@ -77,10 +77,34 @@ test('patch concorrente na mesma chave é recusado para evitar sobrescrita silen
   const abaA = await import('../src/persistenciaFicha.ts?mesma-A');
   const abaB = await import('../src/persistenciaFicha.ts?mesma-B');
 
-  await abaA.salvarPatchPersonagem('claire', { identidade: { apelido: 'Claire Redfield' } }, ficha.dados);
+  await abaA.salvarPatchPersonagem('claire', { identidade: { apelido: 'Claire Redfield' } }, ficha.dados, undefined, undefined, ficha.geracao);
   await assert.rejects(
-    abaB.salvarPatchPersonagem('claire', { identidade: { apelido: 'Claire Valentine' } }, ficha.dados),
+    abaB.salvarPatchPersonagem('claire', { identidade: { apelido: 'Claire Valentine' } }, ficha.dados, undefined, undefined, ficha.geracao),
     /alterada em outra aba/,
   );
   assert.deepEqual(registros.get('claire').dados.identidade, { apelido: 'Claire Redfield' });
+});
+
+
+test('patch de uma ficha anterior é recusado após restauração com mesmo ID e mesmos dados', async () => {
+  const registros = instalarBancoCompartilhado();
+  registros.set(ficha.id, {
+    ...structuredClone(ficha),
+    geracao: 'geracao-da-restauracao',
+  });
+  const abaAntiga = await import('../src/persistenciaFicha.ts?geracao-antiga');
+
+  await assert.rejects(
+    abaAntiga.salvarPatchPersonagem(
+      'claire',
+      { identidade: { apelido: 'Alteração da aba antiga' } },
+      ficha.dados,
+      undefined,
+      undefined,
+      ficha.geracao,
+    ),
+    /substituída por uma restauração ou alteração em outra aba/,
+  );
+  assert.deepEqual(registros.get('claire').dados, ficha.dados);
+  assert.equal(registros.get('claire').geracao, 'geracao-da-restauracao');
 });
