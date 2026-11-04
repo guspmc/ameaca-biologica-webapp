@@ -20,7 +20,7 @@ export default function FichaOfflineApp() {
   const [backupPendente, setBackupPendente] = useState<ReturnType<typeof lerArquivoBackup> | null>(null);
   const [arquivoInputKey, setArquivoInputKey] = useState(0);
   const filaGravacao = useRef(criarFilaSerializada());
-  const ultimoResultado = useRef<Promise<boolean>>(Promise.resolve(true));
+  const camposPendentesRef = useRef(new Set<string>());
   const selecionadoRef = useRef<PersonagemLocal | null>(selecionado);
   selecionadoRef.current = selecionado;
 
@@ -74,27 +74,27 @@ export default function FichaOfflineApp() {
           dados: { ...base.dados, ...patch },
         };
         await salvarPersonagem(atualizado);
+        for (const campo of Object.keys(patch)) camposPendentesRef.current.delete(campo);
         selecionadoRef.current = atualizado;
         setSelecionado(atualizado);
         setPersonagens(lista => lista.map(p => p.id === atualizado.id ? atualizado : p).sort((a,b) => b.atualizadoEm.localeCompare(a.atualizadoEm)));
         setStatus('Salvo neste dispositivo.');
         return true;
       } catch (e) {
+        for (const campo of Object.keys(patch)) camposPendentesRef.current.add(campo);
         setErro(e instanceof Error ? e.message : 'Falha ao salvar.');
         setStatus('Não foi possível confirmar o salvamento.');
         return false;
       }
     });
-    ultimoResultado.current = operacao;
     return operacao;
   }
 
   async function fecharFicha() {
     setStatus('Concluindo salvamentos pendentes…');
     await filaGravacao.current.aguardar();
-    const resultado = await ultimoResultado.current;
-    if (!resultado) {
-      setErro('Uma gravação não foi confirmada. A ficha continua aberta para você revisar e tentar salvar novamente.');
+    if (camposPendentesRef.current.size > 0) {
+      setErro('Há alterações que não foram confirmadas: ' + [...camposPendentesRef.current].join(', ') + '. Revise essas seções e tente salvar novamente antes de fechar.');
       setStatus('Fechamento interrompido: há alterações não confirmadas.');
       return;
     }
