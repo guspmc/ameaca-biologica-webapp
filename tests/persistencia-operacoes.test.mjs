@@ -62,7 +62,7 @@ function instalarIndexedDB({ falharNoPut = false } = {}) {
             },
           };
           ultimaTransacao = tx;
-          setImmediate(() => {
+          setImmediate(() => setImmediate(() => {
             if (falha) {
               tx.error = falha;
               tx.onerror?.();
@@ -75,7 +75,7 @@ function instalarIndexedDB({ falharNoPut = false } = {}) {
               else registros.set(p.id, structuredClone(p.item));
             }
             tx.oncomplete?.();
-          });
+          }));
           return tx;
         },
       };
