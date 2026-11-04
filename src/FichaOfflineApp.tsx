@@ -106,6 +106,7 @@ export default function FichaOfflineApp() {
       setStatus('Fechamento interrompido: há alterações não confirmadas.');
       return;
     }
+    let descartouAlteracoes = false;
     if (secoesNaoSalvasRef.current.size > 0) {
       const secoes = [...secoesNaoSalvasRef.current];
       const descartar = window.confirm('Há alterações ainda não salvas em: ' + secoes.join(', ') + '.\n\nSe fechar agora, essas alterações serão descartadas. Deseja fechar mesmo assim?');
@@ -113,12 +114,13 @@ export default function FichaOfflineApp() {
         setStatus('Ficha mantida aberta. Salve as alterações ou feche quando estiver pronto.');
         return;
       }
+      descartouAlteracoes = true;
     }
     secoesNaoSalvasRef.current.clear();
     selecionadoRef.current = null;
     setSelecionado(null);
     setExclusaoPendente(null);
-    setStatus('Ficha fechada. Última gravação confirmada no dispositivo.');
+    setStatus(descartouAlteracoes ? 'Ficha fechada. As alterações locais não salvas foram descartadas.' : 'Ficha fechada. Última gravação confirmada no dispositivo.');
   }
 
   async function excluirDaLista(id: string) {
