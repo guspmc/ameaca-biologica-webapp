@@ -33,6 +33,7 @@ type Props = {
   mesa: string;
   dados: Record<string, unknown>;
   aoFechar: () => void;
+  aoRecarregar?: () => void;
   aoAlterarPendencia?: (secao: string, pendente: boolean) => void;
   aoEditar: (secao: 'caracteristicas' | 'pericias' | 'inventario') => void;
   aoSalvarAtributosPericias: (dados: { atributos: AtributosIniciais; periciaOrigemTreinada: string; periciaOrigemExtra: string | null; distribuicaoPericias: Record<string, number> }) => Promise<boolean>;
@@ -55,7 +56,7 @@ function numero(valor: unknown): number {
   return typeof valor === 'number' && Number.isFinite(valor) ? valor : 0;
 }
 
-export default function FichaLocal({ nome, mesa, dados, aoFechar, aoAlterarPendencia, aoEditar, aoSalvarAtributosPericias, aoSalvarCaracteristicas, aoSalvarIdentidade, aoSalvarInventario, origemDados = 'local', status, erro }: Props) {
+export default function FichaLocal({ nome, mesa, dados, aoFechar, aoRecarregar, aoAlterarPendencia, aoEditar, aoSalvarAtributosPericias, aoSalvarCaracteristicas, aoSalvarIdentidade, aoSalvarInventario, origemDados = 'local', status, erro }: Props) {
   const pendenciasInternas = useRef(new Set<string>());
   function registrarPendencia(secao: string, pendente: boolean) {
     if (aoAlterarPendencia) {
@@ -121,6 +122,7 @@ export default function FichaLocal({ nome, mesa, dados, aoFechar, aoAlterarPende
       <div className="ficha-local-corpo">
         {status && <p className="offline-status" role="status" aria-live="polite">{status}</p>}
         {erro && <p className="offline-erro" role="alert">{erro}</p>}
+        {erro?.includes('alterada em outra aba') && aoRecarregar && <button type="button" className="botao-claro" onClick={aoRecarregar}>Descartar esta edição e carregar a versão mais recente</button>}
         <div className="ficha-local-identidade">
           <span>{termo('REGISTRO DO SOBREVIVENTE')} · {mesa || 'MESA LOCAL'}</span>
           <h1 id="ficha-local-titulo">{nome}</h1>
