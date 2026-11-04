@@ -177,7 +177,7 @@ export async function salvarPatchPersonagem(
         return;
       }
       if (nomeAtualizado !== undefined && nomeBase !== undefined && atual.nome !== nomeBase) {
-        falha = new Error('O nome da personagem foi alterado em outra aba. Reabra a ficha antes de salvar.');
+        falha = new Error('A ficha foi alterada em outra aba (conflito no nome). Reabra a ficha antes de salvar.');
         transacao.abort();
         return;
       }
