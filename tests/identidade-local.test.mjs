@@ -6,7 +6,7 @@ const ler = async caminho => readFile(new URL('../src/' + caminho, import.meta.u
 
 test('a ficha offline usa o gênero declarado apenas para flexões previstas', async () => {
   const ficha = await ler('FichaLocal.tsx');
-  assert.match(ficha, /import \{ classePersonagem, termoPersonagem \} from '.\/textoPersonagem'/);
+  assert.match(ficha, /import nome: nomeAtualizado?.trim() || atual.nome{ classePersonagem, termoPersonagem \} from '.\/textoPersonagem'/);
   assert.match(ficha, /classePersonagem\(classe \|\| null, genero\)/);
   assert.match(ficha, /termo\('REGISTRO DO SOBREVIVENTE'\)/);
   assert.match(ficha, /termo\(origem \|\| 'Pendente'\)/);
