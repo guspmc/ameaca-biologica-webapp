@@ -1,7 +1,7 @@
 import {useState} from 'react';
 import {CATALOGO_INICIAL,simularCompras} from './comprasIniciais';
-type Props={capacidade:number;planoSalvo?:Record<string,number>;revisaoSalva?:number;aoSalvar?:(plano:Record<string,number>,revisao:number)=>Promise<number>};
-export default function PreviaCompras({capacidade,planoSalvo={},revisaoSalva=0,aoSalvar}:Props){
+type Props={capacidade:number;planoSalvo?:Record<string,number>;revisaoSalva?:number;aoSalvar?:(plano:Record<string,number>,revisao:number)=>Promise<number>;aoAlterarPendencia?:(pendente:boolean)=>void};
+export default function PreviaCompras({capacidade,planoSalvo={},revisaoSalva=0,aoSalvar,aoAlterarPendencia}:Props){
   const [plano,setPlano]=useState<Record<string,number>>({...planoSalvo});
   const [revisao,setRevisao]=useState(revisaoSalva);
   const [busca,setBusca]=useState('');
@@ -10,7 +10,7 @@ export default function PreviaCompras({capacidade,planoSalvo={},revisaoSalva=0,a
   const [aviso,setAviso]=useState('');
   const resultado=simularCompras(plano,capacidade);
   const pesquisar=(texto:string)=>texto.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLocaleLowerCase('pt-BR');
-  function mudar(id:string,n:number){setPlano(p=>({...p,[id]:n}));setErro('');setAviso('');}
+  function mudar(id:string,n:number){setPlano(p=>({...p,[id]:n}));aoAlterarPendencia?.(true);setErro('');setAviso('');}
   async function salvar(){
     if(!aoSalvar||salvando||!resultado.cabe||!resultado.orcamentoValido)return;
     setSalvando(true);setErro('');setAviso('');
@@ -39,7 +39,7 @@ export default function PreviaCompras({capacidade,planoSalvo={},revisaoSalva=0,a
     <p className="ficha-dica">Armaduras da prévia continuam guardadas. Comprar munição de reserva não instala Peças nem aumenta o pente de uma arma.</p>
     {erro&&<p className="erro" role="alert">{erro} A prévia foi preservada. Se a versão estiver desatualizada, anote suas escolhas e recarregue para conferir o plano salvo.</p>}
     {aviso&&<p className="sucesso" role="status">{aviso}</p>}
-    <button type="button" className="botao-claro" disabled={salvando} onClick={()=>{setPlano({});setAviso(aoSalvar?'Prévia zerada. Salve o rascunho para persistir a alteração.':'');setErro('');}}>Limpar prévia de compras</button>
+    <button type="button" className="botao-claro" disabled={salvando} onClick={()=>{setPlano({});aoAlterarPendencia?.(true);setAviso(aoSalvar?'Prévia zerada. Salve o rascunho para persistir a alteração.':'');setErro('');}}>Limpar prévia de compras</button>
     {aoSalvar&&<><p className="ficha-dica">Revisão local do formulário: {revisao}. Limpar o plano e salvar o rascunho é necessário antes de trocar o kit. Nenhum item é liberado automaticamente.</p><button type="button" className="acao" disabled={salvando||!resultado.cabe||!resultado.orcamentoValido} onClick={()=>{void salvar();}}>{salvando?'Aplicando...':'Aplicar ao rascunho'}</button></>}
   </details>;
 }
