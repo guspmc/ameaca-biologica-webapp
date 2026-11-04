@@ -36,7 +36,7 @@ export default function EditorInventarioLocal({ classe, capacidade, kitInicial, 
     <label>Conjunto inicial<select value={kit} disabled={ocupado} onChange={e => { setKit(e.target.value); aoAlterarPendencia(true); setMensagem(''); }}>
       <option value="">Selecione um conjunto</option>{opcoes.map(item => <option key={item.id} value={item.id}>{item.id} · {item.nome}</option>)}
     </select></label>
-    {kit === 'C' ? <PreviaCompras key={kitInicial + ':' + revisaoCompras} capacidade={capacidade} planoSalvo={plano} revisaoSalva={revisao} aoAlterarPendencia={aoAlterarPendencia} aoSalvar={async proximo => { setPlano(proximo); const nova = revisao + 1; setRevisao(nova); setPlanoAplicado(true); return nova; }} /> : <p>O conjunto A ou B usa os itens previstos no livro. Ao salvar essa escolha, o plano de compras personalizado anterior será descartado do rascunho.</p>}
+    {kit === 'C' ? <PreviaCompras key={kitInicial + ':' + revisaoCompras} capacidade={capacidade} planoSalvo={plano} revisaoSalva={revisao} aoAlterarPendencia={pendente => { aoAlterarPendencia(pendente); if (pendente) setPlanoAplicado(false); }} aoSalvar={async proximo => { setPlano(proximo); const nova = revisao + 1; setRevisao(nova); setPlanoAplicado(true); return nova; }} /> : <p>O conjunto A ou B usa os itens previstos no livro. Ao salvar essa escolha, o plano de compras personalizado anterior será descartado do rascunho.</p>}
     {mensagem && <p role="status">{mensagem}</p>}
     <button type="button" className="acao" onClick={salvar} disabled={ocupado}>Salvar planejamento <span>→</span></button>
   </div>;
