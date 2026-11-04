@@ -33,5 +33,5 @@ test('a ficha reinicializa o editor ao mudar Classe/Origem e lista Perícias já
   const fonte = await ler('FichaLocal.tsx');
   assert.match(fonte, /\[classe, origem, atributos, treinada, extra, distribuicao\]/);
   assert.match(fonte, /\.\.\.Object\.keys\(distribuicao\)/);
-  assert.match(fonte, /Revisão da criação necessária/);
+  assert.match(fonte, /\.\.\.\(treinada \? \[treinada\] : \[\]\)/);\n  assert.match(fonte, /\.\.\.Object\.keys\(distribuicao\)/);
 });
