@@ -137,13 +137,11 @@ test('substituição troca o conjunto inteiro e mantém o conjunto anterior em c
   await db.substituirPersonagens([ficha('nova-1'), ficha('nova-2')]);
   assert.deepEqual((await db.listarPersonagens()).map(p => p.id), ['nova-1', 'nova-2']);
 
-  fake.registros.clear();
-  fake.registros.set('preservar', ficha('preservar'));
   // A falha ocorre depois do clear ter sido enfileirado, mas antes do commit.
-  fake.ultimaTransacao();
   const segunda = instalarIndexedDB({ falharNoPut: true });
+  segunda.registros.set('preservar', ficha('preservar'));
   const dbComFalha = await importarPersistencia();
   await assert.rejects(dbComFalha.substituirPersonagens([ficha('nao-gravar')]), /Falha simulada/);
   assert.equal(segunda.registros.has('nao-gravar'), false);
-  assert.equal(segunda.registros.size, 0);
+  assert.deepEqual([...segunda.registros.keys()], ['preservar']);
 });
