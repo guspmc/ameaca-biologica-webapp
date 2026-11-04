@@ -3,7 +3,7 @@ import type { FormEvent } from 'react';
 import FichaLocal from './FichaLocal';
 import { criarFilaSerializada } from './filaSerializada';
 import { criarBackup, lerArquivoBackup, nomeDeCopiaUnico, serializarBackup } from './backupFicha';
-import { adicionarPersonagens, excluirPersonagem, listarPersonagens, salvarPersonagem, salvarPatchPersonagem, substituirPersonagens, type PersonagemLocal } from './persistenciaFicha';
+import { adicionarPersonagens, excluirPersonagem, listarPersonagens, obterPersonagem, salvarPersonagem, salvarPatchPersonagem, substituirPersonagens, type PersonagemLocal } from './persistenciaFicha';
 
 function agora() { return new Date().toISOString(); }
 function novoId() { return globalThis.crypto?.randomUUID?.() ?? `personagem-${Date.now()}-${Math.random().toString(16).slice(2)}`; }
@@ -106,6 +106,49 @@ export default function FichaOfflineApp() {
       }
     });
     return operacao;
+  }
+
+  async function abrirPersonagem(id: string) {
+    if (ocupado) return;
+    setOcupado(true);
+    setErro('');
+    try {
+      const atual = await obterPersonagem(id);
+      if (!atual) {
+        await atualizarLista();
+        setErro('Esta ficha não está mais disponível. A lista foi atualizada.');
+        return;
+      }
+      selecionadoRef.current = atual;
+      setSelecionado(atual);
+    } catch (e) {
+      setErro(e instanceof Error ? e.message : 'Não foi possível abrir a ficha.');
+    } finally {
+      setOcupado(false);
+    }
+  }
+
+  async function recarregarFicha() {
+    const atual = selecionadoRef.current;
+    if (!atual) return;
+    if (!window.confirm('As alterações ainda não salvas nesta aba serão descartadas. Reabrir a ficha com os dados mais recentes gravados por outra aba?')) return;
+    try {
+      const atualizada = await obterPersonagem(atual.id);
+      if (!atualizada) {
+        setErro('Esta ficha não existe mais neste dispositivo. Volte à lista e atualize os registros.');
+        return;
+      }
+      camposPendentesRef.current.clear();
+      secoesNaoSalvasRef.current.clear();
+      setTemEdicoesPendentes(false);
+      selecionadoRef.current = atualizada;
+      setSelecionado(atualizada);
+      setPersonagens(lista => lista.map(p => p.id === atualizada.id ? atualizada : p).sort((x,y) => y.atualizadoEm.localeCompare(x.atualizadoEm)));
+      setErro('');
+      setStatus('Ficha atualizada com os dados mais recentes do dispositivo.');
+    } catch (e) {
+      setErro(e instanceof Error ? e.message : 'Não foi possível atualizar a ficha.');
+    }
   }
 
   function registrarPendencia(secao: string, pendente: boolean) {
@@ -223,6 +266,7 @@ export default function FichaOfflineApp() {
   if (selecionado) return <FichaLocal
     nome={selecionado.nome} mesa="DISPOSITIVO LOCAL" dados={selecionado.dados}
     aoFechar={() => { void fecharFicha(); }}
+    aoRecarregar={recarregarFicha}
     aoAlterarPendencia={registrarPendencia}
     aoEditar={secao => document.getElementById(secao === 'caracteristicas' ? 'ficha-local-caracteristicas' : secao === 'pericias' ? 'ficha-local-pericias' : 'ficha-local-inventario')?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
     aoSalvarCaracteristicas={salvarDados}
@@ -251,7 +295,7 @@ export default function FichaOfflineApp() {
         {erro && <p className="offline-erro" role="alert">{erro}</p>}
         {backupPendente && <section className="offline-importacao" aria-label="Prévia do backup"><div><small>BACKUP VALIDADO · V{backupPendente.versao}</small><h3>Prévia da restauração</h3><p>Exportado em {new Date(backupPendente.exportadoEm).toLocaleString("pt-BR")}</p><strong>{backupPendente.personagens.length} personagem(ns)</strong><ul>{backupPendente.personagens.map(p=><li key={p.id}>{p.nome}</li>)}</ul></div><p>Escolha como importar. Substituir apaga as fichas atuais deste navegador. A opção de cópias preserva as fichas atuais.</p><div><button type="button" onClick={()=>void importarBackup("copias")} disabled={ocupado}>Adicionar como cópias</button><button type="button" onClick={()=>void importarBackup("substituir")} disabled={ocupado}>Substituir fichas locais</button><button type="button" onClick={()=>setBackupPendente(null)} disabled={ocupado}>Cancelar</button></div></section>}
         {personagens.length ? <ul className="offline-lista">{personagens.map(p=><li key={p.id}>
-          <button type="button" onClick={()=>{setSelecionado(p);setErro('');}} disabled={ocupado}>
+          <button type="button" onClick={()=>void abrirPersonagem(p.id)} disabled={ocupado}>
             <span className="offline-avatar">☣</span><span><strong>{p.nome}</strong><small>Atualizada em {new Date(p.atualizadoEm).toLocaleString('pt-BR')}</small></span><b>ABRIR →</b>
           </button>
           {exclusaoPendente === p.id ? <div className="offline-confirmar"><span>Excluir esta ficha deste dispositivo?</span><button type="button" onClick={()=>void excluirDaLista(p.id)} disabled={ocupado}>Confirmar exclusão</button><button type="button" onClick={()=>setExclusaoPendente(null)}>Cancelar</button></div> : <button type="button" className="offline-excluir" onClick={()=>setExclusaoPendente(p.id)}>Excluir</button>}
