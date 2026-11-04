@@ -39,6 +39,7 @@ function abrirBanco(): Promise<IDBDatabase> {
   if (abertura) return abertura;
   abertura = new Promise((resolve, reject) => {
     let requisicao: IDBOpenDBRequest;
+    let aberturaBloqueada = false;
     try {
       requisicao = exigirIndexedDB().open(BANCO_FICHA, VERSAO_BANCO_FICHA);
     } catch (erro) {
@@ -56,6 +57,12 @@ function abrirBanco(): Promise<IDBDatabase> {
     requisicao.onsuccess = () => {
       const banco = requisicao.result;
       banco.onversionchange = () => banco.close();
+      // Se outra aba bloqueou a abertura e depois liberou o banco, não
+      // deixamos uma conexão tardia aberta sem referência no módulo.
+      if (aberturaBloqueada) {
+        banco.close();
+        return;
+      }
       resolve(banco);
     };
     requisicao.onerror = () => {
@@ -63,6 +70,7 @@ function abrirBanco(): Promise<IDBDatabase> {
       reject(requisicao.error ?? new Error('Não foi possível abrir o banco local.'));
     };
     requisicao.onblocked = () => {
+      aberturaBloqueada = true;
       abertura = null;
       reject(new Error('O banco local está sendo usado por outra aba. Feche as outras abas e tente novamente.'));
     };
