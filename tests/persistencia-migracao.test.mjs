@@ -18,6 +18,7 @@ function instalarIndexedDBComBancoV1(registrosIniciais) {
       function avancar() {
         setImmediate(() => {
           if (indice >= ids.length) {
+            cursorConcluido = true;
             requisicao.result = null;
             requisicao.onsuccess?.();
             return;
