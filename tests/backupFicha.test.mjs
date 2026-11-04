@@ -74,9 +74,9 @@ test('nome de cópia respeita 80 caracteres e evita colisões sucessivas', () =>
   const original = 'A'.repeat(80);
   const primeira = nomeDeCopiaUnico(original, [original]);
   assert.ok(primeira.length <= 80);
-  assert.match(primeira, /\\(cópia 1\\)$/);
+  assert.ok(primeira.endsWith(' (cópia 1)'));
   const segunda = nomeDeCopiaUnico(original, [original, primeira]);
   assert.ok(segunda.length <= 80);
-  assert.match(segunda, /\\(cópia 2\\)$/);
+  assert.ok(segunda.endsWith(' (cópia 2)'));
   assert.notEqual(segunda.toLocaleLowerCase('pt-BR'), primeira.toLocaleLowerCase('pt-BR'));
 });
