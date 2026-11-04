@@ -159,6 +159,7 @@ export async function salvarPatchPersonagem(
   patch: Record<string, unknown>,
   valoresBase: Record<string, unknown>,
   nomeAtualizado?: string,
+  nomeBase?: string,
 ): Promise<PersonagemLocal> {
   try {
     const banco = await abrirBanco();
@@ -172,6 +173,11 @@ export async function salvarPatchPersonagem(
       const atual = requisicao.result;
       if (!validarPersonagem(atual)) {
         falha = new Error('A ficha não existe mais ou possui formato inválido. Reabra a ficha antes de salvar.');
+        transacao.abort();
+        return;
+      }
+      if (nomeAtualizado !== undefined && nomeBase !== undefined && atual.nome !== nomeBase) {
+        falha = new Error('O nome da personagem foi alterado em outra aba. Reabra a ficha antes de salvar.');
         transacao.abort();
         return;
       }
