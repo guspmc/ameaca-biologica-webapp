@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import type { FormEvent } from 'react';
 import FichaLocal from './FichaLocal';
+import { criarFilaSerializada } from './filaSerializada';
 import { criarBackup, lerArquivoBackup, serializarBackup } from './backupFicha';
 import { adicionarPersonagens, excluirPersonagem, listarPersonagens, salvarPersonagem, substituirPersonagens, type PersonagemLocal } from './persistenciaFicha';
 
@@ -18,7 +19,8 @@ export default function FichaOfflineApp() {
   const [exclusaoPendente, setExclusaoPendente] = useState<string | null>(null);
   const [backupPendente, setBackupPendente] = useState<ReturnType<typeof lerArquivoBackup> | null>(null);
   const [arquivoInputKey, setArquivoInputKey] = useState(0);
-  const filaGravacao = useRef<Promise<boolean>>(Promise.resolve(true));
+  const filaGravacao = useRef(criarFilaSerializada());
+  const ultimoResultado = useRef<Promise<boolean>>(Promise.resolve(true));
   const selecionadoRef = useRef<PersonagemLocal | null>(selecionado);
   selecionadoRef.current = selecionado;
 
@@ -61,7 +63,7 @@ export default function FichaOfflineApp() {
 
   async function salvarDados(patch: Record<string, unknown>): Promise<boolean> {
     // Serializa gravações rápidas para não descartar patches concorrentes.
-    const operacao = filaGravacao.current.catch(() => false).then(async () => {
+    const operacao = filaGravacao.current.enfileirar(async () => {
       const base = selecionadoRef.current;
       if (!base) return false;
       setStatus('Salvando no dispositivo…'); setErro('');
@@ -83,13 +85,14 @@ export default function FichaOfflineApp() {
         return false;
       }
     });
-    filaGravacao.current = operacao;
+    ultimoResultado.current = operacao;
     return operacao;
   }
 
   async function fecharFicha() {
     setStatus('Concluindo salvamentos pendentes…');
-    const resultado = await filaGravacao.current;
+    await filaGravacao.current.aguardar();
+    const resultado = await ultimoResultado.current;
     if (!resultado) {
       setErro('Uma gravação não foi confirmada. A ficha continua aberta para você revisar e tentar salvar novamente.');
       setStatus('Fechamento interrompido: há alterações não confirmadas.');
@@ -105,7 +108,7 @@ export default function FichaOfflineApp() {
     if (ocupado) return;
     setOcupado(true); setErro('');
     try {
-      await filaGravacao.current;
+      await filaGravacao.current.aguardar();
       await excluirPersonagem(id);
       setExclusaoPendente(null);
       await atualizarLista();
@@ -134,7 +137,7 @@ export default function FichaOfflineApp() {
     if (!backupPendente || ocupado) return;
     setOcupado(true); setErro('');
     try {
-      await filaGravacao.current;
+      await filaGravacao.current.aguardar();
       if (modo === 'substituir') {
         await substituirPersonagens(backupPendente.personagens);
       } else {
