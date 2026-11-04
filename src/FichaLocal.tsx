@@ -61,7 +61,8 @@ export default function FichaLocal({ nome, mesa, dados, aoFechar, aoEditar, aoSa
   const extra = typeof ficha.periciaOrigemExtra === 'string' ? ficha.periciaOrigemExtra : '';
   const dadosClasse = dadosDaClasse(classe);
   const dadosOrigem = ORIGENS.find(item => item.nome === origem);
-  const habilidade = HABILIDADES_BASICAS.find(item => item.id === ficha.habilidadeBasica && item.classe === classe);
+  const habilidadeSelecionada = typeof ficha.habilidadeBasica === 'string' ? ficha.habilidadeBasica : ''; 
+  const habilidade = HABILIDADES_BASICAS.find(item => item.id === habilidadeSelecionada && item.classe === classe);
   const pv = (classe === 'Agente' ? 10 : classe === 'Autodidata' ? 8 : classe === 'Operador' ? 12 : 0) + numero(atributos.vigor) + (habilidade?.id === 'parrudo' ? 5 : 0);
   const sa = numero(atributos.agilidade) + numero(atributos.astucia) + (origem === 'Universitária' ? 1 : 0);
   const bi = (classe === 'Agente' ? 8 : classe === 'Autodidata' ? 10 : classe === 'Operador' ? 6 : 0) + numero(atributos.astucia) + (origem === 'Cobaia' ? 2 : 0) + (habilidade?.id === 'parrudo' ? 3 : 0);
@@ -71,6 +72,12 @@ export default function FichaLocal({ nome, mesa, dados, aoFechar, aoEditar, aoSa
   const itensClasse = caracteristicos(classe);
   const kitSelecionado = typeof ficha.equipamentoInicial === 'string' ? ficha.equipamentoInicial : '';
   const kit = opcoesEquipamento(classe).find(item => item.id === kitSelecionado);
+  const armaOperario = typeof ficha.armaOperario === 'string' ? ficha.armaOperario : '';
+  const alertasCompatibilidade = [
+    ...(habilidadeSelecionada && !habilidade ? ['Habilidade Básica incompatível com a Classe atual'] : []),
+    ...(kitSelecionado && !kit ? ['Equipamento Inicial incompatível com a Classe atual'] : []),
+    ...(origem === 'Operário' && armaOperario && !ARMAS_OPERARIO.includes(armaOperario as never) ? ['Arma escolhida incompatível com a Origem Operário'] : []),
+  ];
   const itensKit = itensDoKit(classe, kitSelecionado);
   const espacosKit = espacosOcupados(itensKit);
   let inventarioPlanejado: ReturnType<typeof planejarInventarioCriacao> | null = null;
@@ -108,6 +115,7 @@ export default function FichaLocal({ nome, mesa, dados, aoFechar, aoEditar, aoSa
 
         <section id="ficha-local-caracteristicas" className="ficha-local-secao">
           <div className="ficha-local-titulo-secao"><h2><span>01</span> Características</h2><button type="button" className="ficha-local-editar-secao" onClick={() => aoEditar("caracteristicas")}>Editar seção ↗</button></div>
+          {alertasCompatibilidade.length > 0 && <p className="ficha-local-aviso" role="alert">Revisão da criação necessária: {alertasCompatibilidade.join("; ")}. As escolhas foram preservadas; corrija os itens incompatíveis antes de confirmar a criação.</p>}
           <EditorCaracteristicasLocal key={JSON.stringify([classe, origem, ficha.armaOperario, ficha.habilidadeBasica, kitSelecionado])} iniciais={{ classe, origem, armaOperario: typeof ficha.armaOperario === 'string' ? ficha.armaOperario : '', habilidadeBasica: typeof ficha.habilidadeBasica === 'string' ? ficha.habilidadeBasica : '', equipamentoInicial: kitSelecionado }} aoSalvar={aoSalvarCaracteristicas} mensagemSucesso={origemDados === 'servidor' ? 'Características confirmadas pelo servidor.' : undefined} />
           <div className="ficha-local-grade">
             <div><small>CLASSE</small><strong>{classe || 'Pendente'}</strong><p>{dadosClasse?.identidade ?? 'Dados da Classe ainda não definidos.'}</p></div>
