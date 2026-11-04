@@ -16,6 +16,7 @@ test('o editor narrativo mantém os campos opcionais e envia nome e identidade n
   const editor = await ler('IdentidadeLocal.tsx');
   const ficha = await ler('FichaLocal.tsx');
   const app = await ler('FichaOfflineApp.tsx');
+  const storage = await ler('persistenciaFicha.ts');
   for (const field of ['idade','genero','ocupacao','apelido','afiliacao','aparencia','personalidade','objetivo','medo','lacos','historia']) {
     assert.ok(editor.includes("id: '" + field + "'"), 'Campo ausente: ' + field);
   }
@@ -23,7 +24,7 @@ test('o editor narrativo mantém os campos opcionais e envia nome e identidade n
   assert.match(ficha, /<IdentidadeLocal/);
   assert.doesNotMatch(ficha, /<IdentidadeLocal key=/);
   assert.match(app, /aoSalvarIdentidade=\{\(\{ nome, identidade \}\) => salvarDados\(\{ identidade \}, nome\)\}/);
-  assert.match(app, /nome: nomeAtualizado\?\.trim\(\) \|\| atual\.nome/);
+  assert.match(storage, /nome: nomeAtualizado\?\.trim\(\) \|\| atual\.nome/);
 });
 
 test('a identidade é armazenada nos dados locais sem alterar o esquema do IndexedDB', async () => {
