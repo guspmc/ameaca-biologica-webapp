@@ -60,7 +60,7 @@ export default function FichaOfflineApp() {
     setOcupado(true); setErro('');
     const instante = agora();
     const personagem: PersonagemLocal = {
-      id: novoId(), nome: nomeLimpo, criadoEm: instante, atualizadoEm: instante,
+      id: novoId(), geracao: novoId(), nome: nomeLimpo, criadoEm: instante, atualizadoEm: instante,
       dados: { versaoModelo: 1, estadoFicha: 'rascunho' },
     };
     try {
@@ -82,7 +82,7 @@ export default function FichaOfflineApp() {
       if (!base) return false;
       setStatus('Salvando no dispositivo…'); setErro('');
       try {
-        const atualizado = await salvarPatchPersonagem(base.id, patch, base.dados, nomeAtualizado, base.nome);
+        const atualizado = await salvarPatchPersonagem(base.id, patch, base.dados, nomeAtualizado, base.nome, base.geracao);
         for (const campo of Object.keys(patch)) camposPendentesRef.current.delete(campo);
         const chavesCaracteristicas = ['classe', 'origem', 'armaOperario', 'habilidadeBasica'];
         if (chavesCaracteristicas.some(campo => campo in patch)) secoesNaoSalvasRef.current.delete('Características');
@@ -231,7 +231,7 @@ export default function FichaOfflineApp() {
             ? nomeDeCopiaUnico(p.nome, nomes)
             : p.nome;
           nomes.add(nome.toLocaleLowerCase('pt-BR'));
-          return { ...p, id, nome };
+          return { ...p, id, geracao: novoId(), nome };
         });
         await adicionarPersonagens(copias);
       }
