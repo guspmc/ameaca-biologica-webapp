@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import {
   criarBackup,
   lerArquivoBackup,
+  nomeDeCopiaUnico,
   serializarBackup,
   validarBackup,
   FORMATO_BACKUP,
@@ -67,4 +68,15 @@ test('datas inválidas no backup são rejeitadas', () => {
 test('o limite de nome é consistente com a criação: até 80 caracteres', () => {
   assert.doesNotThrow(() => criarBackup([personagem('p-80', 'A'.repeat(80))]));
   assert.throws(() => criarBackup([personagem('p-81', 'A'.repeat(81))]), /fichas inválidas/);
+});
+
+test('nome de cópia respeita 80 caracteres e evita colisões sucessivas', () => {
+  const original = 'A'.repeat(80);
+  const primeira = nomeDeCopiaUnico(original, [original]);
+  assert.ok(primeira.length <= 80);
+  assert.match(primeira, /\\(cópia 1\\)$/);
+  const segunda = nomeDeCopiaUnico(original, [original, primeira]);
+  assert.ok(segunda.length <= 80);
+  assert.match(segunda, /\\(cópia 2\\)$/);
+  assert.notEqual(segunda.toLocaleLowerCase('pt-BR'), primeira.toLocaleLowerCase('pt-BR'));
 });
