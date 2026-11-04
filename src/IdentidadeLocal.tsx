@@ -44,7 +44,7 @@ export default function IdentidadeLocal({ nome: nomeInicial, identidade: identid
     setSalvando(true);
     setMensagem('');
     try {
-      const identidade = Object.fromEntries(CAMPOS.map(campo => [campo.id, (dados[campo.id] ?? '').trim()]));
+      const identidade = { ...identidadeInicial, ...Object.fromEntries(CAMPOS.map(campo => [campo.id, (dados[campo.id] ?? '').trim()])) };
       const ok = await aoSalvar({ nome: nomeLimpo, identidade });
       if (ok) aoAlterarPendencia(false);
       setMensagem(ok ? 'Identificação salva neste dispositivo.' : 'Não foi possível confirmar o salvamento. Tente novamente.');
