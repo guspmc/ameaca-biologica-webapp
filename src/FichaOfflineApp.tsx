@@ -89,11 +89,16 @@ export default function FichaOfflineApp() {
 
   async function fecharFicha() {
     setStatus('Concluindo salvamentos pendentes…');
-    await filaGravacao.current;
+    const resultado = await filaGravacao.current;
+    if (!resultado) {
+      setErro('Uma gravação não foi confirmada. A ficha continua aberta para você revisar e tentar salvar novamente.');
+      setStatus('Fechamento interrompido: há alterações não confirmadas.');
+      return;
+    }
     selecionadoRef.current = null;
     setSelecionado(null);
     setExclusaoPendente(null);
-    setStatus('Ficha fechada. Alterações confirmadas no dispositivo.');
+    setStatus('Ficha fechada. Última gravação confirmada no dispositivo.');
   }
 
   async function excluirDaLista(id: string) {
