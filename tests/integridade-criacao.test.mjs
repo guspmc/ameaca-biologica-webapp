@@ -36,3 +36,8 @@ test('a ficha reinicializa o editor ao mudar Classe/Origem e mostra escolhas sal
   assert.match(fonte, /\.\.\.Object\.keys\(distribuicao\)/);
   assert.match(fonte, /Revisão da criação necessária/);
 });
+
+test('editor de Características rejeita Origem fora do catálogo oficial', async () => {
+  const fonte = await ler('EditorCaracteristicasLocal.tsx');
+  assert.match(fonte, /!ORIGENS\.some\(item => item\.nome === dados\.origem\)/);
+});
