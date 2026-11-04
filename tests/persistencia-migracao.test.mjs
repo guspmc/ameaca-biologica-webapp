@@ -51,10 +51,12 @@ function instalarIndexedDBComBancoV1(registrosIniciais) {
     close() {},
     transaction() {
       const transacao = {
-        error: null, oncomplete: null, onabort: null, onerror: null,
+        error: null, onabort: null, onerror: null,
         objectStore: () => store,
       };
-      setImmediate(() => transacao.oncomplete?.());
+      Object.defineProperty(transacao, 'oncomplete', {
+        set(callback) { setImmediate(() => callback?.()); },
+      });
       return transacao;
     },
   };
