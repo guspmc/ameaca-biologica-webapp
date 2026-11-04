@@ -91,7 +91,7 @@ async function importarPersistencia() {
   return import('../src/persistenciaFicha.ts?operacoes=' + Math.random());
 }
 
-const ficha = (id, nome = id) => ({
+const ficha = (id, nome = `Personagem ${id}`) => ({
   id, nome,
   criadoEm: '2026-11-01T10:00:00.000Z',
   atualizadoEm: '2026-11-02T10:00:00.000Z',
@@ -105,7 +105,7 @@ test('listar, obter e excluir percorrem o ciclo de persistência local', async (
   await db.salvarPersonagem(ficha('b'));
 
   assert.deepEqual((await db.listarPersonagens()).map(p => p.id), ['a', 'b']);
-  assert.equal((await db.obterPersonagem('a')).nome, 'a');
+  assert.equal((await db.obterPersonagem('a')).nome, 'Personagem a');
   assert.equal(await db.obterPersonagem('inexistente'), null);
 
   await db.excluirPersonagem('a');
