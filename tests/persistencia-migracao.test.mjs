@@ -7,7 +7,12 @@ function instalarIndexedDBComBancoV1(registrosIniciais) {
 
   const store = {
     openCursor() {
-      const requisicao = { result: null, onsuccess: null, onerror: null };
+      let callbackSucesso = null;
+      const requisicao = { result: null, onerror: null };
+      Object.defineProperty(requisicao, 'onsuccess', {
+        get() { return callbackSucesso; },
+        set(callback) { callbackSucesso = callback; },
+      });
       const ids = [...registros.keys()];
       let indice = 0;
       function avancar() {
