@@ -77,7 +77,7 @@ test('salvar Identificação preserva chaves futuras já existentes no objeto na
 
 test('lista bloqueia abertura, exportacao e selecao de backup enquanto uma operacao esta ocupada', async () => {
   const fonte = await ler('FichaOfflineApp.tsx');
-  assert.match(fonte, /disabled=\{ocupado\}>Exportar backup JSON/);
+  assert.match(fonte, /disabled=\{!personagens.length \|\| ocupado\}>Exportar backup JSON ↓/);
   assert.match(fonte, /type="file"[^>]*disabled=\{ocupado\}/);
   assert.match(fonte, /setSelecionado\(p\)[^]*?disabled=\{ocupado\}/);
 });
