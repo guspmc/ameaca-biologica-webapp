@@ -5,7 +5,7 @@
   "type": "module",
   "packageManager": "pnpm@11.25.0",
   "scripts": {
-    "test": "node --experimental-sqlite --test tests/*.test.mjs",
+    "test": "node --experimental-strip-types --experimental-sqlite --test tests/*.test.mjs",
     "dev": "vite",
     "dev:teste": "vite --mode teste --host 127.0.0.1 --port 4174 --strictPort",
     "build": "tsc --noEmit && vite build",
