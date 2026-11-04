@@ -88,11 +88,13 @@ test('evento versionchange antigo não invalida uma abertura mais recente', asyn
 });
 
 test('uma abertura bloqueada que recebe sucesso tardio fecha a conexão', async () => {
-  instalarIndexedDB({ bloqueada: true });
+  const fake = instalarIndexedDB({ bloqueada: true });
   const persistencia = await importarModulo();
 
   await assert.rejects(
     persistencia.listarPersonagens(),
     /O banco local está sendo usado por outra aba/,
   );
+  await new Promise(resolve => setImmediate(resolve));
+  assert.equal(fake.conexoes[0].fechado, true);
 });
