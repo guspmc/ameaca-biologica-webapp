@@ -61,7 +61,7 @@ export default function FichaOfflineApp() {
     finally { setOcupado(false); }
   }
 
-  async function salvarDados(patch: Record<string, unknown>): Promise<boolean> {
+  async function salvarDados(patch: Record<string, unknown>, nomeAtualizado?: string): Promise<boolean> {
     // Serializa gravações rápidas para não descartar patches concorrentes.
     const operacao = filaGravacao.current.enfileirar(async () => {
       const base = selecionadoRef.current;
@@ -70,6 +70,7 @@ export default function FichaOfflineApp() {
       try {
         const atualizado: PersonagemLocal = {
           ...base,
+          nome: nomeAtualizado?.trim() || base.nome,
           atualizadoEm: agora(),
           dados: { ...base.dados, ...patch },
         };
@@ -192,6 +193,7 @@ export default function FichaOfflineApp() {
     aoFechar={() => { void fecharFicha(); }}
     aoEditar={secao => document.getElementById(secao === 'caracteristicas' ? 'ficha-local-caracteristicas' : secao === 'pericias' ? 'ficha-local-pericias' : 'ficha-local-inventario')?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
     aoSalvarCaracteristicas={salvarDados}
+    aoSalvarIdentidade={({ nome, identidade }) => salvarDados({ identidade }, nome)}
     aoSalvarAtributosPericias={salvarDados}
     aoSalvarInventario={salvarDados}
   />;
