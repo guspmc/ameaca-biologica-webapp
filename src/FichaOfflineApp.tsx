@@ -90,6 +90,15 @@ export default function FichaOfflineApp() {
         };
         await salvarPersonagem(atualizado);
         for (const campo of Object.keys(patch)) camposPendentesRef.current.delete(campo);
+        const chavesCaracteristicas = ['classe', 'origem', 'armaOperario', 'habilidadeBasica'];
+        if (chavesCaracteristicas.some(campo => campo in patch)) secoesNaoSalvasRef.current.delete('Características');
+        if (['atributos', 'periciaOrigemTreinada', 'periciaOrigemExtra', 'distribuicaoPericias'].some(campo => campo in patch)) secoesNaoSalvasRef.current.delete('Atributos e Perícias');
+        if ('identidade' in patch) secoesNaoSalvasRef.current.delete('Identificação');
+        if (['comprasIniciais', 'revisaoCompras'].some(campo => campo in patch)
+          || ('equipamentoInicial' in patch && !chavesCaracteristicas.some(campo => campo in patch))) {
+          secoesNaoSalvasRef.current.delete('Inventário');
+        }
+        setTemEdicoesPendentes(secoesNaoSalvasRef.current.size > 0 || camposPendentesRef.current.size > 0);
         selecionadoRef.current = atualizado;
         setSelecionado(atualizado);
         setPersonagens(lista => lista.map(p => p.id === atualizado.id ? atualizado : p).sort((a,b) => b.atualizadoEm.localeCompare(a.atualizadoEm)));
