@@ -151,3 +151,29 @@ A fila local não evita esse cenário porque as filas são independentes. També
 **Correção recomendada:** mover a operação de patch para o módulo de persistência. Dentro de uma única transação `readwrite`, buscar a versão mais recente do registro, mesclar apenas as chaves da seção editada e gravar o resultado. Para alterações simultâneas na mesma chave, definir política explícita (detectar conflito usando revisão/base observada ou documentar último salvamento vence); não escolher silenciosamente. A UI deve receber o registro efetivamente gravado e atualizar seu estado.
 
 **Testes necessários antes da implementação:** duas conexões IndexedDB independentes, ambas lendo a mesma ficha; primeiro patch em uma conexão; segundo patch em outra; confirmar que alterações em chaves diferentes sobrevivem. Acrescentar caso de conflito na mesma chave e decidir a resposta esperada. A mudança exige teste de regressão para a fila de gravação da mesma aba.
+
+## 12. Auditoria complementar — exclusão e importação concorrentes
+
+### Exclusão individual
+
+`excluirPersonagem(id)` executa `delete(id)` em uma transação `readwrite`. Se outra aba ainda estiver com a ficha aberta, uma gravação posterior via `salvarPatchPersonagem` consulta o registro dentro da transação e falha quando ele não existe. Portanto, o caminho novo de patch não recria a ficha excluída.
+
+**Limite:** a aba que excluiu não notifica automaticamente as demais. A aba antiga só descobre a exclusão quando tenta salvar; nesse momento a gravação é recusada. Não há teste em navegador real para essa sequência.
+
+### Importação como cópias
+
+`adicionarPersonagens()` usa `add()`, não `put()`. Colisão de ID provoca falha da transação, evitando substituir silenciosamente um registro existente. O lote é uma única transação, portanto não deve deixar importação parcial quando há erro.
+
+### Substituição integral do backup
+
+`substituirPersonagens()` usa uma única transação `readwrite` com `clear()` seguido de `put()` para cada ficha. A atomicidade protege contra conjunto parcialmente restaurado quando a transação aborta.
+
+**Risco multiaba ainda aberto:** outra aba pode permanecer com uma ficha antiga em memória durante a substituição. Se ela tentar salvar depois, o patch verifica as chaves editadas contra o registro substituto. Se alguma chave tiver mudado, recusa o patch. Porém, se as chaves editadas tiverem valores iguais aos da cópia antiga, o patch pode ser aceito e aplicado ao registro restaurado. Isso pode misturar uma edição iniciada antes da restauração com o conjunto novo. A comparação atual não identifica a operação de substituição como uma nova geração do conjunto.
+
+**Classificação:** risco plausível e derivado do fluxo; ainda não reproduzido em navegador real.
+
+**Recomendação:** antes de considerar a substituição segura em múltiplas abas, introduzir um identificador de geração do conjunto local (ou mecanismo equivalente), incrementado atomicamente na substituição e observado pela aba editora. O patch deve recusar a gravação se a geração observada ao abrir a ficha não corresponder à geração vigente. A solução precisa preservar compatibilidade com registros existentes e backups antigos; não implementar sem definir onde o marcador vive e como será inicializado.
+
+### Limite dos testes multiaba adicionados
+
+`tests/persistencia-patch.test.mjs` cobre a lógica de mesclagem e detecção de conflito usando duas importações isoladas do módulo e um mock de IndexedDB compartilhado. Isso não equivale a duas conexões reais do navegador: o mock não reproduz integralmente o agendamento e o bloqueio transacional normativo do IndexedDB. Os testes são regressões unitárias da lógica, não homologação multiaba.
