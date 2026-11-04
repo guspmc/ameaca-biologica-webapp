@@ -9,6 +9,7 @@ import { planejarInventarioCriacao } from './inventarioCriacao';
 import EditorAtributosPericiasLocal from './EditorAtributosPericiasLocal';
 import EditorCaracteristicasLocal from './EditorCaracteristicasLocal';
 import EditorInventarioLocal from './EditorInventarioLocal';
+import IdentidadeLocal from './IdentidadeLocal';
 
 type DadosFichaLocal = {
   classe?: unknown;
@@ -22,6 +23,7 @@ type DadosFichaLocal = {
   distribuicaoPericias?: unknown;
   comprasIniciais?: unknown;
   revisaoCompras?: unknown;
+  identidade?: unknown;
 };
 
 type Props = {
@@ -32,6 +34,7 @@ type Props = {
   aoEditar: (secao: 'caracteristicas' | 'pericias' | 'inventario') => void;
   aoSalvarAtributosPericias: (dados: { atributos: AtributosIniciais; periciaOrigemTreinada: string; periciaOrigemExtra: string | null; distribuicaoPericias: Record<string, number> }) => Promise<boolean>;
   aoSalvarCaracteristicas: (dados: { classe: string; origem: string; armaOperario: string; habilidadeBasica: string; equipamentoInicial: string }) => Promise<boolean>;
+  aoSalvarIdentidade?: (dados: { nome: string; identidade: Record<string, string> }) => Promise<boolean>;
   aoSalvarInventario: (dados: { equipamentoInicial: string; comprasIniciais: Record<string, number>; revisaoCompras: number }) => Promise<boolean>;
   origemDados?: 'local' | 'servidor';
 };
@@ -117,6 +120,7 @@ export default function FichaLocal({ nome, mesa, dados, aoFechar, aoEditar, aoSa
           <div className="ficha-local-titulo-secao"><h2><span>01</span> Características</h2><button type="button" className="ficha-local-editar-secao" onClick={() => aoEditar("caracteristicas")}>Editar seção ↗</button></div>
           {alertasCompatibilidade.length > 0 && <p className="ficha-local-aviso" role="alert">Revisão da criação necessária: {alertasCompatibilidade.join("; ")}. As escolhas foram preservadas; corrija os itens incompatíveis antes de confirmar a criação.</p>}
           <EditorCaracteristicasLocal key={JSON.stringify([classe, origem, ficha.armaOperario, ficha.habilidadeBasica, kitSelecionado])} iniciais={{ classe, origem, armaOperario: typeof ficha.armaOperario === 'string' ? ficha.armaOperario : '', habilidadeBasica: typeof ficha.habilidadeBasica === 'string' ? ficha.habilidadeBasica : '', equipamentoInicial: kitSelecionado }} aoSalvar={aoSalvarCaracteristicas} mensagemSucesso={origemDados === 'servidor' ? 'Características confirmadas pelo servidor.' : undefined} />
+          {aoSalvarIdentidade && <IdentidadeLocal key={JSON.stringify([nome, ficha.identidade])} nome={nome} identidade={(ficha.identidade as Record<string, string>) ?? {}} aoSalvar={aoSalvarIdentidade} />}
           <div className="ficha-local-grade">
             <div><small>CLASSE</small><strong>{classe || 'Pendente'}</strong><p>{dadosClasse?.identidade ?? 'Dados da Classe ainda não definidos.'}</p></div>
             <div><small>ORIGEM</small><strong>{origem || 'Pendente'}</strong><p>{dadosOrigem?.beneficio ?? 'Benefício da Origem ainda não definido.'}</p></div>
