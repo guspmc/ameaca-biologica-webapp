@@ -18,9 +18,10 @@ type Props = {
   nome: string;
   identidade: Record<string, string>;
   aoSalvar: (dados: { nome: string; identidade: Record<string, string> }) => Promise<boolean>;
+  aoAlterarPendencia: (pendente: boolean) => void;
 };
 
-export default function IdentidadeLocal({ nome: nomeInicial, identidade: identidadeInicial, aoSalvar }: Props) {
+export default function IdentidadeLocal({ nome: nomeInicial, identidade: identidadeInicial, aoSalvar, aoAlterarPendencia }: Props) {
   const [nome, setNome] = useState(nomeInicial);
   const [dados, setDados] = useState<Record<string, string>>(() =>
     Object.fromEntries(CAMPOS.map(campo => [campo.id, typeof identidadeInicial[campo.id] === 'string' ? identidadeInicial[campo.id] : '']))
@@ -45,6 +46,7 @@ export default function IdentidadeLocal({ nome: nomeInicial, identidade: identid
     try {
       const identidade = Object.fromEntries(CAMPOS.map(campo => [campo.id, (dados[campo.id] ?? '').trim()]));
       const ok = await aoSalvar({ nome: nomeLimpo, identidade });
+      if (ok) aoAlterarPendencia(false);
       setMensagem(ok ? 'Identificação salva neste dispositivo.' : 'Não foi possível confirmar o salvamento. Tente novamente.');
     } catch {
       setMensagem('Ocorreu uma falha ao salvar. Nenhuma confirmação foi recebida.');
@@ -58,11 +60,11 @@ export default function IdentidadeLocal({ nome: nomeInicial, identidade: identid
     <p>Campos narrativos da personagem. São opcionais e não alteram Atributos ou recursos. Gênero se refere à personagem e auxilia a flexão dos textos da ficha.</p>
     <form className="ficha-local-identidade-form" onSubmit={salvar}>
       <label>Nome da personagem
-        <input value={nome} minLength={2} maxLength={60} required disabled={salvando} onChange={evento => { setNome(evento.target.value); setMensagem(''); }} />
+        <input value={nome} minLength={2} maxLength={60} required disabled={salvando} onChange={evento => { setNome(evento.target.value); aoAlterarPendencia(true); setMensagem(''); }} />
       </label>
       {CAMPOS.map(campo => <label key={campo.id}>{campo.nome}
         {campo.limite > 120
-          ? <textarea rows={campo.id === 'historia' ? 6 : 3} maxLength={campo.limite} value={dados[campo.id] ?? ''} disabled={salvando} onChange={evento => { setDados(atual => ({ ...atual, [campo.id]: evento.target.value })); setMensagem(''); }} />
+          ? <textarea rows={campo.id === 'historia' ? 6 : 3} maxLength={campo.limite} value={dados[campo.id] ?? ''} disabled={salvando} onChange={evento => { setDados(atual => ({ ...atual, [campo.id]: evento.target.value })); aoAlterarPendencia(true); setMensagem(''); }} />
           : <input maxLength={campo.limite} value={dados[campo.id] ?? ''} disabled={salvando} onChange={evento => { setDados(atual => ({ ...atual, [campo.id]: evento.target.value })); setMensagem(''); }} />}
         <small>{(dados[campo.id] ?? '').length}/{campo.limite}</small>
       </label>)}
