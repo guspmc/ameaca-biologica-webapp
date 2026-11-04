@@ -65,7 +65,7 @@ export default function IdentidadeLocal({ nome: nomeInicial, identidade: identid
       {CAMPOS.map(campo => <label key={campo.id}>{campo.nome}
         {campo.limite > 120
           ? <textarea rows={campo.id === 'historia' ? 6 : 3} maxLength={campo.limite} value={dados[campo.id] ?? ''} disabled={salvando} onChange={evento => { setDados(atual => ({ ...atual, [campo.id]: evento.target.value })); aoAlterarPendencia(true); setMensagem(''); }} />
-          : <input maxLength={campo.limite} value={dados[campo.id] ?? ''} disabled={salvando} onChange={evento => { setDados(atual => ({ ...atual, [campo.id]: evento.target.value })); setMensagem(''); }} />}
+          : <input maxLength={campo.limite} value={dados[campo.id] ?? ''} disabled={salvando} onChange={evento => { setDados(atual => ({ ...atual, [campo.id]: evento.target.value })); aoAlterarPendencia(true); setMensagem(''); }} />}
         <small>{(dados[campo.id] ?? '').length}/{campo.limite}</small>
       </label>)}
       {mensagem && <p role="status">{mensagem}</p>}
