@@ -37,16 +37,18 @@ let abertura: Promise<IDBDatabase> | null = null;
 
 function abrirBanco(): Promise<IDBDatabase> {
   if (abertura) return abertura;
-  abertura = new Promise((resolve, reject) => {
-    let requisicao: IDBOpenDBRequest;
-    let aberturaBloqueada = false;
-    try {
-      requisicao = exigirIndexedDB().open(BANCO_FICHA, VERSAO_BANCO_FICHA);
-    } catch (erro) {
-      abertura = null;
-      reject(erro);
-      return;
-    }
+
+  let requisicao: IDBOpenDBRequest;
+  try {
+    requisicao = exigirIndexedDB().open(BANCO_FICHA, VERSAO_BANCO_FICHA);
+  } catch (erro) {
+    return Promise.reject(erro);
+  }
+
+  let aberturaBloqueada = false;
+  let promessa: Promise<IDBDatabase>;
+
+  promessa = new Promise((resolve, reject) => {
     requisicao.onupgradeneeded = () => {
       const banco = requisicao.result;
       if (!banco.objectStoreNames.contains(STORE_PERSONAGENS)) {
@@ -56,7 +58,11 @@ function abrirBanco(): Promise<IDBDatabase> {
     };
     requisicao.onsuccess = () => {
       const banco = requisicao.result;
-      banco.onversionchange = () => banco.close();
+      banco.onversionchange = () => {
+        banco.close();
+        // Uma conexão antiga não pode invalidar uma abertura mais recente.
+        if (abertura === promessa) abertura = null;
+      };
       // Se outra aba bloqueou a abertura e depois liberou o banco, não
       // deixamos uma conexão tardia aberta sem referência no módulo.
       if (aberturaBloqueada) {
@@ -66,16 +72,18 @@ function abrirBanco(): Promise<IDBDatabase> {
       resolve(banco);
     };
     requisicao.onerror = () => {
-      abertura = null;
+      if (abertura === promessa) abertura = null;
       reject(requisicao.error ?? new Error('Não foi possível abrir o banco local.'));
     };
     requisicao.onblocked = () => {
       aberturaBloqueada = true;
-      abertura = null;
+      if (abertura === promessa) abertura = null;
       reject(new Error('O banco local está sendo usado por outra aba. Feche as outras abas e tente novamente.'));
     };
   });
-  return abertura;
+
+  abertura = promessa;
+  return promessa;
 }
 
 function aguardarTransacao(transacao: IDBTransaction): Promise<void> {
