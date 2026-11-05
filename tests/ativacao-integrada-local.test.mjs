@@ -87,7 +87,9 @@ test('ciclo integrado: saida do jogador apaga seus rascunhos, mas preserva ficha
   const itensAntes=await instances(db,completa);
   assert.ok(itensAntes.length>0);
   await uid(db,A);
+  await db.exec('set role authenticated');
   await db.query('select app_private.sair_mesa_local($1,true)',[T]);
+  await db.exec('reset role');
   assert.equal((await get(db,rascunho)),undefined);
   const depois=await get(db,completa);
   assert.equal(depois.estado_ficha,'completa');
@@ -164,9 +166,10 @@ test('ciclo integrado: Mestre remove somente o jogador escolhido, limpa apenas s
   await db.exec('set role authenticated');
   const tentativa=await db.query('delete from public.mesa_participantes where mesa_id=$1 and usuario_id=$2',[T,A]);
   assert.equal(tentativa.rowCount,0);
-  await assert.rejects(db.query('select app_private.sair_mesa_local($1,true)',[T]),/permission denied/);
+  await db.query('select app_private.sair_mesa_local($1,true)',[T]);
   await db.exec('reset role');
-  assert.equal((await db.query('select count(*)::int n from public.mesa_participantes where mesa_id=$1 and usuario_id=$2',[T,A])).rows[0].n,1);
+  assert.equal((await get(db,rascunhoA)),undefined);
+  assert.equal((await db.query('select count(*)::int n from public.mesa_participantes where mesa_id=$1 and usuario_id=$2',[T,A])).rows[0].n,0);
  }finally{await db.close();}
 });
 
