@@ -177,7 +177,7 @@ function Lobby({ supabase, sessao }: { supabase: SupabaseClient; sessao: Session
   const chaveBloqueioCache = 'ameaca-biologica:cache-offline-bloqueado:' + sessao.user.id;
   const [cacheOfflineBloqueado, setCacheOfflineBloqueado] = useState(() => {
     try { return localStorage.getItem(chaveBloqueioCache) === '1'; }
-    catch { return false; }
+    catch { return true; }
   });
 
   const atualizar = useCallback(async (silencioso = false) => {
