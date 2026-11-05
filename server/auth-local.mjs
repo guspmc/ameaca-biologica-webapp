@@ -332,7 +332,7 @@ export async function autenticarContaLocal(req, db) {
   return sessao ? { id: sessao.id, email: sessao.email } : null;
 }
 
-export async function tratarRotaAutenticacao(req, res, url, db) {
+export async function tratarRotaAutenticacao(req, res, url, db, encerrarSessaoWebSocket = () => {}) {
   const metodo = req.method ?? 'GET';
   const rota = url.pathname;
   if (!rota.startsWith('/api/auth/')) return false;
@@ -428,9 +428,13 @@ export async function tratarRotaAutenticacao(req, res, url, db) {
     }
 
     if (metodo === 'POST' && rota === '/api/auth/logout') {
-      const cabecalho = req.headers.authorization ?? '';
-      const correspondencia = /^Bearer ([A-Za-z0-9_-]{40,100})$/.exec(cabecalho);
-      if (correspondencia) db.prepare('DELETE FROM sessoes_locais WHERE token_hash = ?').run(hashToken(correspondencia[1]));
+      const token = obterTokenSessao(req);
+      if (token) {
+        const tokenHash = hashToken(token);
+        db.prepare('DELETE FROM tickets_websocket_locais WHERE session_token_hash = ?').run(tokenHash);
+        db.prepare('DELETE FROM sessoes_locais WHERE token_hash = ?').run(tokenHash);
+        encerrarSessaoWebSocket(tokenHash);
+      }
       json(res, 200, { ok: true });
       return true;
     }
