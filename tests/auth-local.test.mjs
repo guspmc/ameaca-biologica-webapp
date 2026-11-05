@@ -566,7 +566,7 @@ test('LAN: aprovacoes concorrentes disputando a ultima vaga nao excedem dez joga
   const pedidoA = (await solicitacaoA.json()).request;
   const pedidoB = (await solicitacaoB.json()).request;
 
-  // Sete jogadores existentes + os dois candidatos = nove antes da disputa.
+  // Nove jogadores existentes; somente uma vaga permanece disponível.
   const agora = new Date().toISOString();
   const inserirConta = app.db.prepare(
     'INSERT INTO contas_locais (id, email, senha_salt, senha_hash, criada_em) VALUES (?, ?, ?, ?, ?)'
@@ -574,7 +574,7 @@ test('LAN: aprovacoes concorrentes disputando a ultima vaga nao excedem dez joga
   const inserirParticipante = app.db.prepare(
     "INSERT INTO participantes_mesa (mesa_id, conta_id, papel, entrou_em) VALUES (?, ?, 'jogador', ?)"
   );
-  for (let i = 0; i < 7; i += 1) {
+  for (let i = 0; i < 9; i += 1) {
     const id = 'concorrencia-lan-' + i;
     inserirConta.run(id, id + '@example.test', 'salt', 'hash', agora);
     inserirParticipante.run(mesa.id, id, agora);
@@ -589,7 +589,7 @@ test('LAN: aprovacoes concorrentes disputando a ultima vaga nao excedem dez joga
   const total = app.db.prepare(
     "SELECT COUNT(*) AS total FROM participantes_mesa WHERE mesa_id = ? AND papel = 'jogador'"
   ).get(mesa.id).total;
-  assert.equal(total, 8); // sete existentes + somente um dos dois candidatos
+  assert.equal(total, 10); // nove existentes + somente um dos dois candidatos
   const statusA = app.db.prepare('SELECT status FROM solicitacoes_mesa_locais WHERE id = ?').get(pedidoA.id).status;
   const statusB = app.db.prepare('SELECT status FROM solicitacoes_mesa_locais WHERE id = ?').get(pedidoB.id).status;
   assert.deepEqual([statusA, statusB].sort(), ['aprovada', 'pendente']);
