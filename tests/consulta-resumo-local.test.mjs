@@ -49,3 +49,14 @@ test('resumo: transporte rejeita esquema antigo de doze perícias e preserva res
  const s=prepararResumoQA('normal');const c=prepararConsultaResumoLocal({rpc:async(n,a)=>{const r=await s.cliente.rpc(n,a);r.data[0].passivos.Luta=12;return r;}});assert.equal((await carregar(c)).etapa,'erro');
  const d=prepararConsultaResumoLocal({rpc:async(n,a)=>{const r=await s.cliente.rpc(n,a);r.data[0].pv.atual=0;r.data[0].sa.atual=-1;return r;}});const v=await carregar(d);assert.deepEqual([v.itens[0].pv.atual,v.itens[0].sa.atual],[0,-1]);
 });
+
+test('resumo: controlador aceita adaptador LAN sem acoplamento a RPC',async()=>{
+ let chamadas=0;
+ const c=prepararConsultaResumoLocal({listarResumo:async mesaId=>{chamadas++;assert.equal(mesaId,MESAS_RESUMO.A.mesaId);return [];}});
+ c.selecionar(MESAS_RESUMO.A);
+ await c.consultar();
+ assert.equal(chamadas,1);
+ assert.equal(c.estado().etapa,'carregada');
+ assert.deepEqual(c.estado().itens,[]);
+ assert.ok(c.estado().mensagem.includes('Nenhuma personagem ativa'));
+});
