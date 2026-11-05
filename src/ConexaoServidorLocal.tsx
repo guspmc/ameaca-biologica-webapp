@@ -3,7 +3,7 @@ import { criarClienteServidorLocal, ErroServidorLocal, type MesaLocal, type Resu
 import FichaLocal from './FichaLocal';
 import { calcularAtrasoReconexao } from './reconexaoLocal';
 import { criarFilaSerializada } from './filaSerializada';
-import { fichaContinuaSendoAlvo } from './fichaContinuaSendoAlvo';
+import { fichaContinuaSendoAlvo, sessaoContinuaSendoAtual } from './fichaContinuaSendoAlvo';
 
 const CHAVE_ENDERECO = 'ameaca-biologica:servidor-local:endereco:v1';
 
@@ -400,7 +400,7 @@ export default function ConexaoServidorLocal() {
       try {
         const fichaAtual = fichaAbertaRef.current;
         // Uma operação enfileirada nunca pode migrar para outra ficha/Mesa.
-        if (!sessao || geracaoSessao.current !== geracaoSolicitada || !fichaAtual || fichaAtual.mesa.role !== 'jogador' ||
+        if (!sessao || !sessaoContinuaSendoAtual(geracaoSessao.current, geracaoSolicitada) || !fichaAtual || fichaAtual.mesa.role !== 'jogador' ||
             fichaAtual.personagem.id !== personagemIdSolicitado || fichaAtual.mesa.id !== mesaIdSolicitada) return false;
         setErro(''); setAviso('');
         // A base e a revisão são lidas somente quando esta operação chega à vez.
@@ -415,7 +415,7 @@ export default function ConexaoServidorLocal() {
         // A sessão pode terminar enquanto o HTTP está em andamento. Nesse caso,
         // a resposta tardia não pode recolocar dados privados na interface.
         const fichaAindaAberta = fichaAbertaRef.current;
-        if (geracaoSessao.current !== geracaoSolicitada || !fichaContinuaSendoAlvo(fichaAindaAberta, {
+        if (!sessaoContinuaSendoAtual(geracaoSessao.current, geracaoSolicitada) || !fichaContinuaSendoAlvo(fichaAindaAberta, {
           personagemId: personagemIdSolicitado,
           mesaId: mesaIdSolicitada,
         })) return false;
@@ -429,7 +429,7 @@ export default function ConexaoServidorLocal() {
         return true;
       } catch (problema) {
         // Uma resposta da sessão anterior não pode encerrar ou alterar a sessão recém-aberta.
-        if (geracaoSessao.current !== geracaoSolicitada) return false;
+        if (!sessaoContinuaSendoAtual(geracaoSessao.current, geracaoSolicitada)) return false;
         if (problema instanceof ErroServidorLocal && problema.status === 401) encerrarSessao('A sessão expirou ou foi encerrada no servidor. Entre novamente.');
         else setErro(problema instanceof Error ? problema.message : 'Não foi possível confirmar o salvamento no servidor.');
         return false;
