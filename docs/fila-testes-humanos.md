@@ -240,3 +240,10 @@ Foi integrada à seção de Perícias uma calculadora de conferência que recebe
 - Bio-Infecção: conferir modificador de Movimento (+3 m nas fases 2–4; -6 m na fase 5), bônus de Testes de Ataque (+2 na fase 3; +3 total na fase 4), +1d4 de Dano Corpo a Corpo na fase 4 e Desvantagem na fase 5; confirmar que a fase não executa os efeitos.
 - Calculadora: além dos casos já listados, conferir 20 natural em Teste de Ataque (acerto automático, fecha Reações defensivas normais e causa Crítico) sem tentar resolver automaticamente arma/Dano.
 - Método de dados Físicos/Virtuais/Mistos e histórico/visibilidade continuam pendentes; a calculadora atual é somente de entrada manual de dados físicos.
+
+
+### H4 — complemento: preferências de dados e visibilidade (05/11/2026)
+
+9. Conferir padrão inicial Mistos/Pública; alterar para Físicos, Virtuais e Mistos, bem como Pública/Privada; salvar, fechar e reabrir a ficha e confirmar persistência por personagem.
+10. Abrir uma configuração antiga sem os novos campos; confirmar que a interface apresenta Mistos/Pública por normalização, preserva as escolhas de Automação e só grava o formato completo após salvar.
+11. Confirmar que mudar a preferência não gera rolagem, não cria histórico e não revela/oculta registros inexistentes. A execução virtual, histórico e privacidade efetiva continuam pendentes do módulo de rolagens.

@@ -283,3 +283,23 @@ A revisão do Planejamento v2.1 corrigiu a apresentação do Passivo e consolido
 Commit acfa0e537049f4e84b142d16ab65f49cffe04287: ambos os workflows concluíram com sucesso; **396/396 testes aprovados**, TypeScript, build Vite e verificações PostgreSQL concluídos.
 
 **PENDENTE:** teste humano H4 dos valores exibidos e da calculadora; módulos operacionais de Combate, Inventário ativo, recursos atuais e rolagens virtuais/mistas continuam por implementar.
+
+
+## 19. Preferências de dados, visibilidade e compatibilidade — 05/11/2026
+
+A configuração de funcionamento agora persiste, por personagem, também:
+- método de dados: Físicos, Virtuais ou Mistos;
+- visibilidade padrão: Pública ou Privada;
+- padrões aprovados: Mistos e Pública.
+
+A configuração antiga que ainda contém apenas modo de automação e preferências do Misto continua válida. Ao abrir a ficha, o normalizador apresenta Mistos/Pública como padrão; ao salvar, a configuração completa é persistida. Não há migration SQL porque as preferências ficam no JSON da personagem.
+
+A pré-ativação passou a usar a mesma função de validação da configuração. Configuração antiga é reconhecida, mas as duas opções do Misto que permanecem sem padrão universal (BI infectante e Durabilidade ao Aparar) continuam exigindo escolha explícita antes da ativação. Nenhuma escolha é preenchida automaticamente.
+
+### Validação automatizada
+
+Commit 9a8b45d519cf664402e6b88fc4418a61f5904305: ambos os workflows concluíram com sucesso; **396/396 testes aprovados**, build Vite, TypeScript, tipos dos cenários isolados e verificações PostgreSQL aprovados.
+
+**IMPLEMENTADO E TESTADO AUTOMATICAMENTE:** persistência local/servidor das preferências de modo de dados e visibilidade; padrões Mistos/Pública; compatibilidade com configuração antiga; validação compartilhada na pré-ativação.
+
+**PENDENTE:** geração de dados virtuais, fluxo misto de rolagem, registro/histórico, visibilidade efetiva de registros e permissões. A calculadora existente continua limitada a resultados físicos informados manualmente.
