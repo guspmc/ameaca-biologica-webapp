@@ -36,15 +36,24 @@ function valorJsonSeguro(valor: unknown, visitados = new Set<object>()): boolean
 
   if (Array.isArray(valor)) {
     // JSON transforma lacunas em null e ignora propriedades extras do array.
-    if (chaves.some(chave => chave !== 'length'
-      && (!/^\d+$/.test(chave as string) || Number(chave) >= valor.length))
-      || Array.from({ length: valor.length }, (_, indice) => Object.prototype.hasOwnProperty.call(valor, indice)).some(existe => !existe)) {
+    const indices = chaves.filter(chave => chave !== 'length') as string[];
+    if (indices.length !== valor.length || indices.some(chave => {
+      const indice = Number(chave);
+      return !Number.isInteger(indice) || String(indice) !== chave || indice >= valor.length;
+    })) {
       visitados.delete(valor);
       return false;
     }
-    const valido = valor.every(item => valorJsonSeguro(item, visitados));
+    for (const chave of indices) {
+      const descritor = Object.getOwnPropertyDescriptor(valor, chave);
+      if (!descritor?.enumerable || !('value' in descritor)
+        || !valorJsonSeguro(descritor.value, visitados)) {
+        visitados.delete(valor);
+        return false;
+      }
+    }
     visitados.delete(valor);
-    return valido;
+    return true;
   }
 
   const prototipo = Object.getPrototypeOf(valor);
