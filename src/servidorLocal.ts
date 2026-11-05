@@ -258,6 +258,11 @@ export function criarClienteServidorLocal({ baseUrl, token, fetcher = fetch }: O
       return requisicao(`/api/personagens/${id}`, { autenticada: true });
     },
 
+    excluirPersonagem(id: string): Promise<{ deleted: true; id: string }> {
+      if (!/^[a-f0-9]{32}$/.test(id)) throw new Error('Identificador de personagem inválido.');
+      return requisicao(`/api/personagens/${id}`, { metodo: 'DELETE', autenticada: true });
+    },
+
     atualizarPersonagem(id: string, name: string, data: Record<string, unknown>, expectedRevision: number): Promise<{ personagem: PersonagemRascunhoLocal }> {
       if (!/^[a-f0-9]{32}$/.test(id)) throw new Error('Identificador de personagem inválido.');
       return requisicao(`/api/personagens/${id}`, {
