@@ -58,6 +58,23 @@ test('rascunhos de personagem persistem e ficam isolados por conta e Mesa', asyn
 
   const listaTerceiro = await fetch(url + '/api/mesas/' + mesa.id + '/personagens', { headers: terceiro.headers });
   assert.equal(listaTerceiro.status, 404);
+  const tentativaCriacaoTerceiro = await fetch(url + '/api/mesas/' + mesa.id + '/personagens', {
+    method: 'POST',
+    headers: { ...terceiro.headers, 'content-type': 'application/json' },
+    body: JSON.stringify({ name: 'Acesso indevido', data: {} }),
+  });
+  assert.equal(tentativaCriacaoTerceiro.status, 404);
+
+  const mesaDeOutraConta = await fetch(url + '/api/mesas', {
+    method: 'POST',
+    headers: { ...terceiro.headers, 'content-type': 'application/json' },
+    body: JSON.stringify({ name: 'Mesa isolada' }),
+  });
+  assert.equal(mesaDeOutraConta.status, 201);
+  const { mesa: mesaIsolada } = await mesaDeOutraConta.json();
+  const jogadorForaDaMesa = await fetch(url + '/api/mesas/' + mesaIsolada.id + '/personagens', { headers: jogador.headers });
+  assert.equal(jogadorForaDaMesa.status, 404);
+
   const listaSemSessao = await fetch(url + '/api/mesas/' + mesa.id + '/personagens');
   assert.equal(listaSemSessao.status, 401);
 
