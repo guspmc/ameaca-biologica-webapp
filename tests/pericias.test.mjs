@@ -17,3 +17,12 @@ test('Pericia sem treinamento gratuito custa dois pontos para Mestre e nao trein
   assert.equal(bonusTreinamento(grauPericia('Luta','Pontaria',pontos)),3);
   assert.equal(bonusTreinamento(grauPericia('Medicina','Pontaria',pontos)),0);
 });
+
+test('valor base da Perícia soma seu Atributo associado e o Treinamento uma única vez',()=>{
+  const atributos={forca:1,agilidade:2,vigor:2,astucia:2};
+  assert.equal(ATRIBUTO_PERICIA.Acro bacia, undefined);
+  assert.equal(valorBasePericia('Acrobacia',atributos,null,{}),2);
+  assert.equal(valorBasePericia('Luta',atributos,'Luta',{}),3);
+  assert.equal(valorBasePericia('Medicina',atributos,null,{Medicina:2}),5);
+  assert.throws(()=>valorBasePericia('Perícia inventada',atributos,null,{}),/Perícia desconhecida/);
+});
