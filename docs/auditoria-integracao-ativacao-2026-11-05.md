@@ -119,8 +119,9 @@ A revisão denominada `revisao_criacao` está funcionando na prática como revis
 - A proposta integrada instala um gatilho BEFORE DELETE em public.mesa_participantes; quando o vínculo removido tem papel jogador, apaga somente personagens rascunho daquele usuário e daquela Mesa.
 - Fichas completas/arquivadas não são apagadas por esse gatilho. A proteção de exclusão individual impede apagar uma ficha não rascunho enquanto a Mesa ainda existe.
 - A RPC de saída confirma identidade, papel de jogador e Mesa, bloqueia a linha da Mesa e a participação antes de remover o vínculo. A limpeza dos rascunhos ocorre pelo gatilho dentro da mesma transação.
-- IMPLEMENTADO NO TESTE: dois testes integrados foram acrescentados em tests/ativacao-integrada-local.test.mjs: saída preservando ficha completa/recursos/instâncias e exclusão da Mesa verificando cascatas. Commit d2ba370; CI ainda pendente na última consulta.
-- PENDENTE: teste explícito de rollback da saída se a limpeza de rascunhos falhar e verificação de notas pessoais após saída/readmissão.
+- IMPLEMENTADO NO TESTE: dois testes integrados foram acrescentados em tests/ativacao-integrada-local.test.mjs: saída preservando ficha completa/recursos/instâncias e exclusão da Mesa verificando cascatas. Commit d2ba370; CI aprovado nos dois fluxos (testes da ficha offline e build).
+- IMPLEMENTADO NO TESTE: commit a0f73dd acrescenta falha deliberada durante a limpeza e exige rollback integral da transação de saída (rascunho e participação preservados); CI pendente na última consulta.
+- PENDENTE: verificação de notas pessoais após saída/readmissão.
 
 ### Exclusão da Mesa
 
@@ -137,4 +138,4 @@ A revisão denominada `revisao_criacao` está funcionando na prática como revis
 - PENDENTE DE DECISÃO/IMPLEMENTAÇÃO: definir se a exclusão da Mesa deve também disparar uma limpeza local na próxima conexão, e como isso funcionaria em dispositivos que estejam offline. Não implementar apagamento local indiscriminado: a chave é por conta/Mesa/personagem e deve ser removida somente após confirmação confiável da exclusão daquela Mesa. Também não prometer preservação entre dispositivos, pois o armazenamento atual é local.
 - Não há no modelo atual uma tabela de notas pessoais no servidor. Não criar uma sem decisão expressa, pois isso muda privacidade, sincronização e tratamento de conflitos.
 
-Estado: auditoria estática concluída; testes de cascata adicionados e aguardando CI; comportamento de notas locais identificado; nenhuma migration, exclusão remota, sincronização ou publicação realizada.
+Estado: auditoria estática concluída; testes de saída/cascata aprovados em d2ba370; teste de rollback adicionado em a0f73dd e aguardando CI; comportamento de notas locais identificado; nenhuma migration, exclusão remota, sincronização ou publicação realizada.
