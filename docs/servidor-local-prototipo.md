@@ -177,7 +177,7 @@ A rota foi adicionada ao ponto de entrada nesta branch. O CI dos commits que inc
 
 ## Canal LAN e execução no celular — 05/11/2026
 
-O servidor agora aceita inscrições WebSocket por Mesa. O ticket continua temporário, de uso único e vinculado à sessão ativa. A inscrição recebe somente os identificadores de Mesas em que a conta é participante; antes de enviar uma invalidação, o servidor revalida sessão e vínculo. Eventos não transportam fichas, e-mails, solicitações ou conteúdo privado: a interface deve consultar novamente as rotas HTTP autorizadas. Alterações de rascunho emitem invalidação somente para outras conexões da mesma conta; não são transmitidas ao Mestre.
+O servidor agora aceita inscrições WebSocket individuais por Mesa, sem impor um limite artificial de Mesas por conta. O ticket continua temporário, de uso único e vinculado à sessão ativa. A inscrição recebe somente os identificadores de Mesas em que a conta é participante; antes de enviar uma invalidação, o servidor revalida sessão e vínculo. Eventos não transportam fichas, e-mails, solicitações ou conteúdo privado: a interface deve consultar novamente as rotas HTTP autorizadas. Alterações de rascunho emitem invalidação somente para outras conexões da mesma conta; não são transmitidas ao Mestre.
 
 A interface React usa esse canal para atualizar listas de Mesas, solicitações e rascunhos. Se a conexão cair, tenta reconectar com novo ticket. Uma sessão revogada encerra o canal. A aplicação não substitui as consultas HTTP por dados recebidos no WebSocket.
 
