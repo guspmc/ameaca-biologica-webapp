@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 import ts from 'typescript';
 const {outputText}=ts.transpileModule(await readFile(new URL('../src/funcionamentoFicha.ts',import.meta.url),'utf8'),{compilerOptions:{module:ts.ModuleKind.ESNext,target:ts.ScriptTarget.ES2022}});
-const {configuracaoInicial,automacoesEfetivas}=await import('data:text/javascript;base64,'+Buffer.from(outputText).toString('base64'));
+const {configuracaoInicial,automacoesEfetivas,configuracaoFuncionamentoValida}=await import('data:text/javascript;base64,'+Buffer.from(outputText).toString('base64'));
 test('funcionamento: Misto inicia com tres padroes aprovados e duas escolhas explicitamente indefinidas',()=>{
  const c=configuracaoInicial();
  assert.equal(c.modo,'misto');
@@ -20,4 +20,13 @@ test('funcionamento: alternar modos preserva preferencias Misto sem alterar esco
 test('funcionamento: restaurar padrao cria estado independente e nao reutiliza escolhas da outra ficha',()=>{
  const a=configuracaoInicial(),b=configuracaoInicial();a.preferenciasMisto.inventario=false;
  assert.equal(b.preferenciasMisto.inventario,true);assert.notEqual(a.preferenciasMisto,b.preferenciasMisto);
+});
+
+test('funcionamento: valida configuração persistível com campos e tipos estritos',()=>{
+ const c=configuracaoInicial();
+ assert.equal(configuracaoFuncionamentoValida(c),true);
+ assert.equal(configuracaoFuncionamentoValida({...c,modo:'livre'}),false);
+ assert.equal(configuracaoFuncionamentoValida({...c,preferenciasMisto:{...c.preferenciasMisto,municao:null}}),false);
+ assert.equal(configuracaoFuncionamentoValida({...c,preferenciasMisto:{...c.preferenciasMisto,biInfectante:'sim'}}),false);
+ assert.equal(configuracaoFuncionamentoValida({...c,campoExtra:true}),false);
 });
