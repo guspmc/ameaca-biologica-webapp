@@ -9,8 +9,9 @@ export const AUTOMACOES=[
  {id:'durabilidadeAparar',nome:'Durabilidade ao Aparar',detalhe:'Opção independente para Aparar; não desconta em ataques comuns e respeita Indestrutível.',padrao:null}
 ] as const;
 export type AutomacaoId=typeof AUTOMACOES[number]['id'];
-export type ConfiguracaoFuncionamento={modo:ModoFuncionamento;preferenciasMisto:Record<AutomacaoId,boolean|null>;modoDados:ModoDados;visibilidadeRolagem:VisibilidadeRolagem};
-export function configuracaoInicial():ConfiguracaoFuncionamento{
+export type ConfiguracaoFuncionamento={modo:ModoFuncionamento;preferenciasMisto:Record<AutomacaoId,boolean|null>;modoDados?:ModoDados;visibilidadeRolagem?:VisibilidadeRolagem};
+export type ConfiguracaoFuncionamentoCompleta=ConfiguracaoFuncionamento & {modoDados:ModoDados;visibilidadeRolagem:VisibilidadeRolagem};
+export function configuracaoInicial():ConfiguracaoFuncionamentoCompleta{
  return {modo:'misto',preferenciasMisto:{municao:true,inventario:true,duracaoEfeitos:true,biInfectante:null,durabilidadeAparar:null},modoDados:'mistos',visibilidadeRolagem:'publica'};
 }
 export function automacoesEfetivas(config:ConfiguracaoFuncionamento):Record<AutomacaoId,boolean|null>{
@@ -37,7 +38,7 @@ export function configuracaoFuncionamentoValida(valor: unknown): boolean {
   : typeof escolhas[item.id] === 'boolean');
 }
 
-export function normalizarConfiguracaoFuncionamento(valor: unknown): ConfiguracaoFuncionamento {
+export function normalizarConfiguracaoFuncionamento(valor: unknown): ConfiguracaoFuncionamentoCompleta {
  const padrao = configuracaoInicial();
  if (!valor || typeof valor !== 'object' || Array.isArray(valor)) return padrao;
  const config = valor as Record<string, unknown>;
