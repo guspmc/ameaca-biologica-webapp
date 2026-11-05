@@ -1,6 +1,6 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {A,M,T,op,uid,setup,criar,get,instances,pedido} from './helpers/ciclo-fixture.mjs';
+import {A,B,M,T,op,uid,setup,criar,get,instances,pedido} from './helpers/ciclo-fixture.mjs';
 
 test('pacote integrado: ativa uma ficha uma vez, recupera o recibo e preserva recursos',async()=>{
  const db=await setup({integrada:true});
