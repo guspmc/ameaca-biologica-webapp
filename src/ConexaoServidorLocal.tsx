@@ -302,9 +302,11 @@ export default function ConexaoServidorLocal() {
 
   async function atualizarMesas() {
     if (!sessao) return;
+    const geracaoSolicitada = geracaoSessao.current;
     setErro(''); setAviso(''); setConsultando(true);
     try {
       const resposta = await criarClienteServidorLocal({ baseUrl: endereco.trim(), token: sessao.token }).listarMesas();
+      if (!sessaoContinuaSendoAtual(geracaoSessao.current, geracaoSolicitada)) return;
       setMesas(resposta.mesas);
       setAviso('Lista de Mesas atualizada pelo servidor.');
     } catch (problema) {
@@ -474,10 +476,12 @@ export default function ConexaoServidorLocal() {
 
   async function gerarConvite(mesa: MesaLocal) {
     if (!sessao || mesa.role !== 'mestre') return;
+    const geracaoSolicitada = geracaoSessao.current;
     setErro(''); setAviso(''); setConsultando(true);
     try {
       const cliente = criarClienteServidorLocal({ baseUrl: endereco.trim(), token: sessao.token });
       const resposta = await cliente.criarConvite(mesa.id);
+      if (!sessaoContinuaSendoAtual(geracaoSessao.current, geracaoSolicitada)) return;
       setConvitesGerados(atual => ({ ...atual, [mesa.id]: resposta.invitation.code }));
       setAviso('Convite gerado. Copie e compartilhe o código; ele identifica a Mesa, mas não concede acesso automaticamente.');
     } catch (problema) {
@@ -488,9 +492,11 @@ export default function ConexaoServidorLocal() {
 
   async function revogarConvite(mesa: MesaLocal) {
     if (!sessao || mesa.role !== 'mestre') return;
+    const geracaoSolicitada = geracaoSessao.current;
     setErro(''); setAviso(''); setConsultando(true);
     try {
       const resposta = await criarClienteServidorLocal({ baseUrl: endereco.trim(), token: sessao.token }).revogarConvite(mesa.id);
+      if (!sessaoContinuaSendoAtual(geracaoSessao.current, geracaoSolicitada)) return;
       setConvitesGerados(atual => { const novo = { ...atual }; delete novo[mesa.id]; return novo; });
       setAviso(resposta.revoked
         ? 'Convite ativo revogado. Códigos anteriores não permitem novas solicitações; participantes atuais permanecem na Mesa.'
@@ -512,9 +518,11 @@ export default function ConexaoServidorLocal() {
   }
   async function carregarSolicitacoes(mesa: MesaLocal) {
     if (!sessao || mesa.role !== 'mestre') return;
+    const geracaoSolicitada = geracaoSessao.current;
     setErro(''); setAviso(''); setConsultando(true);
     try {
       const resposta = await criarClienteServidorLocal({ baseUrl: endereco.trim(), token: sessao.token }).listarSolicitacoes(mesa.id);
+      if (!sessaoContinuaSendoAtual(geracaoSessao.current, geracaoSolicitada)) return;
       setSolicitacoes(atual => ({ ...atual, [mesa.id]: resposta.requests }));
       setAviso('Solicitações pendentes consultadas no servidor.');
     } catch (problema) {
@@ -554,9 +562,11 @@ export default function ConexaoServidorLocal() {
   async function ingressarPorConvite(evento: FormEvent<HTMLFormElement>) {
     evento.preventDefault();
     if (!sessao || !codigoConvite.trim()) return;
+    const geracaoSolicitada = geracaoSessao.current;
     setErro(''); setAviso(''); setConsultando(true);
     try {
       await criarClienteServidorLocal({ baseUrl: endereco.trim(), token: sessao.token }).solicitarIngresso(codigoConvite.trim());
+      if (!sessaoContinuaSendoAtual(geracaoSessao.current, geracaoSolicitada)) return;
       setCodigoConvite('');
       setAviso('Solicitação enviada. O acesso à Mesa só será liberado após aprovação do Mestre.');
     } catch (problema) {
@@ -567,9 +577,11 @@ export default function ConexaoServidorLocal() {
 
   async function consultarSessao() {
     if (!sessao) return;
+    const geracaoSolicitada = geracaoSessao.current;
     setErro(''); setAviso(''); setConsultando(true);
     try {
       const resposta = await criarClienteServidorLocal({ baseUrl: endereco.trim(), token: sessao.token }).minhaConta();
+      if (!sessaoContinuaSendoAtual(geracaoSessao.current, geracaoSolicitada)) return;
       if (resposta.account.id !== sessao.account.id) throw new Error('A conta confirmada não corresponde à sessão atual.');
       setAviso('Sessão válida. O servidor confirmou a conta ' + resposta.account.email + '.');
     } catch (problema) {
