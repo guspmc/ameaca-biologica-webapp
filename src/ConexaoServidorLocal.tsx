@@ -69,10 +69,12 @@ export default function ConexaoServidorLocal() {
       setMesas(resposta.mesas);
       const novosPedidos: typeof solicitacoes = {};
       const novosPersonagens: typeof personagens = {};
+      const novosParticipantes: typeof participantes = {};
       const resultados = await Promise.allSettled(resposta.mesas.map(async mesa => {
         if (mesa.role === 'mestre') {
-          const dados = await cliente.listarSolicitacoes(mesa.id);
+          const [dados, equipe] = await Promise.all([cliente.listarSolicitacoes(mesa.id), cliente.listarParticipantes(mesa.id)]);
           novosPedidos[mesa.id] = dados.requests;
+          novosParticipantes[mesa.id] = equipe.participants;
         } else {
           const dados = await cliente.listarPersonagens(mesa.id);
           novosPersonagens[mesa.id] = dados.personagens;
@@ -90,6 +92,7 @@ export default function ConexaoServidorLocal() {
       }
       setSolicitacoes(novosPedidos);
       setPersonagens(novosPersonagens);
+      setParticipantes(novosParticipantes);
       setAviso('Dados atualizados e confirmados nas consultas ao servidor.');
     } catch (problema) {
       if (!sessaoContinuaSendoAtual(geracaoSessao.current, geracaoSolicitada)) return;
