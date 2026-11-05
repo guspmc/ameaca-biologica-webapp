@@ -365,6 +365,24 @@ test('Mestre consulta participantes sem expor e-mail e remove jogador com revoga
   assert.deepEqual(lista.participants.map(p => p.role), ['mestre', 'jogador']);
   assert.equal(lista.participants[1].accountId, jogador.account.id);
   assert.equal(JSON.stringify(lista).includes(jogador.account.email), false);
+
+  const convite = await fetch(instancia.url + '/api/mesas/' + mesa.id + '/convites', {
+    method: 'POST', headers: { ...mestre.headers, 'content-type': 'application/json' }, body: '{}',
+  });
+  assert.equal(convite.status, 201);
+  const codigoConvite = (await convite.json()).invitation.code;
+  const solicitacao = await fetch(instancia.url + '/api/convites/solicitar', {
+    method: 'POST', headers: { ...terceiro.headers, 'content-type': 'application/json' },
+    body: JSON.stringify({ code: codigoConvite }),
+  });
+  assert.equal(solicitacao.status, 202);
+  const pedidos = await fetch(instancia.url + '/api/mesas/' + mesa.id + '/solicitacoes', { headers: mestre.headers });
+  assert.equal(pedidos.status, 200);
+  const listaPedidos = await pedidos.json();
+  assert.equal(listaPedidos.requests.length, 1);
+  assert.equal(listaPedidos.requests[0].accountId, terceiro.account.id);
+  assert.equal(JSON.stringify(listaPedidos).includes(terceiro.account.email), false);
+
   const listarJogador = await fetch(instancia.url + '/api/mesas/' + mesa.id + '/participantes', { headers: jogador.headers });
   assert.equal(listarJogador.status, 200);
   assert.equal((await listarJogador.json()).participants.length, 2);
