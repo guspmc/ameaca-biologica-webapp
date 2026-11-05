@@ -129,3 +129,43 @@ test('ciclo integrado: falha na limpeza de rascunhos reverte a saida inteira',as
   assert.equal((await db.query('select count(*)::int n from public.mesa_participantes where mesa_id=$1 and usuario_id=$2 and papel=\'jogador\'',[T,A])).rows[0].n,1);
  }finally{await db.close();}
 });
+
+test('ciclo integrado: Mestre remove somente o jogador escolhido, limpa apenas seus rascunhos e preserva fichas completas',async()=>{
+ const db=await setup({integrada:true});
+ try{
+  const rascunhoA=await criar(db,A,'Agente','C');
+  const rascunhoB=await criar(db,B,'Autodidata','B');
+  const completaB=await criar(db,B,'Operador','A');
+  const args=await pedido(db,completaB,op(706));
+  await uid(db,B);
+  await db.query('select app_private.ativar_ficha_local($1,$2,$3,$4)',args);
+  const completaAntes=await get(db,completaB);
+  const itensAntes=await instances(db,completaB);
+
+  await uid(db,M);
+  await db.exec('set role authenticated');
+  const removido=await db.query("delete from public.mesa_participantes where mesa_id=$1 and usuario_id=$2 and papel='jogador'",[T,B]);
+  assert.equal(removido.rowCount,1);
+  await db.exec('reset role');
+
+  assert.equal((await get(db,rascunhoB)),undefined);
+  assert.ok(await get(db,rascunhoA));
+  const completaDepois=await get(db,completaB);
+  assert.equal(completaDepois.estado_ficha,'completa');
+  assert.equal(completaDepois.jogador_id,B);
+  assert.equal(completaDepois.pv_atual,completaAntes.pv_atual);
+  assert.equal(completaDepois.sa_atual,completaAntes.sa_atual);
+  assert.equal(completaDepois.bi_atual,completaAntes.bi_atual);
+  assert.deepEqual(await instances(db,completaB),itensAntes);
+  assert.equal((await db.query('select count(*)::int n from public.mesa_participantes where mesa_id=$1 and usuario_id=$2',[T,B])).rows[0].n,0);
+  assert.equal((await db.query('select count(*)::int n from public.mesa_participantes where mesa_id=$1 and usuario_id=$2',[T,A])).rows[0].n,1);
+
+  await uid(db,A);
+  await db.exec('set role authenticated');
+  const tentativa=await db.query('delete from public.mesa_participantes where mesa_id=$1 and usuario_id=$2',[T,A]);
+  assert.equal(tentativa.rowCount,0);
+  await assert.rejects(db.query('select app_private.sair_mesa_local($1,true)',[T]),/permission denied/);
+  await db.exec('reset role');
+  assert.equal((await db.query('select count(*)::int n from public.mesa_participantes where mesa_id=$1 and usuario_id=$2',[T,A])).rows[0].n,1);
+ }finally{await db.close();}
+});
