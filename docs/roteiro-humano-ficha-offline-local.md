@@ -7,7 +7,7 @@
 ## 1. Preparar o ambiente
 
 1. Atualize a branch `feat/offline-first-ficha` para o commit indicado no checkpoint aprovado.
-2. No Windows, execute `scripts\\windows\\Iniciar_Ficha_Offline.bat` com duplo clique. O arquivo verifica Node.js/pnpm, instala as dependências com o lockfile congelado, valida TypeScript, compila o modo de teste e abre a prévia local na porta **4176**.
+2. No Windows, execute `scripts\\windows\\Menu_Testes.bat` com duplo clique. Escolha **1 — Iniciar Ficha Offline** para testar somente a ficha, ou **3 — Iniciar os dois ambientes** se também quiser abrir a Mesa LAN em paralelo. O menu abre janelas separadas; mantenha a janela da Ficha aberta durante o teste.
 3. O endereço esperado é `http://127.0.0.1:4176/ameaca-biologica-webapp/`. A janela do terminal deve permanecer aberta durante o teste; encerre com Ctrl+C.
 4. Se preferir preparar manualmente, no PowerShell, na pasta do projeto, confira `node --version` (Node 22.12 ou superior) e execute:
 
