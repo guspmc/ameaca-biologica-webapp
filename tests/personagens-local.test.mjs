@@ -245,3 +245,31 @@ test('limita a três rascunhos por jogador na mesma Mesa', async t => {
   assert.equal(lista.status, 200);
   assert.equal((await lista.json()).personagens.length, 3);
 });
+
+test('somente o jogador proprietário pode excluir seu rascunho', async t => {
+  const { url, app } = await criarServidor(t);
+  const mestre = await criarConta(url, 'mestre-exclusao-rascunho@example.test');
+  const jogador = await criarConta(url, 'jogador-exclusao-rascunho@example.test');
+  const terceiro = await criarConta(url, 'terceiro-exclusao-rascunho@example.test');
+  const respostaMesa = await fetch(url + '/api/mesas', { method: 'POST', headers: { ...mestre.headers, 'content-type': 'application/json' }, body: JSON.stringify({ name: 'Mesa exclusão de rascunho' }) });
+  assert.equal(respostaMesa.status, 201);
+  const { mesa } = await respostaMesa.json();
+  app.db.prepare('INSERT INTO participantes_mesa (mesa_id, conta_id, papel, entrou_em) VALUES (?, ?, ?, ?)').run(mesa.id, jogador.account.id, 'jogador', new Date().toISOString());
+  const criacao = await fetch(url + '/api/mesas/' + mesa.id + '/personagens', { method: 'POST', headers: { ...jogador.headers, 'content-type': 'application/json' }, body: JSON.stringify({ name: 'Rascunho descartável', data: { origem: 'Civil' } }) });
+  assert.equal(criacao.status, 201);
+  const { personagem } = await criacao.json();
+  for (const headers of [terceiro.headers, mestre.headers]) {
+    const negada = await fetch(url + '/api/personagens/' + personagem.id, { method: 'DELETE', headers });
+    assert.equal(negada.status, 404);
+  }
+  const aindaExiste = await fetch(url + '/api/personagens/' + personagem.id, { headers: jogador.headers });
+  assert.equal(aindaExiste.status, 200);
+  const excluir = await fetch(url + '/api/personagens/' + personagem.id, { method: 'DELETE', headers: jogador.headers });
+  assert.equal(excluir.status, 200);
+  assert.deepEqual(await excluir.json(), { deleted: true, id: personagem.id });
+  const consultar = await fetch(url + '/api/personagens/' + personagem.id, { headers: jogador.headers });
+  assert.equal(consultar.status, 404);
+  const lista = await fetch(url + '/api/mesas/' + mesa.id + '/personagens', { headers: jogador.headers });
+  assert.equal(lista.status, 200);
+  assert.equal((await lista.json()).personagens.length, 0);
+});
