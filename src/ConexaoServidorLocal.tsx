@@ -381,13 +381,18 @@ export default function ConexaoServidorLocal() {
   }
 
   function salvarDadosFicha(delta: Record<string, unknown>): Promise<boolean> {
-    if (!sessao || !fichaAbertaRef.current || fichaAbertaRef.current.mesa.role !== 'jogador') return Promise.resolve(false);
+    const fichaSolicitada = fichaAbertaRef.current;
+    if (!sessao || !fichaSolicitada || fichaSolicitada.mesa.role !== 'jogador') return Promise.resolve(false);
+    const personagemIdSolicitado = fichaSolicitada.personagem.id;
+    const mesaIdSolicitada = fichaSolicitada.mesa.id;
     quantidadeSalvamentosPendentes.current += 1;
     setSalvandoFicha(true);
     return filaSalvamentoFicha.current.enfileirar(async () => {
       try {
         const fichaAtual = fichaAbertaRef.current;
-        if (!sessao || !fichaAtual || fichaAtual.mesa.role !== 'jogador') return false;
+        // Uma operação enfileirada nunca pode migrar para outra ficha/Mesa.
+        if (!sessao || !fichaAtual || fichaAtual.mesa.role !== 'jogador' ||
+            fichaAtual.personagem.id !== personagemIdSolicitado || fichaAtual.mesa.id !== mesaIdSolicitada) return false;
         setErro(''); setAviso('');
         // A base e a revisão são lidas somente quando esta operação chega à vez.
         // Assim, patches de seções diferentes preservam as confirmações anteriores.
