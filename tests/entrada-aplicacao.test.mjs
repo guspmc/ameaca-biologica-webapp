@@ -18,7 +18,7 @@ test('modo LAN encaminha API e WebSocket pelo mesmo host e mantém a Ficha offli
   assert.equal(pacote.scripts['dev:lan'], 'vite --mode lan');
   assert.match(vite, /mode === 'lan'/);
   assert.match(vite, /host: '0\.0\.0\.0'/);
-  assert.match(vite, /allowedHosts: true/);
+  assert.doesNotMatch(vite, /allowedHosts:\s*true/);
   assert.match(vite, /'\/api'.*target: 'http:\/\/127\.0\.0\.1:4175'/);
   assert.match(vite, /'\/ws'.*target: 'ws:\/\/127\.0\.0\.1:4175'.*ws: true/);
   assert.match(tela, /import\.meta\.env\.MODE === 'lan'.*window\.location\.origin/s);
