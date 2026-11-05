@@ -383,7 +383,7 @@ export default function ConexaoServidorLocal() {
     } finally { setConsultando(false); }
   }
 
-  function salvarDadosFicha(delta: Record<string, unknown>): Promise<boolean> {
+  function salvarDadosFicha(delta: Record<string, unknown>, nome?: string): Promise<boolean> {
     const fichaSolicitada = fichaAbertaRef.current;
     if (!sessao || !fichaSolicitada || fichaSolicitada.mesa.role !== 'jogador') return Promise.resolve(false);
     const personagemIdSolicitado = fichaSolicitada.personagem.id;
@@ -402,7 +402,7 @@ export default function ConexaoServidorLocal() {
         const dadosAtualizados = { ...fichaAtual.personagem.data, ...delta };
         const resposta = await criarClienteServidorLocal({ baseUrl: endereco.trim(), token: sessao.token }).atualizarPersonagem(
           fichaAtual.personagem.id,
-          fichaAtual.personagem.name,
+          nome?.trim() || fichaAtual.personagem.name,
           dadosAtualizados,
           fichaAtual.personagem.revision
         );
@@ -663,6 +663,7 @@ export default function ConexaoServidorLocal() {
         aoFechar={() => { if (!salvandoFicha) setFichaAberta(null); }}
         aoEditar={editarSecaoFicha}
         aoSalvarCaracteristicas={dados => salvarDadosFicha(dados)}
+        aoSalvarIdentidade={dados => salvarDadosFicha({ identidade: dados.identidade }, dados.nome)}
         aoSalvarAtributosPericias={dados => salvarDadosFicha(dados)}
         aoSalvarInventario={dados => salvarDadosFicha({ equipamentoInicial: dados.equipamentoInicial, comprasIniciais: dados.comprasIniciais, revisaoCompras: dados.revisaoCompras })}
         aoSalvarFuncionamento={configuracao => salvarDadosFicha({ configuracaoFuncionamento: configuracao })}
