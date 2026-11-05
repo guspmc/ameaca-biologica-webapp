@@ -8,10 +8,10 @@ export type FichaAbertaLocal = {
 /** Impede que respostas HTTP tardias restaurem uma ficha após logout,
  * revogação de acesso ou troca do alvo atualmente aberto.
  */
-export function fichaContinuaSendoAlvo(
-  atual: FichaAbertaLocal | null,
+export function fichaContinuaSendoAlvo<T extends FichaAbertaLocal>(
+  atual: T | null,
   alvo: AlvoFichaLocal
-): boolean {
+): atual is T {
   return Boolean(
     atual &&
     atual.mesa.role === 'jogador' &&
