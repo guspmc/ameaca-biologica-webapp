@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { AUTOMACOES, automacoesEfetivas, configuracaoInicial, type ConfiguracaoFuncionamento, type ModoFuncionamento } from './funcionamentoFicha';
+import { AUTOMACOES, automacoesEfetivas, normalizarConfiguracaoFuncionamento, type ConfiguracaoFuncionamento, type ModoFuncionamento, type ModoDados, type VisibilidadeRolagem } from './funcionamentoFicha';
 
 type Props = {
   inicial?: ConfiguracaoFuncionamento;
@@ -8,11 +8,11 @@ type Props = {
 };
 
 function copiar(config: ConfiguracaoFuncionamento): ConfiguracaoFuncionamento {
-  return { modo: config.modo, preferenciasMisto: { ...config.preferenciasMisto } };
+  return normalizarConfiguracaoFuncionamento(config);
 }
 
 export default function FuncionamentoFichaLocal({ inicial, aoSalvar, aoAlterarPendencia }: Props) {
-  const [config, setConfig] = useState(() => copiar(inicial ?? configuracaoInicial()));
+  const [config, setConfig] = useState(() => normalizarConfiguracaoFuncionamento(inicial));
   const [ocupado, setOcupado] = useState(false);
   const [mensagem, setMensagem] = useState('');
   const [erro, setErro] = useState('');
@@ -46,7 +46,22 @@ export default function FuncionamentoFichaLocal({ inicial, aoSalvar, aoAlterarPe
   return <div className="ficha-local-editor">
     <h3>Funcionamento da ficha</h3>
     <p>Defina como os controles elegíveis deverão operar. Esta configuração não executa ações, rolagens ou alterações de recursos por conta própria.</p>
-    <p>O método de dados (Físicos, Virtuais ou Mistos) e as preferências de visibilidade/histórico serão configurados no módulo de rolagens; ainda não estão implementados aqui.</p>
+    <h4>Dados e histórico</h4>
+    <label>Método de dados
+      <select value={config.modoDados} disabled={ocupado} onChange={evento => atualizar({ ...config, modoDados: evento.target.value as ModoDados })}>
+        <option value="fisicos">Físicos</option>
+        <option value="virtuais">Virtuais</option>
+        <option value="mistos">Mistos</option>
+      </select>
+    </label>
+    <label>Visibilidade padrão das rolagens
+      <select value={config.visibilidadeRolagem} disabled={ocupado} onChange={evento => atualizar({ ...config, visibilidadeRolagem: evento.target.value as VisibilidadeRolagem })}>
+        <option value="publica">Pública</option>
+        <option value="privada">Privada</option>
+      </select>
+    </label>
+    <p>Preferências individuais, salvas por personagem. Quando o histórico estiver disponível, rolagens privadas serão visíveis apenas ao autor; consequências seguem suas próprias permissões. Informar resultado de dado físico é opcional e não presume face natural quando só o total for conhecido.</p>
+    <p>Essas opções ficam persistidas agora, mas a execução de dados virtuais, o registro/histórico e a aplicação da visibilidade ainda dependem do módulo de rolagens.</p>
     <label>Modo de funcionamento
       <select value={config.modo} disabled={ocupado} onChange={evento => atualizar({ ...config, modo: evento.target.value as ModoFuncionamento })}>
         <option value="automatico">Automático</option>
