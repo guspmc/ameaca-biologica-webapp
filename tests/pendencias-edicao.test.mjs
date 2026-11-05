@@ -10,12 +10,22 @@ test('todos os editores sinalizam alterações locais e limpam a pendência apó
     'EditorAtributosPericiasLocal.tsx',
     'EditorInventarioLocal.tsx',
     'IdentidadeLocal.tsx',
+    'FuncionamentoFichaLocal.tsx',
   ];
   for (const arquivo of arquivos) {
     const fonte = await ler(arquivo);
     assert.match(fonte, /aoAlterarPendencia\(true\)/, arquivo + ': deve sinalizar edição');
     assert.match(fonte, /aoAlterarPendencia\(false\)/, arquivo + ': deve limpar após salvamento confirmado');
   }
+});
+
+test('preferências de funcionamento sinalizam pendência e só confirmam após salvar', async () => {
+  const fonte = await ler('FuncionamentoFichaLocal.tsx');
+  assert.match(fonte, /aoAlterarPendencia\(true\)/);
+  assert.match(fonte, /const confirmado = await aoSalvar/);
+  assert.match(fonte, /if \(!confirmado\) throw new Error/);
+  assert.match(fonte, /aoAlterarPendencia\(false\)/);
+  assert.match(fonte, /Preferências salvas e confirmadas/);
 });
 
 test('campos narrativos e nome sinalizam pendência de edição', async () => {
@@ -32,7 +42,7 @@ test('prévia de compras sinaliza alteração e limpeza do plano', async () => {
 
 test('a ficha offline recebe pendências de cada seção editável', async () => {
   const fonte = await ler('FichaLocal.tsx');
-  for (const secao of ['Características', 'Identificação', 'Atributos e Perícias', 'Inventário']) {
+  for (const secao of ['Características', 'Identificação', 'Atributos e Perícias', 'Inventário', 'Funcionamento']) {
     assert.ok(fonte.includes("registrarPendencia('" + secao + "'"), 'seção sem rastreamento: ' + secao);
   }
   const app = await ler('FichaOfflineApp.tsx');
