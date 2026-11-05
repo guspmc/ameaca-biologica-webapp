@@ -108,3 +108,22 @@ test('patch de uma ficha anterior é recusado após restauração com mesmo ID e
   assert.deepEqual(registros.get('claire').dados, ficha.dados);
   assert.equal(registros.get('claire').geracao, 'geracao-da-restauracao');
 });
+
+
+test('patch que produziria dados inválidos é abortado sem alterar o registro', async () => {
+  const registros = instalarBancoCompartilhado();
+  registros.set(ficha.id, structuredClone(ficha));
+  const aba = await import('../src/persistenciaFicha.ts?patch-invalido');
+  await assert.rejects(
+    aba.salvarPatchPersonagem(
+      'claire',
+      { atributos: { forca: 99, agilidade: 2, vigor: 2, astucia: 2 } },
+      ficha.dados,
+      undefined,
+      undefined,
+      ficha.geracao,
+    ),
+    /formato válido da ficha/,
+  );
+  assert.deepEqual(registros.get('claire').dados, ficha.dados);
+});
