@@ -573,19 +573,24 @@ end;
 $$;
 revoke all on function app_private.excluir_rascunho_local(uuid,bigint,boolean) from public,anon,authenticated;
 
+-- Wrapper SECURITY DEFINER estreito: permite somente a propria conta sair
+-- como jogador. A confirmacao, identidade e papel sao validados aqui; a
+-- exclusao e a limpeza dos rascunhos permanecem na mesma transacao.
 create function app_private.sair_mesa_local(p_mesa uuid,p_confirmado boolean) returns void
-language plpgsql security invoker set search_path='' as $$
+language plpgsql security definer set search_path='' as $
 declare uid uuid:=(select auth.uid());
 begin
- if uid is null or p_confirmado is distinct from true then raise exception 'Confirmacao explicita necessaria.';end if;
+ if uid is null then raise exception 'Autenticacao necessaria.';end if;
+ if p_confirmado is distinct from true then raise exception 'Confirmacao explicita necessaria.';end if;
  perform 1 from public.mesas t where t.id=p_mesa and t.mestre_id<>uid for no key update;
  if not found then raise exception 'Saida indisponivel ou acesso negado.';end if;
  perform 1 from public.mesa_participantes m where m.mesa_id=p_mesa and m.usuario_id=uid and m.papel='jogador' for update;
  if not found then raise exception 'Participacao indisponivel.';end if;
  delete from public.mesa_participantes where mesa_id=p_mesa and usuario_id=uid and papel='jogador';
 end;
-$$;
+$;
 revoke all on function app_private.sair_mesa_local(uuid,boolean) from public,anon,authenticated;
+grant execute on function app_private.sair_mesa_local(uuid,boolean) to authenticated;
 
 -- ============================================================================
 -- FONTE: supabase/proposals/consulta-ativacao-local.sql
