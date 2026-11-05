@@ -389,6 +389,22 @@ Foi criado o núcleo de regras em src/reanimacaoFicha.ts, com validação para p
 
 **IMPLEMENTADO NA BRANCH:** núcleo de regras, validação de estado, painel visual, persistência no contrato comum da ficha e testes de integração estática.
 
-**PENDENTE:** workflows CI dos commits recentes ainda em execução; não declarar TypeScript, build ou suíte aprovados até o resultado final. Testes humanos 24–31 foram enfileirados em docs/fila-testes-humanos.md e ainda não foram realizados.
+**TESTADO AUTOMATICAMENTE:** commit b246a19322a5195a5b6747680957e9f5953e9f91; ambos os workflows concluíram com sucesso: **430/430 testes**, TypeScript, build Vite, tipos dos cenários isolados e verificações PostgreSQL aprovados. Testes humanos 24–31 continuam enfileirados e ainda não foram realizados.
 
 **NÃO CONCLUÍDO:** integração com o motor de Combate, efeitos de Condição, transformação operacional, registro de Morte/retorno e rolagem virtual.
+
+
+## 24. Refinamento da Reanimação — 05/11/2026
+
+A conferência do cânone e da interface revelou dois casos de fluxo que precisavam ser cobertos:
+
+- **Ajuda de Medicina e cura durante a espera:** o texto oficial permite Primeiros Socorros em personagem a 0 PV. O painel agora permite registrar o resultado final de Medicina DT 15 e acumular cura enquanto a Reanimação aguarda o próximo turno, sem antecipar o primeiro Teste nem despertar a personagem.
+- **Novo evento após conclusão:** uma Reanimação concluída não bloqueia um evento crítico futuro. Se a personagem voltar a 0 PV ou alcançar novamente BI Máxima, o painel permite iniciar novo processo. O histórico durável de Reanimações continua fora do escopo atual.
+
+### Evidência automatizada
+
+Commit b246a19322a5195a5b6747680957e9f5953e9f91: ambos os workflows concluíram com sucesso; **430/430 testes**, TypeScript, build Vite, tipos dos cenários isolados e verificações PostgreSQL aprovados.
+
+**PENDENTE DE TESTE HUMANO:** casos 24–31 na fila única. Nenhum foi executado pelo autor nesta etapa.
+
+**LIMITES:** não há histórico durável, integração com iniciativa/turnos, execução de efeitos de Condição, rolagem virtual, transformação operacional ou registro de Morte/retorno.
