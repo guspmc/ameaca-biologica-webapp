@@ -229,12 +229,15 @@ function Lobby({ supabase, sessao }: { supabase: SupabaseClient; sessao: Session
         }
       }
     } catch {
-      const cache = await lerMesasOffline(sessao.user.id).catch(() => null);
+      const cache = cacheOfflineBloqueado ? null : await lerMesasOffline(sessao.user.id).catch(() => null);
       if (cache) {
         setMesas(cache.dados); setMesasCacheAtualizadoEm(cache.atualizadoEm);
         setErro('Não foi possível confirmar o acesso online. Exibindo cópia local desatualizada.');
       } else {
-        setMesas([]); setErro('Sem resposta do servidor e sem cópia local disponível.');
+        setMesas([]); setMesasCacheAtualizadoEm(null);
+        setErro(cacheOfflineBloqueado
+          ? 'A autorização local não pôde ser atualizada. Reconecte-se para confirmar o acesso antes de consultar dados em cache.'
+          : 'Sem resposta do servidor e sem cópia local disponível.');
       }
       setSomenteLeituraOffline(true);
     } finally {
