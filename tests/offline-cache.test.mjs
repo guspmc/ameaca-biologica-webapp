@@ -71,6 +71,9 @@ test('leitura offline filtra snapshots pela última lista autorizada',async()=>{
 test('revalidação usa refresh atômico e não ignora falha',()=>{
  assert.match(appSource,/atualizarAutorizacaoOffline\(sessao\.user\.id, autorizadas\)/);
  assert.doesNotMatch(appSource,/removerSnapshotsDeMesasNaoAutorizadas|salvarMesasOffline\(sessao\.user\.id, autorizadas\)\.catch/);
+ assert.match(appSource,/cacheOfflineBloqueado/);
+ assert.match(appSource,/localStorage\.setItem\(chaveBloqueioCache, '1'\)/);
+ assert.match(sheetSource,/bloquearCacheOffline/);
 });
 test('logout voluntário limpa snapshots e não existe fila de escrita compartilhada offline',()=>{
  assert.match(appSource,/limparCacheUsuario\(sessao\.user\.id\)/);
