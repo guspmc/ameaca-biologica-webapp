@@ -44,6 +44,7 @@ export default function ReanimacaoFichaLocal({ dados, recursos, origem, pvMaximo
   const resultadoValido = primeiroDado.trim() !== '' && dadoValido(primeiro)
     && (vantagem ? segundoDado.trim() !== '' && dadoValido(segundo) : segundoDado.trim() === '');
   const estadoAtivo = reanimacao?.estado === 'em_andamento';
+  const estadoPV0 = reanimacao?.causa === 'pv_zero' && ['aguardando_proximo_turno', 'em_andamento'].includes(reanimacao.estado);
   const bloqueioVirtual = modoDados === 'virtuais';
 
   async function persistir(proxima: Reanimacao, recursosPatch: Partial<RecursosAtuais> = {}) {
@@ -132,32 +133,31 @@ export default function ReanimacaoFichaLocal({ dados, recursos, origem, pvMaximo
       <p>Sucessos: {reanimacao.sucessos}/3 · Falhas: {reanimacao.falhas}/3 · Tentativas: {reanimacao.tentativas}/5</p>
       {reanimacao.causa === 'pv_zero' && <p>Cura acumulada: {reanimacao.curaAcumulada} PV. A cura não desperta a personagem antes do terceiro sucesso.</p>}
       {reanimacao.estado === 'aguardando_proximo_turno' && <button type="button" className="acao" disabled={ocupado || bloqueado} onClick={() => void iniciarProximoTurno()}>Iniciar Testes no próximo turno <span>→</span></button>}
-      {estadoAtivo && <>
-        {reanimacao.causa === 'pv_zero' && <>
-          <h4>Primeiros Socorros · Medicina DT 15</h4>
-          <p>Registre o resultado final do Teste, já considerando Treinamento e modificadores. Sucesso concede Vantagem ao próximo Teste de Reanimação.</p>
-          {bloqueioVirtual && <p>O método está em Virtual, mas a rolagem virtual ainda não está implementada; não registre resultado de Medicina por este painel.</p>}
-          <div className="recursos-controles">
-            <button type="button" disabled={ocupado || bloqueado || bloqueioVirtual} onClick={() => void registrarMedicina(true)}>Registrar sucesso</button>
-            <button type="button" disabled={ocupado || bloqueado || bloqueioVirtual} onClick={() => void registrarMedicina(false)}>Registrar falha</button>
-          </div>
-          <label>Cura recebida enquanto estava em 0 PV
-            <input type="number" min="0" step="1" value={cura} disabled={ocupado || bloqueado} onChange={e => setCura(e.target.value)}/>
-          </label>
-          <button type="button" className="botao-claro" disabled={ocupado || bloqueado} onClick={() => void registrarCura()}>Acumular cura sem despertar</button>
-        </>}
+      {estadoPV0 && <>
+        <h4>Primeiros Socorros · Medicina DT 15</h4>
+        <p>Registre o resultado final do Teste, já considerando Treinamento e modificadores. Sucesso concede Vantagem ao próximo Teste de Reanimação.</p>
         {bloqueioVirtual
-          ? <p>O método de dados está em Virtual, mas a rolagem virtual ainda não está implementada. Nenhum resultado será presumido.</p>
-          : <>
-            <h4>Teste de Reanimação · 1d20 contra DT 12</h4>
-            {vantagem && <p>Vantagem ativa: informe dois resultados de d20; será considerado o melhor.</p>}
-            <div className="recursos-controles">
-              <label>Resultado do d20<input type="number" min="1" max="20" step="1" value={primeiroDado} disabled={ocupado || bloqueado} onChange={e => setPrimeiroDado(e.target.value)}/></label>
-              {vantagem && <label>Segundo d20<input type="number" min="1" max="20" step="1" value={segundoDado} disabled={ocupado || bloqueado} onChange={e => setSegundoDado(e.target.value)}/></label>}
-            </div>
-            <button type="button" className="acao" disabled={ocupado || bloqueado || !resultadoValido} onClick={() => void registrarTeste()}>Registrar resultado do Teste <span>→</span></button>
-          </>}
+          ? <p>O método está em Virtual, mas a rolagem virtual ainda não está implementada; não registre resultado de Medicina por este painel.</p>
+          : <div className="recursos-controles">
+            <button type="button" disabled={ocupado || bloqueado} onClick={() => void registrarMedicina(true)}>Registrar sucesso</button>
+            <button type="button" disabled={ocupado || bloqueado} onClick={() => void registrarMedicina(false)}>Registrar falha</button>
+          </div>}
+        <label>Cura recebida enquanto estava em 0 PV
+          <input type="number" min="0" step="1" value={cura} disabled={ocupado || bloqueado} onChange={e => setCura(e.target.value)}/>
+        </label>
+        <button type="button" className="botao-claro" disabled={ocupado || bloqueado} onClick={() => void registrarCura()}>Acumular cura sem despertar</button>
       </>}
+      {estadoAtivo && (bloqueioVirtual
+        ? <p>O método de dados está em Virtual, mas a rolagem virtual ainda não está implementada. Nenhum resultado será presumido.</p>
+        : <>
+          <h4>Teste de Reanimação · 1d20 contra DT 12</h4>
+          {vantagem && <p>Vantagem ativa: informe dois resultados de d20; será considerado o melhor.</p>}
+          <div className="recursos-controles">
+            <label>Resultado do d20<input type="number" min="1" max="20" step="1" value={primeiroDado} disabled={ocupado || bloqueado} onChange={e => setPrimeiroDado(e.target.value)}/></label>
+            {vantagem && <label>Segundo d20<input type="number" min="1" max="20" step="1" value={segundoDado} disabled={ocupado || bloqueado} onChange={e => setSegundoDado(e.target.value)}/></label>}
+          </div>
+          <button type="button" className="acao" disabled={ocupado || bloqueado || !resultadoValido} onClick={() => void registrarTeste()}>Registrar resultado do Teste <span>→</span></button>
+        </>)} 
       {reanimacao.estado === 'desacordada_ate_reducao_bi' && <button type="button" className="acao" disabled={ocupado || bloqueado || recursos.biAtual >= biMaximo} onClick={() => void encerrarColapso()}>Confirmar BI abaixo do máximo e encerrar <span>→</span></button>}
       {reanimacao.estado === 'morte_a_registrar' && <p>A regra sinaliza morte após três falhas. O registro e as consequências de campanha permanecem sob responsabilidade do Mestre.</p>}
       {reanimacao.estado === 'transformacao_no_proximo_turno' && <p>A regra determina o retorno como Zumbi Especial no próximo turno. A ficha não altera o controle da personagem nem aplica a transformação automaticamente.</p>}
