@@ -46,3 +46,10 @@ Nenhuma alteração em `main`, merge, publicação, Supabase remoto ou banco de 
 
 - **Privacidade do Painel:** a API de solicitações deixou de retornar e-mail do solicitante; a interface apresenta apenas uma ordem de solicitação. O teste de integração confirma que a resposta não contém e-mail.
 - **Validação pendente:** os workflows do HEAD `409cf0f` estão executando; a fila do GitHub está lenta e ainda não há resultado final desta rodada.
+
+## Continuidade — limite de jogadores e salvamento via proxy LAN
+- **Mesa:** o servidor já contava jogadores na aprovação dentro de `BEGIN IMMEDIATE`; o limite de 10 estava implementado, mas sem teste de integração específico no servidor LAN.
+- **Teste novo:** `tests/servidor-local.test.mjs` simula duas aprovações concorrentes com nove jogadores existentes. Resultado esperado: uma aprovação HTTP 200, uma rejeição HTTP 409, exatamente dez jogadores e uma solicitação preservada como pendente.
+- **Ficha:** `tests/lan-proxy-integration.test.mjs` agora percorre criação, PUT de atualização e reabertura de rascunho pelo proxy same-origin do Vite em modo LAN. Verifica revisão incrementada e preservação de duas seções independentes.
+- **Diagnóstico de salvamento:** inspeção confirmou que o cliente em modo LAN usa `window.location.origin`, portanto chama `/api/personagens/:id` pelo proxy same-origin; a camada HTTP transforma exceções de rede em mensagem genérica. O teste de integração foi ampliado para verificar esse trajeto, mas ainda não reproduz o erro do ambiente Windows/celular do usuário. Causa raiz continua **PENDENTE**; não declarar o incidente corrigido.
+- **CI:** workflows do commit `20b51e8` ainda estavam em execução no momento deste checkpoint.
