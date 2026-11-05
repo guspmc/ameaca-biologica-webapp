@@ -28,7 +28,7 @@ export default function FuncionamentoFichaLocal({ inicial, aoSalvar, aoAlterarPe
     setMensagem('');
     setErro('');
     try {
-      const confirmado = await aoSalvar(copiar(config));
+      const confirmado = await aoSalvar(normalizarConfiguracaoFuncionamento(config));
       if (!confirmado) throw new Error('O armazenamento não confirmou a gravação.');
       aoAlterarPendencia(false);
       setMensagem('Preferências salvas e confirmadas.');
