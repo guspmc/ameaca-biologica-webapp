@@ -203,7 +203,7 @@ No computador, abra:
 No celular conectado à mesma rede Wi-Fi, abra o mesmo caminho usando o IP privado do computador no lugar de `127.0.0.1`, por exemplo:
 `http://IP-DO-COMPUTADOR:4174/ameaca-biologica-webapp/?servidor=local`
 
-O endereço do servidor na interface já será preenchido com a origem atual e passará pelo proxy. Se o firewall do Windows perguntar, permita acesso somente em rede privada confiável. O modo Vite LAN aceita hosts de rede para esse teste e **não deve ser executado em Wi-Fi público ou exposto à internet**.
+O endereço do servidor na interface já será preenchido com a origem atual e passará pelo proxy. Se o firewall do Windows perguntar, permita acesso somente em rede privada confiável. O Vite mantém a validação padrão do cabeçalho Host (sem desativar a proteção com `allowedHosts: true`) e aceita IPs locais para esse teste. O modo LAN **não deve ser executado em Wi-Fi público ou exposto à internet**.
 
 **Limite importante:** o modo `dev:lan` é um ambiente de teste online, não uma instalação PWA segura. O Service Worker não é registrado no servidor Vite de desenvolvimento e HTTP por IP privado não oferece contexto seguro para instalação PWA. A Ficha offline deve continuar sendo testada separadamente pelo build de prévia local (localhost) ou pela PWA publicada. Não confundir os dois testes.
 
