@@ -173,3 +173,44 @@ A seleção está em `src/main.tsx`; abrir a rota local não altera a entrada pa
 
 A rota foi adicionada ao ponto de entrada nesta branch. O CI dos commits que incluem essa alteração ainda precisa terminar antes de declarar a entrada validada. Para teste local do frontend, use a origem de desenvolvimento permitida pelo servidor (localhost/127.0.0.1:5173); o teste em dispositivo móvel exige uma origem LAN autorizada e será preparado separadamente. Não contornar CORS nem expor o servidor em rede pública.
 
+
+
+## Canal LAN e execução no celular — 05/11/2026
+
+O servidor agora aceita inscrições WebSocket por Mesa. O ticket continua temporário, de uso único e vinculado à sessão ativa. A inscrição recebe somente os identificadores de Mesas em que a conta é participante; antes de enviar uma invalidação, o servidor revalida sessão e vínculo. Eventos não transportam fichas, e-mails, solicitações ou conteúdo privado: a interface deve consultar novamente as rotas HTTP autorizadas. Alterações de rascunho emitem invalidação somente para outras conexões da mesma conta; não são transmitidas ao Mestre.
+
+A interface React usa esse canal para atualizar listas de Mesas, solicitações e rascunhos. Se a conexão cair, tenta reconectar com novo ticket. Uma sessão revogada encerra o canal. A aplicação não substitui as consultas HTTP por dados recebidos no WebSocket.
+
+### Teste de Mesa em LAN com dois dispositivos
+
+A conexão WebSocket insegura (ws://) é bloqueada pelos navegadores quando iniciada a partir de uma página HTTPS, como GitHub Pages. Para não depender de certificados locais, o teste de Mesa em rede usa o servidor Vite de desenvolvimento como proxy same-origin; o WebSocket e a API são encaminhados para o servidor SQLite na própria máquina.
+
+**Na máquina que hospedará a Mesa, abra dois terminais na pasta do projeto:**
+
+Terminal 1 — servidor SQLite, restrito ao loopback:
+```powershell
+pnpm.cmd run server:local -- --host 127.0.0.1 --port 4175
+```
+
+Terminal 2 — interface LAN:
+```powershell
+pnpm.cmd run dev:lan
+```
+
+No computador, abra:
+`http://127.0.0.1:4174/ameaca-biologica-webapp/?servidor=local`
+
+No celular conectado à mesma rede Wi-Fi, abra o mesmo caminho usando o IP privado do computador no lugar de `127.0.0.1`, por exemplo:
+`http://IP-DO-COMPUTADOR:4174/ameaca-biologica-webapp/?servidor=local`
+
+O endereço do servidor na interface já será preenchido com a origem atual e passará pelo proxy. Se o firewall do Windows perguntar, permita acesso somente em rede privada confiável. O modo Vite LAN aceita hosts de rede para esse teste e **não deve ser executado em Wi-Fi público ou exposto à internet**.
+
+**Limite importante:** o modo `dev:lan` é um ambiente de teste online, não uma instalação PWA segura. O Service Worker não é registrado no servidor Vite de desenvolvimento e HTTP por IP privado não oferece contexto seguro para instalação PWA. A Ficha offline deve continuar sendo testada separadamente pelo build de prévia local (localhost) ou pela PWA publicada. Não confundir os dois testes.
+
+### Estado após a implementação
+
+- IMPLEMENTADO: ticket de WebSocket vinculado ao hash da sessão; inscrição por IDs de Mesa; validação de participação; invalidações de solicitações e vínculo; invalidação de rascunho restrita às outras conexões da mesma conta; revalidação periódica de sessão; reconexão da interface.
+- IMPLEMENTADO: modo `dev:lan` com proxy same-origin para `/api` e `/ws`, permitindo o teste HTTP a partir de outro dispositivo na rede privada.
+- TESTE AUTOMATIZADO: cobre inscrição autorizada/negada, evento após solicitação, notificação da conta após aprovação, invalidação de rascunho e encerramento do canal após logout.
+- PENDENTE: resultado do CI desta alteração; teste manual em dois dispositivos e em navegadores reais; verificação de firewall, reconexão após queda de Wi-Fi e sessão expirada.
+- PENDENTE: não existe ainda sincronização automática entre IndexedDB da Ficha offline e SQLite da Mesa LAN.
