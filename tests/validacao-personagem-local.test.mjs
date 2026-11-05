@@ -139,7 +139,7 @@ test('valida o estado persistível de Reanimação sem misturar causas ou contad
   let r = iniciarTurnoReanimacao(iniciarReanimacao('pv_zero'));
   r = resolverTesteReanimacao(r, 12, 12).reanimacao;
   assert.equal(validarPersonagemLocal(base({ versaoModelo: 1, estadoFicha: 'rascunho', reanimacao: r })), true);
-  assert.equal(validarPersonagemLocal(base({ versaoModelo: 1, estadoFicha: 'rascunho', reanimacao: { ...r, causa: 'colapso_bi', curaAcumulada: 3 } })), true);
+  assert.equal(validarPersonagemLocal(base({ versaoModelo: 1, estadoFicha: 'rascunho', reanimacao: { ...r, causa: 'colapso_bi', curaAcumulada: 3 } })), false);
   assert.equal(validarPersonagemLocal(base({ versaoModelo: 1, estadoFicha: 'rascunho', reanimacao: { ...r, sucessos: 3 } })), false);
   assert.equal(validarPersonagemLocal(base({ versaoModelo: 1, estadoFicha: 'rascunho', reanimacao: { ...r, tentativas: 4 } })), false);
   assert.equal(validarPersonagemLocal(base({ versaoModelo: 1, estadoFicha: 'rascunho', reanimacao: { ...r, estado: 'morte_automatica' } })), false);
