@@ -232,3 +232,11 @@ Foi integrada à seção de Perícias uma calculadora de conferência que recebe
 6. Vantagem e Desvantagem com dois resultados físicos, conferindo melhor/pior face.
 7. 20 natural, 1 natural e tarefa Impossível; confirmar sucesso automático, Falha Crítica/Exposto e ausência de rolagem em tarefa impossível.
 8. Confirmar que o painel não salva rolagem, não altera PV/SA/BI, não consome itens e não dispara ações.
+
+
+### H4 — refinamentos alinhados à v2.1 (05/11/2026)
+
+- Perícias: conferir valor total (Atributo + Treinamento) e somente o Passivo normal; a interface deve exibir o lembrete de +5 com Vantagem e -5 com Desvantagem, sem mostrar três valores passivos calculados.
+- Bio-Infecção: conferir modificador de Movimento (+3 m nas fases 2–4; -6 m na fase 5), bônus de Testes de Ataque (+2 na fase 3; +3 total na fase 4), +1d4 de Dano Corpo a Corpo na fase 4 e Desvantagem na fase 5; confirmar que a fase não executa os efeitos.
+- Calculadora: além dos casos já listados, conferir 20 natural em Teste de Ataque (acerto automático, fecha Reações defensivas normais e causa Crítico) sem tentar resolver automaticamente arma/Dano.
+- Método de dados Físicos/Virtuais/Mistos e histórico/visibilidade continuam pendentes; a calculadora atual é somente de entrada manual de dados físicos.

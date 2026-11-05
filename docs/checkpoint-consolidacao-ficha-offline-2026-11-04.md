@@ -267,3 +267,19 @@ Commit ab313a7c84cec825d368ba3ed6743ee413eabd4b: os dois workflows do GitHub Act
 **HUMAN TESTED:** não. A validação de interface continua enfileirada em H4, junto com as preferências, valores de Perícia/Passivo, BI e revisão da criação.
 
 **Limite funcional:** esta calculadora é de entrada manual de dados físicos. O fluxo de dados virtuais/mistos e o registro/histórico de rolagens ainda não foram implementados.
+
+
+## 18. Refinamentos de regras e validação — 05/11/2026
+
+A revisão do Planejamento v2.1 corrigiu a apresentação do Passivo e consolidou os efeitos numéricos de Bio-Infecção:
+
+- **Passivo:** a ficha mostra somente o valor normal (10 + valor da Perícia) e um lembrete de +5 com Vantagem / -5 com Desvantagem. Não são exibidos três valores calculados, conforme decisão expressa A11 do planejamento.
+- **Bio-Infecção:** além da fase e do texto de efeito, o código deriva Movimento efetivo por BI, bônus em Testes de Ataque, dano adicional corpo a corpo e Desvantagem da 5ª fase. Esses dados são apenas informativos; não aplicam efeitos nem alteram recursos.
+- **Calculadora manual:** texto esclarece que, em Ataque de Pontaria/Luta, 20 natural também acerta automaticamente, fecha Reações defensivas normais e causa Crítico. Arma, Dano e efeitos específicos continuam sem execução automática.
+- **Método de dados:** Físicos/Virtuais/Mistos, histórico e visibilidade não estão implementados pelo editor de automações. A calculadora atual aceita somente resultados físicos informados manualmente; a interface explicita essa limitação.
+
+### Evidência automatizada atualizada
+
+Commit acfa0e537049f4e84b142d16ab65f49cffe04287: ambos os workflows concluíram com sucesso; **396/396 testes aprovados**, TypeScript, build Vite e verificações PostgreSQL concluídos.
+
+**PENDENTE:** teste humano H4 dos valores exibidos e da calculadora; módulos operacionais de Combate, Inventário ativo, recursos atuais e rolagens virtuais/mistas continuam por implementar.
