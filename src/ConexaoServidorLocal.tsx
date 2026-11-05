@@ -5,6 +5,7 @@ import FichaLocal from './FichaLocal';
 const CHAVE_ENDERECO = 'ameaca-biologica:servidor-local:endereco:v1';
 
 function enderecoInicial(): string {
+  if (import.meta.env.MODE === 'lan') return window.location.origin;
   try { return localStorage.getItem(CHAVE_ENDERECO) ?? 'http://127.0.0.1:4175'; }
   catch { return 'http://127.0.0.1:4175'; }
 }
@@ -29,6 +30,8 @@ export default function ConexaoServidorLocal() {
   const [fichaAberta, setFichaAberta] = useState<{ mesa: MesaLocal; personagem: PersonagemRascunhoLocal } | null>(null);
   const [salvandoFicha, setSalvandoFicha] = useState(false);
   const bloqueioSalvamentoFicha = useRef(false);
+  const socketEventos = useRef<WebSocket | null>(null);
+  const [canalTempoReal, setCanalTempoReal] = useState(false);
 
   function encerrarSessao(mensagem: string) {
     setSessao(null);
@@ -39,6 +42,111 @@ export default function ConexaoServidorLocal() {
     setSolicitacoes({});
     setAviso(mensagem);
   }
+
+  async function sincronizarDadosRecebidos() {
+    if (!sessao) return;
+    const cliente = criarClienteServidorLocal({ baseUrl: endereco.trim(), token: sessao.token });
+    try {
+      const resposta = await cliente.listarMesas();
+      setMesas(resposta.mesas);
+      const novosPedidos: typeof solicitacoes = {};
+      const novosPersonagens: typeof personagens = {};
+      const resultados = await Promise.allSettled(resposta.mesas.map(async mesa => {
+        if (mesa.role === 'mestre') {
+          const dados = await cliente.listarSolicitacoes(mesa.id);
+          novosPedidos[mesa.id] = dados.requests;
+        } else {
+          const dados = await cliente.listarPersonagens(mesa.id);
+          novosPersonagens[mesa.id] = dados.personagens;
+        }
+      }));
+      const falhaAutenticacao = resultados.some(resultado =>
+        resultado.status === 'rejected' &&
+        resultado.reason instanceof ErroServidorLocal &&
+        resultado.reason.status === 401
+      );
+      if (falhaAutenticacao) {
+        encerrarSessao('A sessão expirou ou foi encerrada no servidor. Entre novamente.');
+        return;
+      }
+      setSolicitacoes(novosPedidos);
+      setPersonagens(novosPersonagens);
+      setAviso('Atualização recebida pelo canal da Mesa e confirmada nas consultas ao servidor.');
+    } catch (problema) {
+      if (problema instanceof ErroServidorLocal && problema.status === 401) {
+        encerrarSessao('A sessão expirou ou foi encerrada no servidor. Entre novamente.');
+      } else {
+        setErro(problema instanceof Error ? problema.message : 'Não foi possível atualizar os dados recebidos.');
+      }
+    }
+  }
+
+  useEffect(() => {
+    if (!sessao) {
+      socketEventos.current?.close();
+      socketEventos.current = null;
+      setCanalTempoReal(false);
+      return;
+    }
+    let ativo = true;
+    let temporizador: number | undefined;
+    let socket: WebSocket | null = null;
+
+    const conectar = async () => {
+      try {
+        const cliente = criarClienteServidorLocal({ baseUrl: endereco.trim(), token: sessao.token });
+        const { ticket } = await cliente.emitirTicketWebSocket();
+        if (!ativo) return;
+        const destino = new URL('/ws', endereco.trim());
+        destino.protocol = destino.protocol === 'https:' ? 'wss:' : 'ws:';
+        if (window.location.protocol === 'https:' && destino.protocol === 'ws:') {
+          setAviso('O navegador bloqueia WebSocket inseguro a partir desta página HTTPS. Para testar a Mesa em LAN, abra o modo LAN local na rede confiável.');
+          return;
+        }
+        destino.searchParams.set('ticket', ticket);
+        socket = new WebSocket(destino.toString());
+        socketEventos.current = socket;
+        socket.onopen = () => { if (ativo) setCanalTempoReal(true); };
+        socket.onmessage = evento => {
+          if (!ativo || typeof evento.data !== 'string') return;
+          try {
+            const mensagem = JSON.parse(evento.data);
+            if (mensagem?.type === 'mesa.changed' || mensagem?.type === 'account.changed') {
+              void sincronizarDadosRecebidos();
+            }
+          } catch { /* Mensagens inválidas não alteram o estado da interface. */ }
+        };
+        socket.onclose = evento => {
+          if (socketEventos.current === socket) socketEventos.current = null;
+          if (ativo) setCanalTempoReal(false);
+          if (!ativo) return;
+          if (evento.code === 4001) {
+            encerrarSessao('A sessão local foi encerrada ou expirou no servidor. Entre novamente.');
+            return;
+          }
+          temporizador = window.setTimeout(() => { void conectar(); }, 3000);
+        };
+        socket.onerror = () => socket?.close();
+      } catch {
+        if (ativo) temporizador = window.setTimeout(() => { void conectar(); }, 5000);
+      }
+    };
+
+    void conectar();
+    return () => {
+      ativo = false;
+      if (temporizador !== undefined) window.clearTimeout(temporizador);
+      socket?.close();
+      if (socketEventos.current === socket) socketEventos.current = null;
+      setCanalTempoReal(false);
+    };
+  }, [sessao, endereco]);
+
+  useEffect(() => {
+    const socket = socketEventos.current;
+    if (!canalTempoReal || !socket || socket.readyState !== WebSocket.OPEN) return;
+    socket.send(JSON.stringify({ type: 'subscribe', mesaIds: mesas.map(mesa => mesa.id) }));
+  }, [mesas, canalTempoReal]);
 
   useEffect(() => {
     if (!sessao) return;
