@@ -249,4 +249,36 @@ Requisitos:
 4. Executar suíte completa e build no HEAD resultante; corrigir regressões antes de avançar.
 5. Só então seguir para testes integrados de ciclo de vida e concorrência, e depois Inventário funcional.
 
-**Estado:** diagnóstico e proposta documentados; correção de código ainda não implementada nesta seção.
+**Estado na primeira redação:** diagnóstico e proposta documentados. A implementação inicial foi iniciada e está registrada na seção 14.
+
+
+## 14. Implementação inicial do contrato compartilhado — HEAD `07e185a8`
+
+### Alterações realizadas na branch
+
+- Criado `src/validacaoPersonagemLocal.ts`, centralizando a validação externa e a validação dos dados internos conhecidos.
+- A validação reaproveita os validadores/catálogos existentes de Atributos, Perícias, Origem, Habilidade, arma Operário, equipamento e planejamento de compras.
+- Rascunhos mínimos e campos/seções ainda ausentes continuam permitidos.
+- Campos conhecidos, quando presentes, são validados; campos desconhecidos são preservados desde que contenham valores seguros para JSON.
+- `versaoModelo`, quando presente, aceita somente 1; `estadoFicha`, quando presente, aceita somente `rascunho`.
+- A persistência IndexedDB passou a usar o validador compartilhado.
+- `salvarPatchPersonagem()` agora valida o registro já mesclado antes de gravar; patch inválido aborta a transação.
+- O backup passou a usar o mesmo contrato. Exportação atual exige geração válida; leitura de backup legado pode aceitar ausência de geração e atribui uma nova antes de devolver os dados para importação.
+- Fixtures de testes de gravação/operações foram alinhadas ao campo `geracao` exigido pelo modelo atual. Fixture de concorrência recebeu Atributos completos.
+- Acrescentados testes para rascunho mínimo, seções parciais, validação de domínio, compatibilidade de Habilidade/Classe, compras, Identidade, campos futuros, dados não serializáveis, geração legada e patch inválido.
+
+### Limites e ressalvas
+
+- Esta é uma primeira implementação, ainda não considerada aprovada pelo CI.
+- O validador preserva a ausência de campos para suportar criação incremental. Uma seção só recebe validação cruzada completa quando os campos necessários ao contexto estão presentes.
+- Registros com `versaoModelo` ou `estadoFicha` ausentes continuam aceitos como legado/incompleto; não foi criada migração de versão de modelo nesta etapa.
+- A compatibilidade de backups antigos foi mantida para ausência de `geracao`, mas ainda precisa de cobertura com arquivos reais de versões anteriores, se disponíveis.
+- A validação JSON-safe rejeita valores que JSON descartaria ou transformaria (por exemplo, `undefined`, datas, valores não finitos e referências circulares); campos futuros JSON válidos são preservados.
+- Não houve teste humano nem execução confirmada da suíte/build no HEAD `07e185a8`. A existência de workflow configurado para push não substitui evidência do resultado.
+
+### Próxima verificação técnica
+
+1. Obter resultado da suíte completa e build no HEAD atual; corrigir eventuais erros de TypeScript/testes.
+2. Revisar todos os pontos de escrita/importação para confirmar que nenhum caminho contorna o contrato compartilhado.
+3. Adicionar casos para registros legados reais e para rascunhos incompletos encontrados no histórico, sem descartar dados.
+4. Depois de estabilizar integridade, retomar ciclo de vida/concorrência e concluir Inventário no mesmo ciclo.
