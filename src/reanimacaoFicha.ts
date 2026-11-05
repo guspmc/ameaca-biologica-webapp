@@ -36,7 +36,15 @@ export function reanimacaoValida(valor: unknown): valor is Reanimacao {
     && inteiroNaoNegativo(r.tentativas) && inteiroNaoNegativo(r.curaAcumulada)
     && r.sucessos <= 3 && r.falhas <= 3 && r.tentativas <= 5
     && r.sucessos + r.falhas === r.tentativas
-    && typeof r.vantagemProximoTeste === 'boolean';
+    && typeof r.vantagemProximoTeste === 'boolean'
+    && (r.causa === 'pv_zero'
+      ? !['desacordada_ate_reducao_bi', 'transformacao_no_proximo_turno'].includes(r.estado)
+      : r.curaAcumulada === 0 && !r.vantagemProximoTeste
+        && !['morte_a_registrar'].includes(r.estado))
+    && (r.estado !== 'desacordada_ate_reducao_bi' || (r.causa === 'colapso_bi' && r.sucessos === 3))
+    && (r.estado !== 'morte_a_registrar' || (r.causa === 'pv_zero' && r.falhas === 3))
+    && (r.estado !== 'transformacao_no_proximo_turno' || (r.causa === 'colapso_bi' && r.falhas === 3))
+    && (r.estado !== 'concluida' || r.sucessos === 3);
 }
 
 function validarEstado(r: Reanimacao): void {
