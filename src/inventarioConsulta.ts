@@ -14,7 +14,8 @@ const objeto=(v:unknown):v is Record<string,unknown>=>v!==null&&typeof v==='obje
 const natural=(v:unknown):v is number=>typeof v==='number'&&Number.isSafeInteger(v)&&v>=0;
 const positivo=(v:unknown):v is number=>natural(v)&&v>0;
 const texto=(v:unknown):v is string=>typeof v==='string'&&v.trim().length>0;
-const uuid=(v:unknown):v is string=>typeof v==='string'&&(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/.test(v)||/^[0-9a-f]{32}$/.test(v));
+const uuid=(v:unknown):v is string=>typeof v==='string'&&/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/.test(v);
+const idPersonagemValido=(v:unknown):v is string=>uuid(v)||(typeof v==='string'&&/^[0-9a-f]{32}$/.test(v));
 const chaves=(v:Record<string,unknown>,ks:string[])=>Object.keys(v).length===ks.length&&ks.every(k=>Object.hasOwn(v,k));
 const tipos:Record<string,EstadoExemplar['tipo']>={'gazua-profissional':'ferramenta',hatchet:'arma_corpo','erva-verde':'consumivel','lanterna-simples':'lanterna','sentinel-nine':'arma_fogo','colete-acolchoado':'colete','jmb-hp3':'arma_fogo',moedas:'moedas','kit-socorros':'ferramenta','pente-estendido':'peca',bastao:'arma_corpo',lemi:'arma_fogo',kendo:'colete','kit-ferramentas':'ferramenta',faca:'arma_corpo','colete-leve':'colete','municao-9mm':'municao'};
 function validoEstado(e:unknown,tipo:string):e is EstadoExemplar{
@@ -34,7 +35,7 @@ function validoEstado(e:unknown,tipo:string):e is EstadoExemplar{
 export function lerInventarioConsulta(v:unknown,personagemId:string):InventarioConsulta{
  const ids=new Set<string>(),faixas:{inicio:number;fim:number}[]=[];
  const invalido=():never=>{throw Error('Inventário não verificado. Consulte novamente antes de continuar.');};
- if(!uuid(personagemId)||!objeto(v)||!chaves(v,['personagemId','revisao','capacidade','itens'])||v.personagemId!==personagemId||!natural(v.revisao)||!natural(v.capacidade)||!Array.isArray(v.itens))return invalido();
+ if(!idPersonagemValido(personagemId)||!objeto(v)||!chaves(v,['personagemId','revisao','capacidade','itens'])||v.personagemId!==personagemId||!natural(v.revisao)||!natural(v.capacidade)||!Array.isArray(v.itens))return invalido();
  for(const i of v.itens){
   if(!objeto(i)||!chaves(i,['instanciaId','catalogoId','nome','quantidade','espacos','local','posicao','estado'])||!uuid(i.instanciaId)||ids.has(i.instanciaId)||!texto(i.nome)||!texto(i.catalogoId)||!Object.hasOwn(tipos,i.catalogoId)||!positivo(i.quantidade)||!validoEstado(i.estado,tipos[i.catalogoId]))return invalido();
   const limite=i.estado.tipo==='municao'?30:i.estado.tipo==='moedas'?3:1;if(i.quantidade>limite)return invalido();
