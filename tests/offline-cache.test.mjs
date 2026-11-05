@@ -92,3 +92,26 @@ test('migration da proteção de convites habilita RLS sem criar política de ac
  assert.match(migrationSource,/ALTER TABLE app_private\.convites_mesa ENABLE ROW LEVEL SECURITY/i);
  assert.doesNotMatch(migrationSource,/CREATE POLICY|GRANT\s+(SELECT|INSERT|UPDATE|DELETE)/i);
 });
+
+test('revalidar ou limpar uma conta não altera snapshots de outra conta no mesmo dispositivo',async()=>{
+ const contaA='teste-conta-a-'+crypto.randomUUID(),contaB='teste-conta-b-'+crypto.randomUUID();
+ try {
+  const mesaA={id:'mesa-a-'+crypto.randomUUID(),nome:'Mesa A',mestre_id:contaA,criada_em:'2026-01-01'};
+  const mesaB={id:'mesa-b-'+crypto.randomUUID(),nome:'Mesa B',mestre_id:contaB,criada_em:'2026-01-01'};
+  await atualizarAutorizacaoOffline(contaA,[mesaA]);
+  await atualizarAutorizacaoOffline(contaB,[mesaB]);
+  await salvarPersonagensOffline(contaA,[{id:'personagem-a',mesa_id:mesaA.id,jogador_id:contaA}]);
+  await salvarPersonagensOffline(contaB,[{id:'personagem-b',mesa_id:mesaB.id,jogador_id:contaB}]);
+
+  await atualizarAutorizacaoOffline(contaA,[]);
+  assert.deepEqual((await lerPersonagensOffline(contaA))?.dados,[]);
+  assert.deepEqual((await lerPersonagensOffline(contaB))?.dados.map(p=>p.id),['personagem-b']);
+
+  await limparCacheUsuario(contaA);
+  assert.deepEqual((await lerMesasOffline(contaB))?.dados.map(m=>m.id),[mesaB.id]);
+  assert.deepEqual((await lerPersonagensOffline(contaB))?.dados.map(p=>p.id),['personagem-b']);
+ } finally {
+  await limparCacheUsuario(contaA);
+  await limparCacheUsuario(contaB);
+ }
+});
