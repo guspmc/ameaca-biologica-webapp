@@ -1,8 +1,8 @@
 # Protótipo do servidor local — primeiro teste LAN
 
-**Estado em 29/10/2026:** CI passou no commit `d3cc618ec7bde59208fd62cae053088573137c91`, incluindo testes automatizados e build do frontend. O reteste manual PC + Android foi relatado como aprovado para a LAN; a reconexão Android pode exigir recarga. A API de autenticação local continua experimental e não está conectada ao frontend.  
-**Objetivo:** provar a base técnica Node.js + SQLite + WebSocket sem depender de internet.  
-**Importante:** não é um servidor de campanha. Existe uma API experimental de contas e sessões locais, mas ela ainda não está conectada ao frontend; há apenas o esquema inicial de Mesas e participantes; ainda não há API de Mesas, autorização por Mesa nem dados de RPG.
+**Estado em 05/11/2026:** a interface React experimental já está conectada à API local para cadastro/login, Mesas, convites/solicitações e rascunhos de personagem. A CI passou no commit `e4e08a90da502d11162f4a0c39283df3ca7092a4`; alterações posteriores ao commit ainda precisam de nova execução de CI. A rodada humana F1/L1/L2 permanece pendente, embora o primeiro teste de abertura dos ambientes no PC tenha sido relatado como aprovado.  
+**Objetivo:** validar incrementalmente a base Node.js + SQLite + WebSocket e os fluxos experimentais de Mesa LAN sem depender de Supabase.  
+**Importante:** não é um servidor de campanha pronto para produção. Use somente dados e contas fictícios em rede privada confiável; o protótipo usa HTTP sem TLS e não deve ser exposto à internet.
 
 ## O que foi implementado neste incremento
 
@@ -89,11 +89,11 @@ A branch de desenvolvimento agora contém uma API de autenticação local separa
 - Testes automatizados dedicados cobrem cadastro, login, sessão, logout, senha curta, e-mail duplicado e limite de tentativas.
 - Limite experimental em memória por IP: até cinco tentativas por rota de cadastro/login em uma janela de dez minutos; ao exceder, responde HTTP 429 com `Retry-After`.
 
-**Limites importantes:** esta API ainda não está conectada à interface React. A API de Mesas agora oferece `GET /api/mesas` (lista somente as Mesas da conta autenticada), `POST /api/mesas` (cria uma Mesa e registra seu criador como Mestre na mesma transação) e `GET /api/mesas/:id` (consulta somente se a conta participa). Todas exigem sessão válida; IDs de conta enviados no corpo são ignorados para autorização. Ainda não há convites/entrada de participantes, edição/remoção de Mesas, fichas ou presença online. As rotas demonstrativas `/api/events` e o WebSocket `/ws` continuam sem autenticação e devem ser tratados apenas como demonstração descartável, sem dados de campanha. A migração ainda não aplica os limites de 10 participantes e 10 personagens ativas; esses controles precisam ser implementados no serviço antes de aceitar dados reais. Também não há recuperação de conta. A limitação de tentativas é experimental, mantida apenas em memória, por IP; pode ser contornada reiniciando o servidor e não substitui controles de produção. O protótipo continua usando HTTP sem TLS; portanto, não use credenciais ou dados reais. Antes de colocar dados de campanha no servidor, precisamos tratar transporte seguro na LAN, reforçar os controles de limitação de tentativas, definir a política de criação de contas e implementar autorização no servidor. A presença desses endpoints não significa que o WebApp já tenha autenticação local pronta para uso real.
+**Limites importantes (estado atual):** as rotas antigas `/api/events` estão desativadas (HTTP 410). As rotas atuais exigem sessão local; a autorização de Mesa é validada no servidor. O Mestre administra convites e aprova solicitações, mas não recebe acesso à ficha completa dos jogadores. O Jogador pode manter rascunhos próprios, com controle de revisão para impedir sobrescrita concorrente; a API agora limita a três rascunhos por jogador em cada Mesa. A aprovação de ingresso aplica o teto de dez jogadores por Mesa. A remoção de participante pela interface ainda não está implementada, e não há sincronização automática entre rascunho SQLite da Mesa LAN e ficha pessoal IndexedDB. A limitação de tentativas de cadastro/login é experimental, mantida em memória por IP, e não substitui controles de produção. O protótipo continua usando HTTP sem TLS; portanto, não use credenciais reais ou dados de campanha. Ainda faltam transporte seguro, política de operação/backup do servidor e validação humana completa em dispositivos reais.
 
 ## Próximo marco
 
-Próximo incremento: implementar entrada/convites para participantes com política explícita, aplicar limites de 10 participantes e 10 personagens ativas por Mesa, e então proteger o canal de tempo real com autenticação e presença restrita aos participantes da Mesa. Só depois conectar gradualmente o frontend atual à API local.
+Próximo incremento: concluir a validação humana dos inicializadores Windows, Ficha offline e Mesa LAN; depois, priorizar os fluxos pendentes de remoção/revogação e continuidade de sessão, sem ultrapassar as regras de acesso offline do Planejamento v2.1.
 
 
 ## Reconexão, heartbeat e tempo ocioso
@@ -112,7 +112,7 @@ Isso reduz o risco de um canal aparentemente conectado ficar morto sem ser perce
 
 ## Decisão aprovada — alterações offline com trilha de auditoria
 
-**Aprovado pelo usuário em 29/10/2026:** permitir que o jogador altere também os estados compartilhados da própria ficha durante uma sessão offline (por exemplo, atributos, PV, SA, BI, munição e inventário), para não exigir conexão contínua durante o jogo presencial. Essa decisão amplia e substitui, para esse modo de uso, a restrição offline descrita no Planejamento v2.0, que permitia apenas leitura de snapshots e anotações pessoais. A alteração deve ser registrada como decisão posterior no histórico do planejamento; não modifica as regras do RPG nem concede ao Mestre editor universal.
+**REGISTRO HISTÓRICO SUPERADO — NÃO IMPLEMENTAR:** este parágrafo registrava uma proposta antiga de permitir alterações offline em estados compartilhados. O Documento Mestre de Planejamento v2.1 e a diretriz vigente do projeto prevalecem: offline, o aplicativo consulta dados previamente autorizados (marcados como possivelmente desatualizados) e permite anotações pessoais; não permite alterar PV, SA, BI, Inventário, Baú, iniciativa ou outros estados compartilhados. Qualquer mudança nessa política exige revisão explícita do planejamento e da arquitetura de segurança antes de implementação.
 
 ### Trilha de auditoria
 
