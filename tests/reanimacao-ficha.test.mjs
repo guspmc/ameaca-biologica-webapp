@@ -53,15 +53,15 @@ test('0 PV: três falhas sinalizam Morte para registro do Mestre, sem morte auto
   assert.throws(() => aplicar(r, 20), /apta/);
 });
 
-test('Medicina DT 15 concede Vantagem ao próximo Teste e consome a Vantagem', () => {
+test('sucesso em Medicina DT 15 concede Vantagem ao próximo Teste e consome a Vantagem', () => {
   let r = api.iniciarTurnoReanimacao(api.iniciarReanimacao('pv_zero'));
-  r = api.concederAjudaMedicina(r, 15);
+  r = api.concederAjudaMedicina(r, true);
   assert.equal(r.vantagemProximoTeste, true);
   let out = aplicar(r, [4, 12]);
   assert.equal(out.reanimacao.sucessos, 1);
   assert.equal(out.reanimacao.vantagemProximoTeste, false);
   assert.throws(() => aplicar(out.reanimacao, 12), /dois resultados/);
-  assert.equal(api.concederAjudaMedicina(r, 14).vantagemProximoTeste, false);
+  assert.equal(api.concederAjudaMedicina(r, false).vantagemProximoTeste, false);
 });
 
 test('Colapso: Cobaia rola dois d20, três sucessos mantêm Desacordado até BI abaixo do máximo', () => {
@@ -87,5 +87,5 @@ test('causa, faixa de resultados, vantagem e estados terminais são validados', 
   assert.throws(() => aplicar(r, 0), /resultado/);
   assert.throws(() => aplicar(r, [10, 12]), /um resultado/);
   assert.throws(() => api.acumularCuraDuranteReanimacao(r, -1), /Cura/);
-  assert.throws(() => api.concederAjudaMedicina(api.iniciarTurnoReanimacao(api.iniciarReanimacao('colapso_bi')), 20), /Ajuda/);
+  assert.throws(() => api.concederAjudaMedicina(api.iniciarTurnoReanimacao(api.iniciarReanimacao('colapso_bi')), true), /Ajuda/);
 });
