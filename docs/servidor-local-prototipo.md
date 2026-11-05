@@ -211,8 +211,9 @@ O endereço do servidor na interface já será preenchido com a origem atual e p
 
 - IMPLEMENTADO: ticket de WebSocket vinculado ao hash da sessão; inscrição por IDs de Mesa; validação de participação; invalidações de solicitações e vínculo; invalidação de rascunho restrita às outras conexões da mesma conta; revalidação periódica de sessão; reconexão da interface.
 - IMPLEMENTADO: modo `dev:lan` com proxy same-origin para `/api` e `/ws`, permitindo o teste HTTP a partir de outro dispositivo na rede privada.
-- TESTE AUTOMATIZADO: cobre inscrição autorizada/negada, evento após solicitação, notificação da conta após aprovação, invalidação de rascunho e encerramento do canal após logout.
-- PENDENTE: resultado do CI desta alteração; teste manual em dois dispositivos e em navegadores reais; verificação de firewall, reconexão após queda de Wi-Fi e sessão expirada.
+- TESTE AUTOMATIZADO: cobre inscrição individual autorizada/negada, evento após solicitação, notificação da conta após aprovação, invalidação de rascunho, encerramento do canal após logout e integração real do proxy HTTP/WebSocket.
+- CI: commit `836a8fd` passou em compilação e testes da Ficha offline. Após endurecimento da validação de Host no Vite e ajustes dos testes correspondentes, o commit `b550a98` está em nova execução; não considerar essa última rodada aprovada até o resultado final.
+- PENDENTE: teste manual em dois dispositivos e em navegadores reais; verificação de firewall, reconexão após queda de Wi-Fi e sessão expirada.
 - PENDENTE: não existe ainda sincronização automática entre IndexedDB da Ficha offline e SQLite da Mesa LAN.
 
 
