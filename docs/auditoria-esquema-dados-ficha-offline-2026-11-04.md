@@ -136,7 +136,7 @@ Essas mudanças foram commitadas na branch de desenvolvimento e aguardam confirm
 
 A fila `criarFilaSerializada()` existe dentro da instância React de cada aba. Ela impede que os patches dessa mesma instância se sobreponham, mas não coordena duas abas ou duas janelas independentes.
 
-O caminho atual de edição lê `selecionadoRef.current`, monta um registro completo com `dados: { ...base.dados, ...patch }` e envia esse objeto para `salvarPersonagem()`, que executa um `put()` completo em uma transação IndexedDB. O IndexedDB serializa transações de escrita concorrentes na mesma store, mas isso, isoladamente, não atualiza o objeto `base` que a segunda aba já tinha em memória.
+O caminho atual de edição lê `selecionadoRef.current` apenas como base para identificar os valores observados e envia o patch, a base e o token de geração para `salvarPatchPersonagem()`. Essa função abre uma transação `readwrite`, lê o registro vigente dentro da transação, verifica a geração e compara as chaves alteradas com os valores-base antes de mesclar somente as chaves do patch. O `put()` do registro mesclado ocorre dentro dessa mesma transação.
 
 Cenário possível:
 1. Aba A e aba B abrem a mesma ficha, ambas com a revisão R.
@@ -144,11 +144,11 @@ Cenário possível:
 3. Aba B altera Atributos usando sua cópia antiga R e grava o registro completo R+B.
 4. O segundo `put` pode substituir o registro R+A por R+B, perdendo a alteração de Identificação, embora ambas as gravações tenham sido confirmadas pelo IndexedDB.
 
-A fila local não evita esse cenário porque as filas são independentes. Também não há, no caminho inspecionado, canal entre abas, revisão otimista ou mesclagem de patch dentro da própria transação IndexedDB.
+A fila local continua sem coordenar abas diferentes, mas a mesclagem transacional agora evita a sobrescrita de chaves distintas; conflitos na mesma chave são recusados. O token `geracao` impede que uma aba antiga grave após uma restauração/substituição do registro.
 
-**Classificação:** risco técnico confirmado pela leitura do fluxo; o cenário ainda não foi reproduzido em navegador real.
+**Classificação após a correção:** a perda de alterações em chaves diferentes foi endereçada pela implementação transacional. O conflito na mesma chave é explicitamente recusado. Os testes atuais usam mocks e ainda não substituem a homologação em duas abas reais do navegador.
 
-**Correção recomendada:** mover a operação de patch para o módulo de persistência. Dentro de uma única transação `readwrite`, buscar a versão mais recente do registro, mesclar apenas as chaves da seção editada e gravar o resultado. Para alterações simultâneas na mesma chave, definir política explícita (detectar conflito usando revisão/base observada ou documentar último salvamento vence); não escolher silenciosamente. A UI deve receber o registro efetivamente gravado e atualizar seu estado.
+**Implementação observada:** `salvarPatchPersonagem()` realiza leitura, comparação, mesclagem e gravação na mesma transação `readwrite`; a UI recebe o registro efetivamente confirmado e atualiza o estado.
 
 **Testes necessários antes da implementação:** duas conexões IndexedDB independentes, ambas lendo a mesma ficha; primeiro patch em uma conexão; segundo patch em outra; confirmar que alterações em chaves diferentes sobrevivem. Acrescentar caso de conflito na mesma chave e decidir a resposta esperada. A mudança exige teste de regressão para a fila de gravação da mesma aba.
 
@@ -168,11 +168,9 @@ A fila local não evita esse cenário porque as filas são independentes. També
 
 `substituirPersonagens()` usa uma única transação `readwrite` com `clear()` seguido de `put()` para cada ficha. A atomicidade protege contra conjunto parcialmente restaurado quando a transação aborta.
 
-**Risco multiaba ainda aberto:** outra aba pode permanecer com uma ficha antiga em memória durante a substituição. Se ela tentar salvar depois, o patch verifica as chaves editadas contra o registro substituto. Se alguma chave tiver mudado, recusa o patch. Porém, se as chaves editadas tiverem valores iguais aos da cópia antiga, o patch pode ser aceito e aplicado ao registro restaurado. Isso pode misturar uma edição iniciada antes da restauração com o conjunto novo. A comparação atual não identifica a operação de substituição como uma nova geração do conjunto.
+**Risco mitigado no código atual:** `substituirPersonagens()` atribui um novo token `geracao` a cada registro restaurado. `FichaOfflineApp` passa a geração observada ao abrir a ficha para `salvarPatchPersonagem()`, que recusa a gravação quando a geração vigente diverge — inclusive quando ID e conteúdo são iguais aos antigos.
 
-**Classificação:** risco plausível e derivado do fluxo; ainda não reproduzido em navegador real.
-
-**Recomendação:** antes de considerar a substituição segura em múltiplas abas, introduzir um identificador de geração do conjunto local (ou mecanismo equivalente), incrementado atomicamente na substituição e observado pela aba editora. O patch deve recusar a gravação se a geração observada ao abrir a ficha não corresponder à geração vigente. A solução precisa preservar compatibilidade com registros existentes e backups antigos; não implementar sem definir onde o marcador vive e como será inicializado.
+**Classificação:** a proteção contra gravação de uma edição antiga após substituição/restauração está implementada e possui teste unitário específico (`patch de uma ficha anterior é recusado após restauração com mesmo ID e mesmos dados`). A sequência ainda precisa de homologação em duas abas reais.
 
 ### Limite dos testes multiaba adicionados
 
@@ -328,3 +326,17 @@ As alterações estão commitadas na branch de trabalho até `0f4c037fe6f560da1e
 - Executar a suíte e o build em um runner real.
 - Se aprovados, auditar o ciclo integrado de criação, salvamento parcial, reabertura, backup, cópia e restauração.
 - Depois, tratar explicitamente a geração do conjunto local em substituições multiaba e avançar para o Inventário funcional.
+
+
+## 17. Correção do registro histórico de concorrência — HEAD `0f4c037f`
+
+A releitura dos arquivos atuais revelou que as seções 11 e 12 acima estavam parcialmente desatualizadas: descreviam riscos anteriores à introdução de `salvarPatchPersonagem()` e do token `geracao`.
+
+O texto foi corrigido para refletir a implementação atual:
+- patches são lidos, comparados, mesclados e gravados dentro de uma transação `readwrite`;
+- alterações em chaves diferentes podem coexistir;
+- conflitos na mesma chave são recusados;
+- substituição/restauração renova `geracao` e invalida a edição mantida em memória por outra aba;
+- a cobertura atual é por mocks; teste real com duas abas continua pendente.
+
+Esta correção é documental; não altera o código.
