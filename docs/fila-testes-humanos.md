@@ -320,7 +320,7 @@ Pré-requisito: CI verde; servidor e frontend LAN iniciados conforme [guia do se
 2. Recarregar a página, autenticar novamente e reabrir o rascunho; conferir o dado persistido. A perda do token em memória após reload é comportamento conhecido, não falha.
 3. Abrir a mesma personagem em duas sessões/dispositivos. Salvar em A e tentar salvar em B com revisão antiga; confirmar recusa por conflito sem sobrescrever A.
 4. Com as duas sessões conectadas, provocar atualização de Mesa e conferir invalidação/refetch no outro dispositivo sem F5. Confirmar que WebSocket só sinaliza alteração e que os dados vêm das rotas HTTP autorizadas.
-5. Interromper e restaurar Wi-Fi/rede local; observar reconexão e atualização. Testar também retorno da aba ao primeiro plano e suspensão do Android. A reconexão atual usa espera fixa; registrar tempos e mensagens, sem exigir backoff progressivo ainda.
+5. Interromper e restaurar Wi-Fi/rede local; observar reconexão com espera progressiva (3, 6, 12, 24 e até 30 segundos) e atualização. Ao retornar a aba ao primeiro plano, confirmar consulta HTTP de atualização e recuperação do WebSocket. Testar também suspensão do Android; registrar tempos e mensagens observadas.
 6. Deixar a sessão expirar ou revogá-la no servidor de teste; confirmar encerramento da interface e bloqueio de novas consultas. Depois fazer logout voluntário e confirmar revogação.
 7. Fechar/reabrir ou atualizar a página: autenticar novamente e conferir que os dados confirmados continuam no servidor.
 
