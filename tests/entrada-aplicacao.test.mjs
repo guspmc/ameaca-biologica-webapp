@@ -17,13 +17,14 @@ test('modo LAN encaminha API e WebSocket pelo mesmo host e mantém a Ficha offli
   const tela = await readFile(new URL('../src/ConexaoServidorLocal.tsx', import.meta.url), 'utf8');
   assert.equal(pacote.scripts['dev:lan'], 'vite --mode lan');
   assert.match(vite, /mode === 'lan'/);
-  assert.match(vite, /host: '0\.0\.0\.0'/);
-  assert.doesNotMatch(vite, /allowedHosts:\s*true/);
-  assert.match(vite, /'\/api'.*target: 'http:\/\/127\.0\.0\.1:4175'/);
-  assert.match(vite, /'\/ws'.*target: 'ws:\/\/127\.0\.0\.1:4175'.*ws: true/);
-  assert.match(tela, /import\.meta\.env\.MODE === 'lan'.*window\.location\.origin/s);
+  assert.match(vite, /host: '0\\.0\\.0\\.0'/);
+  // Verifica apenas uma propriedade ativa; comentários podem mencionar a configuração proibida.
+  assert.doesNotMatch(vite, /^\\s*allowedHosts\\s*:\\s*true\\s*,?/m);
+  assert.match(vite, /'\\/api'.*target: 'http:\\/\\/127\\.0\\.0\\.1:4175'/);
+  assert.match(vite, /'\\/ws'.*target: 'ws:\\/\\/127\\.0\\.0\\.1:4175'.*ws: true/);
+  assert.match(tela, /import\\.meta\\.env\\.MODE === 'lan'.*window\\.location\\.origin/s);
   assert.match(tela, /emitirTicketWebSocket/);
   assert.match(tela, /type: 'subscribe'/);
-  assert.match(tela, /mesa\.changed/);
-  assert.match(tela, /account\.changed/);
+  assert.match(tela, /mesa\\.changed/);
+  assert.match(tela, /account\\.changed/);
 });
