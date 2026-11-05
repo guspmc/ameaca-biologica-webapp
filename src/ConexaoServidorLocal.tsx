@@ -385,10 +385,10 @@ export default function ConexaoServidorLocal() {
     quantidadeSalvamentosPendentes.current += 1;
     setSalvandoFicha(true);
     return filaSalvamentoFicha.current.enfileirar(async () => {
-      const fichaAtual = fichaAbertaRef.current;
-      if (!sessao || !fichaAtual || fichaAtual.mesa.role !== 'jogador') return false;
-      setErro(''); setAviso('');
       try {
+        const fichaAtual = fichaAbertaRef.current;
+        if (!sessao || !fichaAtual || fichaAtual.mesa.role !== 'jogador') return false;
+        setErro(''); setAviso('');
         // A base e a revisão são lidas somente quando esta operação chega à vez.
         // Assim, patches de seções diferentes preservam as confirmações anteriores.
         const dadosAtualizados = { ...fichaAtual.personagem.data, ...delta };
