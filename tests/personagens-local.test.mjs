@@ -144,6 +144,47 @@ test('rascunhos de personagem persistem e ficam isolados por conta e Mesa', asyn
   assert.equal(nomeInvalido.status, 422);
 });
 
+test('duas gravações simultâneas da mesma revisão não se sobrescrevem', async t => {
+  const { url, app } = await criarServidor(t);
+  const mestre = await criarConta(url, 'mestre-concorrencia-atomica@example.test');
+  const jogador = await criarConta(url, 'jogador-concorrencia-atomica@example.test');
+  const mesaResposta = await fetch(url + '/api/mesas', {
+    method: 'POST',
+    headers: { ...mestre.headers, 'content-type': 'application/json' },
+    body: JSON.stringify({ name: 'Mesa de gravação concorrente' }),
+  });
+  assert.equal(mesaResposta.status, 201);
+  const { mesa } = await mesaResposta.json();
+  app.db.prepare('INSERT INTO participantes_mesa (mesa_id, conta_id, papel, entrou_em) VALUES (?, ?, ?, ?)')
+    .run(mesa.id, jogador.account.id, 'jogador', new Date().toISOString());
+
+  const criacao = await fetch(url + '/api/mesas/' + mesa.id + '/personagens', {
+    method: 'POST', headers: { ...jogador.headers, 'content-type': 'application/json' },
+    body: JSON.stringify({ name: 'Claire', data: { pv: 10, origem: 'Civil' } }),
+  });
+  assert.equal(criacao.status, 201);
+  const { personagem } = await criacao.json();
+
+  const gravacoes = await Promise.all([
+    fetch(url + '/api/personagens/' + personagem.id, {
+      method: 'PUT', headers: { ...jogador.headers, 'content-type': 'application/json' },
+      body: JSON.stringify({ name: 'Claire A', data: { pv: 9, origem: 'Civil' }, expectedRevision: personagem.revision }),
+    }),
+    fetch(url + '/api/personagens/' + personagem.id, {
+      method: 'PUT', headers: { ...jogador.headers, 'content-type': 'application/json' },
+      body: JSON.stringify({ name: 'Claire B', data: { pv: 8, origem: 'Civil' }, expectedRevision: personagem.revision }),
+    }),
+  ]);
+  assert.deepEqual(gravacoes.map(resposta => resposta.status).sort(), [200, 409]);
+
+  const consulta = await fetch(url + '/api/personagens/' + personagem.id, { headers: jogador.headers });
+  assert.equal(consulta.status, 200);
+  const { personagem: salvo } = await consulta.json();
+  assert.equal(salvo.revision, personagem.revision + 1);
+  assert.ok(['Claire A', 'Claire B'].includes(salvo.name));
+  assert.equal(salvo.data.pv, salvo.name === 'Claire A' ? 9 : 8);
+});
+
 test('rascunhos são removidos quando a conta deixa de participar da Mesa', async t => {
   const { app, url } = await criarServidor(t);
   const mestre = await criarConta(url, 'mestre-remocao@example.test');
