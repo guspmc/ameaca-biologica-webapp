@@ -158,3 +158,11 @@ Testes novos em `tests/inventario-ativo.test.mjs` cobrem materialização, itens
 **Limite:** a função é pura e ainda não está ligada ao ciclo de ativação, à persistência da ficha, ao painel ou a comandos de jogo. Ela não é chamada ao abrir/reabrir uma ficha e não deve ser chamada novamente sobre um inventário já existente. Não declarar Inventário ativo integrado.
 
 **CI desta revisão:** commit `608abacc9d90f9a1d8a82990f5c4056bd22c849f` — workflows `Verificação da ficha offline` (run 42036432626) e `Validar compilação do WebApp` (run 42036432761) concluídos com sucesso. A suíte executou **445/445 testes**, sem falhas; `tsc --noEmit` e build Vite também passaram. A revisão anterior falhou em um teste que alterava a posição de um item característico (fora da grade); o teste foi corrigido para selecionar dois exemplares armazenados. Também foi retirada a restrição de extrapolação de capacidade, pois ela quebrava a preservação de exemplares excedentes após redução da capacidade. A regra de não sobreposição permanece. Classificação: **IMPLEMENTADO / TESTADO AUTOMATICAMENTE**; integração e testes humanos continuam pendentes.
+
+## 13. Auditoria do contrato ativo — 05/11/2026
+
+A leitura conjunta do Arquivo do Jogador v1.0 e do Planejamento v2.1 identificou lacunas entre o parser atual e o escopo da grade operacional: catálogo fechado reduzido, metadados ausentes para Itens Chave/vínculos/Peças/Hatchet/Arquivos e ausência da expansão equipada no snapshot. A materialização pura e o cálculo isolado de expansão/moedas não resolvem persistência nem ciclo de vida.
+
+O diagnóstico completo, com requisitos canônicos, arquitetura recomendada, riscos de capacidade, dependências de persistência e sequência incremental, está em [auditoria do modelo de Inventário ativo](auditoria-modelo-inventario-ativo-2026-11-05.md).
+
+**Próxima dependência:** contrato persistente versionado e transição de ciclo rascunho → ativa precisam ser definidos antes de ligar a materialização à ficha. O snapshot não deve ser gerado ao abrir/reabrir um rascunho. O Baú continua adiado para a integração LAN final.
