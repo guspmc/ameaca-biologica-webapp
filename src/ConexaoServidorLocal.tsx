@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { criarClienteServidorLocal, ErroServidorLocal, type MesaLocal, type ResumoPersonagemLocal, type SaudeServidorLocal, type SessaoLocal, type PersonagemRascunhoLocal } from './servidorLocal';
 import FichaLocal from './FichaLocal';
+import { calcularAtrasoReconexao } from './reconexaoLocal';
 
 const CHAVE_ENDERECO = 'ameaca-biologica:servidor-local:endereco:v1';
 
@@ -72,7 +73,7 @@ export default function ConexaoServidorLocal() {
       }
       setSolicitacoes(novosPedidos);
       setPersonagens(novosPersonagens);
-      setAviso('Atualização recebida pelo canal da Mesa e confirmada nas consultas ao servidor.');
+      setAviso('Dados atualizados e confirmados nas consultas ao servidor.');
     } catch (problema) {
       if (problema instanceof ErroServidorLocal && problema.status === 401) {
         encerrarSessao('A sessão expirou ou foi encerrada no servidor. Entre novamente.');
@@ -92,8 +93,22 @@ export default function ConexaoServidorLocal() {
     let ativo = true;
     let temporizador: number | undefined;
     let socket: WebSocket | null = null;
+    let tentativasReconexao = 0;
+    let conectando = false;
+
+    const agendarReconexao = () => {
+      if (!ativo || temporizador !== undefined) return;
+      const atraso = calcularAtrasoReconexao(tentativasReconexao);
+      tentativasReconexao += 1;
+      temporizador = window.setTimeout(() => {
+        temporizador = undefined;
+        void conectar();
+      }, atraso);
+    };
 
     const conectar = async () => {
+      if (!ativo || conectando) return;
+      conectando = true;
       try {
         const cliente = criarClienteServidorLocal({ baseUrl: endereco.trim(), token: sessao.token });
         const { ticket } = await cliente.emitirTicketWebSocket();
@@ -109,6 +124,7 @@ export default function ConexaoServidorLocal() {
         socketEventos.current = socket;
         socket.onopen = () => {
           if (ativo) {
+            tentativasReconexao = 0;
             mesasInscritas.current.clear();
             setCanalTempoReal(true);
           }
@@ -123,25 +139,52 @@ export default function ConexaoServidorLocal() {
           } catch { /* Mensagens inválidas não alteram o estado da interface. */ }
         };
         socket.onclose = evento => {
-          if (socketEventos.current === socket) socketEventos.current = null;
-          mesasInscritas.current.clear();
-          if (ativo) setCanalTempoReal(false);
-          if (!ativo) return;
+          const eraSocketAtual = socketEventos.current === socket;
+          if (eraSocketAtual) {
+            socketEventos.current = null;
+            mesasInscritas.current.clear();
+            if (ativo) setCanalTempoReal(false);
+          }
+          if (!ativo || !eraSocketAtual) return;
           if (evento.code === 4001) {
             encerrarSessao('A sessão local foi encerrada ou expirou no servidor. Entre novamente.');
             return;
           }
-          temporizador = window.setTimeout(() => { void conectar(); }, 3000);
+          agendarReconexao();
         };
         socket.onerror = () => socket?.close();
-      } catch {
-        if (ativo) temporizador = window.setTimeout(() => { void conectar(); }, 5000);
+      } catch (problema) {
+        if (problema instanceof ErroServidorLocal && problema.status === 401) {
+          encerrarSessao('A sessão local foi encerrada ou expirou no servidor. Entre novamente.');
+          return;
+        }
+        agendarReconexao();
+      } finally {
+        conectando = false;
       }
     };
 
+    const aoRetornarAoPrimeiroPlano = () => {
+      if (document.visibilityState !== 'visible') return;
+      void sincronizarDadosRecebidos();
+      if (socket?.readyState === WebSocket.OPEN) {
+        socket.close(4000, 'Retomada da aba');
+        return;
+      }
+      if (socket === null || socket.readyState === WebSocket.CLOSED) {
+        if (temporizador !== undefined) {
+          window.clearTimeout(temporizador);
+          temporizador = undefined;
+        }
+        void conectar();
+      }
+    };
+
+    document.addEventListener('visibilitychange', aoRetornarAoPrimeiroPlano);
     void conectar();
     return () => {
       ativo = false;
+      document.removeEventListener('visibilitychange', aoRetornarAoPrimeiroPlano);
       if (temporizador !== undefined) window.clearTimeout(temporizador);
       socket?.close();
       if (socketEventos.current === socket) socketEventos.current = null;
