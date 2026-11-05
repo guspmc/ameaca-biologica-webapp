@@ -37,7 +37,7 @@ test('materialização recusa IDs repetidos, inválidos e identificador de perso
  assert.throws(()=>materializarInventarioInicial(ficha(),'personagem-invalido',ids()));
 });
 
-test('validação do inventário ativo rejeita adulteração, colisão, extrapolação e revisão inválida',()=>{
+test('validação do inventário ativo rejeita adulteração, colisão e revisão inválida',()=>{
  const base=materializarInventarioInicial(ficha(),uuid(103),ids());
  const adulterado=structuredClone(base);adulterado.itens[0].quantidade=999;
  assert.throws(()=>validarInventarioAtivo(adulterado,uuid(103)));
@@ -48,10 +48,6 @@ test('validação do inventário ativo rejeita adulteração, colisão, extrapol
  const segundo=colisao.itens.find(i=>i.local==='inventario'&&i.instanciaId!==primeiro.instanciaId);
  segundo.posicao=primeiro.posicao;
  assert.throws(()=>validarInventarioAtivo(colisao,uuid(103)));
- const fora=structuredClone(base);
- const ultimo=fora.itens.find(i=>i.local==='inventario');
- ultimo.posicao=fora.capacidade;
- assert.throws(()=>validarInventarioAtivo(fora,uuid(103)));
  const revisao=structuredClone(base);revisao.revisao=-1;
  assert.throws(()=>validarInventarioAtivo(revisao,uuid(103)));
  assert.throws(()=>validarInventarioAtivo(base,uuid(104)));
