@@ -14,7 +14,7 @@ const objeto=(v:unknown):v is Record<string,unknown>=>v!==null&&typeof v==='obje
 const natural=(v:unknown):v is number=>typeof v==='number'&&Number.isSafeInteger(v)&&v>=0;
 const positivo=(v:unknown):v is number=>natural(v)&&v>0;
 const texto=(v:unknown):v is string=>typeof v==='string'&&v.trim().length>0;
-const uuid=(v:unknown):v is string=>typeof v==='string'&&/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/.test(v);
+const uuid=(v:unknown):v is string=>typeof v==='string'&&(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/.test(v)||/^[0-9a-f]{32}$/.test(v));
 const chaves=(v:Record<string,unknown>,ks:string[])=>Object.keys(v).length===ks.length&&ks.every(k=>Object.hasOwn(v,k));
 const tipos:Record<string,EstadoExemplar['tipo']>={'gazua-profissional':'ferramenta',hatchet:'arma_corpo','erva-verde':'consumivel','lanterna-simples':'lanterna','sentinel-nine':'arma_fogo','colete-acolchoado':'colete','jmb-hp3':'arma_fogo',moedas:'moedas','kit-socorros':'ferramenta','pente-estendido':'peca',bastao:'arma_corpo',lemi:'arma_fogo',kendo:'colete','kit-ferramentas':'ferramenta',faca:'arma_corpo','colete-leve':'colete','municao-9mm':'municao'};
 function validoEstado(e:unknown,tipo:string):e is EstadoExemplar{
