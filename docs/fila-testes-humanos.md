@@ -168,6 +168,7 @@ Casos a agrupar:
 5. Confirmar que a interface só informa confirmação após resposta do servidor; atualizar a página, autenticar novamente e reabrir o rascunho para verificar o valor persistido.
 6. Com o servidor parado ou inacessível, tentar salvar uma alteração e confirmar que a interface não anuncia sucesso nem perde silenciosamente a edição local. Reiniciar o servidor e repetir conscientemente.
 7. Confirmar no terminal do servidor que a requisição PUT chega; correlacionar método/status sem registrar cabeçalhos de autorização ou tokens.
+8. Abrir o mesmo rascunho em duas sessões/dispositivos. Salvar uma alteração na sessão A; tentar salvar uma alteração feita na versão antiga da sessão B. O servidor deve recusar a versão desatualizada com conflito, sem substituir o conteúdo confirmado em A; a edição local de B deve permanecer disponível para revisão e a ficha deve ser reaberta/atualizada antes de nova tentativa.
 
 **Limite:** a sessão ainda é mantida somente em memória no navegador. F5/fechamento encerra o estado de autenticação do cliente; isso é uma divergência conhecida da prioridade 2 e não deve ser confundida com falha de persistência do rascunho. Não testar recuperação de sessão nesta rodada.
 
