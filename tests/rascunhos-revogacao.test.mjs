@@ -47,6 +47,18 @@ test('após revogação da participação, rascunho não pode ser consultado nem
   app.db.prepare('DELETE FROM participantes_mesa WHERE mesa_id = ? AND conta_id = ?')
     .run(mesa.id, jogador.account.id);
 
+  // Simula um registro órfão legado/importado. A FK normalmente o elimina
+  // em cascata, mas a API também deve negar acesso se encontrar esse estado.
+  app.db.exec('PRAGMA foreign_keys = OFF');
+  app.db.prepare(`
+    INSERT INTO personagens_locais
+      (id, mesa_id, conta_id, nome, dados_json, criada_em, atualizada_em, revisao)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+  `).run(personagem.id, mesa.id, jogador.account.id, personagem.name,
+    JSON.stringify(personagem.data), personagem.createdAt, personagem.updatedAt, personagem.revision);
+  app.db.exec('PRAGMA foreign_keys = ON');
+  assert.equal(app.db.prepare('SELECT COUNT(*) AS total FROM personagens_locais WHERE id = ?').get(personagem.id).total, 1);
+
   const listar = await fetch(url + '/api/mesas/' + mesa.id + '/personagens', { headers: jogador.headers });
   assert.equal(listar.status, 404);
   const consultar = await fetch(url + '/api/personagens/' + personagem.id, { headers: jogador.headers });
