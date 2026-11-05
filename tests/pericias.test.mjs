@@ -24,5 +24,6 @@ test('valor base da Perícia soma seu Atributo associado e o Treinamento uma ún
   assert.equal(valorBasePericia('Acrobacia',atributos,null,{}),2);
   assert.equal(valorBasePericia('Luta',atributos,'Luta',{}),3);
   assert.equal(valorBasePericia('Medicina',atributos,null,{Medicina:2}),5);
+  assert.equal(valorPassivoPericia('Medicina',atributos,null,{Medicina:2}),15);
   assert.throws(()=>valorBasePericia('Perícia inventada',atributos,null,{}),/Perícia desconhecida/);
 });
