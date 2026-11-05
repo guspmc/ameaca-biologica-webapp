@@ -99,14 +99,16 @@ function normalizarBaseUrl(valor: string): string {
 type EspacoEnderecoLocal = 'local' | 'loopback';
 
 function identificarEspacoEnderecoAlvo(baseUrl: string): EspacoEnderecoLocal | undefined {
-  const hostname = new URL(baseUrl).hostname.replace(/^\\[|\\]$/g, '').toLowerCase().replace(/\\.$/, '');
+  let hostname = new URL(baseUrl).hostname.toLowerCase();
+  if (hostname.startsWith('[') && hostname.endsWith(']')) hostname = hostname.slice(1, -1);
+  if (hostname.endsWith('.')) hostname = hostname.slice(0, -1);
 
   if (hostname === 'localhost' || hostname.endsWith('.localhost') || hostname === '::1') {
     return 'loopback';
   }
 
   const octetos = hostname.split('.');
-  if (octetos.length === 4 && octetos.every(parte => /^\\d{1,3}$/.test(parte) && Number(parte) <= 255)) {
+  if (octetos.length === 4 && octetos.every(parte => parte.length > 0 && parte.length <= 3 && [...parte].every(digito => digito >= '0' && digito <= '9') && Number(parte) <= 255)) {
     const [a, b] = octetos.map(Number);
     if (a === 127) return 'loopback';
     if (a === 10 || (a === 172 && b >= 16 && b <= 31) || (a === 192 && b === 168) || (a === 169 && b === 254)) {
@@ -114,7 +116,10 @@ function identificarEspacoEnderecoAlvo(baseUrl: string): EspacoEnderecoLocal | u
     }
   }
 
-  if (/^(fc|fd)[0-9a-f]{0,2}:/i.test(hostname) || /^fe[89ab][0-9a-f]:/i.test(hostname) || hostname.endsWith('.local')) {
+  const primeiroHexteto = Number.parseInt(hostname.split(':')[0], 16);
+  if (hostname.startsWith('fc') || hostname.startsWith('fd') ||
+      (Number.isInteger(primeiroHexteto) && primeiroHexteto >= 0xfe80 && primeiroHexteto <= 0xfebf) ||
+      hostname.endsWith('.local')) {
     return 'local';
   }
 
