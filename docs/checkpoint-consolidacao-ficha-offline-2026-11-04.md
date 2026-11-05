@@ -424,3 +424,34 @@ O modelo de consulta e o planejador de organização foram ampliados para itens 
 **Evidência automatizada:** commit 5559dfb7d09dca31e486b776add991b09de4f299 passou com **436/436 testes**, TypeScript, build Vite e verificações PostgreSQL.
 
 **LIMITE:** esta é a base de domínio e organização. Ainda não existe grade ativa integrada e persistente na ficha; a consulta continua somente leitura, sem comandos de jogo. O próximo passo exige modelo persistente local e integração com o ciclo de ativação da personagem.
+
+
+---
+
+## 9. Continuidade — Inventário ativo e ciclo de ativação — 05/11/2026
+
+### 9.1 Materialização isolada
+
+- Criado `src/inventarioAtivo.ts` para converter o plano inicial validado em snapshot de exemplares, com UUID próprio por exemplar, estado inicial preservado e revisão 1.
+- `validarInventarioAtivo()` valida snapshots existentes sem reconstruir itens a partir do kit.
+- O ID da personagem aceita UUID local com hífens ou ID hexadecimal compacto de 32 caracteres do servidor LAN. IDs de exemplares continuam restritos a UUID com hífens.
+- O contrato da grade mantém detecção de sobreposição e preserva exemplares excedentes quando a capacidade é reduzida; a consulta existente sinaliza a divergência sem apagar itens.
+- Testes novos cobrem kits/compras, repetição de itens, estado inicial, IDs, adulteração, colisões e revisão.
+
+**CI confirmado:** commit `608abacc9d90f9a1d8a82990f5c4056bd22c849f` — workflow da ficha offline e workflow de build concluídos com sucesso; **445/445 testes**, TypeScript e Vite aprovados. Esta contagem é a evidência da suíte naquele commit, não de testes humanos.
+
+### 9.2 Auditoria do ciclo real
+
+A inspeção de `src/FichaOfflineApp.tsx`, `src/persistenciaFicha.ts`, `src/ConexaoServidorLocal.tsx`, `server/personagens-local.mjs`, `src/fluxoAtivacaoLocal.ts` e `src/servicoAtivacao.ts` confirma que existem dois caminhos distintos:
+
+1. **Ficha offline:** IndexedDB, com estado de ficha validado como rascunho; não cria estado ativo nem chama a ativação.
+2. **Rascunho na Mesa/LAN:** API Node/SQLite com criação, leitura e PUT de dados do rascunho, protegido por sessão e propriedade. O endpoint PUT salva o objeto de dados e usa revisão esperada para recusar concorrência.
+3. **Ativação preparada antiga:** `fluxoAtivacaoLocal.ts` compõe contratos de RPC de ativação e contexto, mas depende de cliente injetado e armazenamento de sessão; não está ligado à entrada `FichaOfflineApp` nem ao servidor SQLite. `servicoAtivacao.ts` ainda descreve RPCs Supabase não implementadas/fora da aplicação conectada.
+
+### 9.3 Decisão técnica para não avançar indevidamente
+
+**Não integrar ainda** `materializarInventarioInicial()` à abertura, salvamento ou reabertura de ficha. O contrato de ativação exige materialização única, atômica com a mudança de estado e idempotente; chamar a função ao abrir ou salvar poderia duplicar itens, e chamar no cliente antes da gravação definitiva poderia deixar ficha e Inventário inconsistentes.
+
+A próxima integração correta depende de um contrato de ativação local-first no SQLite: estado de rascunho/ativo, transação de ativação, revisão esperada, chave idempotente da operação, materialização e recibo atômicos. A arquitetura deve respeitar a autorização por Mesa e o limite de dez personagens ativas. Isso não pode ser substituído por um patch comum no IndexedDB nem por uma chamada ao RPC legado.
+
+**Estado:** materializador implementado e testado automaticamente; Inventário ativo persistente, ativação local transacional e integração com UI permanecem pendentes. Nenhuma migration Supabase foi aplicada; nenhum ambiente remoto foi alterado; não houve publicação ou teste humano.
