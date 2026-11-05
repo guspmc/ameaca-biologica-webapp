@@ -139,3 +139,10 @@ A revisão denominada `revisao_criacao` está funcionando na prática como revis
 - Não há no modelo atual uma tabela de notas pessoais no servidor. Não criar uma sem decisão expressa, pois isso muda privacidade, sincronização e tratamento de conflitos.
 
 Estado: auditoria estática concluída; testes de saída/cascata aprovados em d2ba370; teste de rollback adicionado em a0f73dd e aguardando CI; comportamento de notas locais identificado; nenhuma migration, exclusão remota, sincronização ou publicação realizada.
+## 10. Revalidação dos testes de saída e preservação de fichas
+
+- **CI aprovado em `43e964d`:** o workflow “Verificação da ficha offline” concluiu com sucesso após corrigir a importação da fixture `B` no teste de remoção administrativa. A falha anterior em `04b2831` era `ReferenceError: B is not defined`, isto é, defeito no próprio teste, não evidência de falha da função SQL.
+- O cenário integrado verifica Mestre removendo somente o jogador escolhido, exclusão dos rascunhos daquele jogador, preservação de rascunhos de outro jogador e preservação de ficha completa, recursos e instâncias do Inventário. Também verifica que a tentativa de exclusão direta por jogador não remove vínculo alheio e que a função de saída voluntária não está executável pelo papel `authenticated` no contrato atual.
+- **PENDENTE DE CI em `572013d`:** foi acrescentado cenário para arquivar uma ficha e depois remover seu antigo jogador, verificando que a ficha arquivada, seus recursos e instâncias permanecem. Os workflows de teste e build estavam em execução na última consulta.
+- **PENDENTE DE IMPLEMENTAÇÃO:** a saída voluntária continua bloqueada no contrato SQL atual: `app_private.sair_mesa_local` usa `SECURITY INVOKER` e tem execução revogada para `public`, `anon` e `authenticated`. A política RLS de DELETE em `mesa_participantes` autoriza somente o Mestre. Não conceder execução nem mudar para `SECURITY DEFINER` sem teste dedicado de identidade, papel, Mesa, revogação e atomicidade.
+- Nenhuma alteração foi aplicada ao Supabase remoto, nenhuma migration foi criada/aplicada e não houve publicação.
