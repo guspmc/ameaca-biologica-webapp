@@ -415,16 +415,16 @@ test('WebSocket limita assinaturas às Mesas autorizadas e envia somente invalid
   });
 
   const inscricaoMestre = receber(mestre, 'subscribed');
-  mestre.send(JSON.stringify({ type: 'subscribe', mesaIds: [mesa.id] }));
-  assert.deepEqual((await inscricaoMestre).mesaIds, [mesa.id]);
+  mestre.send(JSON.stringify({ type: 'subscribe', mesaId: mesa.id }));
+  assert.deepEqual(await inscricaoMestre, { type: 'subscribed', mesaId: mesa.id });
 
-  const inscricaoJogadorAntes = receber(jogador, 'subscribed');
-  jogador.send(JSON.stringify({ type: 'subscribe', mesaIds: [mesa.id] }));
-  assert.deepEqual((await inscricaoJogadorAntes).mesaIds, []);
+  const inscricaoJogadorAntes = receber(jogador, 'subscription.denied');
+  jogador.send(JSON.stringify({ type: 'subscribe', mesaId: mesa.id }));
+  assert.deepEqual(await inscricaoJogadorAntes, { type: 'subscription.denied' });
 
-  const inscricaoIntruso = receber(intruso, 'subscribed');
-  intruso.send(JSON.stringify({ type: 'subscribe', mesaIds: [mesa.id, 'x'.repeat(32)] }));
-  assert.deepEqual((await inscricaoIntruso).mesaIds, []);
+  const inscricaoIntruso = receber(intruso, 'subscription.denied');
+  intruso.send(JSON.stringify({ type: 'subscribe', mesaId: mesa.id }));
+  assert.deepEqual(await inscricaoIntruso, { type: 'subscription.denied' });
 
   const eventoPedido = receber(mestre, 'mesa.changed');
   const pedidoResposta = await post(base, '/api/convites/solicitar', { code: invitation.code }, tokenJogador);
@@ -441,8 +441,8 @@ test('WebSocket limita assinaturas às Mesas autorizadas e envia somente invalid
   assert.deepEqual(await eventoJogador, { type: 'account.changed' });
 
   const inscricaoJogadorDepois = receber(jogador, 'subscribed');
-  jogador.send(JSON.stringify({ type: 'subscribe', mesaIds: [mesa.id] }));
-  assert.deepEqual((await inscricaoJogadorDepois).mesaIds, [mesa.id]);
+  jogador.send(JSON.stringify({ type: 'subscribe', mesaId: mesa.id }));
+  assert.deepEqual(await inscricaoJogadorDepois, { type: 'subscribed', mesaId: mesa.id });
 
   const eventoRascunho = receber(jogador, 'account.changed');
   const criar = await post(base, `/api/mesas/${mesa.id}/personagens`, { name: 'Claire', data: {} }, tokenJogador);
