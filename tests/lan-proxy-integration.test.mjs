@@ -103,6 +103,6 @@ test('proxy LAN mantém API e WebSocket same-origin até o servidor SQLite', asy
       resolve(mensagem);
     });
   });
-  socket.send(JSON.stringify({ type: 'subscribe', mesaIds: [mesa.id] }));
-  assert.deepEqual((await inscricao).mesaIds, [mesa.id]);
+  socket.send(JSON.stringify({ type: 'subscribe', mesaId: mesa.id }));
+  assert.deepEqual(await inscricao, { type: 'subscribed', mesaId: mesa.id });
 });
