@@ -260,3 +260,13 @@ Foi integrado ao rascunho o controle manual de PV, PV Temporários, SA e BI. A r
 17. Alterar Atributos/Classe depois de registrar recursos; confirmar que os valores atuais não são sobrescritos silenciosamente. Se ficarem acima de um máximo reduzido, devem ser preservados e exigir correção explícita antes de salvar.
 
 **Limites conhecidos:** o painel não registra histórico durável de cada ajuste, não oferece Desfazer após confirmação e não implementa Descanso, Reanimação, efeitos, dano de combate ou automações de recursos. Esses fluxos permanecem em etapas posteriores.
+
+
+### H4 — complemento: Descanso Parcial e Completo (05/11/2026)
+
+Foram integrados controles de descanso à ficha, ainda sem cronômetro, rolagem virtual, gestão de Condições ou usos de Habilidades. Acrescentar:
+18. Classe e Dado de Vida: Agente d10, Autodidata d8 e Operador d12. Conferir que o botão Parcial exige resultado físico informado e recusa face fora do dado.
+19. Descanso Parcial em Sala de Descanso e Sala Segura: aplicar resultado, conferir PV Atuais até o máximo e preservar SA, BI e PV Temporários; confirmar que Condições não são pausadas.
+20. Descanso Completo em Sala de Descanso: restaurar PV e SA, encerrar PV Temporários e preservar BI. Em Sala Segura, confirmar que a ação fica indisponível.
+21. Com método Virtual, confirmar que Descanso Parcial não aceita nem presume resultado; com Físicos/Mistos, aceitar somente resultado informado. Descanso Completo não exige rolagem.
+22. Reabrir a ficha após cada modalidade e confirmar persistência; verificar que o aplicativo não usa cronômetro, não fiscaliza localização e não atualiza ainda Habilidades, Condições ou progressões.
