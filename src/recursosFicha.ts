@@ -1,7 +1,7 @@
 export type RecursosAtuais = { pvAtual: number; pvTemporarios: number; saAtual: number; biAtual: number };
 export type RecursosPatch = RecursosAtuais;
 
-const inteiro = (v: unknown): v is number => Number.isSafeInteger(v) && Number(v) >= 0;
+const inteiro = (v: unknown): v is number => typeof v === 'number' && Number.isSafeInteger(v) && v >= 0;
 
 export function recursosIniciais(valor: Record<string, unknown>, pvMaximo: number, saMaximo: number): RecursosAtuais {
   if (!Number.isSafeInteger(pvMaximo) || pvMaximo < 0 || !Number.isSafeInteger(saMaximo) || saMaximo < 0) {
