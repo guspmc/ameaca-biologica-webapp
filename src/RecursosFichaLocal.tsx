@@ -46,7 +46,8 @@ export default function RecursosFichaLocal({ dados, pvMaximo, saMaximo, biMaximo
     finally { setOcupado(false); }
   }
 
-  return <section className="ficha-local-editor recursos-ficha" aria-label="Recursos da personagem">
+  return <details className="ficha-local-editor recursos-ficha" aria-label="Recursos da personagem">
+    <summary>Administrar recursos e Integridade Física</summary>
     <h3>Recursos e Integridade Física</h3>
     <p>Valores atuais são separados dos máximos derivados. Ajustes aqui não registram descanso, rolagem, ação ou efeito automático.</p>
     <div className="ficha-local-grade">
@@ -80,5 +81,5 @@ export default function RecursosFichaLocal({ dados, pvMaximo, saMaximo, biMaximo
     {erro && <p className="offline-erro" role="alert">{erro}</p>}
     {mensagem && <p className="offline-status" role="status">{mensagem}</p>}
     <button type="button" className="acao" disabled={ocupado || !valido} onClick={() => void salvar()}>{ocupado ? 'Salvando…' : 'Salvar recursos'} <span>→</span></button>
-  </section>;
+  </details>;
 }
