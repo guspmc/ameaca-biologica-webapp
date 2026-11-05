@@ -6,6 +6,7 @@ import { HABILIDADES_BASICAS } from './habilidades.ts';
 import { opcoesEquipamento } from './equipamento.ts';
 import { planejarInventarioCriacao } from './inventarioCriacao.ts';
 import { simularCompras } from './comprasIniciais.ts';
+import { configuracaoFuncionamentoValida } from './funcionamentoFicha.ts';
 
 export type PersonagemValidavel = {
   id: string;
@@ -84,6 +85,7 @@ function validarDadosFicha(valor: unknown): valor is Record<string, unknown> {
   // Ausência identifica registros legados/incompletos; valores presentes precisam ser explícitos.
   if ('versaoModelo' in valor && valor.versaoModelo !== 1) return false;
   if ('estadoFicha' in valor && valor.estadoFicha !== 'rascunho') return false;
+  if ('configuracaoFuncionamento' in valor && !configuracaoFuncionamentoValida(valor.configuracaoFuncionamento)) return false;
 
   if ('classe' in valor
     && (typeof valor.classe !== 'string' || !['Agente', 'Autodidata', 'Operador'].includes(valor.classe))) return false;
