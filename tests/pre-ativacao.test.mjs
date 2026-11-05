@@ -71,6 +71,8 @@ test('pre-ativacao: Misto indefinido nao ganha padrao; Manual e Automatico prese
  const {f,c}=fixture(),config=configuracaoInicial(),antes=structuredClone(config);
  assert.ok(tem(avaliar({...f,configuracao_funcionamento:config},c),'opcoes_misto'));
  assert.deepEqual(config,antes);
+ const legado={modo:config.modo,preferenciasMisto:config.preferenciasMisto};
+ assert.equal(avaliar({...f,configuracao_funcionamento:legado},c).precondicoesLocaisAtendidas,true);
  for(const modo of ['manual','automatico']){
   const configuracao_funcionamento={...config,modo};
   assert.equal(avaliar({...f,configuracao_funcionamento},c).precondicoesLocaisAtendidas,true);
