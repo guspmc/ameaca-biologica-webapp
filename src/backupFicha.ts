@@ -1,4 +1,5 @@
 import type { PersonagemLocal } from './persistenciaFicha';
+import { validarPersonagemLocal } from './validacaoPersonagemLocal.ts';
 
 export const FORMATO_BACKUP = 'ameaca-biologica-backup';
 export const VERSAO_BACKUP = 1;
@@ -24,14 +25,12 @@ export type BackupFicha = {
   personagens: PersonagemLocal[];
 };
 
-function personagemValido(valor: unknown): valor is PersonagemLocal {
-  if (!valor || typeof valor !== 'object' || Array.isArray(valor)) return false;
-  const p = valor as Partial<PersonagemLocal>;
-  return typeof p.id === 'string' && p.id.trim().length > 0
-    && typeof p.nome === 'string' && p.nome.trim().length >= 2 && p.nome.trim().length <= 80
-    && typeof p.criadoEm === 'string' && !Number.isNaN(Date.parse(p.criadoEm))
-    && typeof p.atualizadoEm === 'string' && !Number.isNaN(Date.parse(p.atualizadoEm))
-    && !!p.dados && typeof p.dados === 'object' && !Array.isArray(p.dados);
+function personagemValido(valor: unknown, permitirGeracaoAusente = false): valor is PersonagemLocal {
+  return validarPersonagemLocal(valor, { permitirGeracaoAusente });
+}
+
+function novaGeracao(): string {
+  return globalThis.crypto?.randomUUID?.() ?? `geracao-${Date.now()}-${Math.random().toString(16).slice(2)}`;
 }
 
 export function criarBackup(personagens: PersonagemLocal[], exportadoEm = new Date().toISOString()): BackupFicha {
@@ -61,13 +60,17 @@ export function validarBackup(valor: unknown): BackupFicha {
   if (typeof backup.exportadoEm !== 'string' || Number.isNaN(Date.parse(backup.exportadoEm))) {
     throw new Error('A data do backup está ausente ou inválida.');
   }
-  if (!Array.isArray(backup.personagens) || !backup.personagens.every(personagemValido)) {
+  if (!Array.isArray(backup.personagens) || !backup.personagens.every(item => personagemValido(item, true))) {
     throw new Error('O backup contém uma ou mais fichas inválidas. Nenhuma ficha foi importada.');
   }
   if (new Set(backup.personagens.map(p => p.id)).size !== backup.personagens.length) {
     throw new Error('O backup contém identificadores duplicados. Nenhuma ficha foi importada.');
   }
-  return structuredClone(backup as BackupFicha);
+  const personagens = (backup.personagens as unknown[]).map(item => {
+    const copia = structuredClone(item) as PersonagemLocal;
+    return { ...copia, geracao: copia.geracao?.trim() ? copia.geracao : novaGeracao() };
+  });
+  return { ...(backup as BackupFicha), personagens };
 }
 
 export function serializarBackup(backup: BackupFicha): string {
