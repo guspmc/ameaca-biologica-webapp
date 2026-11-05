@@ -340,3 +340,24 @@ O texto foi corrigido para refletir a implementação atual:
 - a cobertura atual é por mocks; teste real com duas abas continua pendente.
 
 Esta correção é documental; não altera o código.
+
+
+## 18. Revisão de atualização de estado da interface — 05/11/2026
+
+### Editor de Identificação após recarga externa
+
+A inspeção do ciclo de recarga revelou que os editores de Características, Atributos/Perícias e Inventário usam chaves React derivadas dos dados recebidos, mas o editor de Identificação não tinha uma chave equivalente. Como ele inicializa campos com `useState`, receber novas props após recarregar uma ficha poderia deixar o formulário narrativo com valores antigos em memória.
+
+**Correção:** `FichaLocal.tsx` agora atribui ao `IdentidadeLocal` uma chave derivada do nome e do objeto `identidade`. Quando os dados da ficha são atualizados externamente e recarregados, o editor é remontado com os valores persistidos. Alterações locais ainda não salvas permanecem no componente enquanto as props da seção não mudam.
+
+**Regressão:** acrescentado teste estático em `tests/pendencias-edicao.test.mjs` para verificar a chave de remontagem.
+
+### Verificação JSON-safe de arrays
+
+O verificador foi refinado para inspecionar descritores de propriedades de arrays sem executar getters e sem alocar um vetor proporcional ao comprimento declarado. Arrays esparsos, propriedades extras e índices com getter são recusados.
+
+**Regressão:** acrescentado caso de teste para getter em array. A função auxiliar sem uso foi removida.
+
+### Estado
+
+Alterações commitadas na branch até `0c0ff48016bc5532949018609c069203cb7eb35d`. Permanecem pendentes a execução observável de `pnpm test` e `pnpm build`, além da homologação real de duas abas.
