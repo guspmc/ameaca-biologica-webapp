@@ -44,6 +44,14 @@ test('após revogação da participação, rascunho não pode ser consultado nem
   assert.equal(criacao.status, 201);
   const { personagem } = await criacao.json();
 
+  // Perder o papel de jogador também revoga o acesso ao rascunho.
+  app.db.prepare("UPDATE participantes_mesa SET papel = 'mestre' WHERE mesa_id = ? AND conta_id = ?")
+    .run(mesa.id, jogador.account.id);
+  const aposTrocaPapel = await fetch(url + '/api/personagens/' + personagem.id, { headers: jogador.headers });
+  assert.equal(aposTrocaPapel.status, 404);
+  app.db.prepare("UPDATE participantes_mesa SET papel = 'jogador' WHERE mesa_id = ? AND conta_id = ?")
+    .run(mesa.id, jogador.account.id);
+
   app.db.prepare('DELETE FROM participantes_mesa WHERE mesa_id = ? AND conta_id = ?')
     .run(mesa.id, jogador.account.id);
 
