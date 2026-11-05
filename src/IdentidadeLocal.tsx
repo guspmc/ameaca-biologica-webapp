@@ -19,9 +19,10 @@ type Props = {
   identidade: Record<string, string>;
   aoSalvar: (dados: { nome: string; identidade: Record<string, string> }) => Promise<boolean>;
   aoAlterarPendencia: (pendente: boolean) => void;
+  mensagemSucesso?: string;
 };
 
-export default function IdentidadeLocal({ nome: nomeInicial, identidade: identidadeInicial, aoSalvar, aoAlterarPendencia }: Props) {
+export default function IdentidadeLocal({ nome: nomeInicial, identidade: identidadeInicial, aoSalvar, aoAlterarPendencia, mensagemSucesso = 'Identificação salva neste dispositivo.' }: Props) {
   const [nome, setNome] = useState(nomeInicial);
   const [dados, setDados] = useState<Record<string, string>>(() =>
     Object.fromEntries(CAMPOS.map(campo => [campo.id, typeof identidadeInicial[campo.id] === 'string' ? identidadeInicial[campo.id] : '']))
@@ -47,7 +48,7 @@ export default function IdentidadeLocal({ nome: nomeInicial, identidade: identid
       const identidade = { ...identidadeInicial, ...Object.fromEntries(CAMPOS.map(campo => [campo.id, (dados[campo.id] ?? '').trim()])) };
       const ok = await aoSalvar({ nome: nomeLimpo, identidade });
       if (ok) aoAlterarPendencia(false);
-      setMensagem(ok ? 'Identificação salva neste dispositivo.' : 'Não foi possível confirmar o salvamento. Tente novamente.');
+      setMensagem(ok ? mensagemSucesso : 'Não foi possível confirmar o salvamento. Tente novamente.');
     } catch {
       setMensagem('Ocorreu uma falha ao salvar. Nenhuma confirmação foi recebida.');
     } finally {
