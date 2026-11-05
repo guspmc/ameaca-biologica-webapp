@@ -210,3 +210,10 @@ Esta seção atualiza pontos do retrato inicial que ficaram desatualizados.
 - As lacunas do Inventário ativo foram registradas em `docs/auditoria-inventario-inicial-2026-11-05.md`.
 - **Próxima etapa funcional:** primeiro confirmar testes/build e o ciclo de persistência do plano; depois implementar a grade/instâncias e operações do Inventário ativo em incrementos pequenos, respeitando a versão de planejamento mais recente. O v2.1 mencionado pelo usuário ainda não está anexado aqui.
 - **Não iniciar ainda:** Baú, fabricação, consumo ou combate como um pacote único. São operações distintas, com efeitos e permissões próprios.
+
+## 15. Decisão de sequência do Baú — 05/11/2026
+
+- Decisão expressa do usuário: o **Baú será implementado somente ao final**, quando começar a conexão integrada de todo o projeto ao Laboratório via LAN.
+- O Baú compartilhado, transferências e sincronização correspondentes ficam fora do ciclo atual de Inventário offline.
+- O trabalho atual pode avançar no Inventário individual/offline e em suas operações próprias, sem antecipar o Baú nem presumir o desenho de sincronização LAN.
+- A auditoria específica foi atualizada em `docs/auditoria-inventario-inicial-2026-11-05.md`.
