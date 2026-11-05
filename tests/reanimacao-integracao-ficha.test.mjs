@@ -19,7 +19,7 @@ test('painel de Reanimação está integrado à ficha contínua e aos salvamento
 
 test('painel exige resultados manuais e não executa rolagem virtual presumida', () => {
   assert.match(painel, /resultadoValido/);
-  assert.match(painel, /Informe dois resultados de d20/);
+  assert.match(painel, /informe dois resultados de d20/);
   assert.match(painel, /rolagem virtual ainda não está implementada/);
   assert.match(painel, /não rola dados, não avança turnos/);
 });
