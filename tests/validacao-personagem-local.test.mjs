@@ -25,6 +25,7 @@ test('valida atributos e Perícias com as regras existentes de criação', () =>
   };
   assert.equal(validarPersonagemLocal(base(dados)), true);
   assert.equal(validarPersonagemLocal(base({ ...dados, atributos: { ...atributos, vigor: 9 } })), false);
+  assert.equal(validarPersonagemLocal(base({ ...dados, atributos: { ...atributos, sorte: 1 } })), false);
   assert.equal(validarPersonagemLocal(base({ ...dados, distribuicaoPericias: { Vontade: 2 } })), false);
 });
 
@@ -36,6 +37,7 @@ test('valida Características e compatibilidade entre Classe, Origem e Habilidad
   assert.equal(validarPersonagemLocal(base(dados)), true);
   assert.equal(validarPersonagemLocal(base({ ...dados, habilidadeBasica: 'parrudo' })), false);
   assert.equal(validarPersonagemLocal(base({ ...dados, equipamentoInicial: 'kit-inexistente' })), false);
+  assert.equal(validarPersonagemLocal(base({ ...dados, origem: 'Operário', armaOperario: '' })), false);
 });
 
 test('valida compras iniciais usando o simulador de inventário existente', () => {
