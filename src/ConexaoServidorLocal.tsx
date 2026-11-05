@@ -31,6 +31,7 @@ export default function ConexaoServidorLocal() {
   const [salvandoFicha, setSalvandoFicha] = useState(false);
   const bloqueioSalvamentoFicha = useRef(false);
   const socketEventos = useRef<WebSocket | null>(null);
+  const mesasInscritas = useRef(new Set<string>());
   const [canalTempoReal, setCanalTempoReal] = useState(false);
 
   function encerrarSessao(mensagem: string) {
@@ -106,7 +107,12 @@ export default function ConexaoServidorLocal() {
         destino.searchParams.set('ticket', ticket);
         socket = new WebSocket(destino.toString());
         socketEventos.current = socket;
-        socket.onopen = () => { if (ativo) setCanalTempoReal(true); };
+        socket.onopen = () => {
+          if (ativo) {
+            mesasInscritas.current.clear();
+            setCanalTempoReal(true);
+          }
+        };
         socket.onmessage = evento => {
           if (!ativo || typeof evento.data !== 'string') return;
           try {
@@ -118,6 +124,7 @@ export default function ConexaoServidorLocal() {
         };
         socket.onclose = evento => {
           if (socketEventos.current === socket) socketEventos.current = null;
+          mesasInscritas.current.clear();
           if (ativo) setCanalTempoReal(false);
           if (!ativo) return;
           if (evento.code === 4001) {
@@ -138,6 +145,7 @@ export default function ConexaoServidorLocal() {
       if (temporizador !== undefined) window.clearTimeout(temporizador);
       socket?.close();
       if (socketEventos.current === socket) socketEventos.current = null;
+      mesasInscritas.current.clear();
       setCanalTempoReal(false);
     };
   }, [sessao, endereco]);
@@ -145,7 +153,19 @@ export default function ConexaoServidorLocal() {
   useEffect(() => {
     const socket = socketEventos.current;
     if (!canalTempoReal || !socket || socket.readyState !== WebSocket.OPEN) return;
-    socket.send(JSON.stringify({ type: 'subscribe', mesaIds: mesas.map(mesa => mesa.id) }));
+    const desejadas = new Set(mesas.map(mesa => mesa.id));
+    for (const mesaId of mesasInscritas.current) {
+      if (!desejadas.has(mesaId)) {
+        socket.send(JSON.stringify({ type: 'unsubscribe', mesaId }));
+        mesasInscritas.current.delete(mesaId);
+      }
+    }
+    for (const mesaId of desejadas) {
+      if (!mesasInscritas.current.has(mesaId)) {
+        socket.send(JSON.stringify({ type: 'subscribe', mesaId }));
+        mesasInscritas.current.add(mesaId);
+      }
+    }
   }, [mesas, canalTempoReal]);
 
   useEffect(() => {
