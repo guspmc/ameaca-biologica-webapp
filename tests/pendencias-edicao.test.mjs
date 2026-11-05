@@ -39,6 +39,16 @@ test('ficha contínua integra revisão local das escolhas salvas sem ativar pers
   assert.match(revisao, /finalização ainda não está disponível/i);
 });
 
+test('calculadora manual está integrada à seção de Perícias e não rola nem salva dados', async () => {
+  const ficha = await ler('FichaLocal.tsx');
+  assert.match(ficha, /<CalculadoraTesteLocal atributos=\{atributos\}/);
+  const calculadora = await ler('CalculadoraTesteLocal.tsx');
+  assert.match(calculadora, /calcularTesteManual/);
+  assert.match(calculadora, /resultado físico do d20/i);
+  assert.match(calculadora, /não rola dados, não registra uma rolagem e não altera a ficha/i);
+  assert.doesNotMatch(calculadora, /Math\.random|aoSalvar|fetch\(/);
+});
+
 test('campos narrativos e nome sinalizam pendência de edição', async () => {
   const fonte = await ler('IdentidadeLocal.tsx');
   assert.match(fonte, /setNome\(evento\.target\.value\); aoAlterarPendencia\(true\)/);
