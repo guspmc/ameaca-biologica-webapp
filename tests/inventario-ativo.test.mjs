@@ -1,7 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { materializarInventarioInicial, validarInventarioAtivo } from '../src/inventarioAtivo.ts';
-import { lerInventarioConsulta } from '../src/inventarioConsulta.ts';
 
 const uuid = n => '00000000-0000-4000-8000-' + String(n).padStart(12,'0');
 const ficha = (classe='Agente',kit='A',extra={}) => ({classe,equipamento_inicial:kit,forca:3,origem:null,nivel:1,estado_ficha:'rascunho',compras_iniciais:{},...extra});
@@ -38,12 +37,21 @@ test('materialização recusa IDs repetidos, inválidos e identificador de perso
  assert.throws(()=>materializarInventarioInicial(ficha(),'personagem-invalido',ids()));
 });
 
-test('validação do inventário ativo rejeita adulteração, colisão e revisão inválida',()=>{
+test('validação do inventário ativo rejeita adulteração, colisão, extrapolação e revisão inválida',()=>{
  const base=materializarInventarioInicial(ficha(),uuid(103),ids());
  const adulterado=structuredClone(base);adulterado.itens[0].quantidade=999;
  assert.throws(()=>validarInventarioAtivo(adulterado,uuid(103)));
- const colisao=structuredClone(base);colisao.itens[1].posicao=colisao.itens[0].posicao;
+ const naGrade=base.itens.filter(i=>i.local==='inventario');
+ assert.ok(naGrade.length>=2);
+ const colisao=structuredClone(base);
+ const primeiro=colisao.itens.find(i=>i.local==='inventario');
+ const segundo=colisao.itens.find(i=>i.local==='inventario'&&i.instanciaId!==primeiro.instanciaId);
+ segundo.posicao=primeiro.posicao;
  assert.throws(()=>validarInventarioAtivo(colisao,uuid(103)));
+ const fora=structuredClone(base);
+ const ultimo=fora.itens.find(i=>i.local==='inventario');
+ ultimo.posicao=fora.capacidade;
+ assert.throws(()=>validarInventarioAtivo(fora,uuid(103)));
  const revisao=structuredClone(base);revisao.revisao=-1;
  assert.throws(()=>validarInventarioAtivo(revisao,uuid(103)));
  assert.throws(()=>validarInventarioAtivo(base,uuid(104)));
