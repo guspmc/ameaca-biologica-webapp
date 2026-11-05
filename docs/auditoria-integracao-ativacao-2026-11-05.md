@@ -111,3 +111,30 @@ A revisão denominada `revisao_criacao` está funcionando na prática como revis
 5. Antes de migration, definir como versões antigas e fichas legadas recebem os valores iniciais e como o cliente distingue revisão de ficha, revisão de criação e revisão de inventário.
 
 **Estado:** auditoria estática concluída; desenho de contrato pendente; nenhuma migration aplicada ou alterada.
+
+## 9. Auditoria de saída, exclusão e notas pessoais
+
+### Saída/remoção do participante
+
+- A proposta integrada instala um gatilho BEFORE DELETE em public.mesa_participantes; quando o vínculo removido tem papel jogador, apaga somente personagens rascunho daquele usuário e daquela Mesa.
+- Fichas completas/arquivadas não são apagadas por esse gatilho. A proteção de exclusão individual impede apagar uma ficha não rascunho enquanto a Mesa ainda existe.
+- A RPC de saída confirma identidade, papel de jogador e Mesa, bloqueia a linha da Mesa e a participação antes de remover o vínculo. A limpeza dos rascunhos ocorre pelo gatilho dentro da mesma transação.
+- IMPLEMENTADO NO TESTE: dois testes integrados foram acrescentados em tests/ativacao-integrada-local.test.mjs: saída preservando ficha completa/recursos/instâncias e exclusão da Mesa verificando cascatas. Commit d2ba370; CI ainda pendente na última consulta.
+- PENDENTE: teste explícito de rollback da saída se a limpeza de rascunhos falhar e verificação de notas pessoais após saída/readmissão.
+
+### Exclusão da Mesa
+
+- A proposta configura cascata para contexto de criação e recibos; personagens também dependem da Mesa nas migrations anteriores. Instâncias de Inventário têm mesa_id com cascata e relações com materialização/personagem.
+- A proteção de exclusão individual permite a cascata legítima quando a Mesa já não existe. O teste recém-adicionado verifica o comportamento real do conjunto de gatilhos e FKs, em vez de assumir que a cascata funciona.
+- O teste não deve ser interpretado como autorização para excluir dados reais: ele usa exclusivamente o banco PGlite e fixtures fictícias.
+
+### Notas pessoais: diferença entre regra e implementação
+
+- O componente src/AnotacoesPessoais.tsx persiste notas em window.localStorage; a chave é particionada por conta, Mesa e personagem em src/notasPessoais.ts.
+- A nota não é enviada ao servidor e o componente aparece apenas quando a ficha pertence ao usuário. Portanto, não há atualmente sincronização entre dispositivos, recuperação no servidor ou exclusão remota.
+- Ao sair/remover a participação, a chave local permanece no navegador. Isso combina com “preservar, mas tornar inacessível” enquanto a pessoa não tem acesso à ficha; uma readmissão com a mesma conta e os mesmos IDs pode tornar a nota local visível novamente naquele dispositivo.
+- Ao excluir a Mesa/personagem no servidor, a chave local não é removida automaticamente. A UI deixa de ter uma ficha autorizada para exibir a nota, mas o texto continua fisicamente no armazenamento local até limpeza dos dados do navegador ou remoção explícita pela própria pessoa.
+- PENDENTE DE DECISÃO/IMPLEMENTAÇÃO: definir se a exclusão da Mesa deve também disparar uma limpeza local na próxima conexão, e como isso funcionaria em dispositivos que estejam offline. Não implementar apagamento local indiscriminado: a chave é por conta/Mesa/personagem e deve ser removida somente após confirmação confiável da exclusão daquela Mesa. Também não prometer preservação entre dispositivos, pois o armazenamento atual é local.
+- Não há no modelo atual uma tabela de notas pessoais no servidor. Não criar uma sem decisão expressa, pois isso muda privacidade, sincronização e tratamento de conflitos.
+
+Estado: auditoria estática concluída; testes de cascata adicionados e aguardando CI; comportamento de notas locais identificado; nenhuma migration, exclusão remota, sincronização ou publicação realizada.
