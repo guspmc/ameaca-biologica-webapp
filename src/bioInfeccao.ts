@@ -11,8 +11,8 @@ export type FaseBioInfeccao = {
 const EFEITOS_FASE: Record<1 | 2 | 3 | 4 | 5, string> = {
   1: 'Sem efeito.',
   2: 'Movimento +3 m.',
-  3: 'Movimento +3 m; Ataques +2.',
-  4: 'Movimento +3 m; Ataques +3 no total; Dano Corpo a Corpo +1d4.',
+  3: 'Movimento +3 m; Testes de Ataque +2.',
+  4: 'Movimento +3 m; Testes de Ataque +3 no total; Dano Corpo a Corpo +1d4.',
   5: 'Perde os benefícios anteriores; Movimento -6 m; Desvantagem em Ataques e Testes de Perícia e Atributo.',
 };
 
