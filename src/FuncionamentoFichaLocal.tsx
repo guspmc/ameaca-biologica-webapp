@@ -1,9 +1,9 @@
 import { useState } from 'react';
-import { AUTOMACOES, automacoesEfetivas, normalizarConfiguracaoFuncionamento, type ConfiguracaoFuncionamento, type ModoFuncionamento, type ModoDados, type VisibilidadeRolagem } from './funcionamentoFicha';
+import { AUTOMACOES, automacoesEfetivas, normalizarConfiguracaoFuncionamento, type ConfiguracaoFuncionamento, type ConfiguracaoFuncionamentoCompleta, type ModoFuncionamento, type ModoDados, type VisibilidadeRolagem } from './funcionamentoFicha';
 
 type Props = {
   inicial?: ConfiguracaoFuncionamento;
-  aoSalvar: (configuracao: ConfiguracaoFuncionamento) => Promise<boolean>;
+  aoSalvar: (configuracao: ConfiguracaoFuncionamentoCompleta) => Promise<boolean>;
   aoAlterarPendencia: (pendente: boolean) => void;
 };
 
@@ -15,7 +15,7 @@ export default function FuncionamentoFichaLocal({ inicial, aoSalvar, aoAlterarPe
 
   const efetivas = automacoesEfetivas(config);
 
-  function atualizar(proxima: ConfiguracaoFuncionamento) {
+  function atualizar(proxima: ConfiguracaoFuncionamentoCompleta) {
     setConfig(proxima);
     aoAlterarPendencia(true);
     setMensagem('');
