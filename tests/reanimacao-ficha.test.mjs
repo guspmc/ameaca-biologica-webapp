@@ -90,5 +90,5 @@ test('causa, faixa de resultados, vantagem e estados terminais são validados', 
   assert.throws(() => aplicar(r, 0), /resultado/);
   assert.throws(() => aplicar(r, [10, 12]), /um resultado/);
   assert.throws(() => api.acumularCuraDuranteReanimacao(r, -1), /Cura/);
-  assert.throws(() => api.concederAjudaMedicina(api.iniciarTurnoReanimacao(api.iniciarReanimacao('colapso_bi')), true), /Ajuda/);
+  assert.throws(() => api.concederAjudaMedicina(api.iniciarReanimacao('colapso_bi'), true), /Ajuda/);
 });
