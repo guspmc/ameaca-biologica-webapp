@@ -1,6 +1,6 @@
 import type { MesaLocal, ParticipanteMesaLocal } from './servidorLocal';
 
-type SolicitacaoPendente = { id: string; status: 'pendente'; createdAt: string; accountId: string; email: string };
+type SolicitacaoPendente = { id: string; status: 'pendente'; createdAt: string; accountId: string };
 type Props = {
   mesa: MesaLocal;
   convite?: string;
@@ -38,8 +38,8 @@ export default function PainelMestreLocal({ mesa, convite, solicitacoes, partici
         {p.role === "jogador" && <button className="botao-claro" type="button" disabled={consultando} onClick={() => aoRemoverParticipante(mesa, p.accountId)}>Remover</button>}
       </li>)}</ul> : <p className="servidor-local-vazio">Nenhum participante.</p>}
     </section>}
-    {(solicitacoes ?? []).length > 0 ? <ul className="servidor-local-lista-mesas">{solicitacoes!.map(pedido => <li key={pedido.id}>
-      <div><strong>{pedido.email}</strong><small>Solicitação pendente</small></div>
+    {(solicitacoes ?? []).length > 0 ? <ul className="servidor-local-lista-mesas">{solicitacoes!.map((pedido, index) => <li key={pedido.id}>
+      <div><strong>Solicitação {index + 1}</strong><small>Pedido de ingresso pendente</small></div>
       <div className="servidor-local-botoes"><button className="botao-claro" type="button" disabled={consultando} onClick={() => aoDecidirSolicitacao(mesa, pedido.id, 'aprovar')}>Aprovar</button><button className="botao-claro" type="button" disabled={consultando} onClick={() => aoDecidirSolicitacao(mesa, pedido.id, 'recusar')}>Recusar</button></div>
     </li>)}</ul> : solicitacoes ? <p className="servidor-local-vazio">Nenhuma solicitação pendente.</p> : <p className="servidor-local-vazio">Consulte as solicitações para carregar os pedidos desta Mesa.</p>}
   </section>;
