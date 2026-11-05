@@ -28,6 +28,17 @@ test('preferências de funcionamento sinalizam pendência e só confirmam após 
   assert.match(fonte, /Preferências salvas e confirmadas/);
 });
 
+test('ficha contínua integra revisão local das escolhas salvas sem ativar personagem', async () => {
+  const ficha = await ler('FichaLocal.tsx');
+  assert.match(ficha, /<RevisaoCriacaoLocal ficha=\{fichaRevisao\}/);
+  assert.match(ficha, /const fichaRevisao: FichaRevisao/);
+  const revisao = await ler('RevisaoCriacaoLocal.tsx');
+  assert.match(revisao, /revisarCriacao\(ficha\)/);
+  assert.match(revisao, /conferidos\}\//);
+  assert.match(revisao, /não ativa a personagem/);
+  assert.match(revisao, /finalização ainda não está disponível/i);
+});
+
 test('campos narrativos e nome sinalizam pendência de edição', async () => {
   const fonte = await ler('IdentidadeLocal.tsx');
   assert.match(fonte, /setNome\(evento\.target\.value\); aoAlterarPendencia\(true\)/);
