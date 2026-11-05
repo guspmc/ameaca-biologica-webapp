@@ -84,7 +84,12 @@ function validarDadosFicha(valor: unknown): valor is Record<string, unknown> {
     if (valor.origem === 'Operário' && !armaOperarioValida(valor.armaOperario)) return false;
   }
 
-  if ('atributos' in valor && (!objeto(valor.atributos) || !atributosIniciaisValidos(valor.atributos as never))) return false;
+  if ('atributos' in valor) {
+    if (!objeto(valor.atributos)) return false;
+    const chavesAtributos = Object.keys(valor.atributos).sort();
+    if (chavesAtributos.join('|') !== ['agilidade', 'astucia', 'forca', 'vigor'].join('|')) return false;
+    if (!atributosIniciaisValidos(valor.atributos as never)) return false;
+  }
   if ('periciaOrigemTreinada' in valor
     && typeof valor.periciaOrigemTreinada !== 'string') return false;
   if ('periciaOrigemExtra' in valor
