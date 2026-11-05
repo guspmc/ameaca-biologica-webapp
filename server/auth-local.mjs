@@ -523,12 +523,12 @@ export async function tratarRotaMesas(req, res, url, db, notificarMesa = () => {
       const mesaId = participantes[1];
       const membro = db.prepare('SELECT papel FROM participantes_mesa WHERE mesa_id = ? AND conta_id = ?').get(mesaId, conta.id);
       if (!membro) { json(res, 404, { error: 'Mesa não encontrada.' }); return true; }
-      const lista = db.prepare(\`
+      const lista = db.prepare(`
         SELECT conta_id AS accountId, papel AS role, entrou_em AS joinedAt
         FROM participantes_mesa
         WHERE mesa_id = ?
         ORDER BY CASE papel WHEN 'mestre' THEN 0 ELSE 1 END, entrou_em, conta_id
-      \`).all(mesaId);
+      `).all(mesaId);
       json(res, 200, { participants: lista });
       return true;
     }
