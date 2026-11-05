@@ -78,10 +78,6 @@ function objeto(valor: unknown): valor is Record<string, unknown> {
     && (Object.getPrototypeOf(valor) === Object.prototype || Object.getPrototypeOf(valor) === null);
 }
 
-function tem(dados: Record<string, unknown>, chaves: string[]): boolean {
-  return chaves.some(chave => Object.prototype.hasOwnProperty.call(dados, chave));
-}
-
 function validarDadosFicha(valor: unknown): valor is Record<string, unknown> {
   if (!objeto(valor) || !valorJsonSeguro(valor)) return false;
 
