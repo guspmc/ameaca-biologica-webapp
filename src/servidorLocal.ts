@@ -45,7 +45,6 @@ export type SolicitacaoMesaLocal = {
   status: 'pendente';
   createdAt: string;
   accountId: string;
-  email: string;
 };
 export type TicketWebSocketLocal = {
   ticket: string;
