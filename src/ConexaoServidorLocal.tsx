@@ -463,6 +463,7 @@ export default function ConexaoServidorLocal() {
         aoSalvarAtributosPericias={dados => salvarDadosFicha(dados)}
         aoSalvarInventario={dados => salvarDadosFicha({ equipamentoInicial: dados.equipamentoInicial, comprasIniciais: dados.comprasIniciais, revisaoCompras: dados.revisaoCompras })}
         aoSalvarFuncionamento={configuracao => salvarDadosFicha({ configuracaoFuncionamento: configuracao })}
+        aoSalvarRecursos={recursos => salvarDadosFicha(recursos)}
         origemDados="servidor"
       />}
       {salvandoFicha && <p className="servidor-local-feedback" role="status">Confirmando salvamento da ficha no servidor…</p>}
