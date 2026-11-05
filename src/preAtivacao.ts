@@ -1,6 +1,6 @@
 import {revisarCriacao} from './conferenciaCriacao';
 import type {FichaRevisao} from './conferenciaCriacao';
-import {AUTOMACOES,automacoesEfetivas} from './funcionamentoFicha';
+import {automacoesEfetivas,configuracaoFuncionamentoValida} from './funcionamentoFicha';
 import type {ConfiguracaoFuncionamento} from './funcionamentoFicha';
 import {planejarInventarioCriacao} from './inventarioCriacao';
 
@@ -22,10 +22,7 @@ export type AvaliacaoPreAtivacao={
 const objeto=(v:unknown):v is Record<string,unknown>=>v!==null&&typeof v==='object'&&!Array.isArray(v);
 const inteiroNaoNegativo=(v:unknown)=>Number.isSafeInteger(v)&&(v as number)>=0;
 function configValida(v:unknown):v is ConfiguracaoFuncionamento{
- if(!objeto(v)||Object.keys(v).length!==2||!['automatico','misto','manual'].includes(v.modo as string))return false;
- const p=v.preferenciasMisto;
- if(!objeto(p)||Object.keys(p).length!==AUTOMACOES.length)return false;
- return AUTOMACOES.every(a=>Object.hasOwn(p,a.id)&&(typeof p[a.id]==='boolean'||a.padrao===null&&p[a.id]===null));
+ return configuracaoFuncionamentoValida(v);
 }
 
 // Avaliacao pura para preparar o contrato futuro. Nao autoriza nem executa ativacao.
