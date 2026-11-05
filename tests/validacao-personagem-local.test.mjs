@@ -25,7 +25,7 @@ test('valida atributos e Perícias com as regras existentes de criação', () =>
   };
   assert.equal(validarPersonagemLocal(base(dados)), true);
   assert.equal(validarPersonagemLocal(base({ ...dados, atributos: { ...atributos, vigor: 9 } })), false);
-  assert.equal(validarPersonagemLocal(base({ ...dados, distribuicaoPericias: { Medicina: 2 } })), false);
+  assert.equal(validarPersonagemLocal(base({ ...dados, distribuicaoPericias: { Vontade: 2 } })), false);
 });
 
 test('valida Características e compatibilidade entre Classe, Origem e Habilidade', () => {
