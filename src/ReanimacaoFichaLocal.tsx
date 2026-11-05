@@ -35,8 +35,9 @@ export default function ReanimacaoFichaLocal({ dados, recursos, origem, pvMaximo
   const [mensagem, setMensagem] = useState('');
   const [erro, setErro] = useState('');
 
-  const podeIniciarPV = recursos.pvAtual === 0 && reanimacao === null;
-  const podeIniciarColapso = biMaximo > 0 && recursos.biAtual >= biMaximo && reanimacao === null;
+  const reanimacaoAnteriorConcluida = reanimacao?.estado === 'concluida';
+  const podeIniciarPV = recursos.pvAtual === 0 && (reanimacao === null || reanimacaoAnteriorConcluida);
+  const podeIniciarColapso = biMaximo > 0 && recursos.biAtual >= biMaximo && (reanimacao === null || reanimacaoAnteriorConcluida);
   const vantagem = !!reanimacao && (reanimacao.vantagemProximoTeste || (reanimacao.causa === 'colapso_bi' && origem === 'Cobaia'));
   const primeiro = Number(primeiroDado);
   const segundo = Number(segundoDado);
