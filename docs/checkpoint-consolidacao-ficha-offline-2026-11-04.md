@@ -202,3 +202,11 @@ Esta seção atualiza pontos do retrato inicial que ficaram desatualizados.
 - Testes de regressão foram acrescentados em `tests/pendencias-edicao.test.mjs` e `tests/validacao-personagem-local.test.mjs`.
 - Auditoria detalhada: seção 18 de `docs/auditoria-esquema-dados-ficha-offline-2026-11-04.md`.
 - **CI/build:** ainda sem confirmação observável. Não houve execução local nem retorno de checks do GitHub para o HEAD atual.
+
+## 14. Auditoria do Inventário inicial — 05/11/2026
+
+- Confirmado no código: esta etapa implementa planejamento/prévia do Inventário inicial, não o Inventário ativo.
+- A suíte `tests/inventario-criacao.test.mjs` já cobre nove kits, itens característicos, armas não equipadas, munição, moedas, compras, instâncias, determinismo, entradas inválidas e capacidade.
+- As lacunas do Inventário ativo foram registradas em `docs/auditoria-inventario-inicial-2026-11-05.md`.
+- **Próxima etapa funcional:** primeiro confirmar testes/build e o ciclo de persistência do plano; depois implementar a grade/instâncias e operações do Inventário ativo em incrementos pequenos, respeitando a versão de planejamento mais recente. O v2.1 mencionado pelo usuário ainda não está anexado aqui.
+- **Não iniciar ainda:** Baú, fabricação, consumo ou combate como um pacote único. São operações distintas, com efeitos e permissões próprios.
