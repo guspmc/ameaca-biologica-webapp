@@ -36,6 +36,12 @@ test('preflight CORS autoriza PUT da ficha e DELETE de convites sem liberar outr
     assert.match(metodosPermitidos, /POST/);
   }
 
+  const mesmaOrigem = await fetch(`${base}/api/health`, {
+    headers: { origin: base },
+  });
+  assert.equal(mesmaOrigem.status, 200);
+  assert.equal(mesmaOrigem.headers.get('access-control-allow-origin'), base);
+
   const origemBloqueada = await fetch(`${base}/api/personagens/${'a'.repeat(32)}`, {
     method: 'OPTIONS',
     headers: {
