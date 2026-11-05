@@ -141,3 +141,20 @@ Os protótipos de consulta e organização têm testes históricos próprios. N�
 5. Manter a proposta SQL do Supabase como referência histórica; qualquer uso futuro exige decisão e revisão específicas, não aplicação automática.
 
 **Estado corrigido:** existem protótipos de consulta e organização, além de proposta remota; ainda não há Inventário ativo completo, integrado e persistente no fluxo local aprovado.
+
+
+## 12. Materialização isolada de instâncias — 05/11/2026
+
+Foi criado `src/inventarioAtivo.ts` como etapa intermediária entre o plano determinístico de criação e um futuro snapshot ativo:
+
+- `materializarInventarioInicial()` recebe as escolhas já validadas, gera UUIDs distintos por exemplar e preserva catálogo, nome, quantidade, Espaços, local, posição e estado inicial.
+- O snapshot inicia com revisão 1 e é validado pelo contrato compartilhado de consulta.
+- `validarInventarioAtivo()` permite validar um snapshot existente sem reconstruir itens a partir do kit ou do catálogo.
+- O contrato de personagem aceita UUID local com hífens e identificador hexadecimal compacto de 32 caracteres usado pelo servidor LAN; os IDs das instâncias continuam UUIDs com hífens.
+- A validação da grade agora exige posições não sobrepostas e que o fim de cada intervalo não ultrapasse a capacidade total.
+
+Testes novos em `tests/inventario-ativo.test.mjs` cobrem materialização, itens repetidos com IDs próprios, kit C e compras, munição, estado inicial das armas, ID compacto LAN, IDs inválidos/duplicados, adulteração, colisão, extrapolação e revisão inválida.
+
+**Limite:** a função é pura e ainda não está ligada ao ciclo de ativação, à persistência da ficha, ao painel ou a comandos de jogo. Ela não é chamada ao abrir/reabrir uma ficha e não deve ser chamada novamente sobre um inventário já existente. Não declarar Inventário ativo integrado.
+
+**CI desta revisão:** commits `b6c141fdffab6764b843f745c7e3825056f2a401` e `b62ab7d255e1e1805a2da0e7739ccd951bd8f528` estão em validação. A rodada anterior falhou em um teste que alterava a posição de um item característico (fora da grade); o teste foi corrigido para selecionar dois exemplares armazenados. A nova checagem também adiciona a rejeição de intervalos que ultrapassam a capacidade. Até a conclusão dos workflows, classificar como **IMPLEMENTADO / TESTES ESCRITOS / CI PENDENTE**.
