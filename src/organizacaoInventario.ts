@@ -7,13 +7,11 @@ export function planejarOrganizacao(entrada:InventarioConsulta,instanciaId:strin
  if(antes.itens.some(i=>i.local==='inventario'&&(i.posicao===null||i.posicao+i.espacos>antes.capacidade)))throw Error('Há exemplares fora da capacidade atual. Confira o inventário antes de organizar.');
  if(item.posicao===destino)throw Error('O exemplar já está nesse espaço.');
  if(!Number.isSafeInteger(antes.revisao+1))throw Error('Revisão inválida.');
- const celulas=(inicio:number,tamanho:number)=>Array.from({length:tamanho},(_,i)=>inicio+i);
- const destinoCelulas=new Set(celulas(destino,item.espacos));
  const colisoes=antes.itens.filter(i=>i.local==='inventario'&&i.instanciaId!==item.instanciaId
-  && i.posicao!==null&&celulas(i.posicao,i.espacos).some(c=>destinoCelulas.has(c)));
+  && i.posicao!==null&&destino<i.posicao+i.espacos&&i.posicao<destino+item.espacos);
  if(colisoes.length>1)throw Error('O destino cruza mais de um exemplar; mova os itens envolvidos antes.');
  const trocado=colisoes[0]??null;
- if(trocado&&trocado.posicao!==null&&trocado.posicao+item.posicao+item.espacos-trocado.posicao>antes.capacidade) {
+ if(trocado&&trocado.posicao!==null&&item.posicao+trocado.espacos>antes.capacidade) {
   throw Error('A troca não cabe na capacidade atual.');
  }
  const depois=structuredClone(antes);
@@ -22,14 +20,8 @@ export function planejarOrganizacao(entrada:InventarioConsulta,instanciaId:strin
  const origem=item.posicao;
  movido.posicao=destino;
  if(outro)outro.posicao=origem;
- const ocupadas=new Set<number>();
- for(const i of depois.itens.filter(i=>i.local==='inventario')){
-  if(i.posicao===null)throw Error('Posição de Inventário inválida.');
-  for(const c of celulas(i.posicao,i.espacos)){
-   if(ocupadas.has(c))throw Error('A troca produziria sobreposição de Espaços.');
-   ocupadas.add(c);
-  }
- }
+ try { lerInventarioConsulta(depois,depois.personagemId); }
+ catch { throw Error('A troca produziria sobreposição ou posição inválida de Espaços.'); }
  depois.revisao++;
  return {antes,depois,instanciaId,origem,destino,trocadoId:trocado?.instanciaId??null};
 }
