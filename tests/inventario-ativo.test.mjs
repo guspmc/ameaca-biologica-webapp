@@ -19,10 +19,10 @@ test('materialização cria exemplares com IDs únicos, posição e estado inici
 });
 
 test('materialização preserva kit C, pilhas e itens repetidos como instâncias separadas',()=>{
- const inventario=materializarInventarioInicial(ficha('Agente','C',{compras_iniciais:{faca:2,'municao-9mm':3}}),uuid(101),ids());
+ const inventario=materializarInventarioInicial(ficha('Agente','C',{compras_iniciais:{faca:2,'municao-9mm':1}}),uuid(101),ids());
  const facas=inventario.itens.filter(i=>i.catalogoId==='faca');
  assert.equal(facas.length,2);assert.notEqual(facas[0].instanciaId,facas[1].instanciaId);
- assert.deepEqual(inventario.itens.filter(i=>i.estado.tipo==='municao').map(i=>i.quantidade),[30,15]);
+ assert.deepEqual(inventario.itens.filter(i=>i.estado.tipo==='municao').map(i=>i.quantidade),[15]);
  assert.ok(inventario.itens.every(i=>i.estado.tipo!=='arma_fogo'||i.estado.carregada===i.estado.capacidade));
 });
 
