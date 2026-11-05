@@ -3,7 +3,8 @@
 **Data:** 04/11/2026  
 **Repositório:** `guspmc/ameaca-biologica-webapp`  
 **Branch de trabalho:** `feat/offline-first-ficha`  
-**HEAD conferido na atualização:** `a90f6aff65500a1558d48d0ba1c1a0321e01a847`  
+**HEAD conferido na atualização inicial:** `a90f6aff65500a1558d48d0ba1c1a0321e01a847`  
+**HEAD após implementação inicial da validação:** `07e185a81184a8be563bb7c1d2e460934e83410a`  
 **Commit com CI completo anteriormente comprovado:** `71bc332c0dfbb9adcc24d0418eae33834b822794`
 
 > Este checkpoint registra o estado observado nesta data. Não autoriza merge, publicação, alteração de `main` ou mudanças no Supabase de produção.
@@ -135,3 +136,14 @@ A ordem aprovada para concluir a Ficha offline é:
 ## 9. Próxima etapa operacional aprovada
 
 Iniciar pela proposta técnica da seção 7 do documento `auditoria-esquema-dados-ficha-offline-2026-11-04.md`: desenhar o contrato versionado e os testes de integridade antes de alterar a implementação. Em paralelo, inspecionar os testes existentes e identificar a menor forma segura de executar a suíte no HEAD atual. Não iniciar mudanças no Inventário antes de fechar a integridade e a persistência/ciclo de vida, mas mantê-lo dentro deste mesmo ciclo da Ficha.
+
+
+## 10. Andamento após as decisões do usuário — 05/11/2026
+
+- Decisões de produto e processo registradas na seção 8 deste documento.
+- A auditoria do contrato local evoluiu para uma implementação inicial de validador compartilhado entre IndexedDB e backup.
+- O patch de salvamento passou a validar o registro mesclado antes de confirmar a transação.
+- Testes específicos foram adicionados/ajustados para refletir o contrato atual.
+- Referência detalhada: `docs/auditoria-esquema-dados-ficha-offline-2026-11-04.md`, seção 14.
+- **CI/build no HEAD `07e185a8`: pendente de confirmação.** Não considerar os testes aprovados até obter o resultado do workflow correspondente.
+- **Testes humanos:** ainda não iniciados, conforme decisão do usuário; solicitar somente após concluir verificações técnicas e Inventário.
