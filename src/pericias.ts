@@ -43,6 +43,8 @@ export function valorPassivoPericia(
   atributos: Record<'forca' | 'agilidade' | 'vigor' | 'astucia', number>,
   treinada: string | null,
   pontos: Record<string, number>,
+  condicao: 'normal' | 'vantagem' | 'desvantagem' = 'normal',
 ): number {
-  return 10 + valorBasePericia(nome, atributos, treinada, pontos);
+  const ajuste = condicao === 'vantagem' ? 5 : condicao === 'desvantagem' ? -5 : 0;
+  return 10 + valorBasePericia(nome, atributos, treinada, pontos) + ajuste;
 }
