@@ -153,3 +153,9 @@ Estado: auditoria estática concluída; testes de saída/cascata aprovados em d2
 - O teto funcional de 10 jogadores por Mesa continua sendo requisito do produto. A aprovação atual deve ser tratada como lacuna de concorrência até existir validação sob lock da Mesa e teste de duas aprovações concorrentes no banco alvo.
 - **Não corrigido nesta etapa:** falta definir se o teto conta apenas jogadores ou também o Mestre; o requisito de produto indica 10 jogadores, além do Mestre. A validação futura deve refletir essa distinção sem contar solicitações pendentes como participantes.
 - Nenhuma migration ou alteração foi aplicada a banco remoto.
+## 12. Caminho alternativo de inclusão direta de participantes
+
+- A revisão de `src/Participantes.tsx` e `src/Convites.tsx` confirma que a interface atual remove participantes diretamente por DELETE (protegido pela RLS) e aprova entradas via RPC `responder_solicitacao_mesa`; não foi encontrado INSERT direto na interface.
+- Contudo, a migration `20261022000200_politicas_rls.sql` concede `INSERT` em `public.mesa_participantes` a `authenticated` e mantém a policy `participantes_adicionar`, que permite ao Mestre inserir jogador diretamente. Esse caminho de API pode contornar qualquer limite implementado apenas dentro da RPC de aprovação.
+- **Implicação:** a correção de limite não pode se restringir a `responder_solicitacao_mesa`. É necessário decidir e testar um único caminho autorizado de inclusão (idealmente RPC transacional) e revogar o INSERT direto/retirar a policy permissiva em migration posterior, preservando o trigger que registra o Mestre e a inclusão feita pela RPC SECURITY DEFINER.
+- Não há INSERT direto no componente atual, mas a permissão SQL existe e é um caminho alternativo real. Nenhuma permissão foi alterada nesta etapa.
