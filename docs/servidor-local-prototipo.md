@@ -159,3 +159,17 @@ O servidor mantém o arquivo original. O cliente solicita o documento quando abr
 **Diretriz de implementação:** documentos do Mestre não devem ser adicionados automaticamente ao cache offline persistente do Service Worker nem a um armazenamento permanente do app. Priorizar o cabeçalho HTTP Cache-Control: no-store nas respostas de documentos privados e não armazenar esses arquivos no IndexedDB. Limpar referências/visualização ao sair da Mesa ou quando o acesso for revogado, na próxima comunicação com o servidor. Conteúdo já visualizado não pode ser apagado retroativamente de capturas de tela, fotografias ou cópias feitas pelo usuário; a revogação impede novos acessos online, não desfaz conhecimento já recebido.
 
 **Ainda precisa ser implementado e testado:** autorização server-side para cada documento, distinção entre rascunho secreto e documento revelado, entrega autenticada pela LAN, cabeçalhos de cache, comportamento do Service Worker e limpeza local na próxima conexão após revogação.
+
+## Estado atual da interface React — 05/11/2026
+
+A entrada principal agora preserva a Ficha offline como padrão e oferece a rota experimental da Mesa local sob demanda:
+
+- Ficha offline: `/ameaca-biologica-webapp/`
+- Interface de conexão LAN: `/ameaca-biologica-webapp/?servidor=local`
+
+A seleção está em `src/main.tsx`; abrir a rota local não altera a entrada padrão nem exige autenticação Supabase. A tela LAN usa a API SQLite local para cadastro/login, criação/listagem de Mesas, convites/solicitações e rascunhos de personagem.
+
+**Limites ainda presentes:** a interface LAN não usa o ticket WebSocket emitido pelo servidor; atualizações de Mesas/personagens ainda dependem de ações de atualização manual. Não existe ainda notificação em tempo real por Mesa nem reconexão de estado da campanha. O endpoint de rascunhos persiste dados com revisão esperada e bloqueia escrita concorrente com versão antiga, mas o rascunho LAN não é a mesma base IndexedDB da Ficha offline: não há sincronização automática entre esses dois armazenamentos.
+
+A rota foi adicionada ao ponto de entrada nesta branch. O CI dos commits que incluem essa alteração ainda precisa terminar antes de declarar a entrada validada. Para teste local do frontend, use a origem de desenvolvimento permitida pelo servidor (localhost/127.0.0.1:5173); o teste em dispositivo móvel exige uma origem LAN autorizada e será preparado separadamente. Não contornar CORS nem expor o servidor em rede pública.
+
