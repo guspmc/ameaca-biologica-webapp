@@ -74,3 +74,14 @@ A auditoria anterior já registra parte desses itens como pendentes. Não consid
 - **IMPLEMENTADO, CI PENDENTE:** teste de rollback forçado durante materialização.
 - **PENDENTE:** concorrência, cascatas, RLS real e teste com duas contas.
 - **NÃO REALIZADO:** execução SQL remota, migration aplicada, alteração no Supabase legado, merge, publicação ou ativação em produção.
+
+## 7. Revalidação do cache diante de falhas de autorização
+
+Na revisão do fluxo em `src/App.tsx`, foi identificado que qualquer erro retornado pela consulta de Mesas podia recorrer ao cache offline, inclusive respostas que indicam recusa de autenticação/autorização. Isso confundia indisponibilidade transitória com acesso negado.
+
+- **IMPLEMENTADO:** `src/erroAutorizacaoCache.ts` classifica HTTP 401/403 e SQLSTATE 42501 como falhas que exigem bloqueio do cache.
+- **IMPLEMENTADO:** tanto o erro retornado pela consulta quanto uma exceção com esses metadados bloqueiam o cache, limpam a lista exibida e persistem o marcador local quando possível.
+- **IMPLEMENTADO:** erros transitórios não classificados continuam elegíveis ao fallback offline previamente autorizado.
+- **PENDENTE:** CI da correção e teste em navegador real, inclusive com sessão expirada/revogação real.
+
+A classificação é deliberadamente conservadora para códigos de autenticação/permissão conhecidos; não afirma que todo erro HTTP 4xx seja revogação.
