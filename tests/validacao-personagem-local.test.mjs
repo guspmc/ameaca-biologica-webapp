@@ -96,8 +96,12 @@ test('rejeita propriedades que JSON.stringify descartaria ou transformaria', () 
   Object.defineProperty(comAtributoCalculado, 'campoCalculado', {
     enumerable: true, get() { return 'valor'; },
   });
+  const arrayComGetter = [];
+  Object.defineProperty(arrayComGetter, '0', { enumerable: true, get() { return 'valor'; } });
+  arrayComGetter.length = 1;
   assert.equal(validarPersonagemLocal(base(comSimbolo)), false);
   assert.equal(validarPersonagemLocal(base(naoEnumeravel)), false);
   assert.equal(validarPersonagemLocal(base(comLacuna)), false);
   assert.equal(validarPersonagemLocal(base(comAtributoCalculado)), false);
+  assert.equal(validarPersonagemLocal(base({ versaoModelo: 1, estadoFicha: 'rascunho', campo: arrayComGetter })), false);
 });
