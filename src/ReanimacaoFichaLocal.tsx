@@ -58,6 +58,7 @@ export default function ReanimacaoFichaLocal({ dados, recursos, origem, pvMaximo
       setMensagem('Estado de Reanimação salvo e confirmado.');
     } catch (e) {
       setErro(e instanceof Error ? e.message : 'Não foi possível salvar a Reanimação.');
+      throw e;
     } finally { setOcupado(false); }
   }
 
