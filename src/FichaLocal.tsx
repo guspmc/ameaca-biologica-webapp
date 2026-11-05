@@ -16,6 +16,7 @@ import RevisaoCriacaoLocal from './RevisaoCriacaoLocal';
 import CalculadoraTesteLocal from './CalculadoraTesteLocal';
 import RecursosFichaLocal from './RecursosFichaLocal';
 import DescansoFichaLocal from './DescansoFichaLocal';
+import ReanimacaoFichaLocal from './ReanimacaoFichaLocal';
 import { recursosIniciais } from './recursosFicha';
 import type { FichaRevisao } from './conferenciaCriacao';
 import { normalizarConfiguracaoFuncionamento, type ConfiguracaoFuncionamento } from './funcionamentoFicha';
@@ -55,7 +56,7 @@ type Props = {
   aoSalvarIdentidade?: (dados: { nome: string; identidade: Record<string, string> }) => Promise<boolean>;
   aoSalvarInventario: (dados: { equipamentoInicial: string; comprasIniciais: Record<string, number>; revisaoCompras: number }) => Promise<boolean>;
   aoSalvarFuncionamento: (configuracao: ConfiguracaoFuncionamento) => Promise<boolean>;
-  aoSalvarRecursos: (patch: { pvAtual: number; pvTemporarios: number; saAtual: number; biAtual: number }) => Promise<boolean>;
+  aoSalvarRecursos: (patch: Record<string, unknown>) => Promise<boolean>;
   origemDados?: 'local' | 'servidor';
   status?: string;
   erro?: string;
@@ -205,6 +206,18 @@ export default function FichaLocal({ nome, mesa, dados, aoFechar, aoRecarregar, 
           classe={classe}
           pvMaximo={pv}
           saMaximo={sa}
+          modoDados={configuracaoFuncionamento.modoDados}
+          aoSalvar={aoSalvarRecursos}
+          bloqueado={secoesPendentes.size > 0}
+        />
+
+        <ReanimacaoFichaLocal
+          key={JSON.stringify([ficha.reanimacao ?? null, ficha.pvAtual ?? null, ficha.biAtual ?? null, classe, origem])}
+          dados={dados}
+          recursos={recursosAtuais}
+          origem={origem}
+          pvMaximo={pv}
+          biMaximo={bi}
           modoDados={configuracaoFuncionamento.modoDados}
           aoSalvar={aoSalvarRecursos}
           bloqueado={secoesPendentes.size > 0}
