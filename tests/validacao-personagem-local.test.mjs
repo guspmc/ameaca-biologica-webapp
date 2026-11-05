@@ -84,3 +84,20 @@ test('valida nomes e escolhas de Perícia mesmo quando a seção ainda está inc
   assert.equal(validarPersonagemLocal(base({ versaoModelo: 1, estadoFicha: 'rascunho', origem: 'Amnésico', periciaOrigemExtra: 'Perícia Inventada' })), false);
   assert.equal(validarPersonagemLocal(base({ versaoModelo: 1, estadoFicha: 'rascunho', distribuicaoPericias: { 'Perícia Inventada': 1 } })), false);
 });
+
+
+test('rejeita propriedades que JSON.stringify descartaria ou transformaria', () => {
+  const comSimbolo = { versaoModelo: 1, estadoFicha: 'rascunho' };
+  comSimbolo[Symbol('campo')] = 'perdido no JSON';
+  const naoEnumeravel = { versaoModelo: 1, estadoFicha: 'rascunho' };
+  Object.defineProperty(naoEnumeravel, 'campoOculto', { value: 'perdido no JSON', enumerable: false });
+  const comLacuna = { versaoModelo: 1, estadoFicha: 'rascunho', campoFuturo: new Array(2) };
+  const comAtributoCalculado = { versaoModelo: 1, estadoFicha: 'rascunho' };
+  Object.defineProperty(comAtributoCalculado, 'campoCalculado', {
+    enumerable: true, get() { return 'valor'; },
+  });
+  assert.equal(validarPersonagemLocal(base(comSimbolo)), false);
+  assert.equal(validarPersonagemLocal(base(naoEnumeravel)), false);
+  assert.equal(validarPersonagemLocal(base(comLacuna)), false);
+  assert.equal(validarPersonagemLocal(base(comAtributoCalculado)), false);
+});
