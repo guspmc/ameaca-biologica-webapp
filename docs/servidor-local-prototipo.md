@@ -231,3 +231,20 @@ Executar somente depois de CI verde. Usar dados fictícios e duas contas distint
 10. Repetir a solicitação/ aprovação com uma Mesa sem vaga, e confirmar que o servidor recusa o ingresso sem ultrapassar o limite de 10 jogadores.
 
 Registrar cada passo como **aprovado**, **falhou** ou **não executado**, com dispositivo/navegador e mensagem observada. Testes automatizados de autorização não substituem este roteiro, e este roteiro não substitui a verificação de duas contas e sessões reais.
+
+
+## Inicialização simplificada no Windows
+
+Para evitar digitar os comandos manualmente, use o arquivo `scripts\\windows\\Iniciar_Mesa_LAN.bat` com duplo clique. Ele:
+
+1. verifica Node.js 22.12+ e pnpm 11.25.0;
+2. confere/instala as dependências com o lockfile congelado;
+3. verifica se as portas 4174 (Vite) e 4175 (API) estão livres;
+4. inicia a API SQLite em `127.0.0.1:4175` e a interface Vite LAN em janelas separadas;
+5. abre a interface no próprio computador.
+
+No celular, use o IP privado do computador no endereço da interface, mantendo ambos na mesma rede confiável. O proxy Vite recebe o tráfego da LAN e encaminha API/WebSocket ao loopback; a API SQLite não precisa ficar exposta diretamente na rede. Mantenha as duas janelas abertas e encerre cada processo com Ctrl+C na respectiva janela.
+
+A Ficha Offline tem inicializador separado: `scripts\\windows\\Iniciar_Ficha_Offline.bat`. Ela compila o modo de teste e usa a porta **4176**, evitando conflito com a interface LAN, que usa **4174**. Os dois ambientes podem, assim, permanecer abertos simultaneamente no mesmo PC. A prévia offline deve ser acessada por `http://127.0.0.1:4176/ameaca-biologica-webapp/`.
+
+Se uma porta estiver ocupada, o inicializador LAN interrompe a preparação em vez de encerrar processos desconhecidos. Não finalize processos Node de outros projetos. Os inicializadores não publicam, não fazem merge e não alteram qualquer banco remoto.
