@@ -120,16 +120,17 @@ export default function ConexaoServidorLocal() {
           return;
         }
         destino.searchParams.set('ticket', ticket);
-        socket = new WebSocket(destino.toString());
-        socketEventos.current = socket;
-        socket.onopen = () => {
+        const novoSocket = new WebSocket(destino.toString());
+        socket = novoSocket;
+        socketEventos.current = novoSocket;
+        novoSocket.onopen = () => {
           if (ativo) {
             tentativasReconexao = 0;
             mesasInscritas.current.clear();
             setCanalTempoReal(true);
           }
         };
-        socket.onmessage = evento => {
+        novoSocket.onmessage = evento => {
           if (!ativo || typeof evento.data !== 'string') return;
           try {
             const mensagem = JSON.parse(evento.data);
@@ -138,8 +139,8 @@ export default function ConexaoServidorLocal() {
             }
           } catch { /* Mensagens inválidas não alteram o estado da interface. */ }
         };
-        socket.onclose = evento => {
-          const eraSocketAtual = socketEventos.current === socket;
+        novoSocket.onclose = evento => {
+          const eraSocketAtual = socketEventos.current === novoSocket;
           if (eraSocketAtual) {
             socketEventos.current = null;
             mesasInscritas.current.clear();
@@ -152,7 +153,7 @@ export default function ConexaoServidorLocal() {
           }
           agendarReconexao();
         };
-        socket.onerror = () => socket?.close();
+        novoSocket.onerror = () => novoSocket.close();
       } catch (problema) {
         if (problema instanceof ErroServidorLocal && problema.status === 401) {
           encerrarSessao('A sessão local foi encerrada ou expirou no servidor. Entre novamente.');
