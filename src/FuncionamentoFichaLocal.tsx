@@ -7,10 +7,6 @@ type Props = {
   aoAlterarPendencia: (pendente: boolean) => void;
 };
 
-function copiar(config: ConfiguracaoFuncionamento): ConfiguracaoFuncionamento {
-  return normalizarConfiguracaoFuncionamento(config);
-}
-
 export default function FuncionamentoFichaLocal({ inicial, aoSalvar, aoAlterarPendencia }: Props) {
   const [config, setConfig] = useState(() => normalizarConfiguracaoFuncionamento(inicial));
   const [ocupado, setOcupado] = useState(false);
