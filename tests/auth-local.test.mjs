@@ -145,8 +145,30 @@ test('migração 7 recupera o registro se a tabela de personagens já existir', 
     VALUES (?, ?, ?, ?, ?, ?, ?)
   `).run('personagem-migracao-7', 'mesa-migracao-7', 'conta-migracao-7', 'Claire', '{"atributos":{}}', agora, agora);
 
-  app.db.exec('ALTER TABLE personagens_locais DROP COLUMN revisao');
-  app.db.prepare('DELETE FROM schema_migrations WHERE version >= 7').run();
+  app.db.exec(`
+    BEGIN IMMEDIATE;
+    ALTER TABLE personagens_locais RENAME TO personagens_locais_com_revisao;
+    CREATE TABLE personagens_locais (
+      id TEXT PRIMARY KEY,
+      mesa_id TEXT NOT NULL REFERENCES mesas(id) ON DELETE CASCADE,
+      conta_id TEXT NOT NULL REFERENCES contas_locais(id) ON DELETE CASCADE,
+      nome TEXT NOT NULL CHECK (length(trim(nome)) BETWEEN 1 AND 80),
+      dados_json TEXT NOT NULL CHECK (json_valid(dados_json) AND json_type(dados_json) = 'object'),
+      criada_em TEXT NOT NULL,
+      atualizada_em TEXT NOT NULL,
+      FOREIGN KEY (mesa_id, conta_id)
+        REFERENCES participantes_mesa(mesa_id, conta_id) ON DELETE CASCADE
+    );
+    INSERT INTO personagens_locais
+      (id, mesa_id, conta_id, nome, dados_json, criada_em, atualizada_em)
+    SELECT id, mesa_id, conta_id, nome, dados_json, criada_em, atualizada_em
+    FROM personagens_locais_com_revisao;
+    DROP TABLE personagens_locais_com_revisao;
+    CREATE INDEX idx_personagens_mesa_conta_atualizacao
+      ON personagens_locais(mesa_id, conta_id, atualizada_em DESC);
+    DELETE FROM schema_migrations WHERE version >= 7;
+    COMMIT;
+  `);
   await fechar();
 
   const reiniciado = createLocalServer({ host: '127.0.0.1', port: 0, dataDir });
