@@ -77,7 +77,7 @@ export function iniciarTurnoReanimacao(r: Reanimacao): Reanimacao {
 /** Recebe o resultado final do Teste de Medicina DT 15 (incluindo Treinamento e modificadores); não interpreta um d20 isolado. */
 export function concederAjudaMedicina(r: Reanimacao, testeMedicinaBemSucedido: boolean): Reanimacao {
   validarEstado(r);
-  if (r.causa !== 'pv_zero' || r.estado !== 'em_andamento'
+  if (r.causa !== 'pv_zero' || !['aguardando_proximo_turno', 'em_andamento'].includes(r.estado)
     || typeof testeMedicinaBemSucedido !== 'boolean') {
     throw new Error('Ajuda de Medicina inválida para este estado.');
   }
