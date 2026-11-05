@@ -4,7 +4,7 @@ import { mkdtemp, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { createLocalServer } from '../server/index.mjs';
-import { criarClienteServidorLocal } from '../src/servidorLocal.ts';
+import { criarClienteServidorLocal, ErroServidorLocal } from '../src/servidorLocal.ts';
 
 test('cliente HTTP local cria, consulta e atualiza rascunho usando o mesmo endereço e sessão', async t => {
   const dataDir = await mkdtemp(join(tmpdir(), 'ameaca-cliente-local-'));
@@ -85,4 +85,24 @@ test('cliente HTTP local cria, consulta e atualiza rascunho usando o mesmo ender
   const excluido = await cliente.excluirPersonagem(id);
   assert.deepEqual(excluido, { deleted: true, id });
   await assert.rejects(cliente.consultarPersonagem(id), erro => erro?.status === 404);
+});
+
+
+test('cliente preserva diagnóstico técnico quando fetch falha antes de receber resposta', async () => {
+  const falhaNativa = new TypeError('Failed to fetch');
+  const cliente = criarClienteServidorLocal({
+    baseUrl: 'http://127.0.0.1:4175',
+    fetcher: async () => { throw falhaNativa; },
+  });
+
+  await assert.rejects(
+    cliente.verificarSaude(),
+    erro => {
+      assert.ok(erro instanceof ErroServidorLocal);
+      assert.equal(erro.status, 0);
+      assert.equal(erro.message, 'Não foi possível alcançar o servidor local. Confira o endereço e a conexão de rede.');
+      assert.deepEqual(erro.diagnostico, { nome: 'TypeError', mensagem: 'Failed to fetch' });
+      return true;
+    },
+  );
 });
