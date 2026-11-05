@@ -2,7 +2,7 @@
 
 **Documento de referência:** Documento Mestre de Planejamento v2.1, aditivo aprovado em 03/11/2026.  
 **Branch inspecionada:** `feat/offline-first-ficha`  
-**HEAD inspecionado:** `78b676975eb2098aff7fd9f22ce707fc3d0a9d56`  
+**HEAD atualizado:** `76d14161c4a729016741665943d4bd051ed5d3ea`  
 **Escopo:** confronto inicial das prioridades 1 e 2 da v2.1 com o código disponível.  
 **Limite:** inspeção remota de código e CI; nenhum teste de navegador, rede LAN real ou equipamento do autor foi executado nesta auditoria.
 
@@ -35,11 +35,11 @@ A identidade visual da ficha mobile congelada é referência aprovada de composi
 - Divergência entre endereço usado para criação/consulta e endereço usado para atualização.
 - Falha de autenticação ou sessão.
 
-O servidor tem uma lista CORS explícita e inclui por padrão GitHub Pages e Vite local. A resposta de preflight observada no código não inclui cabeçalho específico de Private Network Access. Isso é uma **HIPÓTESE técnica a investigar**, não causa confirmada. A reprodução precisa registrar origem, URL final, método, status/preflight e log do servidor, sem expor token.
+O servidor tem uma lista CORS explícita e inclui por padrão GitHub Pages e Vite local. A resposta de preflight observada no código não inclui cabeçalho específico de Private Network Access. Isso permanece uma **HIPÓTESE técnica a investigar**, não causa confirmada. A reprodução precisa registrar origem, URL final, método, status/preflight e log do servidor, sem expor token.
 
 ### Próximo teste técnico
 
-Criar um teste de integração do cliente `src/servidorLocal.ts` contra o servidor real de teste, cobrindo criação, consulta e atualização com o mesmo endereço/token; depois, quando houver acesso ao navegador do autor, reproduzir pela origem efetivamente usada e comparar a rota de criação/consulta com a rota PUT. Não alterar CORS ou segurança antes de confirmar a exigência concreta do navegador e definir o escopo de origem permitido.
+Criar um teste de integração do cliente `src/servidorLocal.ts` contra o servidor real de teste, cobrindo criação, consulta e atualização com o mesmo endereço/token; depois, quando houver acesso ao navegador do autor, reproduzir pela origem efetivamente usada e comparar a rota de criação/consulta com a rota PUT. A lista de métodos CORS foi corrigida na branch para anunciar `GET, POST, PUT, DELETE, OPTIONS`, mantendo a lista explícita de origens permitidas. A alteração foi coberta por `tests/cors-metodos-local.test.mjs`, que verifica preflight para PUT/DELETE e rejeição de origem não autorizada. O teste não amplia origens, não usa curingas e não concede autorização de acesso aos dados; a autorização real continua na rota por sessão/propriedade.
 
 ## 3. Prioridade 2 — autenticação local e sessão
 
@@ -81,3 +81,25 @@ No commit `78b676975eb2098aff7fd9f22ce707fc3d0a9d56`:
 ## 7. Proteções de escopo
 
 Nenhuma alteração em `main`, merge, publicação, Supabase ou banco de produção. Não foram executados testes manuais no navegador/LAN. Não foram alteradas regras do RPG.
+
+## 8. Correção CORS e CI — 05/11/2026
+
+### Alteração
+
+No commit `a0e07f2dd18ec169bd0ec9da0ee20972f65c24f3`, `server/index.mjs` passou a anunciar os métodos `PUT` e `DELETE` no cabeçalho `Access-Control-Allow-Methods`, além de GET/POST/OPTIONS. A lista de origens autorizadas permanece explícita e sem curingas.
+
+No commit `76d14161c4a729016741665943d4bd051ed5d3ea`, foi adicionado `tests/cors-metodos-local.test.mjs`, cobrindo preflight PUT e DELETE para a origem GitHub Pages e rejeição de origem externa não autorizada.
+
+### Evidência automatizada
+
+Os dois workflows do GitHub Actions para o HEAD `76d14161c4a729016741665943d4bd051ed5d3ea` concluíram com sucesso:
+- Verificação da ficha offline: **373/373 testes aprovados**, build Vite aprovado.
+- Validação do WebApp: **373/373 testes aprovados**, TypeScript, build Vite e verificação UI aprovados.
+
+### Limites restantes
+
+**IMPLEMENTADO E TESTADO AUTOMATICAMENTE:** correção do anúncio dos métodos e regressão de preflight CORS no servidor.
+
+**PENDENTE:** teste real de navegador HTTPS → servidor LAN, inclusive eventual exigência de Local Network Access/Private Network Access do navegador, alcance do IP/porta e gravação persistida conferida após recarga. A correção CORS não comprova sozinha conectividade LAN nem salvamento real.
+
+A sequência da v2.1 permanece: fechar prioridade 1 antes de iniciar a migração para nickname e sessão persistente.
