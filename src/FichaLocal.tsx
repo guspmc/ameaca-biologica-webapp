@@ -21,6 +21,7 @@ import { recursosIniciais } from './recursosFicha';
 import type { FichaRevisao } from './conferenciaCriacao';
 import { normalizarConfiguracaoFuncionamento, type ConfiguracaoFuncionamento } from './funcionamentoFicha';
 import { calcularFaseBioInfeccao } from './bioInfeccao';
+import { reanimacaoValida } from './reanimacaoFicha';
 import { classePersonagem, termoPersonagem } from './textoPersonagem';
 
 type DadosFichaLocal = {
@@ -94,6 +95,8 @@ export default function FichaLocal({ nome, mesa, dados, aoFechar, aoRecarregar, 
     aoFechar();
   }
   const ficha = dados as DadosFichaLocal;
+  const estadoReanimacao = (dados as Record<string, unknown>).reanimacao;
+  const reanimacaoEmCurso = reanimacaoValida(estadoReanimacao) && estadoReanimacao.estado !== 'concluida';
   const classe = typeof ficha.classe === 'string' ? ficha.classe : '';
   const origem = typeof ficha.origem === 'string' ? ficha.origem : '';
   const genero = typeof (ficha.identidade as Record<string, unknown> | undefined)?.genero === 'string' ? (ficha.identidade as Record<string, string>).genero : undefined;
@@ -208,7 +211,7 @@ export default function FichaLocal({ nome, mesa, dados, aoFechar, aoRecarregar, 
           saMaximo={sa}
           modoDados={configuracaoFuncionamento.modoDados}
           aoSalvar={aoSalvarRecursos}
-          bloqueado={secoesPendentes.size > 0}
+          bloqueado={secoesPendentes.size > 0 || reanimacaoEmCurso}
         />
 
         <ReanimacaoFichaLocal
