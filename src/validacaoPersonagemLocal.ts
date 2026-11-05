@@ -5,6 +5,7 @@ import { ORIGENS } from './origens.ts';
 import { HABILIDADES_BASICAS } from './habilidades.ts';
 import { opcoesEquipamento } from './equipamento.ts';
 import { planejarInventarioCriacao } from './inventarioCriacao.ts';
+import { simularCompras } from './comprasIniciais.ts';
 
 export type PersonagemValidavel = {
   id: string;
@@ -73,8 +74,15 @@ function validarDadosFicha(valor: unknown): valor is Record<string, unknown> {
     if (valor.equipamentoInicial !== '' && !opcoesEquipamento(typeof valor.classe === 'string' ? valor.classe : null)
       .some(item => item.id === valor.equipamentoInicial)) return false;
   }
-  if (valor.origem === 'Operário' && 'armaOperario' in valor
-    && valor.armaOperario !== '' && !armaOperarioValida(valor.armaOperario)) return false;
+  const caracteristicasCompletas = ['classe', 'origem', 'armaOperario', 'habilidadeBasica', 'equipamentoInicial'].every(chave => chave in valor);
+  if (caracteristicasCompletas) {
+    if (typeof valor.classe !== 'string' || typeof valor.origem !== 'string'
+      || typeof valor.armaOperario !== 'string' || typeof valor.habilidadeBasica !== 'string'
+      || typeof valor.equipamentoInicial !== 'string') return false;
+    if (!HABILIDADES_BASICAS.some(item => item.id === valor.habilidadeBasica && item.classe === valor.classe)) return false;
+    if (!opcoesEquipamento(valor.classe).some(item => item.id === valor.equipamentoInicial)) return false;
+    if (valor.origem === 'Operário' && !armaOperarioValida(valor.armaOperario)) return false;
+  }
 
   if ('atributos' in valor && (!objeto(valor.atributos) || !atributosIniciaisValidos(valor.atributos as never))) return false;
   if ('periciaOrigemTreinada' in valor
@@ -111,7 +119,16 @@ function validarDadosFicha(valor: unknown): valor is Record<string, unknown> {
     }
   }
 
-  if ('comprasIniciais' in valor && !objeto(valor.comprasIniciais)) return false;
+  if ('comprasIniciais' in valor) {
+    if (!objeto(valor.comprasIniciais)) return false;
+    try {
+      if (!simularCompras(valor.comprasIniciais as Record<string, number>, 100).orcamentoValido) return false;
+    } catch {
+      return false;
+    }
+    if (valor.equipamentoInicial !== undefined && valor.equipamentoInicial !== 'C'
+      && Object.keys(valor.comprasIniciais).length > 0) return false;
+  }
   if ('revisaoCompras' in valor
     && (!Number.isInteger(valor.revisaoCompras) || (valor.revisaoCompras as number) < 0)) return false;
 
