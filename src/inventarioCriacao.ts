@@ -1,6 +1,6 @@
-import {capacidadeInventario,caracteristicos,equipamentoInicial,opcoesEquipamento} from './equipamento';
-import {simularCompras} from './comprasIniciais';
-import {ORIGENS} from './origens';
+import {capacidadeInventario,caracteristicos,equipamentoInicial,opcoesEquipamento} from './equipamento.ts';
+import {simularCompras} from './comprasIniciais.ts';
+import {ORIGENS} from './origens.ts';
 export type EstadoItemCriacao=
  |{tipo:'arma_fogo';calibre:'9mm';carregada:number;capacidade:number;equipada:false}
  |{tipo:'arma_corpo';durabilidadeAtual:number|null;durabilidadeMaxima:number|null;indestrutivel:boolean;arremessavel:boolean;equipada:false}
