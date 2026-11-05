@@ -105,7 +105,7 @@ export default function CalculadoraTesteLocal({ atributos, treinada, distribuica
       </label>}
     </div>}
     {calculado.erro && <p className="offline-erro" role="alert">{calculado.erro}</p>}
-    {calculado.resultado && <div className="ficha-local-resultado" role="status">
+    {calculado.resultado && <div className="offline-status ficha-local-resultado" role="status">
       <strong>{calculado.resultado.estado === 'impossivel' ? 'Sem Teste'
         : calculado.resultado.estado === 'incompleto' ? 'Aguardando dados'
         : calculado.resultado.estado === 'critico-sucesso' ? 'Sucesso automático · 20 natural'
