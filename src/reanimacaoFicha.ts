@@ -58,7 +58,7 @@ export function iniciarReanimacao(causa: CausaReanimacao): Reanimacao {
   if (causa !== 'pv_zero' && causa !== 'colapso_bi') throw new Error('Causa de Reanimação inválida.');
   return {
     causa,
-    estado: 'aguardando_proximo_turno',
+    estado: causa === 'pv_zero' ? 'aguardando_proximo_turno' : 'em_andamento',
     sucessos: 0,
     falhas: 0,
     tentativas: 0,
