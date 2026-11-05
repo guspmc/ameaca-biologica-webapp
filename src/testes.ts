@@ -25,11 +25,15 @@ export function calcularTesteManual(args: {
   if (!Number.isSafeInteger(dt) || dt < 1) throw new Error('A DT precisa ser um inteiro positivo.');
   const d1 = args.dado1;
   const d2 = args.dado2;
-  if (!Number.isSafeInteger(d1) || (d1 as number) < 1 || (d1 as number) > 20) {
+  if (d1 === null || d1 === undefined) {
     return { estado: 'incompleto', dadoEscolhido: null, total: null, dt, detalhe: 'Informe o resultado físico do d20.' };
   }
-  if (vantagem !== 'normal' && (!Number.isSafeInteger(d2) || (d2 as number) < 1 || (d2 as number) > 20)) {
+  if (!Number.isSafeInteger(d1) || d1 < 1 || d1 > 20) throw new Error('A face do d20 precisa ser um inteiro entre 1 e 20.');
+  if (vantagem !== 'normal' && (d2 === null || d2 === undefined)) {
     return { estado: 'incompleto', dadoEscolhido: null, total: null, dt, detalhe: 'Vantagem/Desvantagem exige os resultados dos dois d20.' };
+  }
+  if (vantagem !== 'normal' && (!Number.isSafeInteger(d2) || (d2 as number) < 1 || (d2 as number) > 20)) {
+    throw new Error('A face do segundo d20 precisa ser um inteiro entre 1 e 20.');
   }
   const escolhido = vantagem === 'vantagem' ? Math.max(d1 as number, d2 as number)
     : vantagem === 'desvantagem' ? Math.min(d1 as number, d2 as number)
