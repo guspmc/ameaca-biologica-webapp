@@ -41,6 +41,7 @@ test('cliente HTTP local cria, consulta e atualiza rascunho usando o mesmo ender
   const criado = await cliente.criarPersonagem(mesa.id, 'Claire', dadosOriginais);
   const id = criado.personagem.id;
   assert.equal(criado.personagem.name, 'Claire');
+  assert.equal(criado.personagem.revision, 1);
 
   const consultado = await cliente.consultarPersonagem(id);
   assert.deepEqual(consultado.personagem.data, dadosOriginais);
@@ -59,8 +60,9 @@ test('cliente HTTP local cria, consulta e atualiza rascunho usando o mesmo ender
   assert.match(preflight.headers.get('access-control-allow-headers') ?? '', /Authorization/i);
 
   const dadosAtualizados = { ...dadosOriginais, identidade: { nome: 'Claire Redfield' } };
-  const atualizado = await cliente.atualizarPersonagem(id, 'Claire Redfield', dadosAtualizados);
+  const atualizado = await cliente.atualizarPersonagem(id, 'Claire Redfield', dadosAtualizados, criado.personagem.revision);
   assert.equal(atualizado.personagem.name, 'Claire Redfield');
+  assert.equal(atualizado.personagem.revision, criado.personagem.revision + 1);
   assert.deepEqual(atualizado.personagem.data, dadosAtualizados);
 
   const lista = await cliente.listarPersonagens(mesa.id);
@@ -70,4 +72,13 @@ test('cliente HTTP local cria, consulta e atualiza rascunho usando o mesmo ender
   const leituraPersistida = await cliente.consultarPersonagem(id);
   assert.equal(leituraPersistida.personagem.name, 'Claire Redfield');
   assert.deepEqual(leituraPersistida.personagem.data, dadosAtualizados);
+
+  await assert.rejects(
+    cliente.atualizarPersonagem(id, 'Versão antiga', { sobrescrito: true }, criado.personagem.revision),
+    erro => erro?.status === 409,
+  );
+  const aposConflito = await cliente.consultarPersonagem(id);
+  assert.equal(aposConflito.personagem.name, 'Claire Redfield');
+  assert.equal(aposConflito.personagem.revision, atualizado.personagem.revision);
+  assert.deepEqual(aposConflito.personagem.data, dadosAtualizados);
 });
