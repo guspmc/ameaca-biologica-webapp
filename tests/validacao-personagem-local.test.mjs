@@ -75,3 +75,12 @@ test('aceita geração ausente somente no caminho explícito de legado', () => {
   assert.equal(validarPersonagemLocal(legado), false);
   assert.equal(validarPersonagemLocal(legado, { permitirGeracaoAusente: true }), true);
 });
+
+
+test('valida nomes e escolhas de Perícia mesmo quando a seção ainda está incompleta', () => {
+  assert.equal(validarPersonagemLocal(base({ versaoModelo: 1, estadoFicha: 'rascunho', periciaOrigemTreinada: 'Percepção' })), true);
+  assert.equal(validarPersonagemLocal(base({ versaoModelo: 1, estadoFicha: 'rascunho', periciaOrigemTreinada: 'Perícia Inventada' })), false);
+  assert.equal(validarPersonagemLocal(base({ versaoModelo: 1, estadoFicha: 'rascunho', origem: 'Acadêmico', periciaOrigemTreinada: 'Pontaria' })), false);
+  assert.equal(validarPersonagemLocal(base({ versaoModelo: 1, estadoFicha: 'rascunho', origem: 'Amnésico', periciaOrigemExtra: 'Perícia Inventada' })), false);
+  assert.equal(validarPersonagemLocal(base({ versaoModelo: 1, estadoFicha: 'rascunho', distribuicaoPericias: { 'Perícia Inventada': 1 } })), false);
+});
