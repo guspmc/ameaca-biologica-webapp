@@ -240,8 +240,12 @@ export default function FichaLocal({ nome, mesa, dados, aoFechar, aoRecarregar, 
           <h3 className="ficha-local-subtitulo">Bio-Infecção</h3>
           <div className="ficha-local-grade">
             <div><small>BI ATUAL / MÁXIMA</small><strong>{biAtual} / {bi}</strong><p>{faseBi.estado === 'fase' ? 'Fase ' + faseBi.fase + ' · ' + faseBi.efeito : faseBi.efeito}</p></div>
+            <div><small>MOVIMENTO PELA BI</small><strong>{faseBi.modificadorMovimento === null ? (faseBi.estado === 'colapso' ? 'Desacordada' : '—') : (9 + faseBi.modificadorMovimento) + ' m'}</strong><p>{faseBi.modificadorMovimento === null ? 'Sem valor de movimento derivável.' : 'Base 9 m ' + (faseBi.modificadorMovimento > 0 ? '+ ' : faseBi.modificadorMovimento < 0 ? '− ' : '') + (faseBi.modificadorMovimento === 0 ? 'sem ajuste' : Math.abs(faseBi.modificadorMovimento) + ' m pela fase de BI')}</p></div>
+            <div><small>BÔNUS EM TESTES DE ATAQUE</small><strong>{faseBi.bonusTesteAtaque === null ? '—' : '+' + faseBi.bonusTesteAtaque}</strong><p>{faseBi.bonusTesteAtaque === null ? 'Não aplicável.' : 'Modificador da fase de BI, antes de outros efeitos.'}</p></div>
+            <div><small>DANO CORPO A CORPO</small><strong>{faseBi.danoCorpoACorpoAdicional ? '+' + faseBi.danoCorpoACorpoAdicional : '—'}</strong><p>{faseBi.danoCorpoACorpoAdicional ? 'Dano adicional da 4ª fase.' : 'Sem bônus de dano corpo a corpo por BI.'}</p></div>
+            <div><small>DESVANTAGEM POR BI</small><strong>{faseBi.desvantagemAtaquesETestes === null ? '—' : faseBi.desvantagemAtaquesETestes ? 'Sim' : 'Não'}</strong><p>Aplica-se a Ataques e Testes de Perícia e Atributo na 5ª fase.</p></div>
           </div>
-          <p className="ficha-local-legenda">A BI começa em 0, não progride sozinha e só muda por uma fonte expressa. Esta ficha calcula a fase a partir do valor salvo; não aumenta BI, não aplica efeitos nem inicia Reanimação automaticamente.</p>
+          <p className="ficha-local-legenda">A BI começa em 0, não progride sozinha e só muda por uma fonte expressa. A ficha calcula os modificadores informativos da fase; não altera movimento, ataques ou dano, não aumenta BI, não rola dados nem inicia Reanimação automaticamente.</p>
 
           <h3 className="ficha-local-subtitulo">Combate ativo</h3>
           <div className="ficha-local-grade">
