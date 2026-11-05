@@ -95,10 +95,12 @@ export default function ReanimacaoFichaLocal({ dados, recursos, origem, pvMaximo
     } catch (e) { setErro(e instanceof Error ? e.message : 'Não foi possível acumular a cura.'); }
   }
 
-  async function registrarMedicina(sucesso: boolean) {
+  async function registrarMedicina(sucesso: boolean, falhaCritica = false) {
     if (!reanimacao) return;
-    try { await persistir(concederAjudaMedicina(reanimacao, sucesso)); }
-    catch (e) { setErro(e instanceof Error ? e.message : 'Não foi possível registrar o Teste de Medicina.'); }
+    try {
+      await persistir(concederAjudaMedicina(reanimacao, sucesso));
+      if (falhaCritica) setMensagem('1 natural no Teste de Medicina: Falha Crítica e Exposto. Registre a Condição conforme a regra; o painel não administra Condições automaticamente.');
+    } catch (e) { setErro(e instanceof Error ? e.message : 'Não foi possível registrar o Teste de Medicina.'); }
   }
 
   async function iniciarProximoTurno() {
@@ -145,6 +147,7 @@ export default function ReanimacaoFichaLocal({ dados, recursos, origem, pvMaximo
           : <div className="recursos-controles">
             <button type="button" disabled={ocupado || bloqueado} onClick={() => void registrarMedicina(true)}>Registrar sucesso</button>
             <button type="button" disabled={ocupado || bloqueado} onClick={() => void registrarMedicina(false)}>Registrar falha</button>
+            <button type="button" disabled={ocupado || bloqueado} onClick={() => void registrarMedicina(false, true)}>Registrar falha crítica (1 natural)</button>
           </div>}
         <label>Cura recebida enquanto estava em 0 PV
           <input type="number" min="0" step="1" value={cura} disabled={ocupado || bloqueado} onChange={e => setCura(e.target.value)}/>
