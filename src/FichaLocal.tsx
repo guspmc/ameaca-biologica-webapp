@@ -98,6 +98,7 @@ export default function FichaLocal({ nome, mesa, dados, aoFechar, aoRecarregar, 
   const ficha = dados as DadosFichaLocal;
   const estadoReanimacao = (dados as Record<string, unknown>).reanimacao;
   const reanimacaoEmCurso = reanimacaoValida(estadoReanimacao) && estadoReanimacao.estado !== 'concluida';
+  const reanimacaoPV0EmCurso = reanimacaoValida(estadoReanimacao) && estadoReanimacao.causa === 'pv_zero' && estadoReanimacao.estado !== 'concluida';
   const classe = typeof ficha.classe === 'string' ? ficha.classe : '';
   const origem = typeof ficha.origem === 'string' ? ficha.origem : '';
   const genero = typeof (ficha.identidade as Record<string, unknown> | undefined)?.genero === 'string' ? (ficha.identidade as Record<string, string>).genero : undefined;
@@ -200,6 +201,7 @@ export default function FichaLocal({ nome, mesa, dados, aoFechar, aoRecarregar, 
           pvMaximo={pv}
           saMaximo={sa}
           biMaximo={bi}
+          bloquearPV={reanimacaoPV0EmCurso}
           aoSalvar={aoSalvarRecursos}
           aoAlterarPendencia={pendente => registrarPendencia('Recursos', pendente)}
         />

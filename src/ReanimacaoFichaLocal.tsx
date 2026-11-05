@@ -76,10 +76,13 @@ export default function ReanimacaoFichaLocal({ dados, recursos, origem, pvMaximo
       const resultado = resolverTesteReanimacao(reanimacao, resultados, pvMaximo, origem === 'Cobaia');
       const recursosPatch = resultado.pvAoDespertar === null ? {} : { pvAtual: resultado.pvAoDespertar };
       await persistir(resultado.reanimacao, recursosPatch);
-      if (resultado.morteParaRegistroDoMestre) setMensagem('Três falhas: morte sinalizada para registro do Mestre. Nenhuma consequência adicional foi executada.');
-      else if (resultado.transformacaoPendente) setMensagem('Três falhas: retorno como Zumbi Especial pendente para o próximo turno.');
-      else if (resultado.pvAoDespertar !== null) setMensagem(`Três sucessos: personagem desperta com ${resultado.pvAoDespertar} PV.`);
-      else if (resultado.reanimacao.estado === 'desacordada_ate_reducao_bi') setMensagem('Três sucessos: permanece Desacordada até a BI ficar abaixo do máximo.');
+      const avisos: string[] = [];
+      if (resultado.falhaCritica) avisos.push('1 natural: Falha Crítica e Exposto. Registre a Condição conforme a regra; o painel não administra Condições automaticamente.');
+      if (resultado.morteParaRegistroDoMestre) avisos.push('Três falhas: morte sinalizada para registro do Mestre. Nenhuma consequência adicional foi executada.');
+      else if (resultado.transformacaoPendente) avisos.push('Três falhas: retorno como Zumbi Especial pendente para o próximo turno.');
+      else if (resultado.pvAoDespertar !== null) avisos.push(`Três sucessos: personagem desperta com ${resultado.pvAoDespertar} PV.`);
+      else if (resultado.reanimacao.estado === 'desacordada_ate_reducao_bi') avisos.push('Três sucessos: permanece Desacordada até a BI ficar abaixo do máximo.');
+      if (avisos.length) setMensagem(avisos.join(' '));
     } catch (e) { setErro(e instanceof Error ? e.message : 'Resultado de Reanimação inválido.'); }
   }
 

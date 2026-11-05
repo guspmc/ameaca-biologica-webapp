@@ -41,6 +41,18 @@ test('cura em 0 PV é direcionada à acumulação da Reanimação, sem botão de
   assert.match(painel, /Acumular cura sem despertar/);
 });
 
+test('1 natural sinaliza Falha Crítica e Exposto sem administrar a Condição automaticamente', () => {
+  assert.match(painel, /Falha Crítica e Exposto/);
+  assert.match(painel, /não administra Condições automaticamente/);
+});
+
+test('PV Atuais não podem ser alterados diretamente durante Reanimação por 0 PV', () => {
+  assert.match(ficha, /bloquearPV=\{reanimacaoPV0EmCurso\}/);
+  assert.match(recursos, /bloquearPV\?: boolean/);
+  assert.match(recursos, /value=\{recursos\.pvAtual\} disabled=\{ocupado \|\| bloquearPV\}/);
+  assert.match(recursos, /disabled=\{ocupado \|\| bloquearPV \|\| recursos\.pvAtual/);
+});
+
 test('Reanimação não sobrescreve outras seções ainda pendentes', () => {
   assert.match(ficha, /bloqueado=\{secoesPendentes\.size > 0\}/);
   assert.match(painel, /Salve ou descarte outras alterações pendentes/);

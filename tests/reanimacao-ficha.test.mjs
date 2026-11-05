@@ -84,6 +84,17 @@ test('Colapso: testes começam imediatamente; Cobaia rola dois d20 e três suces
   assert.equal(api.encerrarColapsoPorReducaoBI(r, 9, 10).estado, 'concluida');
 });
 
+test('1 natural em Reanimação sinaliza Falha Crítica e Exposto; Vantagem usa o melhor resultado', () => {
+  const normal = api.iniciarTurnoReanimacao(api.iniciarReanimacao('pv_zero'));
+  const falha = aplicar(normal, 1);
+  assert.equal(falha.falhaCritica, true);
+  assert.equal(falha.reanimacao.falhas, 1);
+  const cobaia = api.iniciarReanimacao('colapso_bi');
+  const comVantagem = aplicar(cobaia, [1, 12], 12, true);
+  assert.equal(comVantagem.falhaCritica, false);
+  assert.equal(comVantagem.reanimacao.sucessos, 1);
+});
+
 test('Colapso: três falhas deixam transformação pendente para o próximo turno', () => {
   let r = api.iniciarReanimacao('colapso_bi');
   let out;

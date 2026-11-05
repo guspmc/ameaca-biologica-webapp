@@ -22,6 +22,7 @@ export type ResultadoReanimacao = {
   pvAoDespertar: number | null;
   transformacaoPendente: boolean;
   morteParaRegistroDoMestre: boolean;
+  falhaCritica: boolean;
 };
 
 const inteiroNaoNegativo = (v: unknown): v is number =>
@@ -115,7 +116,9 @@ export function resolverTesteReanimacao(
     || lista.some(v => !Number.isSafeInteger(v) || v < 1 || v > 20)) {
     throw new Error(vantagem ? 'Informe os dois resultados físicos ou virtuais da Vantagem.' : 'Informe um resultado físico ou virtual válido.');
   }
-  const passou = Math.max(...lista) >= 12;
+  const resultadoFinal = Math.max(...lista);
+  const passou = resultadoFinal >= 12;
+  const falhaCritica = resultadoFinal === 1;
   const proximo: Reanimacao = {
     ...r,
     estado: 'em_andamento',
@@ -128,7 +131,7 @@ export function resolverTesteReanimacao(
     if (r.causa === 'pv_zero') {
       const pvAoDespertar = Math.min(pvMaximo, Math.max(1, r.curaAcumulada));
       proximo.estado = 'concluida';
-      return { reanimacao: proximo, pvAoDespertar, transformacaoPendente: false, morteParaRegistroDoMestre: false };
+      return { reanimacao: proximo, pvAoDespertar, transformacaoPendente: false, morteParaRegistroDoMestre: false, falhaCritica };
     }
     proximo.estado = 'desacordada_ate_reducao_bi';
   } else if (proximo.falhas === 3) {
@@ -140,6 +143,7 @@ export function resolverTesteReanimacao(
     pvAoDespertar: null,
     transformacaoPendente: proximo.estado === 'transformacao_no_proximo_turno',
     morteParaRegistroDoMestre: proximo.estado === 'morte_a_registrar',
+    falhaCritica,
   };
 }
 

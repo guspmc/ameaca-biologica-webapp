@@ -6,11 +6,12 @@ type Props = {
   pvMaximo: number;
   saMaximo: number;
   biMaximo: number;
+  bloquearPV?: boolean;
   aoSalvar: (patch: RecursosAtuais) => Promise<boolean>;
   aoAlterarPendencia: (pendente: boolean) => void;
 };
 
-export default function RecursosFichaLocal({ dados, pvMaximo, saMaximo, biMaximo, aoSalvar, aoAlterarPendencia }: Props) {
+export default function RecursosFichaLocal({ dados, pvMaximo, saMaximo, biMaximo, bloquearPV = false, aoSalvar, aoAlterarPendencia }: Props) {
   const [recursos, setRecursos] = useState(() => recursosIniciais(dados, pvMaximo, saMaximo));
   const [anterior, setAnterior] = useState<RecursosAtuais | null>(null);
   const [ocupado, setOcupado] = useState(false);
@@ -61,20 +62,20 @@ export default function RecursosFichaLocal({ dados, pvMaximo, saMaximo, biMaximo
     {!valido && <p className="offline-erro" role="alert">Há valores acima dos máximos atuais. Eles foram preservados; ajuste-os antes de salvar.</p>}
     <h4>Ajustes diretos</h4>
     <div className="recursos-controles">
-      <label>PV Atuais<input type="number" min="0" step="1" value={recursos.pvAtual} disabled={ocupado} onChange={e => { const n = Number(e.target.value); if (Number.isSafeInteger(n) && n >= 0) atualizar({ ...recursos, pvAtual: n }); }}/></label>
+      <label>PV Atuais<input type="number" min="0" step="1" value={recursos.pvAtual} disabled={ocupado || bloquearPV} onChange={e => { const n = Number(e.target.value); if (Number.isSafeInteger(n) && n >= 0) atualizar({ ...recursos, pvAtual: n }); }}/></label>
       <label>SA Atual<input type="number" min="0" step="1" value={recursos.saAtual} disabled={ocupado} onChange={e => { const n = Number(e.target.value); if (Number.isSafeInteger(n) && n >= 0) atualizar({ ...recursos, saAtual: n }); }}/></label>
       <label>BI Atual<input type="number" min="0" step="1" value={recursos.biAtual} disabled={ocupado} onChange={e => { const n = Number(e.target.value); if (Number.isSafeInteger(n) && n >= 0) atualizar({ ...recursos, biAtual: n }); }}/></label>
     </div>
     <h4>PV Atuais e Temporários</h4>
     <div className="recursos-controles">
-      <button type="button" disabled={ocupado || recursos.pvAtual >= pvMaximo || recursos.pvAtual === 0} onClick={() => tentar(() => curarPV(recursos, 1, pvMaximo))}>+1 PV</button>
+      <button type="button" disabled={ocupado || bloquearPV || recursos.pvAtual >= pvMaximo || recursos.pvAtual === 0} onClick={() => tentar(() => curarPV(recursos, 1, pvMaximo))}>+1 PV</button>
       <button type="button" disabled={ocupado || (recursos.pvAtual === 0 && recursos.pvTemporarios === 0)} onClick={() => tentar(() => aplicarDanoPV(recursos, 1, pvMaximo, saMaximo))}>-1 PV (dano)</button>
       <label>Aplicar dano<input type="number" min="0" step="1" value={dano} disabled={ocupado} onChange={e => setDano(e.target.value)}/></label>
       <button type="button" disabled={ocupado} onClick={() => tentar(() => aplicarDanoPV(recursos, quantidade(dano), pvMaximo, saMaximo))}>Aplicar</button>
       <label>Novos PV Temporários<input type="number" min="0" step="1" value={temporarios} disabled={ocupado} onChange={e => setTemporarios(e.target.value)}/></label>
       <button type="button" disabled={ocupado} onClick={() => tentar(() => definirPVTemporarios(recursos, quantidade(temporarios), pvMaximo, saMaximo))}>Definir</button>
     </div>
-    <p className="ficha-local-legenda">Dano consome PV Temporários antes dos PV Atuais. Cura afeta apenas PV Atuais. Novos PV Temporários conservam o maior valor, sem soma. Em 0 PV, a cura deve ser registrada no painel de Reanimação para ficar acumulada até o terceiro sucesso.</p>
+    <p className="ficha-local-legenda">Dano consome PV Temporários antes dos PV Atuais. Cura afeta apenas PV Atuais. Novos PV Temporários conservam o maior valor, sem soma. Durante Reanimação por 0 PV, a edição direta de PV fica bloqueada; registre toda cura no painel de Reanimação para acumular até o terceiro sucesso.</p>
     <h4>Surto de Adrenalina</h4>
     <div className="recursos-controles">
       <button type="button" disabled={ocupado || recursos.saAtual === 0} onClick={() => tentar(() => ajustarSA(recursos, -1, pvMaximo, saMaximo))}>-1 SA</button>
