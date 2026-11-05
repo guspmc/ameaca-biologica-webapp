@@ -66,7 +66,7 @@ Se a aplicação não abrir, registre a mensagem e pare; não tente corrigir o a
 2. Recarregar a aplicação. Esperado: o shell local abre e as fichas IndexedDB continuam disponíveis.
 3. Abrir, editar e salvar uma ficha fictícia. Esperado: persistência confirmada neste dispositivo; não deve aparecer qualquer promessa de sincronização com LAN.
 4. Voltar à conexão normal, recarregar e confirmar que os dados locais continuam.
-5. Se instalar como PWA no Android, repetir abertura, recarga, teclado, rolagem, retrato/paisagem e salvamento.
+5. **Android/PWA:** este roteiro local em `localhost` valida o shell e o IndexedDB no computador. Para instalar/testar no Android, use uma origem HTTPS confiável com o mesmo commit já publicado. O IP privado HTTP usado no teste LAN não é contexto seguro para Service Worker; não tente contornar isso expondo o servidor de desenvolvimento. Como esta branch ainda não foi publicada, o teste Android do código desta branch permanece pendente até uma publicação aprovada.
 
 ## 7. Limites que não devem ser confundidos com falhas
 
