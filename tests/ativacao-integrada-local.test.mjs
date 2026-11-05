@@ -75,3 +75,44 @@ test('pacote integrado: comandos publicos de ativacao continuam indisponiveis pa
   await db.exec('reset role');
  }finally{await db.close();}
 });
+
+test('ciclo integrado: saida do jogador apaga seus rascunhos, mas preserva fichas completas e inventario',async()=>{
+ const db=await setup({integrada:true});
+ try{
+  const rascunho=await criar(db,A,'Agente','C');
+  const completa=await criar(db,A,'Operador','B');
+  const args=await pedido(db,completa,op(704));
+  await uid(db,A);await db.query('select app_private.ativar_ficha_local($1,$2,$3,$4)',args);
+  const antes=await get(db,completa);
+  const itensAntes=await instances(db,completa);
+  assert.ok(itensAntes.length>0);
+  await uid(db,A);
+  await db.query('select app_private.sair_mesa_local($1,true)',[T]);
+  assert.equal((await get(db,rascunho)),undefined);
+  const depois=await get(db,completa);
+  assert.equal(depois.estado_ficha,'completa');
+  assert.equal(depois.jogador_id,A);
+  assert.equal(depois.pv_atual,antes.pv_atual);
+  assert.equal(depois.sa_atual,antes.sa_atual);
+  assert.equal(depois.bi_atual,antes.bi_atual);
+  assert.deepEqual(await instances(db,completa),itensAntes);
+  assert.equal((await db.query('select count(*)::int n from public.mesa_participantes where mesa_id=$1 and usuario_id=$2',[T,A])).rows[0].n,0);
+ }finally{await db.close();}
+});
+
+test('ciclo integrado: exclusao da Mesa elimina fichas e dados privados em cascata',async()=>{
+ const db=await setup({integrada:true});
+ try{
+  const id=await criar(db,A,'Agente','C');
+  const args=await pedido(db,id,op(705));
+  await uid(db,A);await db.query('select app_private.ativar_ficha_local($1,$2,$3,$4)',args);
+  assert.ok((await instances(db,id)).length>0);
+  await uid(db,M);
+  await db.query('delete from public.mesas where id=$1',[T]);
+  assert.equal((await get(db,id)),undefined);
+  assert.equal((await db.query('select count(*)::int n from app_private.inventario_instancias where mesa_id=$1',[T])).rows[0].n,0);
+  assert.equal((await db.query('select count(*)::int n from app_private.materializacoes_inventario where personagem_id=$1',[id])).rows[0].n,0);
+  assert.equal((await db.query('select count(*)::int n from app_private.ativacoes_ficha where mesa_id=$1',[T])).rows[0].n,0);
+  assert.equal((await db.query('select count(*)::int n from app_private.contextos_criacao_mesa where mesa_id=$1',[T])).rows[0].n,0);
+ }finally{await db.close();}
+});
