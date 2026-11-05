@@ -79,8 +79,27 @@ test('rascunhos de personagem persistem e ficam isolados por conta e Mesa', asyn
 
   const consultarOutro = await fetch(url + '/api/personagens/' + personagem.id, { headers: terceiro.headers });
   assert.equal(consultarOutro.status, 404);
+  const editarOutro = await fetch(url + '/api/personagens/' + personagem.id, {
+    method: 'PUT',
+    headers: { ...terceiro.headers, 'content-type': 'application/json' },
+    body: JSON.stringify({ name: 'Alteração indevida', data: { adulterado: true } }),
+  });
+  assert.equal(editarOutro.status, 404);
+
   const consultarMestre = await fetch(url + '/api/personagens/' + personagem.id, { headers: mestre.headers });
   assert.equal(consultarMestre.status, 404);
+  const editarMestre = await fetch(url + '/api/personagens/' + personagem.id, {
+    method: 'PUT',
+    headers: { ...mestre.headers, 'content-type': 'application/json' },
+    body: JSON.stringify({ name: 'Edição pelo Mestre', data: { adulterado: true } }),
+  });
+  assert.equal(editarMestre.status, 404);
+
+  const confirmarIntegridade = await fetch(url + '/api/personagens/' + personagem.id, { headers: jogador.headers });
+  assert.equal(confirmarIntegridade.status, 200);
+  const registroIntegro = await confirmarIntegridade.json();
+  assert.equal(registroIntegro.personagem.name, 'Claire Redfield');
+  assert.deepEqual(registroIntegro.personagem.data, { ...dados, origem: 'Policial' });
   const listaMestre = await fetch(url + '/api/mesas/' + mesa.id + '/personagens', { headers: mestre.headers });
   assert.equal(listaMestre.status, 404);
 
