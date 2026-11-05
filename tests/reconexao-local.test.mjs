@@ -15,12 +15,14 @@ test('tentativas inválidas ou negativas usam a espera inicial', () => {
   assert.equal(calcularAtrasoReconexao(Number.NaN), 3000);
 });
 
-
 test('retorno da aba ao primeiro plano sincroniza dados e recupera o canal LAN', async () => {
   const componente = await readFile(new URL('../src/ConexaoServidorLocal.tsx', import.meta.url), 'utf8');
-  assert.match(componente, /document\\.addEventListener\\('visibilitychange'/);
-  assert.match(componente, /document\\.removeEventListener\\('visibilitychange'/);
-  assert.match(componente, /aoRetornarAoPrimeiroPlano[\\s\\S]*?sincronizarDadosRecebidos\\(\\)/);
-  assert.match(componente, /calcularAtrasoReconexao\\(tentativasReconexao\\)/);
-  assert.match(componente, /problema\\.status === 401/);
+  assert.ok(componente.includes("document.addEventListener('visibilitychange'"));
+  assert.ok(componente.includes("document.removeEventListener('visibilitychange'"));
+  const inicio = componente.indexOf('const aoRetornarAoPrimeiroPlano');
+  const fim = componente.indexOf('document.addEventListener', inicio);
+  assert.ok(inicio >= 0 && fim > inicio);
+  assert.ok(componente.slice(inicio, fim).includes('sincronizarDadosRecebidos()'));
+  assert.ok(componente.includes('calcularAtrasoReconexao(tentativasReconexao)'));
+  assert.ok(componente.includes('problema.status === 401'));
 });
