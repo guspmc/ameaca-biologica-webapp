@@ -49,6 +49,9 @@ test('calculadora manual está integrada à seção de Perícias e não rola nem
   assert.match(ficha, /<CalculadoraTesteLocal atributos=\{atributos\}/);
   const calculadora = await ler('CalculadoraTesteLocal.tsx');
   assert.match(calculadora, /calcularTesteManual/);
+  assert.match(calculadora, /modoDados === 'virtuais'/);
+  assert.match(calculadora, /rolagem virtual ainda não foi implementada/);
+  assert.match(ficha, /modoDados=\{configuracaoFuncionamento\.modoDados\}/);
   assert.match(calculadora, /resultado físico do d20/i);
   assert.match(calculadora, /não rola dados, não registra uma rolagem e não altera a ficha/i);
   assert.doesNotMatch(calculadora, /Math\.random|aoSalvar|fetch\(/);
