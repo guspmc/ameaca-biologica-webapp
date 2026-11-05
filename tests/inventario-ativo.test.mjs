@@ -51,4 +51,7 @@ test('validação do inventário ativo rejeita adulteração, colisão e revisã
  const revisao=structuredClone(base);revisao.revisao=-1;
  assert.throws(()=>validarInventarioAtivo(revisao,uuid(103)));
  assert.throws(()=>validarInventarioAtivo(base,uuid(104)));
+ const idInstanciaCompacto=structuredClone(base);
+ idInstanciaCompacto.itens[0].instanciaId='b'.repeat(32);
+ assert.throws(()=>validarInventarioAtivo(idInstanciaCompacto,uuid(103)));
 });
