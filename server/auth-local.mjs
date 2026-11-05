@@ -295,7 +295,7 @@ export function consumirTicketWebSocketLocal(db, ticket) {
   db.exec('BEGIN IMMEDIATE');
   try {
     const registro = db.prepare(`
-      SELECT c.id, c.email
+      SELECT c.id, c.email, s.token_hash AS sessionTokenHash
       FROM tickets_websocket_locais t
       JOIN contas_locais c ON c.id = t.conta_id
       JOIN sessoes_locais s
@@ -306,7 +306,7 @@ export function consumirTicketWebSocketLocal(db, ticket) {
     `).get(agora, ticketHash, agora);
     db.prepare('DELETE FROM tickets_websocket_locais WHERE token_hash = ?').run(ticketHash);
     db.exec('COMMIT');
-    return registro ? { id: registro.id, email: registro.email } : null;
+    return registro ? { id: registro.id, email: registro.email, sessionTokenHash: registro.sessionTokenHash } : null;
   } catch (erro) {
     db.exec('ROLLBACK');
     throw erro;
@@ -449,7 +449,7 @@ export async function tratarRotaAutenticacao(req, res, url, db) {
 }
 
 
-export async function tratarRotaMesas(req, res, url, db) {
+export async function tratarRotaMesas(req, res, url, db, notificarMesa = () => {}, notificarConta = () => {}) {
   const metodo = req.method ?? 'GET';
   const rota = url.pathname;
   if (rota !== '/api/mesas' && !rota.startsWith('/api/mesas/') && rota !== '/api/convites/solicitar') return false;
@@ -567,6 +567,7 @@ export async function tratarRotaMesas(req, res, url, db) {
         }
         db.prepare("INSERT INTO solicitacoes_mesa_locais (id, mesa_id, conta_id, convite_id, status, criada_em) VALUES (?, ?, ?, ?, 'pendente', ?)").run(id, convite.mesa_id, conta.id, convite.id, agora);
         db.exec('COMMIT');
+        notificarMesa(convite.mesa_id, 'requests.changed');
       } catch (erro) {
         db.exec('ROLLBACK');
         throw erro;
@@ -605,6 +606,8 @@ export async function tratarRotaMesas(req, res, url, db) {
         }
         db.prepare('UPDATE solicitacoes_mesa_locais SET status = ?, analisada_em = ?, analisada_por = ? WHERE id = ?').run(acao === 'aprovar' ? 'aprovada' : 'recusada', agora, conta.id, solicitacaoId);
         db.exec('COMMIT');
+        notificarMesa(mesaId, 'membership.changed');
+        notificarConta(pedido.conta_id);
         json(res, 200, { request: { id: solicitacaoId, status: acao === 'aprovar' ? 'aprovada' : 'recusada' } });
         return true;
       } catch (erro) { db.exec('ROLLBACK'); throw erro; }
