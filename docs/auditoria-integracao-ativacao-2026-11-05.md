@@ -54,7 +54,16 @@ A auditoria anterior já registra parte desses itens como pendentes. Não consid
 - A integração deve consultar a conferência e o recibo por meio do serviço já preparado, sem expor a ficha completa ao Mestre.
 - A ativação deve materializar o Inventário uma única vez, na mesma transação que muda o estado; reabrir/editar rascunho nunca materializa.
 
-## 5. Estado
+
+## 6. Verificação complementar do servidor LAN
+
+- A aprovação de ingresso no servidor LAN usa transação `BEGIN IMMEDIATE`, conta jogadores com papel `jogador` e recusa a aprovação quando já existem 10. Isso protege o teto de jogadores no protótipo SQLite.
+- A criação de rascunho é vinculada por chave estrangeira composta a `participantes_mesa`; remoção do vínculo apaga rascunhos por cascata. Testes cobrem isolamento entre conta de jogador, terceiro e Mestre, além de remoção do vínculo.
+- A autenticação local usa hash de senha via scrypt, token aleatório de 32 bytes, armazenamento apenas do hash do token, limitação de tentativas por IP em memória e expiração da sessão em sete dias. Logout remove a sessão no servidor.
+- O servidor declara expressamente que usa HTTP sem proteção de transporte e deve receber apenas dados fictícios em rede privada confiável. Portanto, não é adequado para dados reais de campanha/credenciais até existir transporte seguro e revisão de implantação.
+- Não encontrei rota de remoção de participante/Mesa ou ativação de personagem no protótipo LAN nesta revisão; não presumir que a autorização administrativa esteja completa só porque aprovação de ingresso funciona.
+
+## 7. Estado
 
 - **IMPLEMENTADO:** contratos TypeScript e componentes isolados; proposta SQL local; testes integrados locais.
 - **TESTADO:** CI da branch em `c3983fa` concluiu com sucesso nos fluxos de verificação da ficha offline e compilação.
