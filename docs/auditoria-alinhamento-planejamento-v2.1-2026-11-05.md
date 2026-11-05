@@ -195,3 +195,51 @@ O teste de integração HTTP também passou a iniciar o servidor com bind 0.0.0.
 ### Proteções
 
 Todas as alterações continuam somente na branch feat/offline-first-ficha. Não houve merge, publicação, alteração em main nem modificação no Supabase de produção.
+
+
+## 16. Rechecagem de continuidade e organização paralela — 05/11/2026
+
+### HEAD e CI
+
+Branch inspecionada: `feat/offline-first-ficha`  
+HEAD observado: `cc69b3dcbe6e148a1263c4f43fd2ff1485638f09` (`Atualiza roteiro para menu unificado de testes`).
+
+Os dois workflows deste HEAD concluíram com sucesso:
+- Verificação da ficha offline — run [42112346006](https://github.com/guspmc/ameaca-biologica-webapp/actions/runs/42112346006).
+- Validar compilação do WebApp — run [42112346022](https://github.com/guspmc/ameaca-biologica-webapp/actions/runs/42112346022).
+
+Os jobs executaram testes e builds sem falha. Isso não substitui teste humano em navegador, Windows ou dispositivos conectados à LAN.
+
+### Revisão do salvamento
+
+Na revisão do código em `cc69b3d`, o cliente `src/servidorLocal.ts` usa a mesma `baseUrl` normalizada e o mesmo token para criação, consulta e atualização. A atualização usa `PUT /api/personagens/{id}`, envia `expectedRevision` e só retorna confirmação à interface após resposta positiva. A rota correspondente em `server/personagens-local.mjs` persiste os dados no SQLite e incrementa a revisão.
+
+O teste `tests/cliente-servidor-local.test.mjs` percorre criação, consulta, preflight CORS, PUT, releitura persistida e conflito de revisão. Portanto:
+
+- **IMPLEMENTADO:** caminho cliente → API → SQLite e controle de revisão.
+- **TESTADO AUTOMATICAMENTE:** integração HTTP em processo Node/SQLite de teste e CI verde no HEAD acima.
+- **PENDENTE:** reproduzir a falha original no Chrome real e registrar origem da página, URL de destino, permissão Local Network Access, resultado de preflight/PUT e log do servidor. Não registrar nem compartilhar token de sessão.
+- **HIPÓTESES NÃO CONFIRMADAS:** bloqueio/permissão LNA, endereço LAN incorreto, firewall ou comportamento específico do navegador/rede. Não alterar a API sem evidência.
+
+### Frentes paralelas e referência visual
+
+Por orientação do autor, o desenvolvimento será organizado em frentes paralelas, integradas ao mesmo produto:
+1. Ficha do Jogador — continuidade da ficha única e contínua, com persistência e criação/ativação.
+2. Mesa — acesso local, participantes, convites, aprovação e sincronização LAN.
+3. Painel do Mestre — estrutura operacional conforme os destinos aprovados Mesa/Encontros/Arquivos.
+
+Os arquivos `Ameaca_Biologica_Ficha_Mobile_Prototipo_v02_CONGELADO.html` e `Ameaca_Biologica_Painel_Mestre_Prototipo_v02_CONGELADO.html` permanecem referências visuais obrigatórias. Devem orientar composição, hierarquia, paleta, tipografia, cartões, divisores, ícones, densidade e adaptação mobile; não se importam automaticamente seus antigos fluxos demonstrativos. A ficha continua única e contínua.
+
+### Autenticação e QR Codes
+
+Decisão funcional reiterada pelo autor: autenticação por **Usuário e senha**, sem exigir e-mail, com senha mínima de quatro caracteres conforme v2.1. O código atual ainda utiliza e-mail e senha mínima de 12 caracteres; migração e interface continuam pendentes. A sequência de prioridades da v2.1 permanece: fechar o diagnóstico humano da prioridade 1 antes de implementar a migração de autenticação.
+
+QR Codes aprovados como atalhos de acesso:
+- QR do convite/código da Mesa para facilitar o fluxo de solicitação de ingresso, sem aprovação automática.
+- QR do endereço LAN do Laboratório, apontando para o endereço vigente do host na rede, nunca para `localhost` no celular.
+
+O QR Code não autentica nem concede acesso por si só. Não adicionar infraestrutura externa ou serviços de internet para estes recursos; o cenário previsto é offline/LAN. Permanecem as verificações funcionais de conta, papel e vínculo necessárias ao próprio funcionamento do aplicativo, sem introduzir camadas de segurança desnecessárias.
+
+### Limites de alteração
+
+Este registro não autoriza publicação, merge, alteração de `main`, mudança no Supabase legado ou mudança no cânone do RPG. A implementação deve continuar em incrementos pequenos, com arquivos e testes inspecionados antes de alterar.
