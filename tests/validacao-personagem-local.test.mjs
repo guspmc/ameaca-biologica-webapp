@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { validarPersonagemLocal } from '../src/validacaoPersonagemLocal.ts';
+import { configuracaoInicial } from '../src/funcionamentoFicha.ts';
 
 const base = (dados = { versaoModelo: 1, estadoFicha: 'rascunho' }) => ({
   id: 'claire', geracao: 'geracao-claire', nome: 'Claire Redfield',
@@ -51,6 +52,15 @@ test('valida compras iniciais usando o simulador de inventário existente', () =
   assert.equal(validarPersonagemLocal(base({ ...dados, comprasIniciais: { 'item-desconhecido': 1 } })), false);
   assert.equal(validarPersonagemLocal(base({ ...dados, revisaoCompras: -1 })), false);
 });
+
+test('valida modos e preferências de funcionamento sem aceitar chaves ou valores desconhecidos', () => {
+  const configuracao = configuracaoInicial();
+  assert.equal(validarPersonagemLocal(base({ versaoModelo: 1, estadoFicha: 'rascunho', configuracaoFuncionamento: configuracao })), true);
+  assert.equal(validarPersonagemLocal(base({ versaoModelo: 1, estadoFicha: 'rascunho', configuracaoFuncionamento: { ...configuracao, modo: 'improvisado' } })), false);
+  assert.equal(validarPersonagemLocal(base({ versaoModelo: 1, estadoFicha: 'rascunho', configuracaoFuncionamento: { ...configuracao, preferenciasMisto: { ...configuracao.preferenciasMisto, municao: null } } })), false);
+  assert.equal(validarPersonagemLocal(base({ versaoModelo: 1, estadoFicha: 'rascunho', configuracaoFuncionamento: { ...configuracao, preferenciasMisto: { ...configuracao.preferenciasMisto, biInfectante: 'talvez' } } })), false);
+  assert.equal(validarPersonagemLocal(base({ versaoModelo: 1, estadoFicha: 'rascunho', configuracaoFuncionamento: { ...configuracao, campoExtra: true } })), false);
+ });
 
 test('valida limites da Identidade e preserva campos desconhecidos JSON válidos', () => {
   const dados = {
