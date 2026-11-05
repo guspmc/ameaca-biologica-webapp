@@ -282,3 +282,15 @@ Requisitos:
 2. Revisar todos os pontos de escrita/importação para confirmar que nenhum caminho contorna o contrato compartilhado.
 3. Adicionar casos para registros legados reais e para rascunhos incompletos encontrados no histórico, sem descartar dados.
 4. Depois de estabilizar integridade, retomar ciclo de vida/concorrência e concluir Inventário no mesmo ciclo.
+
+
+## 15. Refinamentos após a primeira integração — HEAD `e162a085`
+
+- A validação de `salvarPatchPersonagem()` ocorre sobre o registro completo já mesclado, antes de chamar `put()`. Em caso de invalidade, a transação é abortada.
+- Atributos exigem exatamente as quatro chaves atuais `forca`, `agilidade`, `vigor` e `astucia`, além de passar por `atributosIniciaisValidos()`.
+- Quando a seção Características está completa, a validação exige Habilidade compatível, equipamento válido e arma válida quando a Origem é Operário.
+- O mapa de compras é verificado pelo simulador existente mesmo antes de haver dados suficientes para validar capacidade; quando o contexto completo existe, também passa por `planejarInventarioCriacao()`.
+- Foram acrescentados testes para atributos extras, arma obrigatória de Operário e patch que produziria registro inválido.
+- A branch contém os commits de implementação e testes até `e162a0854d9ff86f07c3e757cc77e75581ac1f78`.
+
+**Ainda pendente:** executar e confirmar `pnpm test` e `pnpm build` neste estado. O status de checks retornado na consulta ao commit não apresentou verificações; não declarar aprovação. A implementação deve ser tratada como em validação, não como concluída.
