@@ -159,3 +159,11 @@ Estado: auditoria estática concluída; testes de saída/cascata aprovados em d2
 - Contudo, a migration `20261022000200_politicas_rls.sql` concede `INSERT` em `public.mesa_participantes` a `authenticated` e mantém a policy `participantes_adicionar`, que permite ao Mestre inserir jogador diretamente. Esse caminho de API pode contornar qualquer limite implementado apenas dentro da RPC de aprovação.
 - **Implicação:** a correção de limite não pode se restringir a `responder_solicitacao_mesa`. É necessário decidir e testar um único caminho autorizado de inclusão (idealmente RPC transacional) e revogar o INSERT direto/retirar a policy permissiva em migration posterior, preservando o trigger que registra o Mestre e a inclusão feita pela RPC SECURITY DEFINER.
 - Não há INSERT direto no componente atual, mas a permissão SQL existe e é um caminho alternativo real. Nenhuma permissão foi alterada nesta etapa.
+## 13. Proposta de limite transacional de participantes
+
+- Criada `supabase/proposals/limite-participantes-concorrencia.sql` (commit `8f08bea`). A substituicao da RPC mantem autenticacao, autorizacao do Mestre, bloqueio da solicitacao, verificacao de estado pendente e atualizacao atomica.
+- Para aprovacao, a funcao bloqueia a linha da Mesa com `FOR NO KEY UPDATE`, conta somente linhas `papel='jogador'` e rejeita quando ja existem 10 jogadores. O Mestre nao ocupa vaga. A mesma linha da Mesa serializa aprovacoes concorrentes para aquela Mesa.
+- A proposta remove a policy `participantes_adicionar`, revoga INSERT de `authenticated` em `mesa_participantes` e preserva SELECT/DELETE. O trigger `registrar_mestre` e SECURITY DEFINER e permanece responsavel pela inclusao automatica do Mestre.
+- Criado `tests/limite-participantes.test.mjs` (commit `fa2c2b2`) com cenarios de Mesa cheia, solicitacao mantida pendente, INSERT direto negado e aprovacao normal com vaga disponivel.
+- **Pendente:** CI da nova proposta/testes; teste de concorrencia real com duas conexoes PostgreSQL independentes; validar o comportamento de grants/triggers no projeto de teste Supabase antes de propor migration oficial. PGlite sequencial nao prova sozinho a ausencia de corrida.
+- Nenhuma migration oficial, permissao remota ou banco Supabase foi alterado.
