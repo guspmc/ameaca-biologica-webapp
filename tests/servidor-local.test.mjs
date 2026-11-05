@@ -4,6 +4,7 @@ import { mkdtemp, readFile, rm } from 'node:fs/promises';
 import { Script } from 'node:vm';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { createHash, randomBytes } from 'node:crypto';
 import WebSocket from 'ws';
 import { createLocalServer } from '../server/index.mjs';
 
@@ -421,25 +422,23 @@ test('Mestre consulta participantes sem expor e-mail e remove jogador com revoga
 test('aprovações simultâneas respeitam o teto de 10 jogadores da Mesa LAN', async t => {
   const instancia = await criarInstancia(t);
   const origem = 'https://guspmc.github.io';
-  async function conta(email) {
-    const credenciais = { email, password: 'senha-local-comprida-2026' };
-    const cadastro = await fetch(instancia.url + '/api/auth/register', {
-      method: 'POST', headers: { origin: origem, 'content-type': 'application/json' },
-      body: JSON.stringify(credenciais),
-    });
-    assert.equal(cadastro.status, 201);
-    const login = await fetch(instancia.url + '/api/auth/login', {
-      method: 'POST', headers: { origin: origem, 'content-type': 'application/json' },
-      body: JSON.stringify(credenciais),
-    });
-    assert.equal(login.status, 200);
-    const sessao = await login.json();
-    return { account: sessao.account, headers: { origin: origem, authorization: 'Bearer ' + sessao.token } };
+  function conta(email) {
+    const id = randomBytes(16).toString('hex');
+    const token = randomBytes(32).toString('base64url');
+    const agora = new Date();
+    const salt = randomBytes(16).toString('hex');
+    instancia.app.db.prepare(
+      'INSERT INTO contas_locais (id, email, senha_salt, senha_hash, criada_em) VALUES (?, ?, ?, ?, ?)'
+    ).run(id, email, salt, Buffer.alloc(64).toString('hex'), agora.toISOString());
+    instancia.app.db.prepare(
+      'INSERT INTO sessoes_locais (token_hash, conta_id, criada_em, expira_em) VALUES (?, ?, ?, ?)'
+    ).run(createHash('sha256').update(token).digest('hex'), id, agora.toISOString(), new Date(agora.getTime() + 60 * 60 * 1000).toISOString());
+    return { account: { id, email }, headers: { origin: origem, authorization: 'Bearer ' + token } };
   }
 
-  const mestre = await conta('mestre-limite-lan@example.test');
-  const jogadores = await Promise.all(Array.from({ length: 9 }, (_, i) => conta('jogador-limite-' + i + '@example.test')));
-  const candidatos = await Promise.all(Array.from({ length: 2 }, (_, i) => conta('candidato-limite-' + i + '@example.test')));
+  const mestre = conta('mestre-limite-lan@example.test');
+  const jogadores = Array.from({ length: 9 }, (_, i) => conta('jogador-limite-' + i + '@example.test'));
+  const candidatos = Array.from({ length: 2 }, (_, i) => conta('candidato-limite-' + i + '@example.test'));
 
   const criarMesa = await fetch(instancia.url + '/api/mesas', {
     method: 'POST', headers: { ...mestre.headers, 'content-type': 'application/json' },
