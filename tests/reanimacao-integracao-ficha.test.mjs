@@ -24,6 +24,12 @@ test('painel exige resultados manuais e não executa rolagem virtual presumida',
   assert.match(painel, /não rola dados, não avança turnos/);
 });
 
+test('Primeiros Socorros e cura acumulada ficam disponíveis enquanto aguarda o próximo turno', () => {
+  assert.match(painel, /estadoPV0 &&/);
+  assert.match(painel, /Registrar sucesso/);
+  assert.match(painel, /Acumular cura sem despertar/);
+});
+
 test('cura em 0 PV é direcionada à acumulação da Reanimação, sem botão de cura direta', () => {
   assert.match(recursos, /recursos\.pvAtual === 0/);
   assert.match(recursos, /cura deve ser registrada no painel de Reanimação/);
