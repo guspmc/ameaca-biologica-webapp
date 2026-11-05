@@ -35,7 +35,9 @@ A direção recomendada é introduzir uma revisão explícita de ciclo/estado, o
 
 ## 3. Cobertura ainda ausente
 
-Os testes integrados existentes são valiosos, mas os testes lidos não demonstram:
+Os testes integrados existentes são valiosos. Foi acrescentado `tests/ativacao-rollback.test.mjs`, que instala uma trigger de falha durante a inserção de instâncias e verifica que a ficha continua rascunho, sem instâncias, ativação ou materialização registradas. A primeira execução revelou que a função encapsula a falha interna e devolve erro genérico de resultado indisponível; o teste foi ajustado para verificar a rejeição pública e o estado transacional, sem depender da mensagem interna. A nova execução de CI está pendente.
+
+Ainda não demonstram:
 - concorrência real de duas conexões tentando ocupar a décima vaga;
 - ativação concorrente com alteração de Inventário/ciclo;
 - rollback forçado no meio da materialização;
@@ -69,5 +71,6 @@ A auditoria anterior já registra parte desses itens como pendentes. Não consid
 - **TESTADO:** CI da branch em `c3983fa` concluiu com sucesso nos fluxos de verificação da ficha offline e compilação.
 - **CONFIRMADO ESTATICAMENTE:** o servidor LAN persiste somente rascunhos; a UI de ativação ainda não está integrada.
 - **PENDENTE/BLOQUEADOR:** separar revisão estrutural de revisão de ciclo sem quebrar recibos e idempotência.
-- **PENDENTE:** concorrência, rollback forçado, cascatas, RLS real e teste com duas contas.
+- **IMPLEMENTADO, CI PENDENTE:** teste de rollback forçado durante materialização.
+- **PENDENTE:** concorrência, cascatas, RLS real e teste com duas contas.
 - **NÃO REALIZADO:** execução SQL remota, migration aplicada, alteração no Supabase legado, merge, publicação ou ativação em produção.
