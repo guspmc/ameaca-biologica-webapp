@@ -336,13 +336,13 @@ Pré-requisito: CI verde; servidor e frontend LAN iniciados conforme [guia do se
 
 ### A0 — inicializadores Windows (novo pré-teste)
 
-**Implementado na branch; aguarda CI e validação no Windows.** Os atalhos ficam em `scripts/windows/`.
+**Implementado na branch; aguarda CI e validação no Windows.** Os atalhos ficam em `scripts/windows/`. O ponto de entrada recomendado é `Menu_Testes.bat`, que permite iniciar a Ficha Offline, a Mesa LAN ou os dois ambientes.
 
-1. Executar `Verificar_Ambiente.bat`; confirmar Node.js 22.12+ e pnpm 11.25.0 detectados.
-2. Executar `Iniciar_Ficha_Offline.bat`; confirmar compilação concluída e abertura em `http://127.0.0.1:4176/ameaca-biologica-webapp/`. Manter o terminal aberto e encerrar com Ctrl+C.
-3. Com a Ficha ainda aberta, executar `Iniciar_Mesa_LAN.bat`; confirmar que a interface LAN abre em `http://127.0.0.1:4174/ameaca-biologica-webapp/?servidor=local` sem conflito de porta.
-4. Confirmar que surgem duas janelas da Mesa LAN (API e Vite). A API deve escutar apenas em `127.0.0.1:4175`; o Vite é o ponto de entrada da rede local.
-5. Em uma cópia descartável do projeto ou depois de encerrar os testes, ocupar uma das portas e repetir o inicializador LAN. Esperado: aviso de porta ocupada e interrupção sem encerrar processos desconhecidos.
-6. Encerrar cada terminal com Ctrl+C. Confirmar que os processos terminam e que a pasta `.ameaca-local` permanece intacta.
+1. Executar `Menu_Testes.bat` e escolher **Verificar ambiente**; confirmar Node.js 22.12+ e pnpm 11.25.0 detectados.
+2. Escolher **Iniciar os dois ambientes**. A Ficha Offline deve compilar o modo de teste com PWA e abrir em `http://127.0.0.1:4176/ameaca-biologica-webapp/`; a Mesa LAN deve iniciar a API e o Vite em janelas separadas e abrir em `http://127.0.0.1:4174/ameaca-biologica-webapp/?servidor=local`.
+3. Confirmar que as portas são independentes: Ficha Offline 4176; Vite LAN 4174; API SQLite 4175. A API deve escutar apenas em `127.0.0.1:4175`; o Vite é o ponto de entrada da rede local.
+4. Confirmar que cada inicializador aguarda a resposta HTTP real antes de abrir o navegador. Se a porta necessária já estiver ocupada, deve interromper sem encerrar processos desconhecidos.
+5. Confirmar que a preparação compartilhada serializa a instalação de dependências, evitando duas execuções simultâneas de pnpm quando os dois ambientes são iniciados juntos.
+6. Encerrar cada processo com Ctrl+C na janela correspondente. Confirmar que a pasta `.ameaca-local` permanece intacta.
 
-Não usar contas ou dados reais. Os inicializadores não publicam nem alteram bancos remotos. A0 é um teste de conveniência/ambiente; não substitui F1, L1 ou L2.
+Não usar contas ou dados reais. O protótipo LAN usa HTTP sem TLS, somente em rede privada confiável. Os inicializadores não publicam nem alteram bancos remotos. A0 é um teste de conveniência/ambiente; não substitui F1, L1 ou L2.
