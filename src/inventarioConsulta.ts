@@ -32,18 +32,17 @@ function validoEstado(e:unknown,tipo:string):e is EstadoExemplar{
  }
 }
 export function lerInventarioConsulta(v:unknown,personagemId:string):InventarioConsulta{
- const ids=new Set<string>(),posicoes=new Set<number>();
+ const ids=new Set<string>(),faixas:{inicio:number;fim:number}[]=[];
  const invalido=():never=>{throw Error('Inventário não verificado. Consulte novamente antes de continuar.');};
  if(!uuid(personagemId)||!objeto(v)||!chaves(v,['personagemId','revisao','capacidade','itens'])||v.personagemId!==personagemId||!natural(v.revisao)||!natural(v.capacidade)||!Array.isArray(v.itens))return invalido();
  for(const i of v.itens){
   if(!objeto(i)||!chaves(i,['instanciaId','catalogoId','nome','quantidade','espacos','local','posicao','estado'])||!uuid(i.instanciaId)||ids.has(i.instanciaId)||!texto(i.nome)||!texto(i.catalogoId)||!Object.hasOwn(tipos,i.catalogoId)||!positivo(i.quantidade)||!validoEstado(i.estado,tipos[i.catalogoId]))return invalido();
   const limite=i.estado.tipo==='municao'?30:i.estado.tipo==='moedas'?3:1;if(i.quantidade>limite)return invalido();
   if(i.local==='inventario'){
-   if(!positivo(i.espacos)||!natural(i.posicao))return invalido();
-   for(let celula=i.posicao;celula<i.posicao+i.espacos;celula++){
-    if(!Number.isSafeInteger(celula)||posicoes.has(celula))return invalido();
-    posicoes.add(celula);
-   }
+   if(!positivo(i.espacos)||!natural(i.posicao)||!Number.isSafeInteger(i.posicao+i.espacos))return invalido();
+   const fim=i.posicao+i.espacos;
+   if(faixas.some(f=>i.posicao<f.fim&&f.inicio<fim))return invalido();
+   faixas.push({inicio:i.posicao,fim});
   } else if(i.local!=='caracteristico'||i.espacos!==0||i.posicao!==null)return invalido();
   ids.add(i.instanciaId);
  }
