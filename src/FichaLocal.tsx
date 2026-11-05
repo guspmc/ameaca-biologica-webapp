@@ -42,6 +42,7 @@ type DadosFichaLocal = {
   pvAtual?: unknown;
   pvTemporarios?: unknown;
   saAtual?: unknown;
+  reanimacao?: unknown;
 };
 
 type Props = {
