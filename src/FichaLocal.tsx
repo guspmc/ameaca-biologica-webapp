@@ -14,6 +14,7 @@ import IdentidadeLocal from './IdentidadeLocal';
 import FuncionamentoFichaLocal from './FuncionamentoFichaLocal';
 import RevisaoCriacaoLocal from './RevisaoCriacaoLocal';
 import CalculadoraTesteLocal from './CalculadoraTesteLocal';
+import RecursosFichaLocal from './RecursosFichaLocal';
 import type { FichaRevisao } from './conferenciaCriacao';
 import { normalizarConfiguracaoFuncionamento, type ConfiguracaoFuncionamento } from './funcionamentoFicha';
 import { calcularFaseBioInfeccao } from './bioInfeccao';
@@ -34,6 +35,9 @@ type DadosFichaLocal = {
   identidade?: unknown;
   configuracaoFuncionamento?: unknown;
   biAtual?: unknown;
+  pvAtual?: unknown;
+  pvTemporarios?: unknown;
+  saAtual?: unknown;
 };
 
 type Props = {
@@ -49,6 +53,7 @@ type Props = {
   aoSalvarIdentidade?: (dados: { nome: string; identidade: Record<string, string> }) => Promise<boolean>;
   aoSalvarInventario: (dados: { equipamentoInicial: string; comprasIniciais: Record<string, number>; revisaoCompras: number }) => Promise<boolean>;
   aoSalvarFuncionamento: (configuracao: ConfiguracaoFuncionamento) => Promise<boolean>;
+  aoSalvarRecursos: (patch: { pvAtual: number; pvTemporarios: number; saAtual: number; biAtual: number }) => Promise<boolean>;
   origemDados?: 'local' | 'servidor';
   status?: string;
   erro?: string;
@@ -65,7 +70,7 @@ function numero(valor: unknown): number {
   return typeof valor === 'number' && Number.isFinite(valor) ? valor : 0;
 }
 
-export default function FichaLocal({ nome, mesa, dados, aoFechar, aoRecarregar, aoAlterarPendencia, aoEditar, aoSalvarAtributosPericias, aoSalvarCaracteristicas, aoSalvarIdentidade, aoSalvarInventario, aoSalvarFuncionamento, origemDados = 'local', status, erro }: Props) {
+export default function FichaLocal({ nome, mesa, dados, aoFechar, aoRecarregar, aoAlterarPendencia, aoEditar, aoSalvarAtributosPericias, aoSalvarCaracteristicas, aoSalvarIdentidade, aoSalvarInventario, aoSalvarFuncionamento, aoSalvarRecursos, origemDados = 'local', status, erro }: Props) {
   const pendenciasInternas = useRef(new Set<string>());
   function registrarPendencia(secao: string, pendente: boolean) {
     if (aoAlterarPendencia) {
@@ -178,6 +183,16 @@ export default function FichaLocal({ nome, mesa, dados, aoFechar, aoRecarregar, 
           <div><small>BIO-INFECÇÃO</small><strong>{biAtual} / {bi}</strong><span>{faseBi.estado === 'colapso' ? 'Colapso Viral' : faseBi.fase ? 'Fase ' + faseBi.fase : 'Fase indisponível'}</span></div>
           <div><small>DEFESA</small><strong>{defesa}</strong><span>Sem equipamento</span></div>
         </div>
+
+        <RecursosFichaLocal
+          key={JSON.stringify([pv, sa, bi, ficha.pvAtual ?? null, ficha.pvTemporarios ?? null, ficha.saAtual ?? null, ficha.biAtual ?? null])}
+          dados={dados}
+          pvMaximo={pv}
+          saMaximo={sa}
+          biMaximo={bi}
+          aoSalvar={aoSalvarRecursos}
+          aoAlterarPendencia={pendente => registrarPendencia('Recursos', pendente)}
+        />
 
         <nav className="ficha-local-nav" aria-label="Seções da ficha">
           <a href="#ficha-local-caracteristicas">Características</a>
