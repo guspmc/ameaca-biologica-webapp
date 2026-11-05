@@ -1,3 +1,7 @@
+> **DOCUMENTO HISTÓRICO — NÃO EXECUTAR ESTE ROTEIRO.**
+> Este procedimento pertence à arquitetura anterior, baseada em Supabase e cache de fichas autenticadas. Foi substituído para os testes da ficha pessoal offline pelo roteiro [Roteiro humano — Ficha offline local](roteiro-humano-ficha-offline-local.md), e para a Mesa em rede pelo roteiro em [Servidor local — protótipo](servidor-local-prototipo.md).
+> Não use a branch, projeto Supabase, credenciais ou passos descritos abaixo para a rodada atual. O texto foi preservado apenas como histórico de decisões anteriores.
+
 > **Roteiro consolidado e detalhado:** consulte [Rodada offline e notas pessoais](rodada-offline-notas-locais.md). Ele explica o preparo desde o download da pasta até cada clique e resultado esperado. **Não execute ainda**: a rodada será solicitada depois da revisão e dos testes automatizados.
 
 # Teste manual da ficha offline — ambiente local
