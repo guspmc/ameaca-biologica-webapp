@@ -273,3 +273,16 @@ Foram integrados controles de descanso à ficha, ainda sem cronômetro, rolagem 
 
 
 23. Com qualquer seção da ficha em edição não salva, tentar concluir Descanso Parcial ou Completo; confirmar bloqueio até salvar ou descartar a pendência, evitando que o descanso sobrescreva valores ainda não confirmados.
+
+
+### H4 — complemento futuro: Reanimação (em implementação; não testar ainda)
+
+Quando o painel estiver integrado e a CI estiver verde, acrescentar à rodada:
+24. PV chega a 0: personagem fica Desacordada e a Reanimação aguarda o próximo turno; conferir que nenhum Teste é rolado ou presumido automaticamente.
+25. Testes de 0 PV: DT 12, sem modificador salvo regra específica; três sucessos em até cinco tentativas despertam com pelo menos 1 PV. Testar cura recebida durante 0 PV: acumula e só é aplicada ao terceiro sucesso, pelo maior valor entre 1 PV e a cura acumulada.
+26. Três falhas em até cinco tentativas no estado de 0 PV: conferir sinalização de morte e encaminhamento ao registro do Mestre, sem que a interface invente consequências adicionais.
+27. Primeiros Socorros: registrar o resultado final do Teste de Medicina DT 15; somente sucesso concede Vantagem ao próximo Teste de Reanimação, consumida nesse Teste.
+28. BI alcança ou ultrapassa o máximo: Colapso Viral inicia Reanimação imediatamente, mesmo com PV restantes; não aguarda o próximo turno.
+29. Colapso Viral: três sucessos mantêm a personagem Desacordada e sem transformação até a BI ser reduzida abaixo do máximo; três falhas deixam o retorno como Zumbi Especial pendente para o próximo turno.
+30. Origem Cobaia: cada Teste de Reanimação durante Colapso usa Vantagem (dois d20, melhor resultado); confirmar que essa Vantagem não é aplicada à Reanimação por 0 PV.
+31. Fechar/reabrir a ficha nos estados em andamento e terminais; confirmar persistência da causa, sucessos, falhas, tentativas, cura acumulada e Vantagem pendente sem misturar os dois tipos de Reanimação.
