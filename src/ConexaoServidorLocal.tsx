@@ -310,8 +310,8 @@ export default function ConexaoServidorLocal() {
       setMesas(resposta.mesas);
       setAviso('Lista de Mesas atualizada pelo servidor.');
     } catch (problema) {
-      if (problema instanceof ErroServidorLocal && problema.status === 401)
-      if (!sessaoContinuaSendoAtual(geracaoSessao.current, geracaoSolicitada)) return; {
+      if (!sessaoContinuaSendoAtual(geracaoSessao.current, geracaoSolicitada)) return;
+      if (problema instanceof ErroServidorLocal && problema.status === 401) {
         encerrarSessao('A sessão expirou ou foi encerrada no servidor. Entre novamente.');
       } else setErro(problema instanceof Error ? problema.message : 'Não foi possível atualizar as Mesas.');
     } finally { setConsultando(false); }
@@ -486,9 +486,10 @@ export default function ConexaoServidorLocal() {
       setConvitesGerados(atual => ({ ...atual, [mesa.id]: resposta.invitation.code }));
       setAviso('Convite gerado. Copie e compartilhe o código; ele identifica a Mesa, mas não concede acesso automaticamente.');
     } catch (problema) {
-      if (problema instanceof ErroServidorLocal && problema.status === 401)
-      if (!sessaoContinuaSendoAtual(geracaoSessao.current, geracaoSolicitada)) return; encerrarSessao('A sessão expirou ou foi encerrada no servidor. Entre novamente.');
-      else setErro(problema instanceof Error ? problema.message : 'Não foi possível gerar o convite.');
+      if (!sessaoContinuaSendoAtual(geracaoSessao.current, geracaoSolicitada)) return;
+      if (problema instanceof ErroServidorLocal && problema.status === 401) {
+        encerrarSessao('A sessão expirou ou foi encerrada no servidor. Entre novamente.');
+      } else setErro(problema instanceof Error ? problema.message : 'Não foi possível gerar o convite.');
     } finally { setConsultando(false); }
   }
 
@@ -504,9 +505,10 @@ export default function ConexaoServidorLocal() {
         ? 'Convite ativo revogado. Códigos anteriores não permitem novas solicitações; participantes atuais permanecem na Mesa.'
         : 'Não havia convite ativo para revogar.');
     } catch (problema) {
-      if (problema instanceof ErroServidorLocal && problema.status === 401)
-      if (!sessaoContinuaSendoAtual(geracaoSessao.current, geracaoSolicitada)) return; encerrarSessao('A sessão expirou ou foi encerrada no servidor. Entre novamente.');
-      else setErro(problema instanceof Error ? problema.message : 'Não foi possível revogar o convite.');
+      if (!sessaoContinuaSendoAtual(geracaoSessao.current, geracaoSolicitada)) return;
+      if (problema instanceof ErroServidorLocal && problema.status === 401) {
+        encerrarSessao('A sessão expirou ou foi encerrada no servidor. Entre novamente.');
+      } else setErro(problema instanceof Error ? problema.message : 'Não foi possível revogar o convite.');
     } finally { setConsultando(false); }
   }
 
@@ -529,9 +531,10 @@ export default function ConexaoServidorLocal() {
       setSolicitacoes(atual => ({ ...atual, [mesa.id]: resposta.requests }));
       setAviso('Solicitações pendentes consultadas no servidor.');
     } catch (problema) {
-      if (problema instanceof ErroServidorLocal && problema.status === 401)
-      if (!sessaoContinuaSendoAtual(geracaoSessao.current, geracaoSolicitada)) return; encerrarSessao('A sessão expirou ou foi encerrada no servidor. Entre novamente.');
-      else setErro(problema instanceof Error ? problema.message : 'Não foi possível consultar as solicitações.');
+      if (!sessaoContinuaSendoAtual(geracaoSessao.current, geracaoSolicitada)) return;
+      if (problema instanceof ErroServidorLocal && problema.status === 401) {
+        encerrarSessao('A sessão expirou ou foi encerrada no servidor. Entre novamente.');
+      } else setErro(problema instanceof Error ? problema.message : 'Não foi possível consultar as solicitações.');
     } finally { setConsultando(false); }
   }
 
@@ -574,9 +577,10 @@ export default function ConexaoServidorLocal() {
       setCodigoConvite('');
       setAviso('Solicitação enviada. O acesso à Mesa só será liberado após aprovação do Mestre.');
     } catch (problema) {
-      if (problema instanceof ErroServidorLocal && problema.status === 401)
-      if (!sessaoContinuaSendoAtual(geracaoSessao.current, geracaoSolicitada)) return; encerrarSessao('A sessão expirou ou foi encerrada no servidor. Entre novamente.');
-      else setErro(problema instanceof Error ? problema.message : 'Não foi possível solicitar ingresso.');
+      if (!sessaoContinuaSendoAtual(geracaoSessao.current, geracaoSolicitada)) return;
+      if (problema instanceof ErroServidorLocal && problema.status === 401) {
+        encerrarSessao('A sessão expirou ou foi encerrada no servidor. Entre novamente.');
+      } else setErro(problema instanceof Error ? problema.message : 'Não foi possível solicitar ingresso.');
     } finally { setConsultando(false); }
   }
 
@@ -590,8 +594,8 @@ export default function ConexaoServidorLocal() {
       if (resposta.account.id !== sessao.account.id) throw new Error('A conta confirmada não corresponde à sessão atual.');
       setAviso('Sessão válida. O servidor confirmou a conta ' + resposta.account.email + '.');
     } catch (problema) {
-      if (problema instanceof ErroServidorLocal && problema.status === 401)
-      if (!sessaoContinuaSendoAtual(geracaoSessao.current, geracaoSolicitada)) return; {
+      if (!sessaoContinuaSendoAtual(geracaoSessao.current, geracaoSolicitada)) return;
+      if (problema instanceof ErroServidorLocal && problema.status === 401) {
         encerrarSessao('O servidor informou que a sessão expirou ou foi encerrada. Entre novamente.');
       } else setErro(problema instanceof Error ? problema.message : 'Falha ao consultar a sessão.');
     } finally { setConsultando(false); }
