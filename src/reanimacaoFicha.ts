@@ -72,14 +72,14 @@ export function iniciarTurnoReanimacao(r: Reanimacao): Reanimacao {
   return { ...r, estado: 'em_andamento' };
 }
 
-/** Medicina DT 15 bem-sucedida concede Vantagem ao próximo Teste de Reanimação por 0 PV. */
-export function concederAjudaMedicina(r: Reanimacao, resultadoMedicina: number): Reanimacao {
+/** Recebe o resultado final do Teste de Medicina DT 15 (incluindo Treinamento e modificadores); não interpreta um d20 isolado. */
+export function concederAjudaMedicina(r: Reanimacao, testeMedicinaBemSucedido: boolean): Reanimacao {
   validarEstado(r);
   if (r.causa !== 'pv_zero' || r.estado !== 'em_andamento'
-    || !Number.isSafeInteger(resultadoMedicina) || resultadoMedicina < 1 || resultadoMedicina > 20) {
+    || typeof testeMedicinaBemSucedido !== 'boolean') {
     throw new Error('Ajuda de Medicina inválida para este estado.');
   }
-  return { ...r, vantagemProximoTeste: resultadoMedicina >= 15 };
+  return { ...r, vantagemProximoTeste: testeMedicinaBemSucedido };
 }
 
 /** Cura recebida em 0 PV acumula e não desperta antes do terceiro sucesso. */
