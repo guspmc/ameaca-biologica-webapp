@@ -320,6 +320,78 @@ test('autenticação local confirma conta, protege Mesas e revoga a sessão no l
   assert.equal(mesasDepois.status, 401);
 });
 
+
+test('Mestre consulta participantes sem expor e-mail e remove jogador com revogação de acesso e rascunhos', async t => {
+  const instancia = await criarInstancia(t);
+  const origem = 'https://guspmc.github.io';
+  async function conta(email) {
+    const credenciais = { email, password: 'senha-local-comprida-2026' };
+    const cadastro = await fetch(instancia.url + '/api/auth/register', {
+      method: 'POST', headers: { origin: origem, 'content-type': 'application/json' },
+      body: JSON.stringify(credenciais),
+    });
+    assert.equal(cadastro.status, 201);
+    const login = await fetch(instancia.url + '/api/auth/login', {
+      method: 'POST', headers: { origin: origem, 'content-type': 'application/json' },
+      body: JSON.stringify(credenciais),
+    });
+    assert.equal(login.status, 200);
+    const sessao = await login.json();
+    return { account: sessao.account, headers: { origin: origem, authorization: 'Bearer ' + sessao.token } };
+  }
+
+  const mestre = await conta('mestre-gestao-participantes@example.test');
+  const jogador = await conta('jogador-gestao-participantes@example.test');
+  const terceiro = await conta('terceiro-gestao-participantes@example.test');
+  const criarMesa = await fetch(instancia.url + '/api/mesas', {
+    method: 'POST', headers: { ...mestre.headers, 'content-type': 'application/json' },
+    body: JSON.stringify({ name: 'Mesa de participantes' }),
+  });
+  assert.equal(criarMesa.status, 201);
+  const { mesa } = await criarMesa.json();
+  instancia.app.db.prepare('INSERT INTO participantes_mesa (mesa_id, conta_id, papel, entrou_em) VALUES (?, ?, ?, ?)')
+    .run(mesa.id, jogador.account.id, 'jogador', new Date().toISOString());
+
+  const criarRascunho = await fetch(instancia.url + '/api/mesas/' + mesa.id + '/personagens', {
+    method: 'POST', headers: { ...jogador.headers, 'content-type': 'application/json' },
+    body: JSON.stringify({ name: 'Rascunho do jogador', data: { estadoFicha: 'rascunho' } }),
+  });
+  assert.equal(criarRascunho.status, 201);
+  const { personagem } = await criarRascunho.json();
+
+  const listar = await fetch(instancia.url + '/api/mesas/' + mesa.id + '/participantes', { headers: mestre.headers });
+  assert.equal(listar.status, 200);
+  const lista = await listar.json();
+  assert.deepEqual(lista.participants.map(p => p.role), ['mestre', 'jogador']);
+  assert.equal(lista.participants[1].accountId, jogador.account.id);
+  assert.equal(JSON.stringify(lista).includes(jogador.account.email), false);
+  const listarTerceiro = await fetch(instancia.url + '/api/mesas/' + mesa.id + '/participantes', { headers: terceiro.headers });
+  assert.equal(listarTerceiro.status, 404);
+
+  const remocaoJogador = await fetch(instancia.url + '/api/mesas/' + mesa.id + '/participantes/' + jogador.account.id, {
+    method: 'DELETE', headers: mestre.headers,
+  });
+  assert.equal(remocaoJogador.status, 200);
+  assert.deepEqual(await remocaoJogador.json(), { removed: true, accountId: jogador.account.id });
+
+  const mesasJogador = await fetch(instancia.url + '/api/mesas', { headers: jogador.headers });
+  assert.equal(mesasJogador.status, 200);
+  assert.deepEqual((await mesasJogador.json()).mesas, []);
+  const fichaRevogada = await fetch(instancia.url + '/api/personagens/' + personagem.id, { headers: jogador.headers });
+  assert.equal(fichaRevogada.status, 404);
+  const rascunhosRestantes = instancia.app.db.prepare('SELECT COUNT(*) AS total FROM personagens_locais WHERE mesa_id = ?').get(mesa.id);
+  assert.equal(rascunhosRestantes.total, 0);
+
+  const listaFinal = await fetch(instancia.url + '/api/mesas/' + mesa.id + '/participantes', { headers: mestre.headers });
+  assert.equal(listaFinal.status, 200);
+  assert.deepEqual((await listaFinal.json()).participants.map(p => p.role), ['mestre']);
+
+  const tentativaTerceiro = await fetch(instancia.url + '/api/mesas/' + mesa.id + '/participantes/' + jogador.account.id, {
+    method: 'DELETE', headers: terceiro.headers,
+  });
+  assert.equal(tentativaTerceiro.status, 404);
+});
+
 test('CORS aceita apenas origens explicitamente permitidas e responde preflight', async t => {
   const instancia = await criarInstancia(t);
   const origemPermitida = 'https://guspmc.github.io';
