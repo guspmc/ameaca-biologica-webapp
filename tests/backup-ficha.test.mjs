@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { criarBackup, lerArquivoBackup, serializarBackup, validarBackup } from '../src/backupFicha.ts';
 
 const ficha = (id = 'char-1') => ({
-  id, nome: 'Claire Redfield',
+  id, geracao: 'geracao-' + id, nome: 'Claire Redfield',
   criadoEm: '2026-11-03T10:00:00.000Z',
   atualizadoEm: '2026-11-03T11:00:00.000Z',
   dados: { classe: 'Agente', atributos: { forca: 1, agilidade: 2, vigor: 2, astucia: 2 }, recursos: { pv: 12, sa: 4, bi: 10 } },
