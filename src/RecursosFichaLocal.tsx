@@ -12,6 +12,7 @@ type Props = {
 
 export default function RecursosFichaLocal({ dados, pvMaximo, saMaximo, biMaximo, aoSalvar, aoAlterarPendencia }: Props) {
   const [recursos, setRecursos] = useState(() => recursosIniciais(dados, pvMaximo, saMaximo));
+  const [anterior, setAnterior] = useState<RecursosAtuais | null>(null);
   const [ocupado, setOcupado] = useState(false);
   const [mensagem, setMensagem] = useState('');
   const [erro, setErro] = useState('');
@@ -21,6 +22,7 @@ export default function RecursosFichaLocal({ dados, pvMaximo, saMaximo, biMaximo
   const fase = biMaximo <= 0 ? 'Indisponível até concluir a Classe' : recursos.biAtual >= biMaximo ? 'Colapso Viral' : 'Fase ' + (Math.floor(recursos.biAtual * 5 / biMaximo) + 1);
 
   function atualizar(proximo: RecursosAtuais) {
+    setAnterior(recursos);
     setRecursos(proximo);
     aoAlterarPendencia(true);
     setMensagem('');
@@ -41,6 +43,7 @@ export default function RecursosFichaLocal({ dados, pvMaximo, saMaximo, biMaximo
     try {
       if (!await aoSalvar(recursos)) throw new Error('O armazenamento não confirmou a gravação.');
       aoAlterarPendencia(false);
+      setAnterior(null);
       setMensagem('Recursos salvos e confirmados.');
     } catch (e) { setErro(e instanceof Error ? e.message : 'Não foi possível salvar os recursos.'); }
     finally { setOcupado(false); }
@@ -87,6 +90,7 @@ export default function RecursosFichaLocal({ dados, pvMaximo, saMaximo, biMaximo
     {erro && <p className="offline-erro" role="alert">{erro}</p>}
     {mensagem && <p className="offline-status" role="status">{mensagem}</p>}
     <button type="button" className="acao" disabled={ocupado || !valido} onClick={() => void salvar()}>{ocupado ? 'Salvando…' : 'Salvar recursos'} <span>→</span></button>
-    <button type="button" className="botao-claro" disabled={ocupado} onClick={() => { setRecursos(recursosIniciais(dados, pvMaximo, saMaximo)); aoAlterarPendencia(false); setErro(''); setMensagem('Alterações ainda não salvas descartadas.'); }}>Descartar alterações não salvas</button>
+    <button type="button" className="botao-claro" disabled={ocupado || !anterior} onClick={() => { if (anterior) { setRecursos(anterior); setAnterior(null); aoAlterarPendencia(true); setMensagem('Último ajuste desfeito.'); } }}>Desfazer último ajuste</button>
+    <button type="button" className="botao-claro" disabled={ocupado} onClick={() => { setRecursos(recursosIniciais(dados, pvMaximo, saMaximo)); setAnterior(null); aoAlterarPendencia(false); setErro(''); setMensagem('Alterações ainda não salvas descartadas.'); }}>Descartar alterações não salvas</button>
   </details>;
 }
