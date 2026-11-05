@@ -63,6 +63,7 @@ async function importarPersistencia() {
 
 const personagem = () => ({
   id: 'personagem-1',
+  geracao: 'geracao-personagem-1',
   nome: 'Claire',
   criadoEm: '2026-11-01T10:00:00.000Z',
   atualizadoEm: '2026-11-02T10:00:00.000Z',
