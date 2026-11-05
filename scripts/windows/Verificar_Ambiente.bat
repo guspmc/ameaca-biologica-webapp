@@ -56,5 +56,5 @@ if exist "node_modules" (
   echo [AVISO] Dependencias ainda nao instaladas. O inicializador fara isso.
 )
 echo.
-pause
+if /i not "%~1"=="/silencioso" pause
 exit /b 0
