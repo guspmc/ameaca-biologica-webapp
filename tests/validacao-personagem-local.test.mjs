@@ -53,6 +53,14 @@ test('valida compras iniciais usando o simulador de inventário existente', () =
   assert.equal(validarPersonagemLocal(base({ ...dados, revisaoCompras: -1 })), false);
 });
 
+test('valida BI atual como inteiro não negativo quando o campo estiver presente', () => {
+  assert.equal(validarPersonagemLocal(base({ versaoModelo: 1, estadoFicha: 'rascunho', biAtual: 0 })), true);
+  assert.equal(validarPersonagemLocal(base({ versaoModelo: 1, estadoFicha: 'rascunho', biAtual: 8 })), true);
+  assert.equal(validarPersonagemLocal(base({ versaoModelo: 1, estadoFicha: 'rascunho', biAtual: -1 })), false);
+  assert.equal(validarPersonagemLocal(base({ versaoModelo: 1, estadoFicha: 'rascunho', biAtual: 1.5 })), false);
+  assert.equal(validarPersonagemLocal(base({ versaoModelo: 1, estadoFicha: 'rascunho', biAtual: '2' })), false);
+});
+
 test('valida modos e preferências de funcionamento sem aceitar chaves ou valores desconhecidos', () => {
   const configuracao = configuracaoInicial();
   assert.equal(validarPersonagemLocal(base({ versaoModelo: 1, estadoFicha: 'rascunho', configuracaoFuncionamento: configuracao })), true);
