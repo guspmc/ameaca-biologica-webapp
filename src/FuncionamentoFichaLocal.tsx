@@ -46,6 +46,7 @@ export default function FuncionamentoFichaLocal({ inicial, aoSalvar, aoAlterarPe
   return <div className="ficha-local-editor">
     <h3>Funcionamento da ficha</h3>
     <p>Defina como os controles elegíveis deverão operar. Esta configuração não executa ações, rolagens ou alterações de recursos por conta própria.</p>
+    <p>O método de dados (Físicos, Virtuais ou Mistos) e as preferências de visibilidade/histórico serão configurados no módulo de rolagens; ainda não estão implementados aqui.</p>
     <label>Modo de funcionamento
       <select value={config.modo} disabled={ocupado} onChange={evento => atualizar({ ...config, modo: evento.target.value as ModoFuncionamento })}>
         <option value="automatico">Automático</option>
