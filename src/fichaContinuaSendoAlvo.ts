@@ -19,3 +19,8 @@ export function fichaContinuaSendoAlvo<T extends FichaAbertaLocal>(
     atual.personagem.id === alvo.personagemId
   );
 }
+
+/** Rejeita respostas pertencentes a uma sessão anterior, mesmo se a conta e a ficha forem as mesmas. */
+export function sessaoContinuaSendoAtual(geracaoAtual: number, geracaoSolicitada: number): boolean {
+  return Number.isSafeInteger(geracaoAtual) && Number.isSafeInteger(geracaoSolicitada) && geracaoAtual === geracaoSolicitada;
+}
