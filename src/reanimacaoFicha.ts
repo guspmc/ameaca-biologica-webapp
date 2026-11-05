@@ -30,14 +30,13 @@ const inteiroNaoNegativo = (v: unknown): v is number =>
 export function reanimacaoValida(valor: unknown): valor is Reanimacao {
   if (!valor || typeof valor !== 'object' || Array.isArray(valor)) return false;
   const r = valor as Reanimacao;
-  return !(!r || !['pv_zero', 'colapso_bi'].includes(r.causa)
-    || !['aguardando_proximo_turno', 'em_andamento', 'desacordada_ate_reducao_bi', 'morte_a_registrar', 'transformacao_no_proximo_turno', 'concluida'].includes(r.estado)
-    || !inteiroNaoNegativo(r.sucessos) || !inteiroNaoNegativo(r.falhas)
-    || !inteiroNaoNegativo(r.tentativas) || !inteiroNaoNegativo(r.curaAcumulada)
-    || r.sucessos > 3 || r.falhas > 3 || r.tentativas > 5
-    || r.sucessos + r.falhas !== r.tentativas
-    || typeof r.vantagemProximoTeste !== 'boolean') {
-    || false);
+  return ['pv_zero', 'colapso_bi'].includes(r.causa)
+    && ['aguardando_proximo_turno', 'em_andamento', 'desacordada_ate_reducao_bi', 'morte_a_registrar', 'transformacao_no_proximo_turno', 'concluida'].includes(r.estado)
+    && inteiroNaoNegativo(r.sucessos) && inteiroNaoNegativo(r.falhas)
+    && inteiroNaoNegativo(r.tentativas) && inteiroNaoNegativo(r.curaAcumulada)
+    && r.sucessos <= 3 && r.falhas <= 3 && r.tentativas <= 5
+    && r.sucessos + r.falhas === r.tentativas
+    && typeof r.vantagemProximoTeste === 'boolean';
 }
 
 function validarEstado(r: Reanimacao): void {
