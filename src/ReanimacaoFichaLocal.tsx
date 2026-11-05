@@ -99,7 +99,7 @@ export default function ReanimacaoFichaLocal({ dados, recursos, origem, pvMaximo
     if (!reanimacao) return;
     try {
       await persistir(concederAjudaMedicina(reanimacao, sucesso));
-      if (falhaCritica) setMensagem('1 natural no Teste de Medicina: Falha Crítica e Exposto. Registre a Condição conforme a regra; o painel não administra Condições automaticamente.');
+      if (falhaCritica) setMensagem('1 natural no Teste de Medicina: Falha Crítica e Exposto para quem realizou o Teste. Registre a Condição na ficha dessa pessoa; o painel da personagem em Reanimação não administra Condições automaticamente.');
     } catch (e) { setErro(e instanceof Error ? e.message : 'Não foi possível registrar o Teste de Medicina.'); }
   }
 
