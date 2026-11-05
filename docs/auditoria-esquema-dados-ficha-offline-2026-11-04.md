@@ -325,7 +325,7 @@ As alterações estão commitadas na branch de trabalho até `0f4c037fe6f560da1e
 
 - Executar a suíte e o build em um runner real.
 - Se aprovados, auditar o ciclo integrado de criação, salvamento parcial, reabertura, backup, cópia e restauração.
-- Depois, tratar explicitamente a geração do conjunto local em substituições multiaba e avançar para o Inventário funcional.
+- Depois, homologar em duas abas reais a mesclagem de patches e a invalidação por `geracao` após restauração, e avançar para o Inventário funcional.
 
 
 ## 17. Correção do registro histórico de concorrência — HEAD `0f4c037f`
