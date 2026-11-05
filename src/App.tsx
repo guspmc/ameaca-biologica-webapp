@@ -7,6 +7,7 @@ import Participantes from './Participantes';
 import FichasJogador from './FichasJogador';
 import { chavePublica, urlPermitida, escolherConexao, URL_PRODUCAO, type Conexao } from './conexao';
 import { atualizarAutorizacaoOffline, limparCacheUsuario, lerMesasOffline } from './offlineCache';
+import { erroExigeBloqueioCache } from './erroAutorizacaoCache';
 
 type Mesa = { id: string; nome: string; mestre_id: string; criada_em: string };
 type Modo = 'entrar' | 'cadastrar';
@@ -205,12 +206,19 @@ function Lobby({ supabase, sessao }: { supabase: SupabaseClient; sessao: Session
         .select('id, nome, mestre_id, criada_em')
         .order('criada_em',{ascending:false});
       if (error) {
-        const cache = cacheOfflineBloqueado ? null : await lerMesasOffline(sessao.user.id).catch(() => null);
-        if (cache) {
-          setMesas(cache.dados); setMesasCacheAtualizadoEm(cache.atualizadoEm);
-          setErro('Conexão com o servidor indisponível. Exibindo a cópia local, que pode estar desatualizada.');
+        if (erroExigeBloqueioCache(error)) {
+          setCacheOfflineBloqueado(true);
+          try { localStorage.setItem(chaveBloqueioCache, '1'); } catch { /* Bloqueio em memória permanece. */ }
+          setMesas([]); setMesasCacheAtualizadoEm(null);
+          setErro('O servidor recusou a consulta por autenticação ou permissão. Reconecte-se e confirme o acesso antes de consultar o cache local.');
         } else {
-          setMesas([]); setErro('Erro ao carregar Mesas: ' + error.message);
+          const cache = cacheOfflineBloqueado ? null : await lerMesasOffline(sessao.user.id).catch(() => null);
+          if (cache) {
+            setMesas(cache.dados); setMesasCacheAtualizadoEm(cache.atualizadoEm);
+            setErro('Conexão com o servidor indisponível. Exibindo a cópia local, que pode estar desatualizada.');
+          } else {
+            setMesas([]); setErro('Erro ao carregar Mesas: ' + error.message);
+          }
         }
         setSomenteLeituraOffline(true);
       } else {
@@ -228,7 +236,14 @@ function Lobby({ supabase, sessao }: { supabase: SupabaseClient; sessao: Session
           setErro('Acesso online confirmado, mas não foi possível atualizar a autorização do cache local. A consulta offline ficará bloqueada até nova confirmação.');
         }
       }
-    } catch {
+    } catch (falha) {
+      if (erroExigeBloqueioCache(falha)) {
+        setCacheOfflineBloqueado(true);
+        try { localStorage.setItem(chaveBloqueioCache, '1'); } catch { /* Bloqueio em memória permanece. */ }
+        setMesas([]); setMesasCacheAtualizadoEm(null);
+        setErro('O servidor recusou a consulta por autenticação ou permissão. Reconecte-se e confirme o acesso antes de consultar o cache local.');
+        setSomenteLeituraOffline(true);
+      } else {
       const cache = cacheOfflineBloqueado ? null : await lerMesasOffline(sessao.user.id).catch(() => null);
       if (cache) {
         setMesas(cache.dados); setMesasCacheAtualizadoEm(cache.atualizadoEm);
@@ -240,6 +255,7 @@ function Lobby({ supabase, sessao }: { supabase: SupabaseClient; sessao: Session
           : 'Sem resposta do servidor e sem cópia local disponível.');
       }
       setSomenteLeituraOffline(true);
+      }
     } finally {
       if (!silencioso) setCarregando(false);
     }
