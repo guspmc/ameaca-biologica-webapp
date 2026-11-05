@@ -4,7 +4,7 @@ Branch: `feat/offline-first-ficha`
 
 ## Escopo e fontes
 
-Esta auditoria verifica somente o que o código atual implementa para a criação e a prévia do Inventário. O Planejamento v2.0 anexado descreve também o Inventário ativo, Baú, uso, combinação, equipamento, Peças e estoques de missão. O Planejamento v2.1 mencionado pelo usuário não está anexado nesta sessão; portanto, esta auditoria não o substitui nem presume que todo o detalhamento de v2.0 permaneça inalterado.
+Esta auditoria verifica o que o código implementa para a criação/prévia do Inventário e registra o ponto de partida para o Inventário ativo. Fontes: Arquivo do Jogador v1.0 (cânone) e Planejamento Mestre v2.1 anexado nesta sessão. O Planejamento v2.1 prevalece sobre o v2.0 nos pontos alterados; o v2.0 é apenas referência histórica quando não houver divergência.
 
 ## Implementado no código atual
 
@@ -90,7 +90,7 @@ Revisão do caminho atual em `FichaLocal.tsx`, `EditorInventarioLocal.tsx`, `Pre
 
 ## Referência de regras para a etapa futura
 
-O Arquivo do Jogador v1.0 e o Planejamento v2.0 anexados descrevem regras que deverão orientar a auditoria do Inventário ativo, sem presumir que a versão v2.1 ausente não as tenha alterado:
+O Arquivo do Jogador v1.0 e o Planejamento v2.1 orientam o Inventário ativo:
 - Inventário cheio impede carregar novos itens, mas permite examiná-los; itens excedentes em mãos impedem outras Ações até serem resolvidos.
 - Itens sem Espaços próprios ocupam 1 Espaço, salvo regra específica.
 - Bolsa e Pochete não acumulam; aplica-se o maior benefício. Bolsa concede +3 Espaços e Pochete +2; o Planejamento v2.0 trata a expansão ativa em espaço dedicado, vinculada permanentemente, com upgrade e retorno da expansão anterior como item comum.
@@ -98,3 +98,18 @@ O Arquivo do Jogador v1.0 e o Planejamento v2.0 anexados descrevem regras que de
 - O Planejamento v2.0 também descreve comandos contextuais de Usar, Equipar/Remover e instalação de Peças, mas seus efeitos, custos, requisitos e exceções precisam ser conferidos no Arquivo do Jogador e nas decisões posteriores antes da implementação.
 
 A grade ativa não deve ser iniciada como simples extensão do array `ItemCriacao`: o modelo atual representa uma projeção determinística de criação, sem ciclo de vida de item ativo, histórico ou operações transacionais.
+
+
+## 10. Lógica de expansão e moedas — 05/11/2026
+
+Foi acrescentado o módulo puro src/inventarioExpansao.ts, ainda sem ligação à interface ou à persistência de um Inventário ativo.
+
+- Capacidade ativa: base 4 + FOR + bônus de Mochileiro; Pochete acrescenta +2 ou Bolsa +3, sem acumular os dois benefícios.
+- Pochete pode evoluir para Bolsa; ao evoluir, a Pochete retorna como item comum de 1 Espaço.
+- A expansão equipada é vinculada: não pode ser removida nem sofrer downgrade de Bolsa para Pochete.
+- Bloco de Moedas Antigas aceita de 1 a 3 unidades por Espaço; não há transbordamento automático.
+- Testes cobrem capacidade base, Mochileiro, Pochete/Bolsa, não cumulatividade, upgrade, item retornado, bloqueio de remoção/downgrade e limites do bloco de moedas.
+
+**Validação automatizada:** commit 3fbfbc5477f075ea2d7dd5bab6c25bc43a7d5005 — 401/401 testes, TypeScript, build Vite e verificações PostgreSQL aprovados.
+
+**Limite importante:** esta é lógica de domínio isolada. Ainda não existe grade ativa, item ativo persistido, UI de equipar/guardar/descartar, nem ciclo de vida da expansão. Não declarar o Inventário ativo implementado. Nenhum teste humano foi realizado.

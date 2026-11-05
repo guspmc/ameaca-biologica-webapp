@@ -303,3 +303,21 @@ Commit 9a8b45d519cf664402e6b88fc4418a61f5904305: ambos os workflows concluíram 
 **IMPLEMENTADO E TESTADO AUTOMATICAMENTE:** persistência local/servidor das preferências de modo de dados e visibilidade; padrões Mistos/Pública; compatibilidade com configuração antiga; validação compartilhada na pré-ativação.
 
 **PENDENTE:** geração de dados virtuais, fluxo misto de rolagem, registro/histórico, visibilidade efetiva de registros e permissões. A calculadora existente continua limitada a resultados físicos informados manualmente.
+
+
+## 20. Fundamentos do Inventário ativo — 05/11/2026
+
+Foi iniciado, em paralelo, o núcleo de regras para expansão de capacidade e blocos de moedas, em src/inventarioExpansao.ts. O módulo é puro e testado, mas ainda não está ligado à ficha nem a uma entidade de item ativo.
+
+- Capacidade: 4 + FOR + Mochileiro + benefício de uma única expansão (Pochete +2 ou Bolsa +3).
+- A expansão fica em espaço dedicado, vinculada; Pochete pode evoluir para Bolsa e retorna como item comum de 1 Espaço; remoção e downgrade são recusados.
+- Blocos de Moedas: 1–3 por Espaço, sem transbordamento automático.
+- Baú permanece adiado para a integração final via Laboratório LAN, conforme decisão do usuário.
+
+### Evidência automatizada
+
+Commit 3fbfbc5477f075ea2d7dd5bab6c25bc43a7d5005: ambos os workflows concluíram com sucesso; **401/401 testes aprovados**, TypeScript, build Vite e verificações PostgreSQL aprovados.
+
+**IMPLEMENTADO E TESTADO AUTOMATICAMENTE:** regras isoladas de capacidade ativa, expansão e bloco de moedas.
+
+**AINDA NÃO IMPLEMENTADO:** grade ativa, catálogo integral, instâncias persistidas, operações Usar/Equipar/Guardar/Descartar, Peças, combinações, melhorias, recuperação do Hatchet e integração de estado. O módulo atual não deve ser apresentado como Inventário ativo funcional.
