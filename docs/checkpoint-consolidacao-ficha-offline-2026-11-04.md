@@ -5,7 +5,8 @@
 **Branch de trabalho:** `feat/offline-first-ficha`  
 **HEAD conferido na atualização inicial:** `a90f6aff65500a1558d48d0ba1c1a0321e01a847`  
 **HEAD após primeira implementação da validação:** `07e185a81184a8be563bb7c1d2e460934e83410a`  
-**HEAD após refinamentos e testes adicionais:** `e162a0854d9ff86f07c3e757cc77e75581ac1f78`  
+**HEAD após primeira implementação/refinamentos:** `e162a0854d9ff86f07c3e757cc77e75581ac1f78`  
+**HEAD após segunda revisão da validação incremental:** `0f4c037fe6f560da1e5a21c909e3e23909155da3`  
 **Commit com CI completo anteriormente comprovado:** `71bc332c0dfbb9adcc24d0418eae33834b822794`
 
 > Este checkpoint registra o estado observado nesta data. Não autoriza merge, publicação, alteração de `main` ou mudanças no Supabase de produção.
@@ -145,6 +146,16 @@ A proposta de contrato compartilhado da seção 13 do documento `auditoria-esque
 - A auditoria do contrato local evoluiu para uma implementação inicial de validador compartilhado entre IndexedDB e backup.
 - O patch de salvamento passou a validar o registro mesclado antes de confirmar a transação.
 - Testes específicos foram adicionados/ajustados para refletir o contrato atual.
-- Referência detalhada: `docs/auditoria-esquema-dados-ficha-offline-2026-11-04.md`, seção 14.
+- Referência detalhada: `docs/auditoria-esquema-dados-ficha-offline-2026-11-04.md`, seções 14 a 16.
 - **CI/build no HEAD `e162a085`: pendente de confirmação.** Não considerar os testes aprovados até obter o resultado do workflow correspondente.
 - **Testes humanos:** ainda não iniciados, conforme decisão do usuário; solicitar somente após concluir verificações técnicas e Inventário.
+
+
+## 11. Revisão adicional — 05/11/2026
+
+- A validação incremental agora verifica nomes de Perícia e compatibilidade com Origem mesmo antes de a seção estar completa.
+- A proteção JSON-safe agora rejeita estruturas que seriam descartadas ou transformadas silenciosamente pelo backup JSON.
+- Os imports da cadeia do planejador de inventário foram ajustados para a resolução ESM do runner Node.
+- Foram acrescentados testes específicos para esses casos.
+- HEAD de código após esses ajustes: `0f4c037fe6f560da1e5a21c909e3e23909155da3`.
+- **Execução de `pnpm test` e `pnpm build`: não confirmada.** O conector consultado não retornou status nem workflow runs associados ao commit. A validação permanece pendente; não iniciar homologação humana ainda.
