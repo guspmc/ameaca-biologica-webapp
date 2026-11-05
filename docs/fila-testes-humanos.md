@@ -150,3 +150,58 @@ Confirmação explícita dos dez casos T14.1–T14.4 e T15.1–T15.6, com 30 cap
 ## 26/10/2026 — preparação para celular físico
 
 Prévia estática de interfaces fictícias preparada e servida em IPv4 privado, sem firewall ou publicação externa. MC1–MC4 em [teste-celular.md](teste-celular.md), fora da fila comum, que permanece 0/10. Acesso do aparelho ainda não confirmado; teste no PC não certifica conectividade/toque/teclado/rotação. T14/T15 continuam aprovados. Relatório: [previa-celular-local.md](previa-celular-local.md).
+
+
+## 05/11/2026 — nova fila: prioridade 1 LAN e salvamento de rascunho
+
+Por orientação do Gus, continuar primeiro as pendências técnicas e agrupar os testes humanos para o final, antecipando apenas validações críticas. Não solicitar execução enquanto a preparação técnica e a auditoria de segurança não estiverem concluídas.
+
+### H1 — acesso do navegador ao servidor local (CRÍTICO; bloqueia encerramento da prioridade 1)
+
+**Pré-requisitos técnicos:** CI aprovado no commit `99bffe2`; correções CORS PUT/DELETE e declaração `targetAddressSpace` implementadas. Falta confirmar o fluxo no Chrome real. O teste deverá usar apenas conta/Mesa/personagem fictícias e rede privada confiável; o servidor ainda usa HTTP sem TLS.
+
+Casos a agrupar:
+1. Iniciar o frontend de desenvolvimento e o servidor Node com bind LAN explícito; informar no formulário o IP LAN real do PC servidor, não `localhost` quando o alvo for a interface de rede.
+2. Confirmar se o Chrome apresenta a solicitação de acesso à rede local quando aplicável; conceder e verificar a saúde do servidor. Registrar origem, destino, prompt e resultado, sem capturar tokens.
+3. Recusar a permissão em perfil/janela de teste isolada e confirmar que o app apresenta erro compreensível, sem declarar conexão ou salvamento concluído; depois conceder a permissão e repetir.
+4. Cadastrar/entrar com conta experimental, criar Mesa e personagem rascunho, abrir a ficha, alterar um campo e salvar.
+5. Confirmar que a interface só informa confirmação após resposta do servidor; atualizar a página, autenticar novamente e reabrir o rascunho para verificar o valor persistido.
+6. Com o servidor parado ou inacessível, tentar salvar uma alteração e confirmar que a interface não anuncia sucesso nem perde silenciosamente a edição local. Reiniciar o servidor e repetir conscientemente.
+7. Confirmar no terminal do servidor que a requisição PUT chega; correlacionar método/status sem registrar cabeçalhos de autorização ou tokens.
+
+**Limite:** a sessão ainda é mantida somente em memória no navegador. F5/fechamento encerra o estado de autenticação do cliente; isso é uma divergência conhecida da prioridade 2 e não deve ser confundida com falha de persistência do rascunho. Não testar recuperação de sessão nesta rodada.
+
+### H2 — autenticação e sessão local (depois da correção da prioridade 1)
+
+Enfileirado, ainda sem execução:
+- cadastro/login com nickname exclusivo, sem e-mail;
+- senha mínima de quatro caracteres, sem regras extras não aprovadas;
+- persistência de sessão após recarga e fechamento/reabertura normais;
+- logout voluntário, sessão expirada/revogada e troca de endereço do servidor;
+- isolamento entre duas contas distintas e rejeição de acesso a Mesa/personagem alheia.
+
+**Bloqueio:** não iniciar implementação nem teste humano antes de encerrar H1 e revisar o contrato de segurança da sessão persistida.
+
+### H3 — convites curtos, QR e remoção de rascunho
+
+Enfileirado após H2:
+- convite curto válido, inválido, expirado, revogado e colisão/renovação;
+- QR abre a página de login usando o endereço LAN real do servidor, nunca `localhost` no dispositivo remoto;
+- remoção de rascunho pelo proprietário, com confirmação;
+- tentativa de remoção por outra conta/Mestre e proteção de personagens ativos/arquivados.
+
+**Bloqueio:** a política de alfabeto/tamanho/colisão do convite e a regra de recuperação de conta sem e-mail precisam estar implementadas e cobertas tecnicamente antes da rodada.
+
+### H4 — inventário integrado e dispositivos móveis
+
+Permanece agrupado para etapa posterior, sem antecipar o Baú:
+- kits A/B/C, aplicação do plano, salvamento e reabertura;
+- falhas e alternância de kit sem sobrescrever estado confirmado;
+- operações do inventário ativo quando implementadas;
+- navegação contínua, teclado, rolagem, toque, orientação e legibilidade em celular físico.
+
+**Baú:** fora desta rodada; permanece adiado para a integração final via LAN, conforme decisão aprovada.
+
+### Política da fila
+
+Nenhum caso acima está marcado como TESTADO por estar descrito aqui. H1 é o único ponto que poderá interromper o trabalho autônomo antes do fechamento de outras pendências, por ser a validação crítica do caminho de salvamento. H2–H4 serão chamados em rodadas agrupadas quando seus pré-requisitos técnicos estiverem concluídos. Casos já aprovados em rodadas antigas não serão repetidos sem mudança relevante.
