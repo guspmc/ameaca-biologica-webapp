@@ -108,6 +108,13 @@ export async function tratarRotaPersonagensLocal(req, res, url, db, notificarCon
           responder(res, 422, { error: 'Informe um nome de até 80 caracteres e os dados do rascunho como objeto JSON.' });
           return true;
         }
+        const quantidadeRascunhos = db.prepare(
+          'SELECT COUNT(*) AS total FROM personagens_locais WHERE mesa_id = ? AND conta_id = ?'
+        ).get(mesaId, conta.id).total;
+        if (quantidadeRascunhos >= 3) {
+          responder(res, 409, { error: 'Você já possui o limite de três rascunhos nesta Mesa.' });
+          return true;
+        }
         const id = randomBytes(16).toString('hex');
         const agora = new Date().toISOString();
         db.prepare(`
