@@ -34,6 +34,12 @@ export type ConviteMesaLocal = {
   createdAt: string;
 };
 
+export type ParticipanteMesaLocal = {
+  accountId: string;
+  role: 'mestre' | 'jogador';
+  joinedAt: string;
+};
+
 export type SolicitacaoMesaLocal = {
   id: string;
   status: 'pendente';
@@ -216,6 +222,18 @@ export function criarClienteServidorLocal({ baseUrl, token, fetcher = fetch }: O
       return requisicao(`/api/mesas/${id}`, { autenticada: true });
     },
 
+
+    listarParticipantes(mesaId: string): Promise<{ participants: ParticipanteMesaLocal[] }> {
+      if (!/^[a-f0-9]{32}$/.test(mesaId)) throw new Error('Identificador de Mesa inválido.');
+      return requisicao(`/api/mesas/${mesaId}/participantes`, { autenticada: true });
+    },
+
+    removerParticipante(mesaId: string, accountId: string): Promise<{ removed: true; accountId: string }> {
+      if (!/^[a-f0-9]{32}$/.test(mesaId) || !/^[a-f0-9]{32}$/.test(accountId)) {
+        throw new Error('Identificador inválido.');
+      }
+      return requisicao(`/api/mesas/${mesaId}/participantes/${accountId}`, { metodo: 'DELETE', autenticada: true });
+    },
 
     criarConvite(mesaId: string): Promise<{ invitation: ConviteMesaLocal }> {
       if (!/^[a-f0-9]{32}$/.test(mesaId)) throw new Error('Identificador de Mesa inválido.');
