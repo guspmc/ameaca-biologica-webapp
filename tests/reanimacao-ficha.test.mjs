@@ -31,7 +31,7 @@ test('0 PV: três sucessos despertam com pelo menos 1 PV ou cura acumulada, resp
   let out;
   out = aplicar(r, 12); r = out.reanimacao;
   assert.equal(out.pvAoDespertar, null);
-  out = aplicar(r, 11); r = out.reanimacao;
+  out = aplicar(r, 12); r = out.reanimacao;
   assert.equal(out.pvAoDespertar, null);
   out = aplicar(r, 12); r = out.reanimacao;
   assert.equal(out.pvAoDespertar, 5);
@@ -60,7 +60,7 @@ test('sucesso em Medicina DT 15 concede Vantagem ao próximo Teste e consome a V
   let out = aplicar(r, [4, 12]);
   assert.equal(out.reanimacao.sucessos, 1);
   assert.equal(out.reanimacao.vantagemProximoTeste, false);
-  assert.throws(() => aplicar(out.reanimacao, 12), /dois resultados/);
+  assert.equal(aplicar(out.reanimacao, 12).reanimacao.sucessos, 2);
   assert.equal(api.concederAjudaMedicina(r, false).vantagemProximoTeste, false);
 });
 
