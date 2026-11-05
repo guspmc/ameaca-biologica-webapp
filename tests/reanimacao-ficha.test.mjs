@@ -60,7 +60,7 @@ test('Medicina DT 15 concede Vantagem ao próximo Teste e consome a Vantagem', (
   let out = aplicar(r, [4, 12]);
   assert.equal(out.reanimacao.sucessos, 1);
   assert.equal(out.reanimacao.vantagemProximoTeste, false);
-  assert.throws(() => aplicar(out.reanimacao, 12), /um resultado/);
+  assert.throws(() => aplicar(out.reanimacao, 12), /dois resultados/);
   assert.equal(api.concederAjudaMedicina(r, 14).vantagemProximoTeste, false);
 });
 
