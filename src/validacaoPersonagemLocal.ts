@@ -23,20 +23,45 @@ export type OpcoesValidacaoPersonagem = {
 /** Garante que dados conhecidos e futuros possam atravessar o backup JSON sem perda silenciosa. */
 function valorJsonSeguro(valor: unknown, visitados = new Set<object>()): boolean {
   if (valor === null || typeof valor === 'string' || typeof valor === 'boolean') return true;
-  if (typeof valor === 'number') return Number.isFinite(valor);
+  if (typeof valor === 'number') return Number.isFinite(valor) && !Object.is(valor, -0);
   if (typeof valor !== 'object') return false;
   if (visitados.has(valor)) return false;
   visitados.add(valor);
+
+  const chaves = Reflect.ownKeys(valor);
+  if (chaves.some(chave => typeof chave !== 'string')) {
+    visitados.delete(valor);
+    return false;
+  }
+
   if (Array.isArray(valor)) {
+    // JSON transforma lacunas em null e ignora propriedades extras do array.
+    if (chaves.some(chave => chave !== 'length'
+      && (!/^\\d+$/.test(chave as string) || Number(chave) >= valor.length))
+      || Array.from({ length: valor.length }, (_, indice) => Object.prototype.hasOwnProperty.call(valor, indice)).some(existe => !existe)) {
+      visitados.delete(valor);
+      return false;
+    }
     const valido = valor.every(item => valorJsonSeguro(item, visitados));
     visitados.delete(valor);
     return valido;
   }
+
   const prototipo = Object.getPrototypeOf(valor);
-  if (prototipo !== Object.prototype && prototipo !== null) return false;
-  const valido = Object.values(valor as Record<string, unknown>).every(item => valorJsonSeguro(item, visitados));
+  if (prototipo !== Object.prototype && prototipo !== null) {
+    visitados.delete(valor);
+    return false;
+  }
+  for (const chave of chaves as string[]) {
+    const descritor = Object.getOwnPropertyDescriptor(valor, chave);
+    if (!descritor?.enumerable || !('value' in descritor)
+      || !valorJsonSeguro(descritor.value, visitados)) {
+      visitados.delete(valor);
+      return false;
+    }
+  }
   visitados.delete(valor);
-  return valido;
+  return true;
 }
 
 function objeto(valor: unknown): valor is Record<string, unknown> {
