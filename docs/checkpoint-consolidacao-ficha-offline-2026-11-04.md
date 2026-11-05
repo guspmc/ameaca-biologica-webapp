@@ -247,3 +247,23 @@ A pedido do usuário, o trabalho funcional da ficha avançou em paralelo à prio
 **TESTES HUMANOS:** adicionados à etapa H4, agrupados para o final. Nenhum foi realizado nesta etapa.
 
 Nenhuma publicação, merge, alteração em main ou mudança no Supabase de produção.
+
+
+## 17. Calculadora manual de Testes — 05/11/2026
+
+Foi implementada uma calculadora de conferência em src/testes.ts e src/CalculadoraTesteLocal.tsx, integrada à seção Atributos e Perícias.
+
+- Permite escolher Teste de Perícia ou Teste puro de Atributo.
+- Perícia utiliza o valor já calculado (Atributo associado + Treinamento); o Atributo não é somado novamente.
+- Recebe modificador circunstancial e DT; aceita tarefa Impossível sem pedir rolagem.
+- Em rolagem Normal recebe um resultado físico de d20; com Vantagem/Desvantagem recebe dois e escolhe o melhor/pior.
+- Trata 20 natural como sucesso automático quando possível; 1 natural como Falha Crítica e Exposto, salvo regra específica.
+- A ferramenta não gera dados aleatórios, não grava histórico, não altera ficha/recursos e não executa ações.
+
+### Evidência automatizada
+
+Commit ab313a7c84cec825d368ba3ed6743ee413eabd4b: os dois workflows do GitHub Actions concluíram com sucesso; **395/395 testes aprovados**, TypeScript, build Vite e verificações PostgreSQL concluídos.
+
+**HUMAN TESTED:** não. A validação de interface continua enfileirada em H4, junto com as preferências, valores de Perícia/Passivo, BI e revisão da criação.
+
+**Limite funcional:** esta calculadora é de entrada manual de dados físicos. O fluxo de dados virtuais/mistos e o registro/histórico de rolagens ainda não foram implementados.

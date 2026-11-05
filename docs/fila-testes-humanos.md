@@ -223,3 +223,12 @@ Quando H4 for chamado, acrescentar à rodada:
 4. Conferir a revisão da criação com ficha incompleta e completa; testar atalhos para Características, Perícias e Inventário; confirmar que a revisão não altera nem ativa a ficha.
 
 **Estado:** funcionalidades implementadas e verificadas automaticamente; testes humanos ainda pendentes. A ativação, o Inventário ativo, o combate operacional e as automações de jogo continuam fora do escopo concluído.
+
+
+### H4 — complemento: calculadora manual de Testes (05/11/2026)
+
+Foi integrada à seção de Perícias uma calculadora de conferência que recebe resultados de dados físicos, sem gerar rolagens nem registrar resultados. Enfileirar:
+5. Teste de Perícia e Teste puro de Atributo; verificar soma do valor-base e modificador.
+6. Vantagem e Desvantagem com dois resultados físicos, conferindo melhor/pior face.
+7. 20 natural, 1 natural e tarefa Impossível; confirmar sucesso automático, Falha Crítica/Exposto e ausência de rolagem em tarefa impossível.
+8. Confirmar que o painel não salva rolagem, não altera PV/SA/BI, não consome itens e não dispara ações.
