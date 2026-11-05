@@ -14,12 +14,14 @@ type Props = {
 
 export default function DescansoFichaLocal({ dados, classe, pvMaximo, saMaximo, modoDados, aoSalvar }: Props) {
   const [local, setLocal] = useState<LocalDescanso | ''>('');
-  const [resultado, setResultado] = useState('1');
+  const [resultado, setResultado] = useState('');
   const [ocupado, setOcupado] = useState(false);
   const [mensagem, setMensagem] = useState('');
   const [erro, setErro] = useState('');
   const dadoVida = (() => { try { return dadoVidaClasse(classe); } catch { return null; } })();
-  const parcialDisponivel = modoDados !== 'virtuais' && dadoVida !== null && localPermiteDescanso('parcial', local);
+  const face = Number(resultado);
+  const resultadoValido = resultado.trim() !== '' && Number.isSafeInteger(face) && face >= 1 && face <= (dadoVida ?? 0);
+  const parcialDisponivel = modoDados !== 'virtuais' && dadoVida !== null && resultadoValido && localPermiteDescanso('parcial', local);
   const completoDisponivel = localPermiteDescanso('completo', local);
   async function concluir(tipo: 'parcial' | 'completo') {
     if (ocupado) return;
