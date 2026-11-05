@@ -449,9 +449,8 @@ test('WebSocket limita assinaturas às Mesas autorizadas e envia somente invalid
   assert.equal(criar.status, 201);
   assert.deepEqual(await eventoRascunho, { type: 'account.changed' });
 
-  assert.equal((await post(base, '/api/auth/logout', {}, tokenIntruso)).status, 200);
   const fechamento = new Promise(resolve => intruso.once('close', codigo => resolve(codigo)));
-  intruso.send(JSON.stringify({ type: 'subscribe', mesaIds: [mesa.id] }));
+  assert.equal((await post(base, '/api/auth/logout', {}, tokenIntruso)).status, 200);
   assert.equal(await fechamento, 4001);
 });
 
