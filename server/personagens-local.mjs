@@ -136,6 +136,16 @@ export async function tratarRotaPersonagensLocal(req, res, url, db, notificarCon
         responder(res, 404, { error: 'Personagem não encontrado.' });
         return true;
       }
+      // A autoria do rascunho não substitui a autorização atual na Mesa.
+      // Revalidar o vínculo em cada leitura/gravação impede acesso residual
+      // caso um registro de rascunho permaneça após saída ou remoção.
+      const participanteAtual = db.prepare(
+        "SELECT papel FROM participantes_mesa WHERE mesa_id = ? AND conta_id = ?"
+      ).get(existente.mesaId, conta.id);
+      if (!participanteAtual || participanteAtual.papel !== 'jogador') {
+        responder(res, 404, { error: 'Personagem não encontrado.' });
+        return true;
+      }
       if (metodo === 'GET') {
         responder(res, 200, { personagem: serializar(existente) });
         return true;
