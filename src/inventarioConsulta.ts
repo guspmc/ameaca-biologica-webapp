@@ -42,7 +42,6 @@ export function lerInventarioConsulta(v:unknown,personagemId:string):InventarioC
    const espacos=i.espacos,posicao=i.posicao;
    if(!positivo(espacos)||!natural(posicao)||!Number.isSafeInteger(posicao+espacos))return invalido();
    const fim=posicao+espacos;
-   if(fim>v.capacidade)return invalido();
    if(faixas.some(f=>posicao<f.fim&&f.inicio<fim))return invalido();
    faixas.push({inicio:posicao,fim});
   } else if(i.local!=='caracteristico'||i.espacos!==0||i.posicao!==null)return invalido();
