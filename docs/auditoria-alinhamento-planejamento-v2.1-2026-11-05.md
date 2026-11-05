@@ -35,7 +35,7 @@ A identidade visual da ficha mobile congelada é referência aprovada de composi
 - Divergência entre endereço usado para criação/consulta e endereço usado para atualização.
 - Falha de autenticação ou sessão.
 
-O servidor tem uma lista CORS explícita e inclui por padrão GitHub Pages e Vite local. A documentação atual do Chrome informa que o mecanismo antigo de Private Network Access (PNA) foi substituído pelo Local Network Access (LNA): não devemos adicionar cabeçalhos PNA como correção. Em origens públicas HTTPS, o Chrome exige permissão do usuário para acessar destinos locais/loopback; essa permissão só pode ser solicitada em contexto seguro. A reprodução precisa registrar se o prompt LNA aparece/foi concedido, origem, URL final, método, status/preflight e log do servidor, sem expor token. A URL padrão do cliente é `http://127.0.0.1:4175`; a documentação do Chrome usa `targetAddressSpace: 'loopback'` nos exemplos de fetch para loopback. O cliente atual não declara essa opção. É uma possível lacuna técnica a validar no navegador, não uma causa confirmada.
+O servidor tem uma lista CORS explícita e inclui por padrão GitHub Pages e Vite local. A documentação atual do Chrome informa que o mecanismo antigo de Private Network Access (PNA) foi substituído pelo Local Network Access (LNA): não devemos adicionar cabeçalhos PNA como correção. Em origens públicas HTTPS, o Chrome exige permissão do usuário para acessar destinos locais/loopback; essa permissão só pode ser solicitada em contexto seguro. A reprodução precisa registrar se o prompt LNA aparece/foi concedido, origem, URL final, método, status/preflight e log do servidor, sem expor token. A URL inicial da interface continua sendo `http://127.0.0.1:4175`, adequada ao próprio PC; em outro dispositivo, a interface orienta informar o IP LAN real do host. Naquele momento, a ausência de `targetAddressSpace` era uma lacuna ainda não tratada; ela foi endereçada posteriormente, conforme as seções 12 e 14. A declaração no cliente ainda precisa de confirmação no navegador real.
 
 ### Próximo teste técnico
 
@@ -113,7 +113,7 @@ Foi adicionado `tests/cliente-servidor-local.test.mjs`. O teste utiliza `criarCl
 
 ## 10. Chrome Local Network Access — esclarecimento técnico
 
-A documentação atual do Chrome esclarece que Local Network Access (LNA) substitui a abordagem experimental PNA. Para uma página pública HTTPS acessar IP privado ou loopback, o navegador solicita permissão explícita do usuário. O contexto superior precisa ser seguro. O Chrome também documenta `targetAddressSpace: 'loopback'` em chamadas fetch destinadas a `127.0.0.1`/localhost; o cliente atual não define essa opção.
+A documentação atual do Chrome esclarece que Local Network Access (LNA) substitui a abordagem experimental PNA. Para uma página pública HTTPS acessar IP privado ou loopback, o navegador solicita permissão explícita do usuário. O contexto superior precisa ser seguro. O Chrome também documenta `targetAddressSpace: 'loopback'` em chamadas fetch destinadas a `127.0.0.1`/localhost. Na data deste registro, a opção ainda não estava implementada; a correção posterior está descrita nas seções 12 e 14.
 
 Fontes consultadas em 05/11/2026:
 - Chrome for Developers, guia Local Network Access: https://developer.chrome.com/docs/modern-web-guidance/guides/security/local-network-access
@@ -144,3 +144,28 @@ Foi adicionado `tests/espaco-endereco-local.test.mjs`, cobrindo exemplos de loop
 ## 13. Proteções mantidas
 
 As alterações foram feitas somente na branch `feat/offline-first-ficha`. Não houve merge em `main`, publicação, alteração no Supabase de produção ou modificação do cânone do RPG.
+
+
+## 14. Integração HTTP em modo de escuta LAN — 05/11/2026
+
+### Alteração e cobertura
+
+No commit `3bb7f0686ec75da7da6875fccf645add013d5cf4`, o teste `tests/cliente-servidor-local.test.mjs` passou a iniciar o servidor com bind `0.0.0.0`, o mesmo modo de escuta explícito usado para disponibilizar a API na rede local. O cliente de teste continua acessando por loopback para manter o cenário isolado no próprio runner.
+
+O cenário percorre cadastro, login, consulta da sessão, criação de Mesa e personagem, consulta, preflight OPTIONS para PUT com os cabeçalhos Authorization/Content-Type, atualização PUT e releitura dos dados persistidos. A origem simulada é uma das origens locais permitidas. O teste não simula o mecanismo de permissão LNA do Chrome nem uma conexão de outro dispositivo.
+
+### Evidência automatizada
+
+Os dois workflows do GitHub Actions para o commit `3bb7f0686ec75da7da6875fccf645add013d5cf4` concluíram com sucesso:
+- **Validar compilação do WebApp** — run [41958215902](https://github.com/guspmc/ameaca-biologica-webapp/actions/runs/41958215902): job TypeScript/Vite e verificações PostgreSQL concluídos com sucesso.
+- **Verificação da ficha offline** — run [41958215876](https://github.com/guspmc/ameaca-biologica-webapp/actions/runs/41958215876): suíte automatizada e build concluídos com sucesso.
+
+### Estado atualizado da prioridade 1
+
+**IMPLEMENTADO E TESTADO AUTOMATICAMENTE:** caminho HTTP do cliente contra servidor Node/SQLite; atualização PUT e releitura persistida; bind do servidor em modo LAN; preflight CORS com PUT e Authorization; lista explícita de origens; declaração de `targetAddressSpace` para loopback, IPs privados/link-local, IPv6 local e nomes `.local`, com testes unitários.
+
+**PENDENTE — TESTE HUMANO CRÍTICO:** navegador Chrome real a partir da origem HTTPS publicada, permissão Local Network Access, endereço LAN real do PC, firewall/rede, salvamento da ficha e confirmação após fechar/reabrir ou consultar novamente. O teste automatizado não comprova o comportamento do navegador, a conectividade de outro dispositivo nem o fluxo real de edição da interface.
+
+A interface começa com `http://127.0.0.1:4175`, mas esse endereço só alcança o próprio dispositivo. Para o teste com Android ou outro computador, deve ser informado o endereço LAN exibido pelo servidor no PC (por exemplo, `http://192.168.x.x:4175`, usando o endereço real apresentado no terminal). O servidor precisa ser iniciado explicitamente com `--host 0.0.0.0`; o padrão permanece restrito ao loopback.
+
+Nenhuma alteração em `main`, publicação, Supabase de produção ou cânone do RPG.
