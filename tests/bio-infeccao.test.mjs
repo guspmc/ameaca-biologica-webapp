@@ -20,6 +20,10 @@ test('atingir ou ultrapassar BI Máxima representa Colapso Viral, não uma sexta
   assert.deepEqual(calcularFaseBioInfeccao(10, 10), {
     estado: 'colapso', fase: null,
     efeito: 'Colapso Viral: personagem Desacordada; Reanimação específica.',
+    modificadorMovimento: null,
+    bonusTesteAtaque: null,
+    danoCorpoACorpoAdicional: null,
+    desvantagemAtaquesETestes: null,
   });
   assert.equal(calcularFaseBioInfeccao(12, 10).estado, 'colapso');
 });
