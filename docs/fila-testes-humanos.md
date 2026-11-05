@@ -332,3 +332,17 @@ Pré-requisito: CI verde; servidor e frontend LAN iniciados conforme [guia do se
 - Não usar o projeto Supabase legado nem credenciais reais. Nenhuma etapa desta fila acessa ou altera o projeto remoto.
 
 **Registro:** para cada caso, anotar aprovado/falhou/não executado, dispositivo/navegador, passo e mensagem observada. Capturas devem ocultar e-mails, senhas, tokens e dados pessoais. A aprovação de um caso não aprova automaticamente os demais.
+
+
+### A0 — inicializadores Windows (novo pré-teste)
+
+**Implementado na branch; aguarda CI e validação no Windows.** Os atalhos ficam em `scripts/windows/`.
+
+1. Executar `Verificar_Ambiente.bat`; confirmar Node.js 22.12+ e pnpm 11.25.0 detectados.
+2. Executar `Iniciar_Ficha_Offline.bat`; confirmar compilação concluída e abertura em `http://127.0.0.1:4176/ameaca-biologica-webapp/`. Manter o terminal aberto e encerrar com Ctrl+C.
+3. Com a Ficha ainda aberta, executar `Iniciar_Mesa_LAN.bat`; confirmar que a interface LAN abre em `http://127.0.0.1:4174/ameaca-biologica-webapp/?servidor=local` sem conflito de porta.
+4. Confirmar que surgem duas janelas da Mesa LAN (API e Vite). A API deve escutar apenas em `127.0.0.1:4175`; o Vite é o ponto de entrada da rede local.
+5. Em uma cópia descartável do projeto ou depois de encerrar os testes, ocupar uma das portas e repetir o inicializador LAN. Esperado: aviso de porta ocupada e interrupção sem encerrar processos desconhecidos.
+6. Encerrar cada terminal com Ctrl+C. Confirmar que os processos terminam e que a pasta `.ameaca-local` permanece intacta.
+
+Não usar contas ou dados reais. Os inicializadores não publicam nem alteram bancos remotos. A0 é um teste de conveniência/ambiente; não substitui F1, L1 ou L2.
