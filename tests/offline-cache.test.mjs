@@ -73,6 +73,7 @@ test('revalidação usa refresh atômico e não ignora falha',()=>{
  assert.doesNotMatch(appSource,/removerSnapshotsDeMesasNaoAutorizadas|salvarMesasOffline\(sessao\.user\.id, autorizadas\)\.catch/);
  assert.match(appSource,/cacheOfflineBloqueado/);
  assert.match(appSource,/localStorage\.setItem\(chaveBloqueioCache, '1'\)/);
+ assert.match(appSource,/catch \{ return true; \}/);
  assert.match(appSource,/cacheOfflineBloqueado \? null : await lerMesasOffline\(sessao\.user\.id\)/);
  assert.match(sheetSource,/bloquearCacheOffline/);
 });
