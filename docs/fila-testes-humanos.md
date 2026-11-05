@@ -288,3 +288,47 @@ A integração está na branch e a CI passou no commit b246a19322a5195a5b6747680
 31. Fechar/reabrir a ficha nos estados em andamento e terminais; confirmar persistência da causa, sucessos, falhas, tentativas, cura acumulada e Vantagem pendente sem misturar os dois tipos de Reanimação.
 
 32. Após concluir uma Reanimação, provocar em teste um novo evento crítico (0 PV ou novo Colapso Viral) e confirmar que um novo processo pode ser iniciado sem reutilizar contadores/cura/Vantagem do anterior. Confirmar também que a interface não apresenta histórico durável que ainda não existe.
+
+
+## Fila paralela — Ficha offline e Mesa LAN (05/11/2026)
+
+**Regra:** estes casos ficam enfileirados para execução conjunta com Gus. Não iniciar rodada humana até os workflows da CI estarem verdes no commit de referência e os roteiros técnicos serem conferidos. Usar exclusivamente conteúdo, contas, Mesas e personagens fictícios. Nenhum teste autoriza publicação, merge ou alteração no banco remoto.
+
+### F1 — Ficha pessoal offline (roteiro: [roteiro-humano-ficha-offline-local.md](roteiro-humano-ficha-offline-local.md))
+
+Pré-requisito: CI verde; executar a prévia local de produção com Service Worker habilitado, não o Vite dev server.
+1. Criar ficha pessoal e preencher Características, Atributos/Perícias e campos de texto; aguardar confirmação local e recarregar a página.
+2. Reabrir e conferir persistência; editar sem salvar, descartar e confirmar que o valor anterior permanece.
+3. Abrir duas abas com a mesma ficha; salvar alteração em A e tentar salvar em B mantendo a revisão antiga. Confirmar aviso de conflito e preservação da edição local de B; recarregar B e conferir o valor confirmado em A.
+4. Exportar backup JSON, importar como cópia e conferir conteúdo; testar arquivo inválido e limite de tamanho sem corromper fichas existentes.
+5. Excluir uma ficha de teste e confirmar que ela deixa de aparecer; antes, preservar qualquer ficha que se queira manter.
+6. Com o PWA instalado/Service Worker ativo, abrir sem internet, consultar e editar ficha pessoal, fechar/reabrir e confirmar persistência local. Confirmar que não há sincronização automática entre dispositivos.
+7. Em celular físico: teclado, rolagem, orientação, botões, leitura e navegação da ficha contínua.
+
+### L1 — Mesa LAN: acesso, conta e isolamento
+
+Pré-requisito: CI verde; servidor e frontend LAN iniciados conforme [guia do servidor local](servidor-local-prototipo.md); PC e Android na mesma rede privada confiável. O protótipo usa HTTP sem TLS: somente dados fictícios e nenhuma senha reutilizada.
+1. Abrir a interface LAN no PC e no Android; verificar saúde do servidor pelo proxy e pelo IP LAN real.
+2. Se o Chrome solicitar permissão de acesso à rede local, conceder e confirmar conexão; em perfil de teste separado, recusar e conferir erro claro, sem falso estado de sucesso. Depois conceder e repetir.
+3. Criar duas contas experimentais distintas. Criar Mesa com a conta Mestre, gerar convite e solicitar ingresso com a segunda conta; aprovar pelo Mestre.
+4. Confirmar que a conta Jogador vê apenas a Mesa aprovada e que uma terceira conta sem vínculo não consegue consultar Mesa, solicitações ou personagens por chamadas diretas.
+5. Conferir teto e autorização apenas por testes técnicos preparados; não tentar preencher dez participantes manualmente nesta rodada.
+
+### L2 — Mesa LAN: rascunho, persistência e tempo real
+
+1. Na conta Jogador, criar rascunho, abrir ficha, alterar um campo e salvar. Confirmar mensagem somente após resposta do servidor.
+2. Recarregar a página, autenticar novamente e reabrir o rascunho; conferir o dado persistido. A perda do token em memória após reload é comportamento conhecido, não falha.
+3. Abrir a mesma personagem em duas sessões/dispositivos. Salvar em A e tentar salvar em B com revisão antiga; confirmar recusa por conflito sem sobrescrever A.
+4. Com as duas sessões conectadas, provocar atualização de Mesa e conferir invalidação/refetch no outro dispositivo sem F5. Confirmar que WebSocket só sinaliza alteração e que os dados vêm das rotas HTTP autorizadas.
+5. Interromper e restaurar Wi-Fi/rede local; observar reconexão e atualização. Testar também retorno da aba ao primeiro plano e suspensão do Android. A reconexão atual usa espera fixa; registrar tempos e mensagens, sem exigir backoff progressivo ainda.
+6. Deixar a sessão expirar ou revogá-la no servidor de teste; confirmar encerramento da interface e bloqueio de novas consultas. Depois fazer logout voluntário e confirmar revogação.
+7. Fechar/reabrir ou atualizar a página: autenticar novamente e conferir que os dados confirmados continuam no servidor.
+
+### L3 — pendências que não devem ser simuladas como prontas
+
+- Remoção de participante pela interface LAN ainda não está implementada; não testar revogação por remoção até existir rota e fluxo aprovados.
+- Não há sincronização automática entre rascunho SQLite da Mesa LAN e ficha pessoal IndexedDB.
+- Não editar PV/SA/BI, Inventário, Baú, iniciativa ou qualquer estado compartilhado offline.
+- Não usar o projeto Supabase legado nem credenciais reais. Nenhuma etapa desta fila acessa ou altera o projeto remoto.
+
+**Registro:** para cada caso, anotar aprovado/falhou/não executado, dispositivo/navegador, passo e mensagem observada. Capturas devem ocultar e-mails, senhas, tokens e dados pessoais. A aprovação de um caso não aprova automaticamente os demais.
