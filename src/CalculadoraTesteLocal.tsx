@@ -61,6 +61,7 @@ export default function CalculadoraTesteLocal({ atributos, treinada, distribuica
   return <details className="ficha-local-editor calculadora-teste">
     <summary>Conferir Teste manual</summary>
     <p>Calculadora de dados físicos: informe a face obtida. Ela não rola dados, não registra uma rolagem e não altera a ficha.</p>
+    <p>Se o Teste de Pontaria ou Luta for um Ataque, 20 natural também acerta automaticamente, fecha as Reações defensivas normais e causa Crítico. Arma, Dano e efeitos específicos ainda precisam ser resolvidos no módulo de Combate.</p>
     <label>Tipo de Teste
       <select value={tipo} onChange={evento => mudarTipo(evento.target.value as 'pericia' | 'atributo')}>
         <option value="pericia">Teste de Perícia</option>
