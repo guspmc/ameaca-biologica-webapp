@@ -229,16 +229,15 @@ export default function FichaLocal({ nome, mesa, dados, aoFechar, aoRecarregar, 
             {inventarioPlanejado ? inventarioPlanejado.itens.map(item => <div key={item.chaveCriacao}><strong>{item.nome} × {item.quantidade}</strong><small>{item.local === 'caracteristico' ? 'Característico · vinculado à Classe' : 'Inventário · ' + item.espacos + ' Espaço(s)'} · {item.estado.tipo.replace('_',' ')}</small></div>) : <p>Não foi possível montar a prévia do inventário. Confira Classe, Origem, kit e compras do rascunho.</p>}
           </div>
           <p className="ficha-local-legenda">A capacidade considera 4 + FOR{origem === 'Mochileiro' ? ' + 1 de Mochileiro' : ''} = {capacidade} Espaços. O conjunto selecionado ocupa {inventarioPlanejado?.ocupados ?? espacosKit} de {capacidade} Espaços. Os itens aparecem em estado inicial guardado/não equipado; operações de Inventário ainda não estão integradas.</p>
-        </section>
-
-        <section className="ficha-local-secao" aria-label="Funcionamento e revisão">
-          <div className="ficha-local-titulo-secao"><h2><span>05</span> Funcionamento</h2><span className="ficha-local-selo">PREFERÊNCIAS</span></div>
+        <div className="ficha-local-editor">
+          <h3>Funcionamento da ficha</h3>
           <FuncionamentoFichaLocal
             key={JSON.stringify(ficha.configuracaoFuncionamento ?? null)}
             inicial={ficha.configuracaoFuncionamento as ConfiguracaoFuncionamento | undefined}
             aoSalvar={aoSalvarFuncionamento}
             aoAlterarPendencia={pendente => registrarPendencia('Funcionamento', pendente)}
           />
+        </div>
         </section>
 
         <footer className="ficha-local-rodape">AMEAÇA BIOLÓGICA RPG · {origemDados === 'servidor' ? 'DADOS NO SERVIDOR' : 'DADOS LOCAIS'} · RASCUNHO NÃO ATIVO</footer>
