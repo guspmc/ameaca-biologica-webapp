@@ -278,7 +278,7 @@ Foram integrados controles de descanso à ficha, ainda sem cronômetro, rolagem 
 ### H4 — complemento: Reanimação (integrada e aprovada automaticamente; teste humano pendente)
 
 A integração está na branch e a CI passou no commit b246a19322a5195a5b6747680957e9f5953e9f91 (430/430 testes, TypeScript, build Vite e PostgreSQL). Acrescentar à rodada agrupada H4:
-24. PV chega a 0: personagem fica Desacordada e a Reanimação aguarda o próximo turno; conferir que nenhum Teste é rolado ou presumido automaticamente.
+24. PV chega a 0: personagem fica Desacordada e a Reanimação aguarda o próximo turno; conferir que nenhum Teste é rolado ou presumido automaticamente. A edição direta de PV deve ficar bloqueada, inclusive antes de iniciar o painel; não permitir despertar por ajuste manual.
 25. Testes de 0 PV: DT 12, sem modificador salvo regra específica; três sucessos em até cinco tentativas despertam com pelo menos 1 PV. Testar cura recebida durante 0 PV: acumula e só é aplicada ao terceiro sucesso, pelo maior valor entre 1 PV e a cura acumulada.
 26. Três falhas em até cinco tentativas no estado de 0 PV: conferir sinalização de morte e encaminhamento ao registro do Mestre, sem que a interface invente consequências adicionais.
 27. Primeiros Socorros: registrar o resultado final do Teste de Medicina DT 15; somente sucesso concede Vantagem ao próximo Teste de Reanimação, consumida nesse Teste. Registrar também falha crítica (1 natural): não concede Vantagem e sinaliza Exposto na ficha de quem realizou o Teste, sem aplicar a Condição automaticamente.
