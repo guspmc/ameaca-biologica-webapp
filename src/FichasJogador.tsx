@@ -34,7 +34,7 @@ type Personagem = {
 };
 type Props = {
   supabase:SupabaseClient; usuarioId:string; mesas:Mesa[];
-  sinalAtualizacao:number; somenteLeituraOffline?:boolean;
+  sinalAtualizacao:number; somenteLeituraOffline?:boolean; bloquearCacheOffline?:boolean;
 };
 type Stats = Record<Atributo,number>;
 const INICIAIS:Stats = {forca:1,agilidade:1,vigor:1,astucia:1};
@@ -62,7 +62,7 @@ const PERICIAS:{nome:string;atributo:Atributo}[]=[
 const CLASSES:Classe[]=['Agente','Autodidata','Operador'];
 const ABREV:Record<Atributo,string>={forca:'FOR',agilidade:'AGI',vigor:'VIG',astucia:'AST'};
 
-export default function FichasJogador({supabase,usuarioId,mesas,sinalAtualizacao,somenteLeituraOffline=false}:Props){
+export default function FichasJogador({supabase,usuarioId,mesas,sinalAtualizacao,somenteLeituraOffline=false,bloquearCacheOffline=false}:Props){
   const [personagens,setPersonagens]=useState<Personagem[]>([]);
   const [carregando,setCarregando]=useState(true);
   const [criando,setCriando]=useState(false);
@@ -93,11 +93,12 @@ export default function FichasJogador({supabase,usuarioId,mesas,sinalAtualizacao
   const [dadosCacheados,setDadosCacheados]=useState(false);
   const [cacheAtualizadoEm,setCacheAtualizadoEm]=useState<string|null>(null);
   const leituraSomente = somenteLeituraOffline || dadosCacheados || (typeof navigator !== 'undefined' && !navigator.onLine);
+  const lerCachePermitido = useCallback(async () => bloquearCacheOffline ? null : lerPersonagensOffline<Personagem>(usuarioId).catch(() => null), [bloquearCacheOffline,usuarioId]);
 
   const carregar=useCallback(async()=>{
     const offline = somenteLeituraOffline || (typeof navigator !== 'undefined' && !navigator.onLine);
     if (offline) {
-      const cache = await lerPersonagensOffline<Personagem>(usuarioId).catch(() => null);
+      const cache = await lerCachePermitido();
       if (cache) {
         setPersonagens(cache.dados.map(p=>({...p,identidade:p.identidade??{},pontos_pericia_classe:p.pontos_pericia_classe??{},compras_iniciais:p.compras_iniciais??{}})) as Personagem[]);
         setCacheAtualizadoEm(cache.atualizadoEm); setDadosCacheados(true); setErro('');
@@ -140,7 +141,7 @@ export default function FichasJogador({supabase,usuarioId,mesas,sinalAtualizacao
         setErro('Servidor sem resposta e sem cópia local disponível.');
       }
     } finally { setCarregando(false); }
-  },[supabase,usuarioId,somenteLeituraOffline]);
+  },[supabase,usuarioId,somenteLeituraOffline,lerCachePermitido]);
 
   useEffect(()=>{void carregar();},[carregar,sinalAtualizacao]);
   const minhasMesas=useMemo(()=>mesas.filter(m=>m.mestre_id!==usuarioId),[mesas,usuarioId]);
