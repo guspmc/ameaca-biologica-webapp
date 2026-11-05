@@ -15,6 +15,7 @@ import FuncionamentoFichaLocal from './FuncionamentoFichaLocal';
 import RevisaoCriacaoLocal from './RevisaoCriacaoLocal';
 import CalculadoraTesteLocal from './CalculadoraTesteLocal';
 import RecursosFichaLocal from './RecursosFichaLocal';
+import { recursosIniciais } from './recursosFicha';
 import type { FichaRevisao } from './conferenciaCriacao';
 import { normalizarConfiguracaoFuncionamento, type ConfiguracaoFuncionamento } from './funcionamentoFicha';
 import { calcularFaseBioInfeccao } from './bioInfeccao';
@@ -108,7 +109,8 @@ export default function FichaLocal({ nome, mesa, dados, aoFechar, aoRecarregar, 
   const pv = (classe === 'Agente' ? 10 : classe === 'Autodidata' ? 8 : classe === 'Operador' ? 12 : 0) + numero(atributos.vigor) + (habilidade?.id === 'parrudo' ? 5 : 0);
   const sa = numero(atributos.agilidade) + numero(atributos.astucia) + (origem === 'Universitária' ? 1 : 0);
   const bi = (classe === 'Agente' ? 8 : classe === 'Autodidata' ? 10 : classe === 'Operador' ? 6 : 0) + numero(atributos.astucia) + (origem === 'Cobaia' ? 2 : 0) + (habilidade?.id === 'parrudo' ? 3 : 0);
-  const biAtual = typeof ficha.biAtual === 'number' && Number.isSafeInteger(ficha.biAtual) && ficha.biAtual >= 0 ? ficha.biAtual : 0;
+  const recursosAtuais = recursosIniciais(ficha as Record<string, unknown>, pv, sa);
+  const biAtual = recursosAtuais.biAtual;
   const faseBi = calcularFaseBioInfeccao(biAtual, bi);
   const defesa = 10 + numero(atributos.agilidade) + (origem === 'Policial' ? 2 : 0);
   const capacidade = capacidadeInventario(numero(atributos.forca), origem);
@@ -178,8 +180,8 @@ export default function FichaLocal({ nome, mesa, dados, aoFechar, aoRecarregar, 
         </div>
 
         <div className="ficha-local-recursos">
-          <div><small>PV MÁX.</small><strong>{pv}</strong><span>Atual pendente</span></div>
-          <div><small>SA MÁX.</small><strong>{sa}</strong><span>Atual pendente</span></div>
+          <div><small>PONTOS DE VIDA</small><strong>{recursosAtuais.pvAtual} / {pv}</strong><span>Temporários: {recursosAtuais.pvTemporarios}</span></div>
+          <div><small>SURTO DE ADRENALINA</small><strong>{recursosAtuais.saAtual} / {sa}</strong><span>Máximo derivado</span></div>
           <div><small>BIO-INFECÇÃO</small><strong>{biAtual} / {bi}</strong><span>{faseBi.estado === 'colapso' ? 'Colapso Viral' : faseBi.fase ? 'Fase ' + faseBi.fase : 'Fase indisponível'}</span></div>
           <div><small>DEFESA</small><strong>{defesa}</strong><span>Sem equipamento</span></div>
         </div>
