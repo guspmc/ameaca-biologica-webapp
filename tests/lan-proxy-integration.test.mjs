@@ -82,15 +82,16 @@ test('proxy LAN mantém API e WebSocket same-origin até o servidor SQLite', asy
   const wsUrl = origem.replace(/^http/, 'ws') + '/ws?ticket=' + ticket;
   const conectado = await new Promise((resolve, reject) => {
     const ws = new WebSocket(wsUrl, { headers: { Origin: origem } });
+    const primeiraMensagem = new Promise((resolveMensagem, rejectMensagem) => {
+      ws.once('message', dados => resolveMensagem(JSON.parse(dados.toString('utf8'))));
+      ws.once('error', rejectMensagem);
+    });
     const timer = setTimeout(() => { ws.terminate(); reject(new Error('WebSocket LAN proxy não conectou.')); }, 2000);
-    ws.once('open', () => { clearTimeout(timer); resolve(ws); });
+    ws.once('open', () => { clearTimeout(timer); resolve({ ws, primeiraMensagem }); });
     ws.once('error', erro => { clearTimeout(timer); reject(erro); });
   });
-  socket = conectado;
-  const pronto = await new Promise((resolve, reject) => {
-    const timer = setTimeout(() => reject(new Error('Servidor não enviou ready pelo proxy.')), 1000);
-    socket.once('message', dados => { clearTimeout(timer); resolve(JSON.parse(dados.toString('utf8'))); });
-  });
+  socket = conectado.ws;
+  const pronto = await conectado.primeiraMensagem;
   assert.equal(pronto.type, 'ready');
 
   const inscricao = new Promise((resolve, reject) => {
