@@ -64,11 +64,11 @@ test('patches de abas distintas preservam alterações em chaves diferentes', as
   const abaB = await import('../src/persistenciaFicha.ts?aba=B');
 
   await abaA.salvarPatchPersonagem('claire', { identidade: { apelido: 'Redfield' } }, ficha.dados, undefined, undefined, ficha.geracao);
-  await abaB.salvarPatchPersonagem('claire', { atributos: { vigor: 3 } }, ficha.dados, undefined, undefined, ficha.geracao);
+  await abaB.salvarPatchPersonagem('claire', { atributos: { forca: 1, agilidade: 2, vigor: 3, astucia: 2 } }, ficha.dados, undefined, undefined, ficha.geracao);
 
   const final = registros.get('claire');
   assert.deepEqual(final.dados.identidade, { apelido: 'Redfield' });
-  assert.deepEqual(final.dados.atributos, { vigor: 3 });
+  assert.deepEqual(final.dados.atributos, { forca: 1, agilidade: 2, vigor: 3, astucia: 2 });
 });
 
 test('patch concorrente na mesma chave é recusado para evitar sobrescrita silenciosa', async () => {
