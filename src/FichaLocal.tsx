@@ -13,6 +13,7 @@ import EditorInventarioLocal from './EditorInventarioLocal';
 import IdentidadeLocal from './IdentidadeLocal';
 import FuncionamentoFichaLocal from './FuncionamentoFichaLocal';
 import type { ConfiguracaoFuncionamento } from './funcionamentoFicha';
+import { calcularFaseBioInfeccao } from './bioInfeccao';
 import { classePersonagem, termoPersonagem } from './textoPersonagem';
 
 type DadosFichaLocal = {
@@ -29,6 +30,7 @@ type DadosFichaLocal = {
   revisaoCompras?: unknown;
   identidade?: unknown;
   configuracaoFuncionamento?: unknown;
+  biAtual?: unknown;
 };
 
 type Props = {
@@ -98,6 +100,8 @@ export default function FichaLocal({ nome, mesa, dados, aoFechar, aoRecarregar, 
   const pv = (classe === 'Agente' ? 10 : classe === 'Autodidata' ? 8 : classe === 'Operador' ? 12 : 0) + numero(atributos.vigor) + (habilidade?.id === 'parrudo' ? 5 : 0);
   const sa = numero(atributos.agilidade) + numero(atributos.astucia) + (origem === 'Universitária' ? 1 : 0);
   const bi = (classe === 'Agente' ? 8 : classe === 'Autodidata' ? 10 : classe === 'Operador' ? 6 : 0) + numero(atributos.astucia) + (origem === 'Cobaia' ? 2 : 0) + (habilidade?.id === 'parrudo' ? 3 : 0);
+  const biAtual = typeof ficha.biAtual === 'number' && Number.isSafeInteger(ficha.biAtual) && ficha.biAtual >= 0 ? ficha.biAtual : 0;
+  const faseBi = calcularFaseBioInfeccao(biAtual, bi);
   const defesa = 10 + numero(atributos.agilidade) + (origem === 'Policial' ? 2 : 0);
   const capacidade = capacidadeInventario(numero(atributos.forca), origem);
   const listaPericias = [...new Set([...(PERICIAS_CLASSE[classe] ?? []), ...(dadosOrigem?.pericias ?? []), ...(treinada ? [treinada] : []), ...(extra ? [extra] : []), ...Object.keys(distribuicao)])].sort();
@@ -137,7 +141,7 @@ export default function FichaLocal({ nome, mesa, dados, aoFechar, aoRecarregar, 
         <div className="ficha-local-recursos">
           <div><small>PV MÁX.</small><strong>{pv}</strong><span>Atual pendente</span></div>
           <div><small>SA MÁX.</small><strong>{sa}</strong><span>Atual pendente</span></div>
-          <div><small>BI MÁX.</small><strong>{bi}</strong><span>Atual pendente</span></div>
+          <div><small>BIO-INFECÇÃO</small><strong>{biAtual} / {bi}</strong><span>{faseBi.estado === 'colapso' ? 'Colapso Viral' : faseBi.fase ? 'Fase ' + faseBi.fase : 'Fase indisponível'}</span></div>
           <div><small>DEFESA</small><strong>{defesa}</strong><span>Sem equipamento</span></div>
         </div>
 
@@ -204,6 +208,12 @@ export default function FichaLocal({ nome, mesa, dados, aoFechar, aoRecarregar, 
             <div><small>HABILIDADE BÁSICA</small><strong>{habilidade?.nome ?? 'Não selecionada'}</strong><p>{habilidade ? habilidade.efeito : 'Nenhuma Habilidade Básica foi selecionada.'}</p></div>
             <div><small>ARMAMENTO</small><strong>Não equipado</strong><p>{kit ? 'Conjunto inicial selecionado: ' + kit.nome + '. A escolha faz parte do planejamento do inventário e não significa que uma arma esteja equipada.' : 'Selecione um conjunto inicial na seção Inventário. A seleção não equipa automaticamente uma arma.'}</p></div>
           </div>
+
+          <h3 className="ficha-local-subtitulo">Bio-Infecção</h3>
+          <div className="ficha-local-grade">
+            <div><small>BI ATUAL / MÁXIMA</small><strong>{biAtual} / {bi}</strong><p>{faseBi.estado === 'fase' ? 'Fase ' + faseBi.fase + ' · ' + faseBi.efeito : faseBi.efeito}</p></div>
+          </div>
+          <p className="ficha-local-legenda">A BI começa em 0, não progride sozinha e só muda por uma fonte expressa. Esta ficha calcula a fase a partir do valor salvo; não aumenta BI, não aplica efeitos nem inicia Reanimação automaticamente.</p>
 
           <h3 className="ficha-local-subtitulo">Combate ativo</h3>
           <div className="ficha-local-grade">
