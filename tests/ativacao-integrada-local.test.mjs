@@ -102,6 +102,20 @@ test('ciclo integrado: saida do jogador apaga seus rascunhos, mas preserva ficha
  }finally{await db.close();}
 });
 
+test('ciclo integrado: saida voluntaria exige jogador autenticado e confirmacao explicita',async()=>{
+ const db=await setup({integrada:true});
+ try{
+  await uid(db,M);await db.exec('set role authenticated');
+  await assert.rejects(db.query('select app_private.sair_mesa_local($1,true)',[T]),/Saida indisponivel ou acesso negado/);
+  await uid(db,A);
+  await assert.rejects(db.query('select app_private.sair_mesa_local($1,false)',[T]),/Confirmacao explicita necessaria/);
+  await uid(db,null);
+  await assert.rejects(db.query('select app_private.sair_mesa_local($1,true)',[T]),/Autenticacao necessaria/);
+  await db.exec('reset role');
+  assert.equal((await db.query('select count(*)::int n from public.mesa_participantes where mesa_id=$1 and usuario_id=$2',[T,A])).rows[0].n,1);
+ }finally{await db.close();}
+});
+
 test('ciclo integrado: exclusao da Mesa elimina fichas e dados privados em cascata',async()=>{
  const db=await setup({integrada:true});
  try{
