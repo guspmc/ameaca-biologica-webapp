@@ -106,3 +106,40 @@ test('cliente preserva diagnóstico técnico quando fetch falha antes de receber
     },
   );
 });
+
+
+test('cliente distingue resposta HTTP de falha de transporte e limita diagnóstico', async () => {
+  const respostaHttp = criarClienteServidorLocal({
+    baseUrl: 'http://127.0.0.1:4175',
+    fetcher: async () => new Response(JSON.stringify({ error: 'Revisão desatualizada.' }), {
+      status: 409,
+      headers: { 'content-type': 'application/json' },
+    }),
+  });
+  await assert.rejects(
+    respostaHttp.verificarSaude(),
+    erro => {
+      assert.ok(erro instanceof ErroServidorLocal);
+      assert.equal(erro.status, 409);
+      assert.equal(erro.message, 'Revisão desatualizada.');
+      assert.equal(erro.diagnostico, undefined);
+      return true;
+    },
+  );
+
+  const excecaoLonga = new TypeError('x'.repeat(400));
+  const transporte = criarClienteServidorLocal({
+    baseUrl: 'http://127.0.0.1:4175',
+    fetcher: async () => { throw excecaoLonga; },
+  });
+  await assert.rejects(
+    transporte.verificarSaude(),
+    erro => {
+      assert.ok(erro instanceof ErroServidorLocal);
+      assert.equal(erro.status, 0);
+      assert.equal(erro.diagnostico.nome, 'TypeError');
+      assert.equal(erro.diagnostico.mensagem.length, 240);
+      return true;
+    },
+  );
+});
