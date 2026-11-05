@@ -40,6 +40,9 @@ export default function ConexaoServidorLocal() {
   const [canalTempoReal, setCanalTempoReal] = useState(false);
 
   function encerrarSessao(mensagem: string) {
+    // Dados da ficha não permanecem visíveis após perda/encerramento de sessão.
+    fichaAbertaRef.current = null;
+    setFichaAberta(null);
     setSessao(null);
     setMesas([]);
     setPersonagens({});
