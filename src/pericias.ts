@@ -11,3 +11,29 @@ export function bonusTreinamento(grau:number):number{return grau===2?3:grau===1?
 export function totalPontos(pontos:Record<string,number>):number{
   return Object.values(pontos).reduce((a,b)=>a+b,0);
 }
+
+export const ATRIBUTO_PERICIA: Record<string, 'forca' | 'agilidade' | 'vigor' | 'astucia'> = {
+  Acrobacia: 'agilidade',
+  Atletismo: 'forca',
+  Fortitude: 'vigor',
+  Furtividade: 'agilidade',
+  Investigação: 'astucia',
+  Luta: 'forca',
+  Medicina: 'astucia',
+  Percepção: 'astucia',
+  Pontaria: 'agilidade',
+  Reflexos: 'agilidade',
+  Sobrevivência: 'astucia',
+  Vontade: 'astucia',
+};
+
+export function valorBasePericia(
+  nome: string,
+  atributos: Record<'forca' | 'agilidade' | 'vigor' | 'astucia', number>,
+  treinada: string | null,
+  pontos: Record<string, number>,
+): number {
+  const atributo = ATRIBUTO_PERICIA[nome];
+  if (!atributo) throw new Error('Perícia desconhecida: ' + nome);
+  return atributos[atributo] + bonusTreinamento(grauPericia(nome, treinada, pontos));
+}
