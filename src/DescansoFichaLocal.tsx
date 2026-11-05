@@ -57,7 +57,7 @@ export default function DescansoFichaLocal({ dados, classe, pvMaximo, saMaximo, 
     </label>}
     <button type="button" className="acao" disabled={ocupado || !parcialDisponivel} onClick={() => void concluir('parcial')}>Concluir Descanso Parcial <span>→</span></button>
     <h4>Descanso Completo · 1 hora</h4>
-    <p>Somente Sala de Descanso. Restaura PV e SA aos máximos e encerra PV Temporários. Não reduz BI nem remove automaticamente Intoxicação ou outras consequências.</p>
+    <p>Somente Sala de Descanso. Restaura PV e SA aos máximos e encerra PV Temporários. Não reduz BI nem remove automaticamente Intoxicação ou outras consequências. Neste incremento, o aplicativo ainda não atualiza usos de Habilidades, Condições ou progressões temporais.</p>
     <button type="button" className="acao" disabled={ocupado || !completoDisponivel} onClick={() => void concluir('completo')}>Concluir Descanso Completo <span>→</span></button>
     {erro && <p className="offline-erro" role="alert">{erro}</p>}
     {mensagem && <p className="offline-status" role="status">{mensagem}</p>}
