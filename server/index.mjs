@@ -92,6 +92,38 @@ export function createLocalServer({
 
   prepararAutenticacaoLocal(db);
 
+  // WebSocket entrega somente sinais de invalidação. Os dados continuam vindo
+  // das rotas HTTP, que repetem a autorização antes de devolver qualquer conteúdo.
+  function sessaoWebSocketAtiva(cliente) {
+    return Boolean(db.prepare(
+      'SELECT 1 FROM sessoes_locais WHERE token_hash = ? AND conta_id = ? AND expira_em > ?'
+    ).get(cliente.sessionTokenHash, cliente.contaId, new Date().toISOString()));
+  }
+
+  function transmitirMesa(mesaId, tipo) {
+    for (const cliente of wss.clients) {
+      if (cliente.readyState !== WebSocket.OPEN || !cliente.mesasInscritas?.has(mesaId)) continue;
+      if (!sessaoWebSocketAtiva(cliente) ||
+          !db.prepare('SELECT 1 FROM participantes_mesa WHERE mesa_id = ? AND conta_id = ?').get(mesaId, cliente.contaId)) {
+        cliente.mesasInscritas.delete(mesaId);
+        if (!sessaoWebSocketAtiva(cliente)) cliente.close(4001, 'Sessão encerrada');
+        continue;
+      }
+      cliente.send(JSON.stringify({ type: 'mesa.changed', mesaId, change: tipo }));
+    }
+  }
+
+  function transmitirConta(contaId) {
+    for (const cliente of wss.clients) {
+      if (cliente.readyState !== WebSocket.OPEN || cliente.contaId !== contaId) continue;
+      if (!sessaoWebSocketAtiva(cliente)) {
+        cliente.close(4001, 'Sessão encerrada');
+        continue;
+      }
+      cliente.send(JSON.stringify({ type: 'account.changed' }));
+    }
+  }
+
   const listarEventos = db.prepare(
     'SELECT id, mensagem AS message, criado_em AS createdAt FROM eventos_prototipo ORDER BY id DESC LIMIT 50'
   );
@@ -139,8 +171,8 @@ export function createLocalServer({
       }
 
       if (await tratarRotaAutenticacao(req, res, url, db)) return;
-      if (await tratarRotaPersonagensLocal(req, res, url, db)) return;
-      if (await tratarRotaMesas(req, res, url, db)) return;
+      if (await tratarRotaPersonagensLocal(req, res, url, db, transmitirConta)) return;
+      if (await tratarRotaMesas(req, res, url, db, transmitirMesa, transmitirConta)) return;
 
       if (metodo === 'GET' && url.pathname === '/') {
         res.writeHead(200, {
@@ -265,6 +297,8 @@ export function createLocalServer({
 
   wss.on('connection', (cliente, req, conta) => {
     cliente.contaId = conta.id;
+    cliente.sessionTokenHash = conta.sessionTokenHash;
+    cliente.mesasInscritas = new Set();
     console.info('[WebSocket] Conta autenticada conectada. Clientes ativos: ' + wss.clients.size + '.');
     cliente.on('close', (codigo, motivo) => {
       const descricao = motivo.toString('utf8').trim() || '(sem motivo informado)';
@@ -286,6 +320,19 @@ export function createLocalServer({
         const mensagem = JSON.parse(dados.toString('utf8'));
         if (mensagem?.type === 'ping') {
           cliente.send(JSON.stringify({ type: 'pong', at: new Date().toISOString() }));
+          return;
+        }
+        if (mensagem?.type === 'subscribe' && Array.isArray(mensagem.mesaIds) && mensagem.mesaIds.length <= 50) {
+          if (!sessaoWebSocketAtiva(cliente)) {
+            cliente.close(4001, 'Sessão encerrada');
+            return;
+          }
+          const solicitadas = [...new Set(mensagem.mesaIds.filter(id => typeof id === 'string' && /^[a-f0-9]{32}$/.test(id)))];
+          const autorizadas = solicitadas.filter(mesaId =>
+            db.prepare('SELECT 1 FROM participantes_mesa WHERE mesa_id = ? AND conta_id = ?').get(mesaId, cliente.contaId)
+          );
+          cliente.mesasInscritas = new Set(autorizadas);
+          cliente.send(JSON.stringify({ type: 'subscribed', mesaIds: autorizadas }));
         }
       } catch {
         // Mensagens inválidas são ignoradas; o cliente não pode executar comandos.
@@ -297,6 +344,10 @@ export function createLocalServer({
   // WebSocket que deixaram de responder; o navegador poderá reconectar depois.
   const heartbeatTimer = setInterval(() => {
     for (const cliente of wss.clients) {
+      if (!sessaoWebSocketAtiva(cliente)) {
+        cliente.close(4001, 'Sessão encerrada');
+        continue;
+      }
       if (cliente.isAlive === false) {
         console.warn('[WebSocket] Cliente sem resposta ao heartbeat; encerrando a conexão para permitir reconexão.');
         cliente.terminate();
