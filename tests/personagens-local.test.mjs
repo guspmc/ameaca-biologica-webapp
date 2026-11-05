@@ -51,6 +51,11 @@ test('rascunhos de personagem persistem e ficam isolados por conta e Mesa', asyn
   app.db.prepare('INSERT INTO participantes_mesa (mesa_id, conta_id, papel, entrou_em) VALUES (?, ?, ?, ?)')
     .run(mesa.id, jogador.account.id, 'jogador', new Date().toISOString());
 
+  const listaTerceiro = await fetch(url + '/api/mesas/' + mesa.id + '/personagens', { headers: terceiro.headers });
+  assert.equal(listaTerceiro.status, 404);
+  const listaSemSessao = await fetch(url + '/api/mesas/' + mesa.id + '/personagens');
+  assert.equal(listaSemSessao.status, 401);
+
   const dados = { classe: 'Agente', origem: 'Civil', atributos: { vigor: 2, agilidade: 1 } };
   const criar = await fetch(url + '/api/mesas/' + mesa.id + '/personagens', {
     method: 'POST',
@@ -143,4 +148,41 @@ test('rascunhos são removidos quando a conta deixa de participar da Mesa', asyn
     .run(mesa.id, jogador.account.id);
   const restantes = app.db.prepare('SELECT COUNT(*) AS total FROM personagens_locais WHERE mesa_id = ?').get(mesa.id);
   assert.equal(restantes.total, 0);
+});
+
+
+test('limita a três rascunhos por jogador na mesma Mesa', async t => {
+  const { app, url } = await criarServidor(t);
+  const mestre = await criarConta(url, 'mestre-limite-rascunhos@example.test');
+  const jogador = await criarConta(url, 'jogador-limite-rascunhos@example.test');
+  const respostaMesa = await fetch(url + '/api/mesas', {
+    method: 'POST',
+    headers: { ...mestre.headers, 'content-type': 'application/json' },
+    body: JSON.stringify({ name: 'Mesa dos três rascunhos' }),
+  });
+  assert.equal(respostaMesa.status, 201);
+  const { mesa } = await respostaMesa.json();
+  app.db.prepare('INSERT INTO participantes_mesa (mesa_id, conta_id, papel, entrou_em) VALUES (?, ?, ?, ?)')
+    .run(mesa.id, jogador.account.id, 'jogador', new Date().toISOString());
+
+  for (let i = 1; i <= 3; i += 1) {
+    const resposta = await fetch(url + '/api/mesas/' + mesa.id + '/personagens', {
+      method: 'POST',
+      headers: { ...jogador.headers, 'content-type': 'application/json' },
+      body: JSON.stringify({ name: 'Rascunho ' + i, data: { ordem: i } }),
+    });
+    assert.equal(resposta.status, 201);
+  }
+
+  const quarto = await fetch(url + '/api/mesas/' + mesa.id + '/personagens', {
+    method: 'POST',
+    headers: { ...jogador.headers, 'content-type': 'application/json' },
+    body: JSON.stringify({ name: 'Quarto rascunho', data: {} }),
+  });
+  assert.equal(quarto.status, 409);
+  assert.equal((await quarto.json()).error, 'Você já possui o limite de três rascunhos nesta Mesa.');
+
+  const lista = await fetch(url + '/api/mesas/' + mesa.id + '/personagens', { headers: jogador.headers });
+  assert.equal(lista.status, 200);
+  assert.equal((await lista.json()).personagens.length, 3);
 });
