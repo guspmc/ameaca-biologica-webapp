@@ -81,7 +81,7 @@ export function concederAjudaMedicina(r: Reanimacao, testeMedicinaBemSucedido: b
     || typeof testeMedicinaBemSucedido !== 'boolean') {
     throw new Error('Ajuda de Medicina inválida para este estado.');
   }
-  return { ...r, vantagemProximoTeste: testeMedicinaBemSucedido };
+  return { ...r, vantagemProximoTeste: r.vantagemProximoTeste || testeMedicinaBemSucedido };
 }
 
 /** Cura recebida em 0 PV acumula e não desperta antes do terceiro sucesso. */
