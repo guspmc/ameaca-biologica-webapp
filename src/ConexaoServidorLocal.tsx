@@ -540,15 +540,18 @@ export default function ConexaoServidorLocal() {
 
   async function decidirSolicitacao(mesa: MesaLocal, id: string, decisao: 'aprovar' | 'recusar') {
     if (!sessao || mesa.role !== 'mestre') return;
+    const geracaoSolicitada = geracaoSessao.current;
     setErro(''); setAviso(''); setConsultando(true);
     try {
       const cliente = criarClienteServidorLocal({ baseUrl: endereco.trim(), token: sessao.token });
       await cliente.analisarSolicitacao(mesa.id, id, decisao);
+      if (!sessaoContinuaSendoAtual(geracaoSessao.current, geracaoSolicitada)) return;
       const confirmacao = decisao === 'aprovar'
         ? 'Participante aprovado e vínculo confirmado pelo servidor.'
         : 'Solicitação recusada pelo servidor.';
       setAviso(confirmacao);
       const [lista, pedidos] = await Promise.allSettled([cliente.listarMesas(), cliente.listarSolicitacoes(mesa.id)]);
+      if (!sessaoContinuaSendoAtual(geracaoSessao.current, geracaoSolicitada)) return;
       if (lista.status === 'fulfilled') setMesas(lista.value.mesas);
       if (pedidos.status === 'fulfilled') setSolicitacoes(atual => ({ ...atual, [mesa.id]: pedidos.value.requests }));
       const falhas = [lista, pedidos].filter(resultado => resultado.status === 'rejected');
@@ -561,6 +564,7 @@ export default function ConexaoServidorLocal() {
         }
       }
     } catch (problema) {
+      if (!sessaoContinuaSendoAtual(geracaoSessao.current, geracaoSolicitada)) return;
       if (problema instanceof ErroServidorLocal && problema.status === 401) encerrarSessao('A sessão expirou ou foi encerrada no servidor. Entre novamente.');
       else setErro(problema instanceof Error ? problema.message : 'Não foi possível analisar a solicitação.');
     } finally { setConsultando(false); }
