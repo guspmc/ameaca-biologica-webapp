@@ -22,10 +22,10 @@
 
 ## 2. Persistência e segurança local
 
-- Banco IndexedDB: `ameaca-biologica-ficha`, store `personagens`, versão 1.
+- Banco IndexedDB: `ameaca-biologica-ficha`, store `personagens`, versão 2. A migração v1→v2 atribui `geracao` aos registros anteriores.
 - Gravação, exclusão e restauração aguardam conclusão da transação IndexedDB.
-- Fila serializada impede sobreposição de patches de salvamento dentro da instância da aplicação.
-- Backup JSON versionado permite validar, exportar, importar como cópias e substituir o conjunto local em transação única.
+- Fila serializada impede sobreposição de patches de salvamento dentro da instância da aplicação. `salvarPatchPersonagem()` lê, compara, mescla e grava dentro de uma transação `readwrite`; conflitos na mesma chave são recusados e `geracao` invalida edições antigas após restauração.
+- Backup JSON versionado permite validar, exportar, importar como cópias e substituir o conjunto local em transação única. A validação compartilhada entre backup e persistência está implementada inicialmente em `src/validacaoPersonagemLocal.ts`.
 - Edições locais pendentes são rastreadas por seção. Fechar a ficha solicita confirmação de descarte; falhas de gravação impedem fechar.
 - `beforeunload` solicita aviso do navegador quando há alterações locais pendentes. O comportamento final depende do navegador e não substitui persistência.
 - O Service Worker não armazena dados pessoais. Os dados da ficha ficam no IndexedDB separado.
@@ -159,3 +159,35 @@ A proposta de contrato compartilhado da seção 13 do documento `auditoria-esque
 - Foram acrescentados testes específicos para esses casos.
 - HEAD de código após esses ajustes: `0f4c037fe6f560da1e5a21c909e3e23909155da3`.
 - **Execução de `pnpm test` e `pnpm build`: não confirmada.** O conector consultado não retornou status nem workflow runs associados ao commit. A validação permanece pendente; não iniciar homologação humana ainda.
+
+
+## 12. Correções do checkpoint e estado consolidado — 05/11/2026
+
+Esta seção atualiza pontos do retrato inicial que ficaram desatualizados.
+
+### Estado real do código
+
+- **Banco IndexedDB:** versão 2, não versão 1. A migração v1→v2 atribui `geracao` às fichas antigas.
+- **Integridade:** `src/validacaoPersonagemLocal.ts` centraliza a validação usada por persistência e backup. A implementação cobre rascunho mínimo, seções parciais, campos conhecidos, validação de Perícias, Características, Identidade e compras iniciais, além de preservação de campos futuros JSON válidos.
+- **Persistência concorrente:** o patch transacional e o token de geração estão implementados. A homologação em duas abas reais ainda falta; os testes existentes usam mocks.
+- **Backup:** a leitura de backup legado sem `geracao` gera um novo token antes de permitir a importação; a escrita/exportação atual exige geração válida.
+- **Validação de Perícias parciais:** nomes e compatibilidade com Origem são conferidos mesmo antes de a seção estar completa.
+- **JSON-safe:** rejeita estruturas que JSON descartaria/transformaria silenciosamente, como `undefined`, símbolos, propriedades não enumeráveis, getters, arrays com lacunas, ciclos e protótipos não simples.
+
+### Commits relevantes de código
+
+- `b4060b44`: validação de Perícias em rascunhos parciais.
+- `cf44e7f7`, `3fa4b16c`, `6bb16fc0`: endurecimento da verificação JSON-safe e testes.
+- `0f4c037f`: imports do planejador de inventário compatíveis com a resolução ESM do runner Node.
+
+### Documentação
+
+- Auditoria técnica: `docs/auditoria-esquema-dados-ficha-offline-2026-11-04.md`, seções 13 a 17.
+- O histórico de concorrência foi corrigido: a antiga recomendação de implementar patch transacional e geração por registro já foi atendida no código; permanece pendente somente o teste real em navegador com duas abas.
+
+### Verificação e próximos passos
+
+- **CI / `pnpm test` / `pnpm build`: pendentes de confirmação no HEAD atual.** A consulta disponível ao GitHub não retornou status nem execuções associadas aos commits recentes.
+- Não considerar a validação concluída nem iniciar a bateria humana até executar a suíte/build em runner real.
+- Próximo: confirmar automação, revisar o fluxo integrado de criação e backup, depois realizar homologação real de concorrência e concluir o Inventário neste ciclo da Ficha.
+- **HEAD documental:** `fb27e227` foi o último HEAD consultado antes desta atualização; o commit desta atualização deve ser registrado após a gravação.
