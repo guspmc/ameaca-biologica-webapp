@@ -22,7 +22,7 @@ export default function DescansoFichaLocal({ dados, classe, pvMaximo, saMaximo, 
   const face = Number(resultado);
   const resultadoValido = resultado.trim() !== '' && Number.isSafeInteger(face) && face >= 1 && face <= (dadoVida ?? 0);
   const parcialDisponivel = modoDados !== 'virtuais' && dadoVida !== null && resultadoValido && localPermiteDescanso('parcial', local);
-  const completoDisponivel = localPermiteDescanso('completo', local);
+  const completoDisponivel = dadoVida !== null && localPermiteDescanso('completo', local);
   async function concluir(tipo: 'parcial' | 'completo') {
     if (ocupado) return;
     try {
