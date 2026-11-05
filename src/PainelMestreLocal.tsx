@@ -34,7 +34,7 @@ export default function PainelMestreLocal({ mesa, convite, solicitacoes, partici
     {participantes && <section aria-label="Participantes autorizados">
       <h5>Participantes da Mesa</h5>
       {participantes.length ? <ul className="servidor-local-lista-mesas">{participantes.map((p, index) => <li key={p.accountId}>
-        <div><strong>{p.role === "mestre" ? "Mestre" : "Jogador " + index}</strong><small>{p.role === "mestre" ? "Administração da Mesa" : "Entrou em " + new Date(p.joinedAt).toLocaleDateString("pt-BR")}</small></div>
+        <div><strong>{p.role === "mestre" ? "Mestre" : "Jogador " + (index + 1)}</strong><small>{p.role === "mestre" ? "Administração da Mesa" : "Entrou em " + new Date(p.joinedAt).toLocaleDateString("pt-BR")}</small></div>
         {p.role === "jogador" && <button className="botao-claro" type="button" disabled={consultando} onClick={() => aoRemoverParticipante(mesa, p.accountId)}>Remover</button>}
       </li>)}</ul> : <p className="servidor-local-vazio">Nenhum participante.</p>}
     </section>}
