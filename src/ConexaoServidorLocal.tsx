@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { criarClienteServidorLocal, ErroServidorLocal, type MesaLocal, type ResumoPersonagemLocal, type SaudeServidorLocal, type SessaoLocal, type PersonagemRascunhoLocal } from './servidorLocal';
 import FichaLocal from './FichaLocal';
+import PainelMestreLocal from './PainelMestreLocal';
 import { calcularAtrasoReconexao } from './reconexaoLocal';
 import { criarFilaSerializada } from './filaSerializada';
 import { fichaContinuaSendoAlvo, sessaoContinuaSendoAtual } from './fichaContinuaSendoAlvo';
@@ -645,16 +646,18 @@ export default function ConexaoServidorLocal() {
                 <div className="servidor-local-botoes"><span className="papel-jogador">RASCUNHO</span><button className="botao-claro" type="button" disabled={consultando || salvandoFicha} onClick={() => void abrirFicha(mesa, personagem)}>Abrir ficha</button><button className="botao-claro" type="button" disabled={consultando || salvandoFicha} onClick={() => void excluirRascunho(mesa, personagem)}>Excluir</button></div>
               </li>)}</ul> : <p className="servidor-local-vazio">Nenhum rascunho nesta Mesa.</p> : <p className="servidor-local-vazio">Consulte os rascunhos para carregar a lista do servidor.</p>}
             </section>)}
-            {mesas.filter(mesa => mesa.role === 'mestre').map(mesa => <section className="servidor-local-controle-mesa" key={mesa.id}>
-              <h4>Administração · {mesa.name}</h4>
-              <div className="servidor-local-botoes">
-                <button className="botao-claro" type="button" disabled={consultando} onClick={() => void gerarConvite(mesa)}>{convitesGerados[mesa.id] ? 'Renovar convite' : 'Gerar convite'}</button>
-                <button className="botao-claro" type="button" disabled={consultando} onClick={() => void revogarConvite(mesa)}>Revogar convite ativo</button>
-                <button className="botao-claro" type="button" disabled={consultando} onClick={() => void carregarSolicitacoes(mesa)}>Ver solicitações</button>
-              </div>
-              {convitesGerados[mesa.id] && <div className="servidor-local-codigo"><label>Código de convite<input readOnly value={convitesGerados[mesa.id]} /></label><button className="botao-claro" type="button" onClick={() => void copiarConvite(convitesGerados[mesa.id])}>Copiar código</button></div>}
-              {(solicitacoes[mesa.id] ?? []).length ? <ul className="servidor-local-lista-mesas">{solicitacoes[mesa.id].map(pedido => <li key={pedido.id}><div><strong>{pedido.email}</strong><small>Solicitação pendente</small></div><div className="servidor-local-botoes"><button className="botao-claro" type="button" disabled={consultando} onClick={() => void decidirSolicitacao(mesa, pedido.id, 'aprovar')}>Aprovar</button><button className="botao-claro" type="button" disabled={consultando} onClick={() => void decidirSolicitacao(mesa, pedido.id, 'recusar')}>Recusar</button></div></li>)}</ul> : solicitacoes[mesa.id] ? <p className="servidor-local-vazio">Nenhuma solicitação pendente.</p> : null}
-            </section>)}
+            {mesas.filter(mesa => mesa.role === 'mestre').map(mesa => <PainelMestreLocal
+              key={mesa.id}
+              mesa={mesa}
+              convite={convitesGerados[mesa.id]}
+              solicitacoes={solicitacoes[mesa.id]}
+              consultando={consultando}
+              aoGerarConvite={item => void gerarConvite(item)}
+              aoRevogarConvite={item => void revogarConvite(item)}
+              aoCarregarSolicitacoes={item => void carregarSolicitacoes(item)}
+              aoCopiarConvite={codigo => void copiarConvite(codigo)}
+              aoDecidirSolicitacao={(item, pedidoId, decisao) => void decidirSolicitacao(item, pedidoId, decisao)}
+            />)}
             <form className="formulario servidor-local-form-mesa" onSubmit={ingressarPorConvite}>
               <label>Código de convite recebido<input value={codigoConvite} onChange={evento => setCodigoConvite(evento.target.value)} autoComplete="off" /></label>
               <button className="acao" type="submit" disabled={consultando || !codigoConvite.trim()}>Solicitar ingresso <span>→</span></button>
