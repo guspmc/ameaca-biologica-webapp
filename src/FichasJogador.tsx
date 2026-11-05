@@ -114,7 +114,7 @@ export default function FichasJogador({supabase,usuarioId,mesas,sinalAtualizacao
         ?await tabela.select("id,nome,mesa_id,jogador_id,classe,origem,pericia_origem_treinada,pericia_origem_extra,pontos_pericia_classe,habilidade_basica,equipamento_inicial,compras_iniciais,revisao_compras,identidade,nivel,forca,agilidade,vigor,astucia,pv_atual,pv_maximo,sa_atual,sa_maximo,bi_atual,bi_maximo,defesa,estado_ficha,configuracao_funcionamento,revisao_funcionamento").order('criado_em',{ascending:false})
         :await tabela.select("id,nome,mesa_id,jogador_id,classe,origem,pericia_origem_treinada,pericia_origem_extra,pontos_pericia_classe,habilidade_basica,equipamento_inicial,compras_iniciais,revisao_compras,identidade,nivel,forca,agilidade,vigor,astucia,pv_atual,pv_maximo,sa_atual,sa_maximo,bi_atual,bi_maximo,defesa,estado_ficha").order('criado_em',{ascending:false});
       if(error) {
-        const cache = await lerPersonagensOffline<Personagem>(usuarioId).catch(() => null);
+        const cache = await lerCachePermitido();
         if (cache) {
           setPersonagens(cache.dados.map(p=>({...p,identidade:p.identidade??{},pontos_pericia_classe:p.pontos_pericia_classe??{},compras_iniciais:p.compras_iniciais??{}})) as Personagem[]);
           setCacheAtualizadoEm(cache.atualizadoEm); setDadosCacheados(true);
@@ -131,7 +131,7 @@ export default function FichasJogador({supabase,usuarioId,mesas,sinalAtualizacao
         if(atualizadoEm)setCacheAtualizadoEm(atualizadoEm);
       }
     } catch {
-      const cache = await lerPersonagensOffline<Personagem>(usuarioId).catch(() => null);
+      const cache = await lerCachePermitido();
       if (cache) {
         setPersonagens(cache.dados.map(p=>({...p,identidade:p.identidade??{},pontos_pericia_classe:p.pontos_pericia_classe??{},compras_iniciais:p.compras_iniciais??{}})) as Personagem[]);
         setCacheAtualizadoEm(cache.atualizadoEm); setDadosCacheados(true);
