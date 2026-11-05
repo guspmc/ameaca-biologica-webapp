@@ -6,7 +6,7 @@ import Convites, { CONVITE_LOCAL } from './Convites';
 import Participantes from './Participantes';
 import FichasJogador from './FichasJogador';
 import { chavePublica, urlPermitida, escolherConexao, URL_PRODUCAO, type Conexao } from './conexao';
-import { limparCacheUsuario, lerMesasOffline, removerSnapshotsDeMesasNaoAutorizadas, salvarMesasOffline } from './offlineCache';
+import { atualizarAutorizacaoOffline, limparCacheUsuario, lerMesasOffline } from './offlineCache';
 
 type Mesa = { id: string; nome: string; mestre_id: string; criada_em: string };
 type Modo = 'entrar' | 'cadastrar';
@@ -204,9 +204,13 @@ function Lobby({ supabase, sessao }: { supabase: SupabaseClient; sessao: Session
       } else {
         const autorizadas = (data ?? []) as Mesa[];
         setMesas(autorizadas); setErro(''); setSomenteLeituraOffline(false);
-        const atualizadoEm = await salvarMesasOffline(sessao.user.id, autorizadas).catch(() => null);
-        setMesasCacheAtualizadoEm(atualizadoEm);
-        await removerSnapshotsDeMesasNaoAutorizadas(sessao.user.id, autorizadas.map(mesa => mesa.id)).catch(() => undefined);
+        try {
+          const atualizadoEm = await atualizarAutorizacaoOffline(sessao.user.id, autorizadas);
+          setMesasCacheAtualizadoEm(atualizadoEm);
+        } catch {
+          setMesasCacheAtualizadoEm(null);
+          setErro('Acesso online confirmado, mas não foi possível atualizar a autorização do cache local. A consulta offline ficará sem confirmação atualizada.');
+        }
       }
     } catch {
       const cache = await lerMesasOffline(sessao.user.id).catch(() => null);
