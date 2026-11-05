@@ -2,10 +2,11 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 
-const [ficha, painel, recursos] = await Promise.all([
+const [ficha, painel, recursos, descanso] = await Promise.all([
   readFile(new URL('../src/FichaLocal.tsx', import.meta.url), 'utf8'),
   readFile(new URL('../src/ReanimacaoFichaLocal.tsx', import.meta.url), 'utf8'),
   readFile(new URL('../src/RecursosFichaLocal.tsx', import.meta.url), 'utf8'),
+  readFile(new URL('../src/DescansoFichaLocal.tsx', import.meta.url), 'utf8'),
 ]);
 
 test('painel de Reanimação está integrado à ficha contínua e aos salvamentos', () => {
@@ -32,4 +33,10 @@ test('cura em 0 PV é direcionada à acumulação da Reanimação, sem botão de
 test('Reanimação não sobrescreve outras seções ainda pendentes', () => {
   assert.match(ficha, /bloqueado=\{secoesPendentes\.size > 0\}/);
   assert.match(painel, /Salve ou descarte outras alterações pendentes/);
+});
+
+test('descanso não restaura PV enquanto Reanimação ou transformação estiver pendente', () => {
+  assert.match(ficha, /reanimacaoEmCurso/);
+  assert.match(ficha, /bloqueado=\{secoesPendentes\.size > 0 \|\| reanimacaoEmCurso\}/);
+  assert.match(descanso, /bloqueado/);
 });
