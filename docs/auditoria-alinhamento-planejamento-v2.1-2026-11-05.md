@@ -120,3 +120,27 @@ Fontes consultadas em 05/11/2026:
 - Chrome for Developers, anúncio do prompt LNA e substituição da PNA: https://developer.chrome.com/blog/local-network-access
 
 **Decisão técnica provisória:** não adicionar cabeçalhos PNA. Primeiro validar no Chrome real o prompt LNA, o destino usado (loopback ou IP LAN) e o resultado da chamada. Se a URL for loopback e o navegador bloquear por ausência de `targetAddressSpace`, corrigir o cliente de forma específica e cobrir o comportamento em teste compatível.
+
+
+## 11. Resultado do CI no commit 99bffe2 — 05/11/2026
+
+O HEAD da branch `feat/offline-first-ficha` avançou para `99bffe2c7a4b6010c308aa3a69ad20f726a5fab0`. Os dois workflows disparados por esse commit concluíram com sucesso:
+
+- **Validar compilação do WebApp** — run [41956551991](https://github.com/guspmc/ameaca-biologica-webapp/actions/runs/41956551991): 377/377 testes aprovados; verificação TypeScript; build Vite concluído.
+- **Verificação da ficha offline** — run [41956552001](https://github.com/guspmc/ameaca-biologica-webapp/actions/runs/41956552001): 377/377 testes aprovados; build validado.
+
+O teste de integração `tests/cliente-servidor-local.test.mjs` está incluído nessa suíte aprovada. Ele exercita o cliente HTTP contra o servidor Node/SQLite temporário e confirma a releitura dos dados após atualização PUT. O primeiro erro observado foi exclusivamente na fixture do teste (inserção duplicada do participante que já é criado como Mestre); o cenário foi corrigido para atualizar o papel existente. O commit `99bffe2` contém essa correção.
+
+## 12. Declaração de espaço de endereço e teste unitário — 05/11/2026
+
+A sequência de commits `0750ebd`, `adab7ed` e `713fd59` acrescentou ao cliente HTTP a identificação do espaço de endereço do destino e a opção `targetAddressSpace` apenas para destinos classificados como locais ou loopback. O helper identifica loopback IPv4/IPv6 e endereços privados/link-local, além de hostname `.local`; destinos públicos não recebem a opção. A detecção foi corrigida em commit subsequente após revisão do tratamento de endereços IPv6.
+
+Foi adicionado `tests/espaco-endereco-local.test.mjs`, cobrindo exemplos de loopback, redes privadas, link-local, IPv6 e destino público. Os 377 testes aprovados no CI do commit `99bffe2` incluem esse teste.
+
+**IMPLEMENTADO E TESTADO AUTOMATICAMENTE:** declaração de espaço de endereço para destinos reconhecidos e regressão unitária; CORS PUT/DELETE; integração HTTP cliente → servidor SQLite, incluindo persistência e releitura.
+
+**AINDA PENDENTE — TESTE REAL DE NAVEGADOR:** confirmar no Chrome a permissão Local Network Access, o comportamento de `targetAddressSpace` para o endereço efetivamente configurado, o acesso a partir da origem HTTPS usada pelo autor e o salvamento/reabertura real da ficha. A suíte automatizada não substitui esse teste. Se o host for um nome DNS personalizado que resolve para IP privado e não terminar em `.local`, a classificação atual pode não reconhecê-lo; verificar a forma de endereço aceita pela interface antes de declarar esse caso coberto.
+
+## 13. Proteções mantidas
+
+As alterações foram feitas somente na branch `feat/offline-first-ficha`. Não houve merge em `main`, publicação, alteração no Supabase de produção ou modificação do cânone do RPG.
