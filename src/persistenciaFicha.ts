@@ -8,6 +8,8 @@ export const BANCO_FICHA = 'ameaca-biologica-ficha';
 export const VERSAO_BANCO_FICHA = 2;
 export const STORE_PERSONAGENS = 'personagens';
 
+import { validarPersonagemLocal } from './validacaoPersonagemLocal.ts';
+
 export type PersonagemLocal = {
   id: string;
   geracao: string;
@@ -22,14 +24,7 @@ function novoTokenGeracao(): string {
 }
 
 function validarPersonagem(valor: unknown): valor is PersonagemLocal {
-  if (!valor || typeof valor !== 'object' || Array.isArray(valor)) return false;
-  const item = valor as Partial<PersonagemLocal>;
-  return typeof item.id === 'string' && item.id.trim().length > 0
-    && typeof item.geracao === 'string' && item.geracao.trim().length > 0
-    && typeof item.nome === 'string' && item.nome.trim().length >= 2 && item.nome.trim().length <= 80
-    && typeof item.criadoEm === 'string' && !Number.isNaN(Date.parse(item.criadoEm))
-    && typeof item.atualizadoEm === 'string' && !Number.isNaN(Date.parse(item.atualizadoEm))
-    && !!item.dados && typeof item.dados === 'object' && !Array.isArray(item.dados);
+  return validarPersonagemLocal(valor);
 }
 
 function exigirIndexedDB(): IDBFactory {
