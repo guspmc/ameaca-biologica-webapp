@@ -321,3 +321,27 @@ Commit 3fbfbc5477f075ea2d7dd5bab6c25bc43a7d5005: ambos os workflows concluíram 
 **IMPLEMENTADO E TESTADO AUTOMATICAMENTE:** regras isoladas de capacidade ativa, expansão e bloco de moedas.
 
 **AINDA NÃO IMPLEMENTADO:** grade ativa, catálogo integral, instâncias persistidas, operações Usar/Equipar/Guardar/Descartar, Peças, combinações, melhorias, recuperação do Hatchet e integração de estado. O módulo atual não deve ser apresentado como Inventário ativo funcional.
+
+
+## 21. Recursos atuais da ficha — 05/11/2026
+
+Foi integrado um primeiro painel funcional para administrar os recursos atuais da personagem, reutilizando o contrato de persistência JSON já existente. A implementação está disponível no modo Ficha Offline, no Laboratório fictício e na ficha conectada ao servidor local.
+
+### Regras implementadas
+
+- **PV:** PV Atuais separados dos PV Máximos; PV Temporários em campo próprio. Dano consome Temporários antes dos Atuais; cura altera apenas Atuais e respeita o máximo.
+- **PV Temporários:** novos valores preservam o maior valor, sem soma.
+- **SA:** ajuste explícito entre zero e SA Máximo; não compra Ações nem administra a janela de Esforço.
+- **BI:** começa em zero; ajuste explícito, sem crescimento espontâneo; permite alcançar ou ultrapassar BI Máxima e sinaliza Colapso Viral, sem iniciar Reanimação ou transformação.
+- **Edição:** ajustes diretos, +/-, desfazer o último ajuste ainda não salvo e descartar alterações pendentes. Salvamento só é confirmado após resposta do armazenamento correspondente.
+- **Compatibilidade:** registros antigos sem PV/SA atuais recebem os valores iniciais definidos anteriormente para a criação; campos presentes são validados como inteiros não negativos. Se mudanças em Atributos/Classe reduzirem um máximo abaixo do valor atual, o valor é preservado e a interface exige ajuste explícito antes de salvar.
+
+### Evidência automatizada
+
+Commit de código 80bb724cceab92d3fb1482fc16c8f836528c2a61: ambos os workflows concluíram com sucesso; **409/409 testes aprovados**, TypeScript, build Vite, tipos isolados e verificações PostgreSQL aprovados.
+
+**IMPLEMENTADO E TESTADO AUTOMATICAMENTE:** cálculo e validação de transições de PV, PV Temporários, SA e BI; integração do painel e salvamento nos três ambientes; preservação de valores atuais ao recalcular máximos; controle de desfazer pendência.
+
+**PENDENTE DE TESTE HUMANO:** casos 12–17 acrescentados à seção H4 de docs/fila-testes-humanos.md.
+
+**AINDA NÃO IMPLEMENTADO:** histórico durável de recursos, Desfazer após confirmação, Descanso Parcial/Completo, Reanimação por 0 PV ou Colapso, Condições, combate e automações de consumo/efeitos. O painel é administração manual dos valores atuais, não um motor de combate.
