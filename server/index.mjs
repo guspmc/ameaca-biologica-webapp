@@ -331,17 +331,26 @@ export function createLocalServer({
           cliente.send(JSON.stringify({ type: 'pong', at: new Date().toISOString() }));
           return;
         }
-        if (mensagem?.type === 'subscribe' && Array.isArray(mensagem.mesaIds) && mensagem.mesaIds.length <= 50) {
+        if (mensagem?.type === 'subscribe' && typeof mensagem.mesaId === 'string' && /^[a-f0-9]{32}$/.test(mensagem.mesaId)) {
           if (!sessaoWebSocketAtiva(cliente)) {
             cliente.close(4001, 'Sessão encerrada');
             return;
           }
-          const solicitadas = [...new Set(mensagem.mesaIds.filter(id => typeof id === 'string' && /^[a-f0-9]{32}$/.test(id)))];
-          const autorizadas = solicitadas.filter(mesaId =>
-            db.prepare('SELECT 1 FROM participantes_mesa WHERE mesa_id = ? AND conta_id = ?').get(mesaId, cliente.contaId)
-          );
-          cliente.mesasInscritas = new Set(autorizadas);
-          cliente.send(JSON.stringify({ type: 'subscribed', mesaIds: autorizadas }));
+          const autorizada = db.prepare(
+            'SELECT 1 FROM participantes_mesa WHERE mesa_id = ? AND conta_id = ?'
+          ).get(mensagem.mesaId, cliente.contaId);
+          if (autorizada) {
+            cliente.mesasInscritas.add(mensagem.mesaId);
+            cliente.send(JSON.stringify({ type: 'subscribed', mesaId: mensagem.mesaId }));
+          } else {
+            cliente.mesasInscritas.delete(mensagem.mesaId);
+            cliente.send(JSON.stringify({ type: 'subscription.denied' }));
+          }
+          return;
+        }
+        if (mensagem?.type === 'unsubscribe' && typeof mensagem.mesaId === 'string' && /^[a-f0-9]{32}$/.test(mensagem.mesaId)) {
+          cliente.mesasInscritas.delete(mensagem.mesaId);
+          cliente.send(JSON.stringify({ type: 'unsubscribed', mesaId: mensagem.mesaId }));
         }
       } catch {
         // Mensagens inválidas são ignoradas; o cliente não pode executar comandos.
