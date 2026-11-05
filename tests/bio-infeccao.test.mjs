@@ -42,7 +42,7 @@ test('fases derivam modificadores numéricos sem aplicar efeitos à ficha', () =
 
 test('fases informam efeitos canônicos sem executar alterações', () => {
   assert.match(calcularFaseBioInfeccao(2, 10).efeito, /Movimento \+3 m/);
-  assert.match(calcularFaseBioInfeccao(4, 10).efeito, /Ataques \+2/);
+  assert.match(calcularFaseBioInfeccao(4, 10).efeito, /Testes de Ataque \+2/);
   assert.match(calcularFaseBioInfeccao(6, 10).efeito, /\+1d4/);
   assert.match(calcularFaseBioInfeccao(8, 10).efeito, /Desvantagem/);
 });
