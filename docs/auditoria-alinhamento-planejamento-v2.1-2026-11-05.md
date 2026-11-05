@@ -2,7 +2,7 @@
 
 **Documento de referência:** Documento Mestre de Planejamento v2.1, aditivo aprovado em 03/11/2026.  
 **Branch inspecionada:** `feat/offline-first-ficha`  
-**HEAD atualizado:** `76d14161c4a729016741665943d4bd051ed5d3ea`  
+**HEAD atualizado:** `de3d7837102082278b57ace8c994749dcc0cc7cd`  
 **Escopo:** confronto inicial das prioridades 1 e 2 da v2.1 com o código disponível.  
 **Limite:** inspeção remota de código e CI; nenhum teste de navegador, rede LAN real ou equipamento do autor foi executado nesta auditoria.
 
@@ -31,15 +31,15 @@ A identidade visual da ficha mobile congelada é referência aprovada de composi
 ### Hipóteses que não devem ser tratadas como causa
 
 - Falha de alcance/rede ou endereço configurado.
-- Política CORS/Private Network Access do navegador ao chamar o servidor local a partir de uma origem pública.
+- Política CORS e permissão Local Network Access (LNA) do navegador ao chamar o servidor local a partir de uma origem pública.
 - Divergência entre endereço usado para criação/consulta e endereço usado para atualização.
 - Falha de autenticação ou sessão.
 
-O servidor tem uma lista CORS explícita e inclui por padrão GitHub Pages e Vite local. A resposta de preflight observada no código não inclui cabeçalho específico de Private Network Access. Isso permanece uma **HIPÓTESE técnica a investigar**, não causa confirmada. A reprodução precisa registrar origem, URL final, método, status/preflight e log do servidor, sem expor token.
+O servidor tem uma lista CORS explícita e inclui por padrão GitHub Pages e Vite local. A documentação atual do Chrome informa que o mecanismo antigo de Private Network Access (PNA) foi substituído pelo Local Network Access (LNA): não devemos adicionar cabeçalhos PNA como correção. Em origens públicas HTTPS, o Chrome exige permissão do usuário para acessar destinos locais/loopback; essa permissão só pode ser solicitada em contexto seguro. A reprodução precisa registrar se o prompt LNA aparece/foi concedido, origem, URL final, método, status/preflight e log do servidor, sem expor token. A URL padrão do cliente é `http://127.0.0.1:4175`; a documentação do Chrome usa `targetAddressSpace: 'loopback'` nos exemplos de fetch para loopback. O cliente atual não declara essa opção. É uma possível lacuna técnica a validar no navegador, não uma causa confirmada.
 
 ### Próximo teste técnico
 
-Criar um teste de integração do cliente `src/servidorLocal.ts` contra o servidor real de teste, cobrindo criação, consulta e atualização com o mesmo endereço/token; depois, quando houver acesso ao navegador do autor, reproduzir pela origem efetivamente usada e comparar a rota de criação/consulta com a rota PUT. A lista de métodos CORS foi corrigida na branch para anunciar `GET, POST, PUT, DELETE, OPTIONS`, mantendo a lista explícita de origens permitidas. A alteração foi coberta por `tests/cors-metodos-local.test.mjs`, que verifica preflight para PUT/DELETE e rejeição de origem não autorizada. O teste não amplia origens, não usa curingas e não concede autorização de acesso aos dados; a autorização real continua na rota por sessão/propriedade.
+Foi adicionado `tests/cliente-servidor-local.test.mjs` para exercitar o cliente HTTP real contra o servidor Node/SQLite de teste, usando o mesmo endereço e token para cadastro, login, criação de Mesa/personagem, consulta, PUT e releitura persistida. A execução do novo teste está pendente no CI. Depois, quando houver acesso ao navegador do autor, reproduzir pela origem efetivamente usada e comparar a rota de criação/consulta com a rota PUT. A lista de métodos CORS foi corrigida na branch para anunciar `GET, POST, PUT, DELETE, OPTIONS`, mantendo a lista explícita de origens permitidas. A alteração foi coberta por `tests/cors-metodos-local.test.mjs`, que verifica preflight para PUT/DELETE e rejeição de origem não autorizada. O teste não amplia origens, não usa curingas e não concede autorização de acesso aos dados; a autorização real continua na rota por sessão/propriedade.
 
 ## 3. Prioridade 2 — autenticação local e sessão
 
@@ -98,8 +98,25 @@ Os dois workflows do GitHub Actions para o HEAD `76d14161c4a729016741665943d4bd0
 
 ### Limites restantes
 
-**IMPLEMENTADO E TESTADO AUTOMATICAMENTE:** correção do anúncio dos métodos e regressão de preflight CORS no servidor.
+**IMPLEMENTADO E TESTADO AUTOMATICAMENTE:** correção do anúncio dos métodos e regressão de preflight CORS no servidor. Também foi criado teste de integração do cliente HTTP com a API real de teste; seu resultado aguarda CI.
 
-**PENDENTE:** teste real de navegador HTTPS → servidor LAN, inclusive eventual exigência de Local Network Access/Private Network Access do navegador, alcance do IP/porta e gravação persistida conferida após recarga. A correção CORS não comprova sozinha conectividade LAN nem salvamento real.
+**PENDENTE:** teste real de navegador HTTPS → servidor LAN, incluindo permissão Local Network Access do Chrome, alcance do IP/porta, possível necessidade de declarar `targetAddressSpace: 'loopback'` no endereço padrão e gravação persistida conferida após recarga. A correção CORS não comprova sozinha conectividade LAN nem salvamento real.
 
 A sequência da v2.1 permanece: fechar prioridade 1 antes de iniciar a migração para nickname e sessão persistente.
+
+
+## 9. Integração do cliente HTTP — 05/11/2026
+
+Foi adicionado `tests/cliente-servidor-local.test.mjs`. O teste utiliza `criarClienteServidorLocal()` diretamente contra uma instância temporária do servidor Node/SQLite e percorre cadastro, login, confirmação de sessão, criação de Mesa, criação de rascunho, consulta, atualização PUT e nova consulta para confirmar os dados persistidos. O vínculo jogador/Mesa é preparado no banco de teste, sem alterar dados de produção.
+
+**STATUS:** teste adicionado no commit `de3d7837102082278b57ace8c994749dcc0cc7cd`; execução CI pendente no momento do registro.
+
+## 10. Chrome Local Network Access — esclarecimento técnico
+
+A documentação atual do Chrome esclarece que Local Network Access (LNA) substitui a abordagem experimental PNA. Para uma página pública HTTPS acessar IP privado ou loopback, o navegador solicita permissão explícita do usuário. O contexto superior precisa ser seguro. O Chrome também documenta `targetAddressSpace: 'loopback'` em chamadas fetch destinadas a `127.0.0.1`/localhost; o cliente atual não define essa opção.
+
+Fontes consultadas em 05/11/2026:
+- Chrome for Developers, guia Local Network Access: https://developer.chrome.com/docs/modern-web-guidance/guides/security/local-network-access
+- Chrome for Developers, anúncio do prompt LNA e substituição da PNA: https://developer.chrome.com/blog/local-network-access
+
+**Decisão técnica provisória:** não adicionar cabeçalhos PNA. Primeiro validar no Chrome real o prompt LNA, o destino usado (loopback ou IP LAN) e o resultado da chamada. Se a URL for loopback e o navegador bloquear por ausência de `targetAddressSpace`, corrigir o cliente de forma específica e cobrir o comportamento em teste compatível.
