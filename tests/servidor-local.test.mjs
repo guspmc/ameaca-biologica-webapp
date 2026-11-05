@@ -417,6 +417,73 @@ test('Mestre consulta participantes sem expor e-mail e remove jogador com revoga
   assert.equal(tentativaTerceiro.status, 404);
 });
 
+
+test('aprovações simultâneas respeitam o teto de 10 jogadores da Mesa LAN', async t => {
+  const instancia = await criarInstancia(t);
+  const origem = 'https://guspmc.github.io';
+  async function conta(email) {
+    const credenciais = { email, password: 'senha-local-comprida-2026' };
+    const cadastro = await fetch(instancia.url + '/api/auth/register', {
+      method: 'POST', headers: { origin: origem, 'content-type': 'application/json' },
+      body: JSON.stringify(credenciais),
+    });
+    assert.equal(cadastro.status, 201);
+    const login = await fetch(instancia.url + '/api/auth/login', {
+      method: 'POST', headers: { origin: origem, 'content-type': 'application/json' },
+      body: JSON.stringify(credenciais),
+    });
+    assert.equal(login.status, 200);
+    const sessao = await login.json();
+    return { account: sessao.account, headers: { origin: origem, authorization: 'Bearer ' + sessao.token } };
+  }
+
+  const mestre = await conta('mestre-limite-lan@example.test');
+  const jogadores = await Promise.all(Array.from({ length: 9 }, (_, i) => conta('jogador-limite-' + i + '@example.test')));
+  const candidatos = await Promise.all(Array.from({ length: 2 }, (_, i) => conta('candidato-limite-' + i + '@example.test')));
+
+  const criarMesa = await fetch(instancia.url + '/api/mesas', {
+    method: 'POST', headers: { ...mestre.headers, 'content-type': 'application/json' },
+    body: JSON.stringify({ name: 'Mesa no limite' }),
+  });
+  assert.equal(criarMesa.status, 201);
+  const { mesa } = await criarMesa.json();
+  const agora = new Date().toISOString();
+  const inserirJogador = instancia.app.db.prepare(
+    "INSERT INTO participantes_mesa (mesa_id, conta_id, papel, entrou_em) VALUES (?, ?, 'jogador', ?)"
+  );
+  for (const jogador of jogadores) inserirJogador.run(mesa.id, jogador.account.id, agora);
+  assert.equal(instancia.app.db.prepare("SELECT COUNT(*) AS total FROM participantes_mesa WHERE mesa_id = ? AND papel = 'jogador'").get(mesa.id).total, 9);
+
+  const convite = await fetch(instancia.url + '/api/mesas/' + mesa.id + '/convites', {
+    method: 'POST', headers: { ...mestre.headers, 'content-type': 'application/json' }, body: '{}',
+  });
+  assert.equal(convite.status, 201);
+  const codigo = (await convite.json()).invitation.code;
+  const pedidos = await Promise.all(candidatos.map(async candidato => {
+    const resposta = await fetch(instancia.url + '/api/convites/solicitar', {
+      method: 'POST', headers: { ...candidato.headers, 'content-type': 'application/json' },
+      body: JSON.stringify({ code: codigo }),
+    });
+    assert.equal(resposta.status, 202);
+    return (await resposta.json()).request.id;
+  }));
+
+  const decisoes = await Promise.all(pedidos.map(id => fetch(
+    instancia.url + '/api/mesas/' + mesa.id + '/solicitacoes/' + id + '/aprovar',
+    { method: 'POST', headers: mestre.headers },
+  )));
+  assert.deepEqual(decisoes.map(r => r.status).sort(), [200, 409]);
+
+  const total = instancia.app.db.prepare(
+    "SELECT COUNT(*) AS total FROM participantes_mesa WHERE mesa_id = ? AND papel = 'jogador'"
+  ).get(mesa.id).total;
+  assert.equal(total, 10);
+  const estados = instancia.app.db.prepare(
+    "SELECT status, COUNT(*) AS total FROM solicitacoes_mesa_locais WHERE mesa_id = ? GROUP BY status ORDER BY status"
+  ).all(mesa.id);
+  assert.deepEqual(estados.map(x => [x.status, x.total]), [['aprovada', 1], ['pendente', 1]]);
+});
+
 test('CORS aceita apenas origens explicitamente permitidas e responde preflight', async t => {
   const instancia = await criarInstancia(t);
   const origemPermitida = 'https://guspmc.github.io';
