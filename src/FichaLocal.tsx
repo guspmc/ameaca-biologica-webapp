@@ -12,6 +12,8 @@ import EditorCaracteristicasLocal from './EditorCaracteristicasLocal';
 import EditorInventarioLocal from './EditorInventarioLocal';
 import IdentidadeLocal from './IdentidadeLocal';
 import FuncionamentoFichaLocal from './FuncionamentoFichaLocal';
+import RevisaoCriacaoLocal from './RevisaoCriacaoLocal';
+import type { FichaRevisao } from './conferenciaCriacao';
 import type { ConfiguracaoFuncionamento } from './funcionamentoFicha';
 import { calcularFaseBioInfeccao } from './bioInfeccao';
 import { classePersonagem, termoPersonagem } from './textoPersonagem';
@@ -119,6 +121,36 @@ export default function FichaLocal({ nome, mesa, dados, aoFechar, aoRecarregar, 
   let inventarioPlanejado: ReturnType<typeof planejarInventarioCriacao> | null = null;
   try { inventarioPlanejado = planejarInventarioCriacao({ classe, equipamento_inicial: kitSelecionado, forca: numero(atributos.forca), origem: origem || null, nivel: 1, estado_ficha: 'rascunho', compras_iniciais: (ficha.comprasIniciais as Record<string, number>) ?? {} }); } catch { inventarioPlanejado = null; }
   const ramo = dadosClasse?.ramos ?? [];
+  const fichaRevisao: FichaRevisao = {
+    identidade: genero ? { genero } : {},
+    nome,
+    classe: classe || null,
+    nivel: 1,
+    forca: numero(atributos.forca),
+    agilidade: numero(atributos.agilidade),
+    vigor: numero(atributos.vigor),
+    astucia: numero(atributos.astucia),
+    origem: origem || null,
+    pericia_origem_treinada: treinada || null,
+    pericia_origem_extra: typeof ficha.periciaOrigemExtra === 'string' ? ficha.periciaOrigemExtra : null,
+    pontos_pericia_classe: distribuicao,
+    habilidade_basica: habilidadeSelecionada || null,
+    equipamento_inicial: kitSelecionado || null,
+    compras_iniciais: (ficha.comprasIniciais as Record<string, number>) ?? {},
+    revisao_compras: numero(ficha.revisaoCompras),
+    pv_maximo: pv,
+    sa_maximo: sa,
+    bi_maximo: bi,
+    defesa,
+  };
+  function irParaRevisao(secao: string) {
+    const ids: Record<string, string> = {
+      perfil: 'ficha-local-caracteristicas',
+      pericias: 'ficha-local-pericias',
+      itens: 'ficha-local-inventario',
+    };
+    document.getElementById(ids[secao] ?? ids.perfil)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
 
   return <div className="ficha-local-fundo" role="dialog" aria-modal="true" aria-labelledby="ficha-local-titulo">
     <article className="ficha-local">
@@ -235,6 +267,7 @@ export default function FichaLocal({ nome, mesa, dados, aoFechar, aoRecarregar, 
           aoSalvar={aoSalvarFuncionamento}
           aoAlterarPendencia={pendente => registrarPendencia('Funcionamento', pendente)}
         />
+        <RevisaoCriacaoLocal ficha={fichaRevisao} irPara={irParaRevisao} />
         </section>
 
         <footer className="ficha-local-rodape">AMEAÇA BIOLÓGICA RPG · {origemDados === 'servidor' ? 'DADOS NO SERVIDOR' : 'DADOS LOCAIS'} · RASCUNHO NÃO ATIVO</footer>
