@@ -51,9 +51,13 @@ test('validação rejeita PV ou SA acima do máximo e valores fracionários', ()
 test('a interface liga recursos ao salvamento do rascunho e explica os limites', async () => {
   const ficha = await readFile(new URL('../src/FichaLocal.tsx', import.meta.url), 'utf8');
   const app = await readFile(new URL('../src/FichaOfflineApp.tsx', import.meta.url), 'utf8');
+  const servidor = await readFile(new URL('../src/ConexaoServidorLocal.tsx', import.meta.url), 'utf8');
+  const laboratorio = await readFile(new URL('../src/LaboratorioLocal.tsx', import.meta.url), 'utf8');
   const ui = await readFile(new URL('../src/RecursosFichaLocal.tsx', import.meta.url), 'utf8');
   assert.match(ficha, /<RecursosFichaLocal/);
   assert.match(app, /aoSalvarRecursos=\{recursos => salvarDados\(recursos\)\}/);
+  assert.match(servidor, /aoSalvarRecursos=\{recursos => salvarDadosFicha\(recursos\)\}/);
+  assert.match(laboratorio, /aoSalvarRecursos=\{async recursos =>/);
   assert.match(ui, /Dano consome PV Temporários antes dos PV Atuais/);
   assert.match(ui, /Alcançar ou ultrapassar BI Máxima sinaliza Colapso Viral/);
   assert.match(ui, /PV Atuais<input type=\"number\"/);
