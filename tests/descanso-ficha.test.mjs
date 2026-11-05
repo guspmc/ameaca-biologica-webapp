@@ -45,4 +45,5 @@ test('painel respeita método Virtual e salva somente após ação expressa', as
   assert.match(ui, /Nenhum resultado será presumido/);
   assert.match(ui, /Concluir Descanso Completo/);
   assert.match(ficha, /<DescansoFichaLocal/);
+  assert.match(ficha, /key=\{JSON\.stringify\(\[classe, pv, sa/);
 });
