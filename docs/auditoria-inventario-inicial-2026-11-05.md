@@ -55,10 +55,9 @@ A seção da Ficha ainda apresenta uma projeção de criação, não uma grade o
 - expansão permanente Pochete/Bolsa e espaço dedicado;
 - estados e disponibilidade da Hatchet após perda/recuperação;
 - blocos de moedas operacionais com +/− e teto de três;
-- Baú compartilhado, exclusão mútua de operador e transferência indivisível;
 - integração com armários/gaiolas e estoque de missão.
 
-Essas lacunas são escopo futuro documentado no Planejamento v2.0, mas a ordem de implementação precisa respeitar as decisões posteriores do usuário e a versão v2.1 ainda não disponível. Não se deve preencher lacunas com comportamentos inventados nem transformar o planejador de criação em inventário ativo por conveniência.
+Essas lacunas são escopo futuro documentado no Planejamento v2.0, mas a ordem de implementação precisa respeitar as decisões posteriores do usuário e a versão v2.1 ainda não disponível. Não se deve preencher lacunas com comportamentos inventados nem transformar o planejador de criação em inventário ativo por conveniência. **Decisão confirmada em 05/11/2026:** o Baú será implementado somente ao final, quando começar a conexão integrada do projeto ao Laboratório via LAN. Portanto, Baú, transferências e sincronização do Baú ficam fora do ciclo atual do Inventário offline.
 
 ## Riscos e próximos passos técnicos
 
@@ -75,3 +74,4 @@ Essas lacunas são escopo futuro documentado no Planejamento v2.0, mas a ordem d
 - **AUTOMATED TESTED:** não confirmado no HEAD atual.
 - **HUMAN TESTED:** ainda não iniciado.
 - **PENDENTE:** Inventário ativo e suas operações; validação completa do ciclo de persistência.
+- **ADIADO POR DECISÃO DO USUÁRIO:** Baú compartilhado, a implementar somente ao final, junto à integração do projeto ao Laboratório via LAN.
