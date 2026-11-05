@@ -31,6 +31,12 @@ test('materialização preserva kit C, pilhas e itens repetidos como instâncias
  assert.ok(inventario.itens.every(i=>i.estado.tipo!=='arma_fogo'||i.estado.carregada===i.estado.capacidade));
 });
 
+test('materialização aceita identificador hexadecimal compacto do servidor LAN',()=>{
+ const inventario=api.materializarInventarioInicial(ficha(), 'a'.repeat(32), ids());
+ assert.equal(inventario.personagemId,'a'.repeat(32));
+ assert.deepEqual(api.validarInventarioAtivo(inventario,'a'.repeat(32)),inventario);
+});
+
 test('materialização recusa IDs repetidos, inválidos e identificador de personagem inválido',()=>{
  assert.throws(()=>api.materializarInventarioInicial(ficha(),uuid(102),()=>uuid(1)),/identificadores únicos/);
  assert.throws(()=>api.materializarInventarioInicial(ficha(),uuid(102),()=>'sem-id'),/identificadores únicos/);
