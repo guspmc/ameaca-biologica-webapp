@@ -1,4 +1,4 @@
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
 import { dadosDaClasse } from './classesFicha';
 import { PERICIAS_CLASSE, ATRIBUTO_PERICIA, valorBasePericia, valorPassivoPericia } from './pericias';
 import { ORIGENS } from './origens';
@@ -74,7 +74,9 @@ function numero(valor: unknown): number {
 
 export default function FichaLocal({ nome, mesa, dados, aoFechar, aoRecarregar, aoAlterarPendencia, aoEditar, aoSalvarAtributosPericias, aoSalvarCaracteristicas, aoSalvarIdentidade, aoSalvarInventario, aoSalvarFuncionamento, aoSalvarRecursos, origemDados = 'local', status, erro }: Props) {
   const pendenciasInternas = useRef(new Set<string>());
+  const [secoesPendentes, setSecoesPendentes] = useState<Set<string>>(() => new Set());
   function registrarPendencia(secao: string, pendente: boolean) {
+    setSecoesPendentes(atual => { const proxima = new Set(atual); if (pendente) proxima.add(secao); else proxima.delete(secao); return proxima; });
     if (aoAlterarPendencia) {
       aoAlterarPendencia(secao, pendente);
       return;
@@ -205,6 +207,7 @@ export default function FichaLocal({ nome, mesa, dados, aoFechar, aoRecarregar, 
           saMaximo={sa}
           modoDados={configuracaoFuncionamento.modoDados}
           aoSalvar={aoSalvarRecursos}
+          bloqueado={secoesPendentes.size > 0}
         />
 
         <nav className="ficha-local-nav" aria-label="Seções da ficha">
