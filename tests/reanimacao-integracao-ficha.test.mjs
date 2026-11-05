@@ -43,7 +43,7 @@ test('cura em 0 PV é direcionada à acumulação da Reanimação, sem botão de
 
 test('Teste de Medicina também permite registrar resultado crítico de 1 natural', () => {
   assert.match(painel, /Registrar falha crítica \(1 natural\)/);
-  assert.match(painel, /1 natural no Teste de Medicina: Falha Crítica e Exposto/);
+  assert.match(painel, /1 natural no Teste de Medicina: Falha Crítica e Exposto para quem realizou o Teste/);
 });
 
 test('1 natural sinaliza Falha Crítica e Exposto sem administrar a Condição automaticamente', () => {
