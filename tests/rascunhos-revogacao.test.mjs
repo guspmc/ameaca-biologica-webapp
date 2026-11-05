@@ -49,6 +49,11 @@ test('após revogação da participação, rascunho não pode ser consultado nem
     .run(mesa.id, jogador.account.id);
   const aposTrocaPapel = await fetch(url + '/api/personagens/' + personagem.id, { headers: jogador.headers });
   assert.equal(aposTrocaPapel.status, 404);
+  const atualizarSemPapel = await fetch(url + '/api/personagens/' + personagem.id, {
+    method: 'PUT', headers: { ...jogador.headers, 'content-type': 'application/json' },
+    body: JSON.stringify({ name: 'Tentativa sem papel', data: { pv: 99 }, expectedRevision: personagem.revision }),
+  });
+  assert.equal(atualizarSemPapel.status, 404);
   app.db.prepare("UPDATE participantes_mesa SET papel = 'jogador' WHERE mesa_id = ? AND conta_id = ?")
     .run(mesa.id, jogador.account.id);
 
