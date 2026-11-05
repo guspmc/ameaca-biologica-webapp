@@ -406,10 +406,17 @@ export default function ConexaoServidorLocal() {
           dadosAtualizados,
           fichaAtual.personagem.revision
         );
-        if (resposta.personagem.id !== fichaAtual.personagem.id || resposta.personagem.mesaId !== fichaAtual.mesa.id) {
+        // A sessão pode terminar enquanto o HTTP está em andamento. Nesse caso,
+        // a resposta tardia não pode recolocar dados privados na interface.
+        const fichaAindaAberta = fichaAbertaRef.current;
+        if (!fichaAindaAberta ||
+            fichaAindaAberta.personagem.id !== personagemIdSolicitado ||
+            fichaAindaAberta.mesa.id !== mesaIdSolicitada ||
+            fichaAindaAberta.mesa.role !== 'jogador') return false;
+        if (resposta.personagem.id !== fichaAindaAberta.personagem.id || resposta.personagem.mesaId !== fichaAindaAberta.mesa.id) {
           throw new Error('A confirmação do servidor não corresponde à ficha aberta. Reabra a ficha para consultar o estado atual.');
         }
-        const confirmada = { ...fichaAtual, personagem: resposta.personagem };
+        const confirmada = { ...fichaAindaAberta, personagem: resposta.personagem };
         fichaAbertaRef.current = confirmada;
         setFichaAberta(confirmada);
         setAviso('Alterações recebidas e confirmadas pelo servidor. O personagem continua como rascunho não ativo.');
