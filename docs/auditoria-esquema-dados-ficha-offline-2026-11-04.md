@@ -177,3 +177,76 @@ A fila local não evita esse cenário porque as filas são independentes. També
 ### Limite dos testes multiaba adicionados
 
 `tests/persistencia-patch.test.mjs` cobre a lógica de mesclagem e detecção de conflito usando duas importações isoladas do módulo e um mock de IndexedDB compartilhado. Isso não equivale a duas conexões reais do navegador: o mock não reproduz integralmente o agendamento e o bloqueio transacional normativo do IndexedDB. Os testes são regressões unitárias da lógica, não homologação multiaba.
+
+
+---
+
+## 13. Rechecagem do código após a consolidação — HEAD `cb4542c0`
+
+Esta seção corrige o retrato anterior, que ficou desatualizado após a evolução da persistência. A inspeção foi feita nos arquivos atuais da branch `feat/offline-first-ficha`; não representa execução local dos testes.
+
+### 13.1 Modelo persistido atual
+
+- `VERSAO_BANCO_FICHA = 2`.
+- `PersonagemLocal` agora exige `id`, `geracao`, `nome`, `criadoEm`, `atualizadoEm` e `dados`.
+- A migração do banco v1 para v2 atribui um token `geracao` aos registros antigos.
+- A validação estrutural de `persistenciaFicha.ts` exige `geracao` não vazia.
+- A criação local grava `dados.versaoModelo = 1` e `dados.estadoFicha = 'rascunho'`.
+- A restauração e a importação como cópias geram novo token `geracao`.
+
+### 13.2 Divergência confirmada entre persistência e backup
+
+A validação de `backupFicha.ts` continua independente e mais permissiva que a persistência: verifica os campos externos básicos, mas não exige `geracao`. Também não valida `dados.versaoModelo`, `dados.estadoFicha` nem as estruturas internas conhecidas.
+
+Consequências:
+- `criarBackup()` pode aceitar um objeto que não satisfaz o tipo/contrato atual de `PersonagemLocal`.
+- O formato do backup não garante que cada personagem exportado/importado tenha a mesma integridade exigida pelo IndexedDB.
+- A restauração substitui a geração de cada registro, mas a validação do backup deve ainda distinguir arquivo legado legítimo de registro malformado.
+
+### 13.3 Fixtures de testes desatualizadas — provável falha automatizada
+
+A inspeção de `tests/persistencia-gravacao.test.mjs` e `tests/persistencia-operacoes.test.mjs` encontrou fixtures de personagem sem `geracao`. Esses testes chamam `salvarPersonagem()`, cuja validação atual exige `geracao` não vazia. Pela leitura direta do código, as fixtures não satisfazem o contrato e devem provocar rejeição antes de testar a transação.
+
+Classificação: incompatibilidade estática confirmada entre os fixtures e a validação atual; a falha efetiva da execução ainda precisa ser confirmada no CI/runner.
+
+### 13.4 Campos de dados e validadores de domínio disponíveis
+
+A inspeção confirmou que já existem validadores e catálogos reutilizáveis:
+- `atributosIniciaisValidos()` para FOR, AGI, VIG e AST.
+- `distribuicaoPericiasValida()`, `NOMES_PERICIAS`, `PONTOS_CLASSE`, `PERICIAS_CLASSE` e `ORIGENS`.
+- `armaOperarioValida()` e `ARMAS_OPERARIO`.
+- `HABILIDADES_BASICAS` e `opcoesEquipamento()`.
+- `simularCompras()` e `planejarInventarioCriacao()` para validar compras e capacidade do inventário inicial.
+- Os campos narrativos de `dados.identidade` têm limites definidos em `IdentidadeLocal.tsx`; são opcionais.
+
+Os validadores existentes não devem ser duplicados dentro da persistência. O contrato comum deverá compô-los, respeitando que um rascunho recém-criado contém apenas `versaoModelo` e `estadoFicha`.
+
+### 13.5 Contrato técnico proposto para implementação
+
+Criar um módulo compartilhado de validação de dados locais, usado tanto por `persistenciaFicha.ts` quanto por `backupFicha.ts`, com opções explícitas para compatibilidade de registros antigos.
+
+Requisitos:
+1. Validar a estrutura externa da personagem em um único lugar, com opção explícita para aceitar geração ausente somente durante a leitura/conversão de formatos legados; gravações atuais no IndexedDB exigem geração.
+2. Validar `versaoModelo`: aceitar a versão atual conhecida (1); ausência só pode ser aceita como legado documentado, nunca como valor arbitrário. Rejeitar versão desconhecida/futura com mensagem que não provoque descarte automático dos dados.
+3. Validar `estadoFicha`: o único estado atualmente implementado neste fluxo é `rascunho`. Não aceitar estado ativo/arquivado sem implementação correspondente e sem regra aprovada.
+4. Aceitar rascunho mínimo sem campos de seção.
+5. Quando uma seção estiver presente, validar sua estrutura completa:
+   - Características: classe, origem, habilidade compatível com a classe, equipamento inicial compatível e arma obrigatória/permitida quando a origem for Operário.
+   - Atributos e Perícias: quatro atributos válidos; Perícia treinada da Origem; segunda Perícia para Amnésico; distribuição e limites coerentes com Classe/Origem.
+   - Identidade: objeto opcional; campos conhecidos como strings dentro dos limites do editor; preservar propriedades desconhecidas válidas.
+   - Inventário de criação: kit, mapa de compras e revisão coerentes; validar compras pelo simulador existente e pela capacidade calculada, sem ativar/equipar/consumir itens.
+6. Não exigir que todas as seções estejam presentes simultaneamente: salvamentos são parciais e o rascunho é incremental.
+7. Preservar campos desconhecidos de `dados`; validar que o conteúdo seja serializável com segurança em JSON para que o backup não perca ou corrompa silenciosamente valores. Não remover campos desconhecidos.
+8. Validar timestamps, identificadores únicos e ausência de IDs duplicados no conjunto do backup.
+9. Backup legado: manter leitura compatível somente se houver versão/estrutura conhecida e conversão explícita; a conversão deve atribuir nova geração antes de gravar. Não relaxar o contrato atual de escrita no IndexedDB.
+10. Testar rascunho mínimo, cada seção isolada, ficha completa, dados legados, versão futura, enums inválidos, campos desconhecidos, JSON não serializável, IDs duplicados e consistência entre exportação/importação/restauração.
+
+### 13.6 Sequência de implementação
+
+1. Acrescentar testes de contrato compartilhado e corrigir fixtures que não incluem `geracao` quando o teste pretende representar registros atuais.
+2. Implementar o validador comum sem alterar os validadores de domínio nem o cânone.
+3. Integrar persistência e backup ao mesmo validador, mantendo caminho explícito para dados legados.
+4. Executar suíte completa e build no HEAD resultante; corrigir regressões antes de avançar.
+5. Só então seguir para testes integrados de ciclo de vida e concorrência, e depois Inventário funcional.
+
+**Estado:** diagnóstico e proposta documentados; correção de código ainda não implementada nesta seção.
