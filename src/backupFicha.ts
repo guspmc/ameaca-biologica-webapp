@@ -34,7 +34,7 @@ function novaGeracao(): string {
 }
 
 export function criarBackup(personagens: PersonagemLocal[], exportadoEm = new Date().toISOString()): BackupFicha {
-  if (!Array.isArray(personagens) || !personagens.every(personagemValido)
+  if (!Array.isArray(personagens) || !personagens.every(personagem => personagemValido(personagem))
     || new Set(personagens.map(p => p.id)).size !== personagens.length) {
     throw new Error('Não foi possível exportar: a lista contém fichas inválidas ou IDs duplicados.');
   }
