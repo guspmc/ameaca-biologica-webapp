@@ -345,3 +345,27 @@ Commit de código 80bb724cceab92d3fb1482fc16c8f836528c2a61: ambos os workflows c
 **PENDENTE DE TESTE HUMANO:** casos 12–17 acrescentados à seção H4 de docs/fila-testes-humanos.md.
 
 **AINDA NÃO IMPLEMENTADO:** histórico durável de recursos, Desfazer após confirmação, Descanso Parcial/Completo, Reanimação por 0 PV ou Colapso, Condições, combate e automações de consumo/efeitos. O painel é administração manual dos valores atuais, não um motor de combate.
+
+
+## 22. Descanso Parcial e Completo — 05/11/2026
+
+Foi integrado um primeiro fluxo de descanso à ficha contínua, usando a persistência existente de recursos. O fluxo é explícito: a pessoa informa o local ficcional e confirma a modalidade; o aplicativo não usa cronômetro nem fiscaliza localização.
+
+### Regras implementadas
+
+- **Dado de Vida:** Agente d10, Autodidata d8 e Operador d12. O escopo atual é Nível 1, portanto um resultado físico informado. Não presume resultado; campo vazio mantém o Parcial indisponível.
+- **Descanso Parcial:** 30 minutos em Sala de Descanso ou Sala Segura. Aplica o resultado informado aos PV Atuais, limitado ao máximo; preserva PV Temporários, SA e BI; não pausa Condições.
+- **Descanso Completo:** 1 hora em Sala de Descanso. Restaura PV e SA aos máximos, encerra PV Temporários e preserva BI. Não remove automaticamente Intoxicação ou outras consequências.
+- **Método Virtual:** Parcial bloqueado enquanto rolagem virtual não estiver implementada. Físicos e Mistos aceitam resultado físico informado.
+- **Proteção contra sobrescrita:** Descanso fica bloqueado enquanto houver qualquer seção da ficha com edição não salva. Alterar Classe ou máximos descarta o resultado de dado ainda não confirmado.
+- **Limites:** ainda não atualiza usos de Habilidades, Condições, progressões temporais, histórico ou efeitos. Não inicia ações automáticas nem valida a ficção.
+
+### Evidência automatizada
+
+Commit de código e testes e1fb81845ea402b68737d0f5df91250a1f37da4d: ambos os workflows concluíram com sucesso; **414/414 testes aprovados**, TypeScript, build Vite, tipos dos cenários isolados e verificações PostgreSQL aprovados.
+
+**IMPLEMENTADO E TESTADO AUTOMATICAMENTE:** regras de Descanso Parcial/Completo, restrições de local, dado por Classe, bloqueio do método Virtual e proteção contra sobrescrita de alterações pendentes.
+
+**PENDENTE DE TESTE HUMANO:** casos 18–23 acrescentados à seção H4 de docs/fila-testes-humanos.md.
+
+**AINDA NÃO IMPLEMENTADO:** descanso por Nível acima de 1, rolagem virtual, atualização de usos de Habilidades, pausa de progressões adversas, administração de Condições e Reanimação. Não considerar o ciclo de descanso integralmente concluído.
