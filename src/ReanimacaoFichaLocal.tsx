@@ -136,9 +136,10 @@ export default function ReanimacaoFichaLocal({ dados, recursos, origem, pvMaximo
         {reanimacao.causa === 'pv_zero' && <>
           <h4>Primeiros Socorros · Medicina DT 15</h4>
           <p>Registre o resultado final do Teste, já considerando Treinamento e modificadores. Sucesso concede Vantagem ao próximo Teste de Reanimação.</p>
+          {bloqueioVirtual && <p>O método está em Virtual, mas a rolagem virtual ainda não está implementada; não registre resultado de Medicina por este painel.</p>}
           <div className="recursos-controles">
-            <button type="button" disabled={ocupado || bloqueado} onClick={() => void registrarMedicina(true)}>Registrar sucesso</button>
-            <button type="button" disabled={ocupado || bloqueado} onClick={() => void registrarMedicina(false)}>Registrar falha</button>
+            <button type="button" disabled={ocupado || bloqueado || bloqueioVirtual} onClick={() => void registrarMedicina(true)}>Registrar sucesso</button>
+            <button type="button" disabled={ocupado || bloqueado || bloqueioVirtual} onClick={() => void registrarMedicina(false)}>Registrar falha</button>
           </div>
           <label>Cura recebida enquanto estava em 0 PV
             <input type="number" min="0" step="1" value={cura} disabled={ocupado || bloqueado} onChange={e => setCura(e.target.value)}/>
