@@ -2,6 +2,35 @@ import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 import {atualizarAutorizacaoOffline,lerMesasOffline,lerPersonagensOffline,salvarPersonagensOffline,limparCacheUsuario} from '../src/offlineCache.ts';
+
+// IndexedDB mínimo para executar os testes em Node, que não oferece IndexedDB nativo.
+// Mantém o contrato assíncrono usado pelo módulo; os testes reais de navegador continuam pendentes.
+const bancosTeste = new Map();
+class FakeRequest {}
+class FakeTransaction {
+ constructor(registros) { this.registros=registros; this.error=null; this.oncomplete=null; this.onerror=null; this.onabort=null; this.finalizado=false; this.agendado=false; }
+ objectStore() { return {
+  getAll:()=>{const req=new FakeRequest();queueMicrotask(()=>{req.result=[...this.registros.values()].map(v=>structuredClone(v));req.onsuccess?.();this.concluir();});return req;},
+  get:(id)=>{const req=new FakeRequest();queueMicrotask(()=>{req.result=structuredClone(this.registros.get(id));req.onsuccess?.();this.concluir();});return req;},
+  put:(row)=>{this.registros.set(row.id,structuredClone(row));this.agendarConclusao();},
+  delete:(id)=>{this.registros.delete(id);this.agendarConclusao();}
+ }; }
+ agendarConclusao(){if(!this.agendado){this.agendado=true;queueMicrotask(()=>this.concluir());}}
+ concluir(){if(this.finalizado)return;this.finalizado=true;this.oncomplete?.();}
+}
+class FakeDatabase {
+ constructor(registros){this.registros=registros;this.objectStoreNames={contains:()=>true};}
+ transaction(){return new FakeTransaction(this.registros);}
+ close(){}
+}
+globalThis.indexedDB={
+ open(nome){
+  const req=new FakeRequest();
+  queueMicrotask(()=>{const novo=!bancosTeste.has(nome);if(novo)bancosTeste.set(nome,new Map());req.result=new FakeDatabase(bancosTeste.get(nome));if(novo)req.onupgradeneeded?.();req.onsuccess?.();});
+  return req;
+ }
+};
+
 const cacheSource=await readFile(new URL('../src/offlineCache.ts',import.meta.url),'utf8');
 const appSource=await readFile(new URL('../src/App.tsx',import.meta.url),'utf8');
 const sheetSource=await readFile(new URL('../src/FichasJogador.tsx',import.meta.url),'utf8');
