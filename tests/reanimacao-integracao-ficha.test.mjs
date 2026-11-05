@@ -37,7 +37,7 @@ test('um novo evento crítico pode iniciar outra Reanimação após a anterior s
 
 test('cura em 0 PV é direcionada à acumulação da Reanimação, sem botão de cura direta', () => {
   assert.match(recursos, /recursos\.pvAtual === 0/);
-  assert.match(recursos, /cura deve ser registrada no painel de Reanimação/);
+  assert.match(recursos, /registre toda cura no painel de Reanimação/);
   assert.match(painel, /Acumular cura sem despertar/);
 });
 
@@ -47,7 +47,7 @@ test('1 natural sinaliza Falha Crítica e Exposto sem administrar a Condição a
 });
 
 test('PV Atuais não podem ser alterados diretamente durante Reanimação por 0 PV', () => {
-  assert.match(ficha, /bloquearPV=\{reanimacaoPV0EmCurso\}/);
+  assert.match(ficha, /bloquearPV=\{recursosAtuais\.pvAtual === 0 \|\| reanimacaoPV0EmCurso\}/);
   assert.match(recursos, /bloquearPV\?: boolean/);
   assert.match(recursos, /value=\{recursos\.pvAtual\} disabled=\{ocupado \|\| bloquearPV\}/);
   assert.match(recursos, /disabled=\{ocupado \|\| bloquearPV \|\| recursos\.pvAtual/);
