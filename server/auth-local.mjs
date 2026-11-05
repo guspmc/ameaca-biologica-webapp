@@ -518,6 +518,44 @@ export async function tratarRotaMesas(req, res, url, db, notificarMesa = () => {
       return true;
     }
 
+    const participantes = /^\/api\/mesas\/([a-f0-9]{32})\/participantes$/.exec(rota);
+    if (metodo === 'GET' && participantes) {
+      const mesaId = participantes[1];
+      const membro = db.prepare('SELECT papel FROM participantes_mesa WHERE mesa_id = ? AND conta_id = ?').get(mesaId, conta.id);
+      if (!membro) { json(res, 404, { error: 'Mesa não encontrada.' }); return true; }
+      const lista = db.prepare(\`
+        SELECT conta_id AS accountId, papel AS role, entrou_em AS joinedAt
+        FROM participantes_mesa
+        WHERE mesa_id = ?
+        ORDER BY CASE papel WHEN 'mestre' THEN 0 ELSE 1 END, entrou_em, conta_id
+      \`).all(mesaId);
+      json(res, 200, { participants: lista });
+      return true;
+    }
+
+    const removerParticipante = /^\/api\/mesas\/([a-f0-9]{32})\/participantes\/([a-f0-9]{32})$/.exec(rota);
+    if (metodo === 'DELETE' && removerParticipante) {
+      const [, mesaId, contaRemovidaId] = removerParticipante;
+      db.exec('BEGIN IMMEDIATE');
+      try {
+        const mestre = db.prepare("SELECT 1 FROM participantes_mesa WHERE mesa_id = ? AND conta_id = ? AND papel = 'mestre'").get(mesaId, conta.id);
+        if (!mestre) { db.exec('ROLLBACK'); json(res, 404, { error: 'Mesa não encontrada.' }); return true; }
+        const alvo = db.prepare("SELECT papel FROM participantes_mesa WHERE mesa_id = ? AND conta_id = ?").get(mesaId, contaRemovidaId);
+        if (!alvo || alvo.papel !== 'jogador' || contaRemovidaId === conta.id) {
+          db.exec('ROLLBACK');
+          json(res, 404, { error: 'Participante não encontrado.' });
+          return true;
+        }
+        db.prepare("DELETE FROM participantes_mesa WHERE mesa_id = ? AND conta_id = ? AND papel = 'jogador'")
+          .run(mesaId, contaRemovidaId);
+        db.exec('COMMIT');
+        notificarMesa(mesaId, 'membership.changed');
+        notificarConta(contaRemovidaId);
+        json(res, 200, { removed: true, accountId: contaRemovidaId });
+        return true;
+      } catch (erro) { db.exec('ROLLBACK'); throw erro; }
+    }
+
     const criarConvite = /^\/api\/mesas\/([a-f0-9]{32})\/convites$/.exec(rota);
     if (metodo === 'POST' && criarConvite) {
       const mesaId = criarConvite[1];
