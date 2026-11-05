@@ -198,7 +198,7 @@ export default function FichaLocal({ nome, mesa, dados, aoFechar, aoRecarregar, 
         />
 
         <DescansoFichaLocal
-          key={JSON.stringify([ficha.pvAtual ?? null, ficha.pvTemporarios ?? null, ficha.saAtual ?? null, ficha.biAtual ?? null])}
+          key={JSON.stringify([classe, pv, sa, ficha.pvAtual ?? null, ficha.pvTemporarios ?? null, ficha.saAtual ?? null, ficha.biAtual ?? null])}
           dados={dados}
           classe={classe}
           pvMaximo={pv}
