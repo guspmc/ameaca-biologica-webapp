@@ -3,10 +3,12 @@ import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 import ts from 'typescript';
 const {outputText}=ts.transpileModule(await readFile(new URL('../src/funcionamentoFicha.ts',import.meta.url),'utf8'),{compilerOptions:{module:ts.ModuleKind.ESNext,target:ts.ScriptTarget.ES2022}});
-const {configuracaoInicial,automacoesEfetivas,configuracaoFuncionamentoValida}=await import('data:text/javascript;base64,'+Buffer.from(outputText).toString('base64'));
+const {configuracaoInicial,automacoesEfetivas,configuracaoFuncionamentoValida,normalizarConfiguracaoFuncionamento}=await import('data:text/javascript;base64,'+Buffer.from(outputText).toString('base64'));
 test('funcionamento: Misto inicia com tres padroes aprovados e duas escolhas explicitamente indefinidas',()=>{
  const c=configuracaoInicial();
  assert.equal(c.modo,'misto');
+ assert.equal(c.modoDados,'mistos');
+ assert.equal(c.visibilidadeRolagem,'publica');
  assert.deepEqual(automacoesEfetivas(c),{municao:true,inventario:true,duracaoEfeitos:true,biInfectante:null,durabilidadeAparar:null});
 });
 test('funcionamento: alternar modos preserva preferencias Misto sem alterar escolhas',()=>{
@@ -29,4 +31,11 @@ test('funcionamento: valida configuração persistível com campos e tipos estri
  assert.equal(configuracaoFuncionamentoValida({...c,preferenciasMisto:{...c.preferenciasMisto,municao:null}}),false);
  assert.equal(configuracaoFuncionamentoValida({...c,preferenciasMisto:{...c.preferenciasMisto,biInfectante:'sim'}}),false);
  assert.equal(configuracaoFuncionamentoValida({...c,campoExtra:true}),false);
+ assert.equal(configuracaoFuncionamentoValida({...c,modoDados:'aleatorio'}),false);
+ assert.equal(configuracaoFuncionamentoValida({...c,visibilidadeRolagem:'oculta'}),false);
+ const legado={modo:c.modo,preferenciasMisto:c.preferenciasMisto};
+ assert.equal(configuracaoFuncionamentoValida(legado),true);
+ const normalizada=normalizarConfiguracaoFuncionamento(legado);
+ assert.equal(normalizada.modoDados,'mistos');
+ assert.equal(normalizada.visibilidadeRolagem,'publica');
 });
