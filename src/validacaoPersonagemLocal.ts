@@ -85,6 +85,7 @@ function validarDadosFicha(valor: unknown): valor is Record<string, unknown> {
   // Ausência identifica registros legados/incompletos; valores presentes precisam ser explícitos.
   if ('versaoModelo' in valor && valor.versaoModelo !== 1) return false;
   if ('estadoFicha' in valor && valor.estadoFicha !== 'rascunho') return false;
+  if ('biAtual' in valor && (!Number.isSafeInteger(valor.biAtual) || (valor.biAtual as number) < 0)) return false;
   if ('configuracaoFuncionamento' in valor && !configuracaoFuncionamentoValida(valor.configuracaoFuncionamento)) return false;
 
   if ('classe' in valor
