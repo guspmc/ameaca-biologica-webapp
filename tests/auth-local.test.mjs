@@ -537,3 +537,61 @@ test('rotas antigas de eventos demonstrativos ficam desativadas', async t => {
   assert.equal((await fetch(base + '/api/events')).status, 410);
   assert.equal((await post(base, '/api/events', { message: 'teste' })).status, 410);
 });
+
+test('LAN: aprovacoes concorrentes disputando a ultima vaga nao excedem dez jogadores', async t => {
+  const { base, app } = await setup(t);
+  const senha = 'senha-local-comprida-2026';
+  const registrar = async email => {
+    const cadastro = await post(base, '/api/auth/register', { email, password: senha });
+    assert.equal(cadastro.status, 201);
+    const login = await post(base, '/api/auth/login', { email, password: senha });
+    assert.equal(login.status, 200);
+    return (await login.json()).token;
+  };
+
+  const tokenMestre = await registrar('mestre-concorrencia-lan@example.test');
+  const tokenA = await registrar('jogador-a-concorrencia-lan@example.test');
+  const tokenB = await registrar('jogador-b-concorrencia-lan@example.test');
+  const criarMesa = await post(base, '/api/mesas', { name: 'Mesa concorrente' }, tokenMestre);
+  assert.equal(criarMesa.status, 201);
+  const { mesa } = await criarMesa.json();
+
+  const convite = await post(base, `/api/mesas/${mesa.id}/convites`, {}, tokenMestre);
+  assert.equal(convite.status, 201);
+  const codigo = (await convite.json()).invitation.code;
+  const solicitacaoA = await post(base, '/api/convites/solicitar', { code: codigo }, tokenA);
+  const solicitacaoB = await post(base, '/api/convites/solicitar', { code: codigo }, tokenB);
+  assert.equal(solicitacaoA.status, 202);
+  assert.equal(solicitacaoB.status, 202);
+  const pedidoA = (await solicitacaoA.json()).request;
+  const pedidoB = (await solicitacaoB.json()).request;
+
+  // Sete jogadores existentes + os dois candidatos = nove antes da disputa.
+  const agora = new Date().toISOString();
+  const inserirConta = app.db.prepare(
+    'INSERT INTO contas_locais (id, email, senha_salt, senha_hash, criada_em) VALUES (?, ?, ?, ?, ?)'
+  );
+  const inserirParticipante = app.db.prepare(
+    "INSERT INTO participantes_mesa (mesa_id, conta_id, papel, entrou_em) VALUES (?, ?, 'jogador', ?)"
+  );
+  for (let i = 0; i < 7; i += 1) {
+    const id = 'concorrencia-lan-' + i;
+    inserirConta.run(id, id + '@example.test', 'salt', 'hash', agora);
+    inserirParticipante.run(mesa.id, id, agora);
+  }
+
+  const resultados = await Promise.all([
+    post(base, `/api/mesas/${mesa.id}/solicitacoes/${pedidoA.id}/aprovar`, {}, tokenMestre),
+    post(base, `/api/mesas/${mesa.id}/solicitacoes/${pedidoB.id}/aprovar`, {}, tokenMestre),
+  ]);
+  assert.deepEqual(resultados.map(resposta => resposta.status).sort(), [200, 409]);
+
+  const total = app.db.prepare(
+    "SELECT COUNT(*) AS total FROM participantes_mesa WHERE mesa_id = ? AND papel = 'jogador'"
+  ).get(mesa.id).total;
+  assert.equal(total, 8); // sete existentes + somente um dos dois candidatos
+  const statusA = app.db.prepare('SELECT status FROM solicitacoes_mesa_locais WHERE id = ?').get(pedidoA.id).status;
+  const statusB = app.db.prepare('SELECT status FROM solicitacoes_mesa_locais WHERE id = ?').get(pedidoB.id).status;
+  assert.deepEqual([statusA, statusB].sort(), ['aprovada', 'pendente']);
+});
+
