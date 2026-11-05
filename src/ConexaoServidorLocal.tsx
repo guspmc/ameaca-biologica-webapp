@@ -59,9 +59,11 @@ export default function ConexaoServidorLocal() {
 
   async function sincronizarDadosRecebidos() {
     if (!sessao) return;
+    const geracaoSolicitada = geracaoSessao.current;
     const cliente = criarClienteServidorLocal({ baseUrl: endereco.trim(), token: sessao.token });
     try {
       const resposta = await cliente.listarMesas();
+      if (!sessaoContinuaSendoAtual(geracaoSessao.current, geracaoSolicitada)) return;
       setMesas(resposta.mesas);
       const novosPedidos: typeof solicitacoes = {};
       const novosPersonagens: typeof personagens = {};
@@ -74,6 +76,7 @@ export default function ConexaoServidorLocal() {
           novosPersonagens[mesa.id] = dados.personagens;
         }
       }));
+      if (!sessaoContinuaSendoAtual(geracaoSessao.current, geracaoSolicitada)) return;
       const falhaAutenticacao = resultados.some(resultado =>
         resultado.status === 'rejected' &&
         resultado.reason instanceof ErroServidorLocal &&
@@ -87,6 +90,7 @@ export default function ConexaoServidorLocal() {
       setPersonagens(novosPersonagens);
       setAviso('Dados atualizados e confirmados nas consultas ao servidor.');
     } catch (problema) {
+      if (!sessaoContinuaSendoAtual(geracaoSessao.current, geracaoSolicitada)) return;
       if (problema instanceof ErroServidorLocal && problema.status === 401) {
         encerrarSessao('A sessão expirou ou foi encerrada no servidor. Entre novamente.');
       } else {
@@ -345,16 +349,19 @@ export default function ConexaoServidorLocal() {
 
   async function excluirRascunho(mesa: MesaLocal, personagem: ResumoPersonagemLocal) {
     if (!sessao || mesa.role !== 'jogador') return;
+    const geracaoSolicitada = geracaoSessao.current;
     const confirmado = window.confirm('Excluir definitivamente o rascunho “' + personagem.name + '”? Esta ação não pode ser desfeita.');
     if (!confirmado) return;
     setErro(''); setAviso(''); setConsultando(true);
     try {
       const resultado = await criarClienteServidorLocal({ baseUrl: endereco.trim(), token: sessao.token }).excluirPersonagem(personagem.id);
+      if (!sessaoContinuaSendoAtual(geracaoSessao.current, geracaoSolicitada)) return;
       if (!resultado.deleted || resultado.id !== personagem.id) throw new Error('O servidor não confirmou a exclusão do rascunho solicitado.');
       setPersonagens(atual => ({ ...atual, [mesa.id]: (atual[mesa.id] ?? []).filter(item => item.id !== personagem.id) }));
       if (fichaAbertaRef.current?.personagem.id === personagem.id) { fichaAbertaRef.current = null; setFichaAberta(null); }
       setAviso('Rascunho excluído e confirmado pelo servidor.');
     } catch (problema) {
+      if (!sessaoContinuaSendoAtual(geracaoSessao.current, geracaoSolicitada)) return;
       if (problema instanceof ErroServidorLocal && problema.status === 401) encerrarSessao('A sessão expirou ou foi encerrada no servidor. Entre novamente.');
       else setErro(problema instanceof Error ? problema.message : 'Não foi possível excluir o rascunho.');
     } finally { setConsultando(false); }
@@ -393,13 +400,16 @@ export default function ConexaoServidorLocal() {
 
   async function abrirFicha(mesa: MesaLocal, personagem: ResumoPersonagemLocal) {
     if (!sessao || mesa.role !== 'jogador') return;
+    const geracaoSolicitada = geracaoSessao.current;
     setErro(''); setAviso(''); setConsultando(true);
     try {
       const resposta = await criarClienteServidorLocal({ baseUrl: endereco.trim(), token: sessao.token }).consultarPersonagem(personagem.id);
+      if (!sessaoContinuaSendoAtual(geracaoSessao.current, geracaoSolicitada)) return;
       if (resposta.personagem.mesaId !== mesa.id) throw new Error('O servidor retornou um personagem vinculado a outra Mesa.');
       setFichaAberta({ mesa, personagem: resposta.personagem });
       setAviso('Ficha consultada e confirmada pelo servidor. As alterações continuam em estado de rascunho.');
     } catch (problema) {
+      if (!sessaoContinuaSendoAtual(geracaoSessao.current, geracaoSolicitada)) return;
       if (problema instanceof ErroServidorLocal && problema.status === 401) encerrarSessao('A sessão expirou ou foi encerrada no servidor. Entre novamente.');
       else setErro(problema instanceof Error ? problema.message : 'Não foi possível abrir a ficha.');
     } finally { setConsultando(false); }
