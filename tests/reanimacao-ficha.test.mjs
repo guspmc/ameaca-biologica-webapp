@@ -62,7 +62,8 @@ test('sucesso em Medicina DT 15 concede Vantagem ao próximo Teste e consome a V
   assert.equal(out.reanimacao.sucessos, 1);
   assert.equal(out.reanimacao.vantagemProximoTeste, false);
   assert.equal(aplicar(out.reanimacao, 12).reanimacao.sucessos, 2);
-  assert.equal(api.concederAjudaMedicina(r, false).vantagemProximoTeste, false);
+  assert.equal(api.concederAjudaMedicina(r, false).vantagemProximoTeste, true);
+  assert.equal(api.concederAjudaMedicina(out.reanimacao, false).vantagemProximoTeste, false);
 });
 
 test('Colapso: testes começam imediatamente; Cobaia rola dois d20 e três sucessos mantêm Desacordado até BI abaixo do máximo', () => {
