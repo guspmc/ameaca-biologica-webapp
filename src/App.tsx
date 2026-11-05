@@ -174,11 +174,23 @@ function Lobby({ supabase, sessao }: { supabase: SupabaseClient; sessao: Session
   const [estadoRealtime, setEstadoRealtime] = useState<'conectando'|'ao-vivo'|'alternativo'>('conectando');
   const [somenteLeituraOffline, setSomenteLeituraOffline] = useState(() => typeof navigator !== 'undefined' && !navigator.onLine);
   const [mesasCacheAtualizadoEm, setMesasCacheAtualizadoEm] = useState<string | null>(null);
+  const chaveBloqueioCache = 'ameaca-biologica:cache-offline-bloqueado:' + sessao.user.id;
+  const [cacheOfflineBloqueado, setCacheOfflineBloqueado] = useState(() => {
+    try { return localStorage.getItem(chaveBloqueioCache) === '1'; }
+    catch { return false; }
+  });
 
   const atualizar = useCallback(async (silencioso = false) => {
     if (!silencioso) setCarregando(true);
     if (typeof navigator !== 'undefined' && !navigator.onLine) {
-      const cache = await lerMesasOffline(sessao.user.id).catch(() => null);
+      if (cacheOfflineBloqueado) {
+        setMesas([]); setMesasCacheAtualizadoEm(null);
+        setErro('A autorização local não pôde ser atualizada na última conexão. Reconecte-se para confirmar o acesso antes de consultar dados em cache.');
+        setSomenteLeituraOffline(true);
+        if (!silencioso) setCarregando(false);
+        return;
+      }
+      const cache = cacheOfflineBloqueado ? null : await lerMesasOffline(sessao.user.id).catch(() => null);
       if (cache) {
         setMesas(cache.dados); setMesasCacheAtualizadoEm(cache.atualizadoEm); setErro('');
       } else {
@@ -193,7 +205,7 @@ function Lobby({ supabase, sessao }: { supabase: SupabaseClient; sessao: Session
         .select('id, nome, mestre_id, criada_em')
         .order('criada_em',{ascending:false});
       if (error) {
-        const cache = await lerMesasOffline(sessao.user.id).catch(() => null);
+        const cache = cacheOfflineBloqueado ? null : await lerMesasOffline(sessao.user.id).catch(() => null);
         if (cache) {
           setMesas(cache.dados); setMesasCacheAtualizadoEm(cache.atualizadoEm);
           setErro('Conexão com o servidor indisponível. Exibindo a cópia local, que pode estar desatualizada.');
@@ -207,9 +219,13 @@ function Lobby({ supabase, sessao }: { supabase: SupabaseClient; sessao: Session
         try {
           const atualizadoEm = await atualizarAutorizacaoOffline(sessao.user.id, autorizadas);
           setMesasCacheAtualizadoEm(atualizadoEm);
+          setCacheOfflineBloqueado(false);
+          try { localStorage.removeItem(chaveBloqueioCache); } catch { /* Bloqueio permanece somente nesta sessão. */ }
         } catch {
           setMesasCacheAtualizadoEm(null);
-          setErro('Acesso online confirmado, mas não foi possível atualizar a autorização do cache local. A consulta offline ficará sem confirmação atualizada.');
+          setCacheOfflineBloqueado(true);
+          try { localStorage.setItem(chaveBloqueioCache, '1'); } catch { /* O bloqueio em memória ainda vale nesta sessão. */ }
+          setErro('Acesso online confirmado, mas não foi possível atualizar a autorização do cache local. A consulta offline ficará bloqueada até nova confirmação.');
         }
       }
     } catch {
@@ -224,7 +240,7 @@ function Lobby({ supabase, sessao }: { supabase: SupabaseClient; sessao: Session
     } finally {
       if (!silencioso) setCarregando(false);
     }
-  },[supabase,sessao.user.id]);
+  },[supabase,sessao.user.id,cacheOfflineBloqueado,chaveBloqueioCache]);
 
   useEffect(()=>{void atualizar();},[atualizar]);
   useEffect(() => {
@@ -330,7 +346,7 @@ function Lobby({ supabase, sessao }: { supabase: SupabaseClient; sessao: Session
       </section>
     </div>
     <FichasJogador supabase={supabase} usuarioId={sessao.user.id} mesas={mesas}
-      sinalAtualizacao={sinalAtualizacao} somenteLeituraOffline={somenteLeituraOffline}/>
+      sinalAtualizacao={sinalAtualizacao} somenteLeituraOffline={somenteLeituraOffline} bloquearCacheOffline={cacheOfflineBloqueado}/>
     {!somenteLeituraOffline&&<Participantes permitirDisponibilidade={import.meta.env.MODE==='teste'} supabase={supabase} usuarioId={sessao.user.id} mesas={mesas}
       sinalAtualizacao={sinalAtualizacao} aoAtualizarMesas={() => atualizar(true)}/>}
     {!somenteLeituraOffline&&<Convites supabase={supabase} usuarioId={sessao.user.id} mesas={mesas}
