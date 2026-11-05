@@ -72,3 +72,14 @@ Nenhuma alteração em `main`, merge, publicação, Supabase remoto ou banco de 
 - **LIMITE IMPORTANTE:** isso melhora a observabilidade; não corrige nem comprova a causa raiz do incidente de salvamento. A reprodução em navegador/Windows/celular permanece pendente, conforme decisão de adiar testes humanos.
 - **Próximo trabalho:** continuar a cobertura automatizada da fila de salvamento e avançar em paralelo nas áreas de Mesa/Painel e ficha onde não houver decisão de cânone pendente. QR foi aprovado funcionalmente, mas o projeto ainda não contém biblioteca de QR; qualquer inclusão deve ser pequena e validada no lockfile/CI antes de integrar.
 - **Limites preservados:** sem deploy, merge, alteração em `main`, Supabase ou banco de produção; testes humanos continuam adiados.
+
+
+## Atualização de continuidade — rodada de 05/11/2026 (após HEAD 76abe2b)
+- **CI CONFIRMADA:** os dois workflows concluíram com sucesso nos commits `9c89443`, `1d31188` e `8c6c47d`: compilação do WebApp e verificação da ficha offline. O HEAD `8c6c47d` é o mais recente antes dos testes adicionais desta rodada.
+- **Diagnóstico HTTP — TESTADO:** novo caso confirma que resposta HTTP 409 permanece erro de aplicação com status/mensagem originais e sem diagnóstico de transporte; exceção de transporte com mensagem longa tem detalhe limitado a 240 caracteres.
+- **Painel do Mestre — CORREÇÃO:** a lista de participantes agora numera jogadores a partir de 1, sem alterar IDs, papéis ou permissões.
+- **Ficha — TESTE ADICIONAL:** criado `tests/ficha-continua-sendo-alvo.test.mjs`, cobrindo ficha nula, papel Mestre, troca de Mesa, troca de personagem, geração diferente e gerações inválidas. Isso reforça a proteção contra resposta HTTP tardia reabrir/atualizar ficha errada.
+- **CI DO NOVO TESTE:** workflows do commit `21b0550` precisam concluir antes de marcar esta alteração como validada.
+- **Próximo passo:** avançar em tarefas independentes e seguras na ficha/Mesa/Painel. QR permanece aprovado como requisito, mas depende da escolha e inclusão controlada de uma biblioteca geradora e da definição técnica do conteúdo/URL LAN; não será improvisado com serviço externo. A migração para apelido também aguarda decisões de normalização, colisões, nomes reservados e recuperação de conta.
+- **Testes humanos:** o Gus sinalizou que serão realizados em breve; até lá, não alegar validação em navegador, Windows, celular ou rede física.
+- **Limites preservados:** sem deploy, merge, alteração em `main`, Supabase ou banco de produção.
