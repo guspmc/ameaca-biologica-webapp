@@ -146,3 +146,10 @@ Estado: auditoria estática concluída; testes de saída/cascata aprovados em d2
 - **PENDENTE DE CI em `572013d`:** foi acrescentado cenário para arquivar uma ficha e depois remover seu antigo jogador, verificando que a ficha arquivada, seus recursos e instâncias permanecem. Os workflows de teste e build estavam em execução na última consulta.
 - **PENDENTE DE IMPLEMENTAÇÃO:** a saída voluntária continua bloqueada no contrato SQL atual: `app_private.sair_mesa_local` usa `SECURITY INVOKER` e tem execução revogada para `public`, `anon` e `authenticated`. A política RLS de DELETE em `mesa_participantes` autoriza somente o Mestre. Não conceder execução nem mudar para `SECURITY DEFINER` sem teste dedicado de identidade, papel, Mesa, revogação e atomicidade.
 - Nenhuma alteração foi aplicada ao Supabase remoto, nenhuma migration foi criada/aplicada e não houve publicação.
+## 11. Limite de participantes e concorrência na aprovação
+
+- **PENDENTE DE PROTEÇÃO NO BANCO:** a migration `20261022000300_convites_e_solicitacoes.sql` e sua substituição em `20261022000400_participantes_e_realtime.sql` implementam `responder_solicitacao_mesa` com bloqueio da linha da solicitação (`FOR UPDATE`), mas não bloqueiam a linha da Mesa nem verificam o teto de participantes no ato de aprovação.
+- A estrutura inicial (`20261022000100_estrutura_inicial.sql`) não define, no trecho da tabela `mesa_participantes`, constraint ou trigger que imponha esse teto. Portanto, não há evidência no esquema inspecionado de proteção transacional para duas aprovações simultâneas perto do limite.
+- O teto funcional de 10 jogadores por Mesa continua sendo requisito do produto. A aprovação atual deve ser tratada como lacuna de concorrência até existir validação sob lock da Mesa e teste de duas aprovações concorrentes no banco alvo.
+- **Não corrigido nesta etapa:** falta definir se o teto conta apenas jogadores ou também o Mestre; o requisito de produto indica 10 jogadores, além do Mestre. A validação futura deve refletir essa distinção sem contar solicitações pendentes como participantes.
+- Nenhuma migration ou alteração foi aplicada a banco remoto.
