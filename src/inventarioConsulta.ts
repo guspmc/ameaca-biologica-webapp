@@ -8,7 +8,7 @@ export type EstadoExemplar=
  |{tipo:'colete';equipado:boolean;placas?:number}
  |{tipo:'peca';instaladaEm:string|null}
  |{tipo:'consumivel'}|{tipo:'lanterna';equipada:boolean}|{tipo:'ferramenta'};
-export type ExemplarConsulta={instanciaId:string;catalogoId:string;nome:string;quantidade:number;espacos:0|1;local:'inventario'|'caracteristico';posicao:number|null;estado:EstadoExemplar};
+export type ExemplarConsulta={instanciaId:string;catalogoId:string;nome:string;quantidade:number;espacos:number;local:'inventario'|'caracteristico';posicao:number|null;estado:EstadoExemplar};
 export type InventarioConsulta={personagemId:string;revisao:number;capacidade:number;itens:ExemplarConsulta[]};
 const objeto=(v:unknown):v is Record<string,unknown>=>v!==null&&typeof v==='object'&&!Array.isArray(v);
 const natural=(v:unknown):v is number=>typeof v==='number'&&Number.isSafeInteger(v)&&v>=0;
@@ -38,8 +38,13 @@ export function lerInventarioConsulta(v:unknown,personagemId:string):InventarioC
  for(const i of v.itens){
   if(!objeto(i)||!chaves(i,['instanciaId','catalogoId','nome','quantidade','espacos','local','posicao','estado'])||!uuid(i.instanciaId)||ids.has(i.instanciaId)||!texto(i.nome)||!texto(i.catalogoId)||!Object.hasOwn(tipos,i.catalogoId)||!positivo(i.quantidade)||!validoEstado(i.estado,tipos[i.catalogoId]))return invalido();
   const limite=i.estado.tipo==='municao'?30:i.estado.tipo==='moedas'?3:1;if(i.quantidade>limite)return invalido();
-  if(i.local==='inventario'){if(i.espacos!==1||!natural(i.posicao)||posicoes.has(i.posicao))return invalido();posicoes.add(i.posicao);}
-  else if(i.local!=='caracteristico'||i.espacos!==0||i.posicao!==null)return invalido();
+  if(i.local==='inventario'){
+   if(!positivo(i.espacos)||!natural(i.posicao))return invalido();
+   for(let celula=i.posicao;celula<i.posicao+i.espacos;celula++){
+    if(!Number.isSafeInteger(celula)||posicoes.has(celula))return invalido();
+    posicoes.add(celula);
+   }
+  } else if(i.local!=='caracteristico'||i.espacos!==0||i.posicao!==null)return invalido();
   ids.add(i.instanciaId);
  }
  return structuredClone(v) as InventarioConsulta;
