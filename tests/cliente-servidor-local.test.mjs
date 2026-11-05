@@ -8,21 +8,29 @@ import { criarClienteServidorLocal } from '../src/servidorLocal.ts';
 
 test('cliente HTTP local cria, consulta e atualiza rascunho usando o mesmo endereço e sessão', async t => {
   const dataDir = await mkdtemp(join(tmpdir(), 'ameaca-cliente-local-'));
-  const app = createLocalServer({ host: '127.0.0.1', port: 0, dataDir });
+  const app = createLocalServer({ host: '0.0.0.0', port: 0, dataDir });
   await app.listen();
   t.after(async () => {
     await app.close();
     await rm(dataDir, { recursive: true, force: true });
   });
 
+  // O bind 0.0.0.0 exercita o mesmo modo de escuta usado no teste LAN.
+  // O cliente conecta por loopback para manter o teste isolado na própria máquina.
   const baseUrl = `http://127.0.0.1:${app.address.port}`;
-  const anonimo = criarClienteServidorLocal({ baseUrl });
+  const origem = 'http://localhost:5173';
+  const fetchComOrigem = (url, init = {}) => {
+    const headers = new Headers(init.headers);
+    headers.set('origin', origem);
+    return fetch(url, { ...init, headers });
+  };
+  const anonimo = criarClienteServidorLocal({ baseUrl, fetcher: fetchComOrigem });
   const email = 'cliente-integracao@example.test';
   const senha = 'senha-local-comprida-2026';
 
   await anonimo.cadastrar(email, senha);
   const sessao = await anonimo.entrar(email, senha);
-  const cliente = criarClienteServidorLocal({ baseUrl, token: sessao.token });
+  const cliente = criarClienteServidorLocal({ baseUrl, token: sessao.token, fetcher: fetchComOrigem });
 
   assert.equal((await cliente.minhaConta()).account.id, sessao.account.id);
   const { mesa } = await cliente.criarMesa('Mesa integração cliente');
@@ -36,6 +44,19 @@ test('cliente HTTP local cria, consulta e atualiza rascunho usando o mesmo ender
 
   const consultado = await cliente.consultarPersonagem(id);
   assert.deepEqual(consultado.personagem.data, dadosOriginais);
+
+  const preflight = await fetch(baseUrl + `/api/personagens/${id}`, {
+    method: 'OPTIONS',
+    headers: {
+      origin: origem,
+      'access-control-request-method': 'PUT',
+      'access-control-request-headers': 'authorization,content-type',
+    },
+  });
+  assert.equal(preflight.status, 204);
+  assert.equal(preflight.headers.get('access-control-allow-origin'), origem);
+  assert.match(preflight.headers.get('access-control-allow-methods') ?? '', /PUT/);
+  assert.match(preflight.headers.get('access-control-allow-headers') ?? '', /Authorization/i);
 
   const dadosAtualizados = { ...dadosOriginais, identidade: { nome: 'Claire Redfield' } };
   const atualizado = await cliente.atualizarPersonagem(id, 'Claire Redfield', dadosAtualizados);
