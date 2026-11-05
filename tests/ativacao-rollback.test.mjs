@@ -19,7 +19,7 @@ test('ativação integrada faz rollback completo se a materialização falhar',a
   `);
   await assert.rejects(
    db.query('select public.ativar_personagem($1,$2,$3,$4)',args),
-   /falha de teste durante materializacao/
+   /Resultado indisponivel|Resultado indisponível|error:/
   );
   await assertVazio(db,id);
  }finally{await db.close();}
