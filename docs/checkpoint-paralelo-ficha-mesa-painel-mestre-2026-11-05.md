@@ -27,3 +27,10 @@
 
 ## Limites preservados
 Nenhuma alteração em `main`, merge, publicação, Supabase remoto ou banco de produção. Nenhum teste de navegador/rede/dispositivo foi realizado. A autenticação continua por e-mail e a sessão do cliente continua apenas em memória; a migração para nickname e persistência de sessão não foi iniciada. O protótipo LAN permanece restrito a dados fictícios em rede privada confiável, pois não tem proteção de transporte.
+
+## Continuidade após o checkpoint
+- **Ficha:** consultas assíncronas de abrir ficha e sincronizar Mesa/listas agora descartam respostas e erros de sessões anteriores.
+- **Mesa:** atualização de Mesas, convites, solicitações e ingresso passaram a validar a geração da sessão antes de alterar a interface.
+- **Painel do Mestre:** aprovação/recusa de solicitação também está vinculada à geração da sessão; respostas antigas não atualizam a lista de participantes/solicitações após novo login.
+- **Teste cliente HTTP:** o fluxo integrado agora também testa exclusão de rascunho pelo cliente LAN e confirmação de 404 na leitura posterior.
+- **CI:** workflows do commit `521b78d` concluíram com sucesso. Os workflows das alterações seguintes estão em execução/na fila; validar o HEAD atual antes de considerar a rodada aprovada.
