@@ -42,7 +42,7 @@ function obterPersonagem(db, id, contaId) {
   return db.prepare(`
     SELECT p.id, p.mesa_id AS mesaId, p.nome AS name,
            p.dados_json AS dataJson, p.criada_em AS createdAt,
-           p.atualizada_em AS updatedAt
+           p.atualizada_em AS updatedAt, p.revisao AS revision
     FROM personagens_locais p
     WHERE p.id = ? AND p.conta_id = ?
   `).get(id, contaId);
@@ -58,6 +58,7 @@ function serializar(registro) {
     data: JSON.parse(registro.dataJson),
     createdAt: registro.createdAt,
     updatedAt: registro.updatedAt,
+    revision: registro.revision,
   };
 }
 
@@ -133,18 +134,19 @@ export async function tratarRotaPersonagensLocal(req, res, url, db) {
       }
       if (metodo === 'PUT') {
         const corpo = await lerCorpo(req);
-        if (!nomeValido(corpo.name) || !ehObjeto(corpo.data)) {
-          responder(res, 422, { error: 'Informe um nome de até 80 caracteres e os dados do rascunho como objeto JSON.' });
+        if (!nomeValido(corpo.name) || !ehObjeto(corpo.data) ||
+            !Number.isSafeInteger(corpo.expectedRevision) || corpo.expectedRevision < 1) {
+          responder(res, 422, { error: 'Informe nome, dados JSON e a revisão atual do rascunho.' });
           return true;
         }
         const agora = new Date().toISOString();
         const resultado = db.prepare(`
           UPDATE personagens_locais
-          SET nome = ?, dados_json = ?, atualizada_em = ?
-          WHERE id = ? AND conta_id = ?
-        `).run(corpo.name.trim(), JSON.stringify(corpo.data), agora, id, conta.id);
+          SET nome = ?, dados_json = ?, atualizada_em = ?, revisao = revisao + 1
+          WHERE id = ? AND conta_id = ? AND revisao = ?
+        `).run(corpo.name.trim(), JSON.stringify(corpo.data), agora, id, conta.id, corpo.expectedRevision);
         if (Number(resultado.changes) !== 1) {
-          responder(res, 404, { error: 'Personagem não encontrado.' });
+          responder(res, 409, { error: 'Esta ficha foi alterada em outro dispositivo. Reabra o rascunho para consultar a versão atual antes de salvar novamente.' });
           return true;
         }
         responder(res, 200, { personagem: serializar(obterPersonagem(db, id, conta.id)) });
