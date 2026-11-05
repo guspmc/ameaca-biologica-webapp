@@ -480,8 +480,16 @@ export default function ConexaoServidorLocal() {
       } catch (problema) {
         // Uma resposta da sessão anterior não pode encerrar ou alterar a sessão recém-aberta.
         if (!sessaoContinuaSendoAtual(geracaoSessao.current, geracaoSolicitada)) return false;
-        if (problema instanceof ErroServidorLocal && problema.status === 401) encerrarSessao('A sessão expirou ou foi encerrada no servidor. Entre novamente.');
-        else setErro(problema instanceof Error ? problema.message : 'Não foi possível confirmar o salvamento no servidor.');
+        if (problema instanceof ErroServidorLocal && problema.status === 401) {
+          encerrarSessao('A sessão expirou ou foi encerrada no servidor. Entre novamente.');
+        } else if (problema instanceof ErroServidorLocal && problema.diagnostico) {
+          const detalhe = problema.diagnostico.mensagem
+            ? ` Detalhe técnico: ${problema.diagnostico.nome} — ${problema.diagnostico.mensagem}`
+            : ` Detalhe técnico: ${problema.diagnostico.nome}.`;
+          setErro(problema.message + detalhe);
+        } else {
+          setErro(problema instanceof Error ? problema.message : 'Não foi possível confirmar o salvamento no servidor.');
+        }
         return false;
       } finally {
         quantidadeSalvamentosPendentes.current = Math.max(0, quantidadeSalvamentosPendentes.current - 1);
