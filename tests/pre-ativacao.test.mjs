@@ -5,7 +5,7 @@ import ts from 'typescript';
 const files=['origens','habilidades','pericias','equipamento','textoPersonagem','comprasIniciais','conferenciaCriacao','funcionamentoFicha','inventarioCriacao','preAtivacao'];
 const source=(await Promise.all(files.map(f=>readFile(new URL('../src/'+f+'.ts',import.meta.url),'utf8')))).map(s=>s.replace(/^import .*;\r?$/gm,'')).join('\n');
 const {outputText}=ts.transpileModule(source,{compilerOptions:{module:ts.ModuleKind.ESNext,target:ts.ScriptTarget.ES2022}});
-const {avaliarPreAtivacao:avaliar,configuracaoInicial,configuracaoFuncionamentoValida,automacoesEfetivas}=await import('data:text/javascript;base64,'+Buffer.from(outputText).toString('base64'));
+const {avaliarPreAtivacao:avaliar,configuracaoInicial}=await import('data:text/javascript;base64,'+Buffer.from(outputText).toString('base64'));
 function fixture(){
  const configuracao_funcionamento=configuracaoInicial();
  configuracao_funcionamento.preferenciasMisto.biInfectante=false;
@@ -24,7 +24,6 @@ const tem=(r,codigo)=>r.impedimentos.some(i=>i.codigo===codigo);
 
 test('pre-ativacao: nona ativa permite preparar decima, sem alterar ficha ou restaurar recursos',()=>{
  const {f,c}=fixture(),antes=structuredClone({f,c});
- console.log('DEBUG PRE',configuracaoFuncionamentoValida(f.configuracao_funcionamento),automacoesEfetivas(f.configuracao_funcionamento),avaliar(f,c).impedimentos);
  const r=avaliar(f,c);assert.equal(r.precondicoesLocaisAtendidas,true);assert.deepEqual(r.impedimentos,[]);
  assert.deepEqual({f,c},antes);assert.equal(f.estado_ficha,'rascunho');assert.equal(f.pv_atual,4);assert.equal(f.bi_atual,5);
  // Nao existe teto de uma ativa por autoria; somente a contagem coletiva importa.
@@ -73,7 +72,9 @@ test('pre-ativacao: Misto indefinido nao ganha padrao; Manual e Automatico prese
  assert.ok(tem(avaliar({...f,configuracao_funcionamento:config},c),'opcoes_misto'));
  assert.deepEqual(config,antes);
  const legado={modo:config.modo,preferenciasMisto:config.preferenciasMisto};
- assert.equal(avaliar({...f,configuracao_funcionamento:legado},c).precondicoesLocaisAtendidas,true);
+ const resultadoLegado=avaliar({...f,configuracao_funcionamento:legado},c);
+ assert.equal(tem(resultadoLegado,'configuracao'),false);
+ assert.ok(tem(resultadoLegado,'opcoes_misto'));
  for(const modo of ['manual','automatico']){
   const configuracao_funcionamento={...config,modo};
   assert.equal(avaliar({...f,configuracao_funcionamento},c).precondicoesLocaisAtendidas,true);
