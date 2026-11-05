@@ -46,3 +46,34 @@ test('aguardar só conclui depois de todas as operações pendentes', async () =
   await Promise.all([primeira, segunda]);
   assert.deepEqual(estado, ['primeira','segunda']);
 });
+
+
+test('mantém a segunda gravação aguardando a confirmação da primeira', async () => {
+  const fila = criarFilaSerializada();
+  let liberarPrimeira;
+  const barreira = new Promise(resolve => { liberarPrimeira = resolve; });
+  const eventos = [];
+
+  const primeira = fila.enfileirar(async () => {
+    eventos.push('primeira-iniciou');
+    await barreira;
+    eventos.push('primeira-confirmada');
+  });
+  const segunda = fila.enfileirar(async () => {
+    eventos.push('segunda-iniciou');
+  });
+
+  await Promise.resolve();
+  assert.deepEqual(eventos, ['primeira-iniciou']);
+
+  let esperaConcluida = false;
+  const espera = fila.aguardar().then(() => { esperaConcluida = true; });
+  await Promise.resolve();
+  assert.equal(esperaConcluida, false);
+  assert.deepEqual(eventos, ['primeira-iniciou']);
+
+  liberarPrimeira();
+  await Promise.all([primeira, segunda, espera]);
+  assert.deepEqual(eventos, ['primeira-iniciou', 'primeira-confirmada', 'segunda-iniciou']);
+  assert.equal(esperaConcluida, true);
+});
