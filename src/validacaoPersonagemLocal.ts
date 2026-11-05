@@ -1,6 +1,6 @@
 import { atributosIniciaisValidos } from './atributosCriacao.ts';
 import { armaOperarioValida } from './armaOperario.ts';
-import { distribuicaoPericiasValida } from './periciasCriacao.ts';
+import { distribuicaoPericiasValida, NOMES_PERICIAS } from './periciasCriacao.ts';
 import { ORIGENS } from './origens.ts';
 import { HABILIDADES_BASICAS } from './habilidades.ts';
 import { opcoesEquipamento } from './equipamento.ts';
@@ -90,13 +90,28 @@ function validarDadosFicha(valor: unknown): valor is Record<string, unknown> {
     if (chavesAtributos.join('|') !== ['agilidade', 'astucia', 'forca', 'vigor'].join('|')) return false;
     if (!atributosIniciaisValidos(valor.atributos as never)) return false;
   }
-  if ('periciaOrigemTreinada' in valor
-    && typeof valor.periciaOrigemTreinada !== 'string') return false;
-  if ('periciaOrigemExtra' in valor
-    && valor.periciaOrigemExtra !== null && typeof valor.periciaOrigemExtra !== 'string') return false;
+  if ('periciaOrigemTreinada' in valor) {
+    if (typeof valor.periciaOrigemTreinada !== 'string') return false;
+    if (valor.periciaOrigemTreinada !== '' && !NOMES_PERICIAS.includes(valor.periciaOrigemTreinada as never)) return false;
+    if (valor.periciaOrigemTreinada && typeof valor.origem === 'string') {
+      const origemTreinamento = ORIGENS.find(item => item.nome === valor.origem);
+      if (!origemTreinamento) return false;
+      if (valor.origem !== 'Amnésico' && !origemTreinamento.pericias.includes(valor.periciaOrigemTreinada)) return false;
+    }
+  }
+  if ('periciaOrigemExtra' in valor) {
+    if (valor.periciaOrigemExtra !== null && typeof valor.periciaOrigemExtra !== 'string') return false;
+    if (typeof valor.periciaOrigemExtra === 'string' && valor.periciaOrigemExtra !== ''
+      && !NOMES_PERICIAS.includes(valor.periciaOrigemExtra as never)) return false;
+    if (typeof valor.periciaOrigemExtra === 'string' && valor.periciaOrigemExtra !== '') {
+      if (valor.origem !== 'Amnésico' || valor.periciaOrigemExtra === valor.periciaOrigemTreinada) return false;
+    }
+  }
   if ('distribuicaoPericias' in valor) {
     if (!objeto(valor.distribuicaoPericias)
-      || Object.values(valor.distribuicaoPericias).some(grau => !Number.isInteger(grau) || (grau as number) < 0 || (grau as number) > 2)) return false;
+      || Object.entries(valor.distribuicaoPericias).some(([nome, grau]) =>
+        !NOMES_PERICIAS.includes(nome as never) || !Number.isInteger(grau) || (grau as number) < 0 || (grau as number) > 2
+      )) return false;
   }
 
   const contextoPericiasCompleto = 'atributos' in valor && 'classe' in valor && 'origem' in valor
