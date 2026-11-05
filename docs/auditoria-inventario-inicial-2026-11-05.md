@@ -113,3 +113,31 @@ Foi acrescentado o módulo puro src/inventarioExpansao.ts, ainda sem ligação �
 **Validação automatizada:** commit 3fbfbc5477f075ea2d7dd5bab6c25bc43a7d5005 — 401/401 testes, TypeScript, build Vite e verificações PostgreSQL aprovados.
 
 **Limite importante:** esta é lógica de domínio isolada. Ainda não existe grade ativa, item ativo persistido, UI de equipar/guardar/descartar, nem ciclo de vida da expansão. Não declarar o Inventário ativo implementado. Nenhum teste humano foi realizado.
+
+
+## 11. Protótipos existentes que não equivalem ao Inventário ativo integrado
+
+A inspeção do repositório também identificou módulos parciais que devem ser reaproveitados, sem serem confundidos com um Inventário ativo completo:
+
+| Arquivo | Implementação observada | Limite atual |
+|---|---|---|
+| src/inventarioConsulta.ts | Contrato de consulta e resumo de instâncias | Não persiste nem cria instâncias |
+| src/consultaInventarioLocal.ts | Consulta local de um snapshot recebido | Não é fonte transacional persistente |
+| src/PainelInventarioLocal.tsx | Painel de consulta, filtros e detalhes por exemplar | Leitura apenas; não executa comandos de item |
+| src/organizacaoInventario.ts | Plano puro de troca/movimentação de posições | Escopo restrito a exemplares de um Espaço; não cria/usa/equipa itens |
+| src/PainelOrganizacaoLocal.tsx | Prévia, consentimento e envio por porta de organização | Protótipo de sessão; não está integrado à ficha principal nem à persistência durável |
+| src/pendenciaOrganizacao.ts | Contratos de pedido/recibo e recuperação da organização | Não substitui persistência do Inventário ativo |
+| supabase/proposals/inventario-instancias.sql | Proposta SQL de materialização transacional de instâncias no Supabase | Não aplicada; não é migration SQLite nem API do cliente local |
+| src/EditorInventarioLocal.tsx | Edição do conjunto inicial A/B/C e compras do rascunho | Planejamento inicial, não Inventário ativo |
+
+Os protótipos de consulta e organização têm testes históricos próprios. Não repetir automaticamente rodadas humanas descritas em checkpoints antigos; usar a fila única atual e repetir apenas após integração ou mudança relevante.
+
+### Caminho de integração recomendado
+
+1. Preservar os contratos de consulta e a lógica de organização já testados.
+2. Criar o modelo local persistente de instâncias no SQLite/JSON da personagem, com IDs próprios, validação, revisão e isolamento por personagem/Mesa.
+3. Adaptar a organização para suportar itens de múltiplos Espaços e o modelo ativo completo, sem reaproveitar silenciosamente a limitação de um Espaço por exemplar.
+4. Integrar o painel de consulta e comandos à ficha contínua; só então ligar uso/equipamento/consumo/recarga e operações de itens.
+5. Manter a proposta SQL do Supabase como referência histórica; qualquer uso futuro exige decisão e revisão específicas, não aplicação automática.
+
+**Estado corrigido:** existem protótipos de consulta e organização, além de proposta remota; ainda não há Inventário ativo completo, integrado e persistente no fluxo local aprovado.
