@@ -371,6 +371,90 @@ test('handshake WebSocket exige ticket, valida origem, uso único e sessão ativ
   assert.equal(aposLogout.status, 401);
 });
 
+test('WebSocket limita assinaturas às Mesas autorizadas e envia somente invalidações', async t => {
+  const { base } = await setup(t);
+  const senha = 'senha-local-comprida-2026';
+  const entrar = async email => {
+    assert.equal((await post(base, '/api/auth/register', { email, password: senha })).status, 201);
+    const login = await post(base, '/api/auth/login', { email, password: senha });
+    return (await login.json()).token;
+  };
+  const tokenMestre = await entrar('mestre-eventos@example.test');
+  const tokenJogador = await entrar('jogador-eventos@example.test');
+  const tokenIntruso = await entrar('intruso-eventos@example.test');
+  const { mesa } = await (await post(base, '/api/mesas', { name: 'Mesa eventos' }, tokenMestre)).json();
+  const { invitation } = await (await post(base, `/api/mesas/${mesa.id}/convites`, {}, tokenMestre)).json();
+
+  const conectar = async token => {
+    const ticketResposta = await post(base, '/api/auth/ws-ticket', {}, token);
+    assert.equal(ticketResposta.status, 201);
+    const { ticket } = await ticketResposta.json();
+    const conexao = await abrirWebSocket(base.replace(/^http/, 'ws') + '/ws?ticket=' + ticket);
+    assert.equal(conexao.status, 101);
+    assert.equal((await conexao.primeiraMensagem).type, 'ready');
+    return conexao.ws;
+  };
+  const mestre = await conectar(tokenMestre);
+  const jogador = await conectar(tokenJogador);
+  const intruso = await conectar(tokenIntruso);
+  t.after(() => { mestre.close(); jogador.close(); intruso.close(); });
+
+  const receber = (ws, tipo) => new Promise((resolve, reject) => {
+    const temporizador = setTimeout(() => {
+      ws.off('message', aoReceber);
+      reject(new Error('Tempo esgotado aguardando evento ' + tipo));
+    }, 1500);
+    const aoReceber = dados => {
+      const mensagem = JSON.parse(dados.toString('utf8'));
+      if (mensagem.type !== tipo) return;
+      clearTimeout(temporizador);
+      ws.off('message', aoReceber);
+      resolve(mensagem);
+    };
+    ws.on('message', aoReceber);
+  });
+
+  const inscricaoMestre = receber(mestre, 'subscribed');
+  mestre.send(JSON.stringify({ type: 'subscribe', mesaIds: [mesa.id] }));
+  assert.deepEqual((await inscricaoMestre).mesaIds, [mesa.id]);
+
+  const inscricaoJogadorAntes = receber(jogador, 'subscribed');
+  jogador.send(JSON.stringify({ type: 'subscribe', mesaIds: [mesa.id] }));
+  assert.deepEqual((await inscricaoJogadorAntes).mesaIds, []);
+
+  const inscricaoIntruso = receber(intruso, 'subscribed');
+  intruso.send(JSON.stringify({ type: 'subscribe', mesaIds: [mesa.id, 'x'.repeat(32)] }));
+  assert.deepEqual((await inscricaoIntruso).mesaIds, []);
+
+  const eventoPedido = receber(mestre, 'mesa.changed');
+  const pedidoResposta = await post(base, '/api/convites/solicitar', { code: invitation.code }, tokenJogador);
+  assert.equal(pedidoResposta.status, 202);
+  const { request } = await pedidoResposta.json();
+  const invalidacaoPedido = await eventoPedido;
+  assert.equal(invalidacaoPedido.mesaId, mesa.id);
+  assert.equal(invalidacaoPedido.change, 'requests.changed');
+  assert.deepEqual(Object.keys(invalidacaoPedido).sort(), ['change', 'mesaId', 'type']);
+
+  const eventoJogador = receber(jogador, 'account.changed');
+  const aprovar = await post(base, `/api/mesas/${mesa.id}/solicitacoes/${request.id}/aprovar`, {}, tokenMestre);
+  assert.equal(aprovar.status, 200);
+  assert.deepEqual(await eventoJogador, { type: 'account.changed' });
+
+  const inscricaoJogadorDepois = receber(jogador, 'subscribed');
+  jogador.send(JSON.stringify({ type: 'subscribe', mesaIds: [mesa.id] }));
+  assert.deepEqual((await inscricaoJogadorDepois).mesaIds, [mesa.id]);
+
+  const eventoRascunho = receber(jogador, 'account.changed');
+  const criar = await post(base, `/api/mesas/${mesa.id}/personagens`, { name: 'Claire', data: {} }, tokenJogador);
+  assert.equal(criar.status, 201);
+  assert.deepEqual(await eventoRascunho, { type: 'account.changed' });
+
+  assert.equal((await post(base, '/api/auth/logout', {}, tokenIntruso)).status, 200);
+  const fechamento = new Promise(resolve => intruso.once('close', codigo => resolve(codigo)));
+  intruso.send(JSON.stringify({ type: 'subscribe', mesaIds: [mesa.id] }));
+  assert.equal(await fechamento, 4001);
+});
+
 test('ticket WebSocket inválido ou desconhecido não autentica conexão', async t => {
   const { app } = await setup(t);
   assert.equal(consumirTicketWebSocketLocal(app.db, 'ticket-invalido'), null);
