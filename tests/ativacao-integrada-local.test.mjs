@@ -116,3 +116,16 @@ test('ciclo integrado: exclusao da Mesa elimina fichas e dados privados em casca
   assert.equal((await db.query('select count(*)::int n from app_private.contextos_criacao_mesa where mesa_id=$1',[T])).rows[0].n,0);
  }finally{await db.close();}
 });
+
+test('ciclo integrado: falha na limpeza de rascunhos reverte a saida inteira',async()=>{
+ const db=await setup({integrada:true});
+ try{
+  const id=await criar(db,A,'Agente','C');
+  await db.exec(`create function app_private.falhar_limpeza_rascunho() returns trigger language plpgsql as $$begin raise exception 'falha simulada na limpeza';end$$;
+    create trigger teste_falha_limpeza before delete on public.personagens for each row when (old.estado_ficha='rascunho') execute function app_private.falhar_limpeza_rascunho();`);
+  await uid(db,A);
+  await assert.rejects(db.query('select app_private.sair_mesa_local($1,true)',[T]),/falha simulada na limpeza/);
+  assert.ok(await get(db,id));
+  assert.equal((await db.query('select count(*)::int n from public.mesa_participantes where mesa_id=$1 and usuario_id=$2 and papel=\'jogador\'',[T,A])).rows[0].n,1);
+ }finally{await db.close();}
+});
