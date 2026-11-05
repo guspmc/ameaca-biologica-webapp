@@ -83,3 +83,10 @@ Nenhuma alteração em `main`, merge, publicação, Supabase remoto ou banco de 
 - **Próximo passo:** avançar em tarefas independentes e seguras na ficha/Mesa/Painel. QR permanece aprovado como requisito, mas depende da escolha e inclusão controlada de uma biblioteca geradora e da definição técnica do conteúdo/URL LAN; não será improvisado com serviço externo. A migração para apelido também aguarda decisões de normalização, colisões, nomes reservados e recuperação de conta.
 - **Testes humanos:** o Gus sinalizou que serão realizados em breve; até lá, não alegar validação em navegador, Windows, celular ou rede física.
 - **Limites preservados:** sem deploy, merge, alteração em `main`, Supabase ou banco de produção.
+
+
+## Continuidade — cobertura da fila de salvamento
+- **TESTE ADICIONAL:** `tests/fila-serializada.test.mjs` agora usa uma barreira assíncrona controlada para provar que a segunda gravação não começa enquanto a primeira ainda aguarda confirmação e que `aguardar()` não conclui antes do esvaziamento real da fila.
+- **Objetivo:** aproximar o teste unitário da condição de rede lenta que pode ocorrer no salvamento LAN; não substitui teste de integração React nem reprodução no navegador.
+- **Commit:** `91b3ceb`; CI ainda pendente.
+- **CI:** os workflows dos commits `21b0550` e `b1908c3` ainda estavam em execução na última consulta. O commit mais recente também precisa concluir ambos os workflows.
