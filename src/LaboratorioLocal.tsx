@@ -262,6 +262,11 @@ export default function LaboratorioLocal() {
         const ok = gravar('personagem', fichaAberta.nome, dadosAtualizados, fichaAberta.id);
         if (ok) setFichaAberta(atual => atual ? { ...atual, dados: dadosAtualizados } : atual);
         return ok;
+      }} aoSalvarRecursos={async recursos => {
+        const dadosAtualizados: Record<string, unknown> = { ...fichaAberta.dados, ...recursos };
+        const ok = gravar('personagem', fichaAberta.nome, dadosAtualizados, fichaAberta.id);
+        if (ok) setFichaAberta(atual => atual ? { ...atual, dados: dadosAtualizados } : atual);
+        return ok;
       }} aoSalvarFuncionamento={async configuracao => {
         const dadosAtualizados: Record<string, unknown> = { ...fichaAberta.dados, configuracaoFuncionamento: configuracao };
         const ok = gravar('personagem', fichaAberta.nome, dadosAtualizados, fichaAberta.id);
