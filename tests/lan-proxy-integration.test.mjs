@@ -70,6 +70,33 @@ test('proxy LAN mantém API e WebSocket same-origin até o servidor SQLite', asy
   assert.equal(criarMesa.status, 201);
   const { mesa } = await criarMesa.json();
 
+  // Exercita o mesmo caminho HTTP same-origin usado pelo cliente da ficha no modo LAN.
+  servidor.db.prepare("UPDATE participantes_mesa SET papel = 'jogador' WHERE mesa_id = ? AND conta_id = ?")
+    .run(mesa.id, (await (await requisitar('/api/auth/me', { headers: { authorization: `Bearer ${token}` } })).json()).account.id);
+  const dadosIniciais = { secaoA: { valor: 'confirmado' }, secaoB: { marcador: 1 } };
+  const criarRascunho = await requisitar('/api/mesas/' + mesa.id + '/personagens', {
+    method: 'POST',
+    headers: { 'content-type': 'application/json', authorization: `Bearer ${token}` },
+    body: JSON.stringify({ name: 'Ficha via proxy', data: dadosIniciais }),
+  });
+  assert.equal(criarRascunho.status, 201);
+  const { personagem } = await criarRascunho.json();
+  const dadosAlterados = { ...dadosIniciais, secaoB: { marcador: 2 } };
+  const salvarRascunho = await requisitar('/api/personagens/' + personagem.id, {
+    method: 'PUT',
+    headers: { 'content-type': 'application/json', authorization: `Bearer ${token}` },
+    body: JSON.stringify({ name: 'Ficha via proxy', data: dadosAlterados, expectedRevision: personagem.revision }),
+  });
+  assert.equal(salvarRascunho.status, 200);
+  const fichaConfirmada = (await salvarRascunho.json()).personagem;
+  assert.equal(fichaConfirmada.revision, personagem.revision + 1);
+  assert.deepEqual(fichaConfirmada.data, dadosAlterados);
+  const reaberta = await requisitar('/api/personagens/' + personagem.id, {
+    headers: { authorization: `Bearer ${token}` },
+  });
+  assert.equal(reaberta.status, 200);
+  assert.deepEqual((await reaberta.json()).personagem.data, dadosAlterados);
+
   const ticketResposta = await requisitar('/api/auth/ws-ticket', {
     method: 'POST',
     headers: { 'content-type': 'application/json', authorization: `Bearer ${token}` },
