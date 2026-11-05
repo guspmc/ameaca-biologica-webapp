@@ -219,6 +219,12 @@ export async function salvarPatchPersonagem(
         atualizadoEm: new Date().toISOString(),
         dados: { ...atual.dados, ...structuredClone(patch) },
       };
+      if (!validarPersonagem(atualizado)) {
+        atualizado = null;
+        falha = new Error('A alteração não atende ao formato válido da ficha. Revise os campos antes de salvar.');
+        transacao.abort();
+        return;
+      }
       store.put(atualizado);
     };
 
