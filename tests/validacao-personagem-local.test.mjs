@@ -61,6 +61,16 @@ test('valida BI atual como inteiro não negativo quando o campo estiver presente
   assert.equal(validarPersonagemLocal(base({ versaoModelo: 1, estadoFicha: 'rascunho', biAtual: '2' })), false);
 });
 
+test('valida PV, PV Temporários e SA como inteiros não negativos', () => {
+  const baseDados = { versaoModelo: 1, estadoFicha: 'rascunho', pvAtual: 10, pvTemporarios: 0, saAtual: 4, biAtual: 0 };
+  assert.equal(validarPersonagemLocal(base(baseDados)), true);
+  for (const campo of ['pvAtual', 'pvTemporarios', 'saAtual']) {
+    assert.equal(validarPersonagemLocal(base({ ...baseDados, [campo]: -1 })), false);
+    assert.equal(validarPersonagemLocal(base({ ...baseDados, [campo]: 1.5 })), false);
+    assert.equal(validarPersonagemLocal(base({ ...baseDados, [campo]: '2' })), false);
+  }
+});
+
 test('valida modos e preferências de funcionamento sem aceitar chaves ou valores desconhecidos', () => {
   const configuracao = configuracaoInicial();
   assert.equal(validarPersonagemLocal(base({ versaoModelo: 1, estadoFicha: 'rascunho', configuracaoFuncionamento: configuracao })), true);
