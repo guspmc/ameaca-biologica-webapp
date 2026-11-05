@@ -369,3 +369,26 @@ Commit de código e testes e1fb81845ea402b68737d0f5df91250a1f37da4d: ambos os wo
 **PENDENTE DE TESTE HUMANO:** casos 18–23 acrescentados à seção H4 de docs/fila-testes-humanos.md.
 
 **AINDA NÃO IMPLEMENTADO:** descanso por Nível acima de 1, rolagem virtual, atualização de usos de Habilidades, pausa de progressões adversas, administração de Condições e Reanimação. Não considerar o ciclo de descanso integralmente concluído.
+
+
+## 23. Reanimação por 0 PV e Colapso Viral — 05/11/2026
+
+Foi criado o núcleo de regras em src/reanimacaoFicha.ts, com validação para persistência, e integrado um primeiro painel manual em src/ReanimacaoFichaLocal.tsx à ficha contínua.
+
+### Regras e comportamentos cobertos
+
+- **0 PV:** inicia em estado aguardando o próximo turno; no turno seguinte os Testes podem começar. Cada Teste usa d20 contra DT 12, sem modificador salvo regra específica. Três sucessos em até cinco tentativas despertam a personagem com o maior valor entre 1 PV e a cura acumulada, limitado ao PV Máximo. Cura recebida em 0 PV é acumulada e não desperta imediatamente.
+- **Ajuda de Medicina:** o painel registra o resultado final do Teste de Primeiros Socorros/Medicina DT 15, já considerando Treinamento e modificadores. Sucesso concede Vantagem ao próximo Teste; falha não cancela uma Vantagem que já estivesse pendente.
+- **Colapso Viral:** inicia os Testes imediatamente ao alcançar ou ultrapassar BI Máxima, mesmo com PV restantes. Três sucessos mantêm a personagem Desacordada até a BI ficar abaixo do máximo; três falhas deixam o retorno como Zumbi Especial pendente para o próximo turno.
+- **Origem Cobaia:** cada Teste durante Colapso usa Vantagem; a regra não se aplica à Reanimação por 0 PV.
+- **Entrada manual:** não há rolagem automática. O painel recebe os resultados físicos; o modo Virtual permanece bloqueado até existir rolagem virtual. O estado e os recursos são enviados no mesmo patch de salvamento.
+- **Proteção de edição:** ações do painel ficam bloqueadas quando outra seção da ficha tem alterações pendentes. O botão de cura direta em 0 PV foi bloqueado para direcionar o registro ao campo de cura acumulada da Reanimação.
+- **Limites deliberados:** o aplicativo sinaliza morte para registro do Mestre e transformação pendente, sem executar consequências de campanha ou trocar automaticamente o controle da personagem. Não administra iniciativa/turnos, Condições ou histórico de combate.
+
+### Estado de validação
+
+**IMPLEMENTADO NA BRANCH:** núcleo de regras, validação de estado, painel visual, persistência no contrato comum da ficha e testes de integração estática.
+
+**PENDENTE:** workflows CI dos commits recentes ainda em execução; não declarar TypeScript, build ou suíte aprovados até o resultado final. Testes humanos 24–31 foram enfileirados em docs/fila-testes-humanos.md e ainda não foram realizados.
+
+**NÃO CONCLUÍDO:** integração com o motor de Combate, efeitos de Condição, transformação operacional, registro de Morte/retorno e rolagem virtual.
