@@ -37,7 +37,7 @@ function valorJsonSeguro(valor: unknown, visitados = new Set<object>()): boolean
   if (Array.isArray(valor)) {
     // JSON transforma lacunas em null e ignora propriedades extras do array.
     if (chaves.some(chave => chave !== 'length'
-      && (!/^\\d+$/.test(chave as string) || Number(chave) >= valor.length))
+      && (!/^\d+$/.test(chave as string) || Number(chave) >= valor.length))
       || Array.from({ length: valor.length }, (_, indice) => Object.prototype.hasOwnProperty.call(valor, indice)).some(existe => !existe)) {
       visitados.delete(valor);
       return false;
