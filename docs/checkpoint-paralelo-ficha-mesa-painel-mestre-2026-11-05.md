@@ -34,3 +34,12 @@ Nenhuma alteração em `main`, merge, publicação, Supabase remoto ou banco de 
 - **Painel do Mestre:** aprovação/recusa de solicitação também está vinculada à geração da sessão; respostas antigas não atualizam a lista de participantes/solicitações após novo login.
 - **Teste cliente HTTP:** o fluxo integrado agora também testa exclusão de rascunho pelo cliente LAN e confirmação de 404 na leitura posterior.
 - **CI:** workflows do commit `521b78d` concluíram com sucesso. Os workflows das alterações seguintes estão em execução/na fila; validar o HEAD atual antes de considerar a rodada aprovada.
+
+## Continuidade — gestão de participantes e fechamento da fronteira de sessão
+- **Mesa/Painel do Mestre:** adicionadas rotas LAN para listar participantes autorizados e remover um jogador. A listagem retorna somente ID interno, papel e data de entrada; não expõe e-mails ou dados de conta.
+- **Autorização:** qualquer membro pode consultar a lista; somente Mestre da própria Mesa pode remover; Jogador não pode remover a si mesmo nem terceiros; Mestre não pode remover a própria conta. A exclusão da participação ocorre em transação e a FK elimina os rascunhos associados. O servidor notifica a Mesa e a conta removida.
+- **Interface:** o Painel do Mestre permite consultar participantes e remover jogador após confirmação explícita, informando que os rascunhos serão excluídos. A identificação visual é ordinal ("Jogador 1", etc.) porque o login atual ainda usa e-mail e a migração aprovada para apelido não foi iniciada.
+- **Realtime:** sincronização recebida pelo Mestre agora atualiza também a equipe da Mesa.
+- **Ficha/Mesa:** proteção por geração foi estendida à criação de Mesa, consulta/criação de rascunhos e logout.
+- **Testes:** novo teste de integração cobre listagem sem exposição de e-mail, isolamento de terceiros, bloqueio de auto-remoção pelo jogador, remoção pelo Mestre, revogação de acesso e exclusão em cascata dos rascunhos.
+- **CI:** a execução offline de `37cec88` concluiu com sucesso. Os workflows posteriores ainda precisam concluir para validar o HEAD atual.
