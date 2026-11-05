@@ -16,7 +16,7 @@ const personagem = (id = 'p-1', nome = 'Claire') => ({
   nome,
   criadoEm: '2026-11-01T10:00:00.000Z',
   atualizadoEm: '2026-11-02T10:00:00.000Z',
-  dados: { classe: 'Operador', atributos: { vigor: 2 } },
+  dados: { classe: 'Operador', atributos: { forca: 1, agilidade: 2, vigor: 2, astucia: 2 } },
 });
 
 test('backup válido preserva fichas e pode ser serializado e lido novamente', () => {
