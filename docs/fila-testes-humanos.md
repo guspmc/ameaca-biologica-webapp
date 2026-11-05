@@ -206,3 +206,20 @@ Permanece agrupado para etapa posterior, sem antecipar o Baú:
 ### Política da fila
 
 Nenhum caso acima está marcado como TESTADO por estar descrito aqui. H1 é o único ponto que poderá interromper o trabalho autônomo antes do fechamento de outras pendências, por ser a validação crítica do caminho de salvamento. H2–H4 serão chamados em rodadas agrupadas quando seus pré-requisitos técnicos estiverem concluídos. Casos já aprovados em rodadas antigas não serão repetidos sem mudança relevante.
+
+
+### Complemento H4 — funcionalidades da ficha em revisão técnica (05/11/2026)
+
+Foram acrescentados ao protótipo local, ainda sem rodada humana:
+- preferências de funcionamento Automático/Misto/Manual, gravadas por personagem e preservando escolhas do Misto;
+- cálculo do valor base das Perícias (Atributo associado + Treinamento) e do Passivo;
+- exibição da fase de Bio-Infecção a partir de BI atual/máxima, incluindo Colapso Viral; o cálculo não altera BI, não executa efeitos nem inicia Reanimação;
+- painel de revisão das escolhas salvas, com contagem de pendências e atalhos para as seções, sem ativar a personagem.
+
+Quando H4 for chamado, acrescentar à rodada:
+1. Alterar modo e opções do Misto; salvar, fechar e reabrir a ficha; confirmar persistência e preservação das escolhas ao alternar modos.
+2. Conferir valores de Perícia e Passivo em exemplos com diferentes Atributos, Treinamento de Origem e pontos da Classe; confirmar que o Atributo não é somado duas vezes.
+3. Conferir BI inicial 0, limites das cinco fases e Colapso Viral com valores de teste; confirmar que a interface apenas apresenta o estado e não aumenta BI, rola dados ou executa Reanimação.
+4. Conferir a revisão da criação com ficha incompleta e completa; testar atalhos para Características, Perícias e Inventário; confirmar que a revisão não altera nem ativa a ficha.
+
+**Estado:** funcionalidades implementadas e verificadas automaticamente; testes humanos ainda pendentes. A ativação, o Inventário ativo, o combate operacional e as automações de jogo continuam fora do escopo concluído.

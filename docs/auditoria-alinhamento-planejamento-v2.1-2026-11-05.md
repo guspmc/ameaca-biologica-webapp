@@ -169,3 +169,29 @@ Os dois workflows do GitHub Actions para o commit `3bb7f0686ec75da7da6875fccf645
 A interface começa com `http://127.0.0.1:4175`, mas esse endereço só alcança o próprio dispositivo. Para o teste com Android ou outro computador, deve ser informado o endereço LAN exibido pelo servidor no PC (por exemplo, `http://192.168.x.x:4175`, usando o endereço real apresentado no terminal). O servidor precisa ser iniciado explicitamente com `--host 0.0.0.0`; o padrão permanece restrito ao loopback.
 
 Nenhuma alteração em `main`, publicação, Supabase de produção ou cânone do RPG.
+
+
+## 15. Revisão otimista de rascunhos e estado atualizado — 05/11/2026
+
+### Proteção contra gravação desatualizada
+
+A prioridade 1 recebeu controle de revisão por personagem:
+- Migration 8 acrescenta revisao com valor inicial 1 aos registros já existentes, preservando os dados anteriores.
+- O servidor devolve a revisão atual e só aceita PUT quando expectedRevision coincide com a revisão persistida; uma gravação confirmada incrementa a revisão.
+- Uma edição baseada em versão antiga recebe HTTP 409 e não substitui o conteúdo mais recente.
+- O cliente envia a revisão recebida na abertura/última confirmação e mantém o salvamento bloqueado enquanto há uma gravação em andamento.
+- Testes cobrem atualização e releitura, conflito entre versões, integridade após conflito, migração de banco legado e bloqueio de escrita por outra conta/Mestre.
+
+Commits de implementação/teste relevantes: 594e311e, c997d52b, 035d0e04, 20b61241, 340a6b09, d3e6a06a e e6303bf3. As primeiras execuções revelaram problemas nos testes de migração/fixture; foram corrigidos. Os workflows do commit e6303bf3fe823bcef6ae10df06de55fc26186b5d concluíram com sucesso.
+
+### Estado LAN
+
+O teste de integração HTTP também passou a iniciar o servidor com bind 0.0.0.0 e verificar preflight OPTIONS para PUT, incluindo Authorization e Content-Type, sem simular indevidamente a permissão LNA do Chrome. O teste permanece isolado no runner e usa loopback como cliente.
+
+**IMPLEMENTADO E TESTADO AUTOMATICAMENTE:** migration 8; revisão otimista no PUT; rejeição de versão antiga; integridade após conflito; CORS PUT/DELETE; cliente HTTP/servidor SQLite; bind LAN em fixture; declaração targetAddressSpace para endereços locais reconhecidos.
+
+**PENDENTE — TESTE HUMANO H1:** Chrome real a partir da origem HTTPS, permissão Local Network Access, endereço LAN do PC, firewall/rede e fluxo de salvamento/reabertura; incluir também duas sessões com a mesma ficha para confirmar a mensagem de conflito e que a versão mais recente permanece intacta. O CI não substitui esse teste.
+
+### Proteções
+
+Todas as alterações continuam somente na branch feat/offline-first-ficha. Não houve merge, publicação, alteração em main nem modificação no Supabase de produção.

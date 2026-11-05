@@ -217,3 +217,33 @@ Esta seção atualiza pontos do retrato inicial que ficaram desatualizados.
 - O Baú compartilhado, transferências e sincronização correspondentes ficam fora do ciclo atual de Inventário offline.
 - O trabalho atual pode avançar no Inventário individual/offline e em suas operações próprias, sem antecipar o Baú nem presumir o desenho de sincronização LAN.
 - A auditoria específica foi atualizada em `docs/auditoria-inventario-inicial-2026-11-05.md`.
+
+
+## 16. Funcionalidade da ficha em paralelo à infraestrutura — 05/11/2026
+
+A pedido do usuário, o trabalho funcional da ficha avançou em paralelo à prioridade 1 LAN, sem esperar a infraestrutura ficar concluída.
+
+### Implementado no protótipo da ficha contínua
+
+- **Preferências de funcionamento:** novo editor de Automático/Misto/Manual, com escolhas específicas do Misto preservadas ao alternar modos. A configuração é validada estritamente e gravada no registro da personagem, tanto no armazenamento local quanto no fluxo de servidor local. A confirmação visual ocorre somente após a resposta de sucesso. Isso registra preferências; ainda não dispara automações de combate/inventário.
+- **Perícias:** cálculo do valor base como Atributo associado + bônus de Treinamento; exibição do Passivo como 10 + valor base. O Atributo não deve ser somado novamente ao realizar o Teste.
+- **Bio-Infecção:** cálculo da fase a partir de BI atual e BI máxima, com limites das cinco fases e indicação de Colapso Viral. Para rascunho sem campo de BI atual, a exibição inicial usa BI 0, conforme a criação. O módulo não aumenta BI, não aplica efeitos, não rola dados nem inicia Reanimação.
+- **Revisão da criação:** painel local que lê os dados salvos, mostra itens conferidos/pendentes/a revisar e oferece atalhos para as seções. Não altera dados, não restaura recursos e não ativa a personagem.
+- O painel de funcionamento e a revisão foram mantidos dentro da ficha contínua, sem criar navegação paralela de abas.
+
+### Validação automatizada
+
+- Commit 76a1320800ed3a0d511eb0573b7c3e8164b6658e: ambos os workflows concluíram com sucesso; **386/386 testes**, TypeScript e build Vite aprovados.
+- Commit 2c370dc033376a6aebce966a7b57c204570c3ec7: ambos os workflows concluíram com sucesso; **387/387 testes**, TypeScript, build Vite e verificações PostgreSQL aprovados.
+- As falhas intermediárias de CI foram analisadas e corrigidas antes desses resultados; não são consideradas aprovação.
+- O HEAD de código desta atualização é 2c370dc033376a6aebce966a7b57c204570c3ec7.
+
+### Limites e pendências
+
+**IMPLEMENTADO E TESTADO AUTOMATICAMENTE:** preferências persistidas/validadas; cálculos de Perícias e Passivos; cálculo de fase de BI; revisão da criação.
+
+**AINDA NÃO IMPLEMENTADO:** execução das automações configuradas, controles operacionais de PV/SA/BI, combate ativo, rolagens, consumo de munição/itens, inventário ativo e finalização/ativação. Esses módulos devem ser implementados individualmente, conforme cânone e planejamento; não tratar o editor de preferências como se já executasse as automações.
+
+**TESTES HUMANOS:** adicionados à etapa H4, agrupados para o final. Nenhum foi realizado nesta etapa.
+
+Nenhuma publicação, merge, alteração em main ou mudança no Supabase de produção.
