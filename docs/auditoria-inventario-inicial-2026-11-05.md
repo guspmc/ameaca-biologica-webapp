@@ -124,7 +124,7 @@ A inspeção do repositório também identificou módulos parciais que devem ser
 | src/inventarioConsulta.ts | Contrato de consulta e resumo de instâncias | Não persiste nem cria instâncias |
 | src/consultaInventarioLocal.ts | Consulta local de um snapshot recebido | Não é fonte transacional persistente |
 | src/PainelInventarioLocal.tsx | Painel de consulta, filtros e detalhes por exemplar | Leitura apenas; não executa comandos de item |
-| src/organizacaoInventario.ts | Plano puro de troca/movimentação de posições | Escopo restrito a exemplares de um Espaço; não cria/usa/equipa itens |
+| src/organizacaoInventario.ts | Plano puro de movimentação/troca, inclusive entre exemplares de múltiplos Espaços | Não persiste nem integra comandos de jogo à ficha |
 | src/PainelOrganizacaoLocal.tsx | Prévia, consentimento e envio por porta de organização | Protótipo de sessão; não está integrado à ficha principal nem à persistência durável |
 | src/pendenciaOrganizacao.ts | Contratos de pedido/recibo e recuperação da organização | Não substitui persistência do Inventário ativo |
 | supabase/proposals/inventario-instancias.sql | Proposta SQL de materialização transacional de instâncias no Supabase | Não aplicada; não é migration SQLite nem API do cliente local |
