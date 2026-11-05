@@ -8,9 +8,8 @@ export default defineConfig(({ mode }) => ({
     host: '0.0.0.0',
     port: 4174,
     strictPort: true,
-    // O servidor de desenvolvimento fica acessível somente na rede confiável
-    // escolhida pelo operador. Não use este modo em redes públicas.
-    allowedHosts: true,
+    // O Vite mantém a validação padrão de Host; IPs locais são aceitos.
+    // Não desative a proteção contra DNS rebinding com allowedHosts: true.
     proxy: {
       '/api': { target: 'http://127.0.0.1:4175', changeOrigin: false },
       '/ws': { target: 'ws://127.0.0.1:4175', changeOrigin: false, ws: true },
