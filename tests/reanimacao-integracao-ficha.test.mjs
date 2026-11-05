@@ -30,6 +30,11 @@ test('Primeiros Socorros e cura acumulada ficam disponíveis enquanto aguarda o 
   assert.match(painel, /Acumular cura sem despertar/);
 });
 
+test('um novo evento crítico pode iniciar outra Reanimação após a anterior ser concluída', () => {
+  assert.match(painel, /reanimacaoAnteriorConcluida/);
+  assert.match(painel, /reanimacao === null \|\| reanimacaoAnteriorConcluida/);
+});
+
 test('cura em 0 PV é direcionada à acumulação da Reanimação, sem botão de cura direta', () => {
   assert.match(recursos, /recursos\.pvAtual === 0/);
   assert.match(recursos, /cura deve ser registrada no painel de Reanimação/);
