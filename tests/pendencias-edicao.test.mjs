@@ -26,6 +26,9 @@ test('preferências de funcionamento sinalizam pendência e só confirmam após 
   assert.match(fonte, /if \(!confirmado\) throw new Error/);
   assert.match(fonte, /aoAlterarPendencia\(false\)/);
   assert.match(fonte, /Preferências salvas e confirmadas/);
+  assert.match(fonte, /value=\{config\.modoDados\}/);
+  assert.match(fonte, /value=\{config\.visibilidadeRolagem\}/);
+  assert.match(fonte, /Físicos, Virtuais ou Mistos/);
 });
 
 test('ficha contínua integra revisão local das escolhas salvas sem ativar personagem', async () => {
