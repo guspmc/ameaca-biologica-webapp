@@ -54,7 +54,7 @@ const ficha = {
   id: 'claire', geracao: 'geracao-original', nome: 'Claire',
   criadoEm: '2026-11-01T10:00:00.000Z',
   atualizadoEm: '2026-11-02T10:00:00.000Z',
-  dados: { identidade: { apelido: 'Claire' }, atributos: { vigor: 2 } },
+  dados: { identidade: { apelido: 'Claire' }, atributos: { forca: 1, agilidade: 2, vigor: 2, astucia: 2 } },
 };
 
 test('patches de abas distintas preservam alterações em chaves diferentes', async () => {
