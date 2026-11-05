@@ -62,3 +62,13 @@ Nenhuma alteração em `main`, merge, publicação, Supabase remoto ou banco de 
 - **Teste do proxy LAN:** percorre criação, atualização e reabertura de rascunho por `/api` same-origin através do proxy Vite; verifica incremento de revisão e preservação de seções independentes. Também verifica a conexão WebSocket pelo proxy.
 - **Diagnóstico do salvamento — PENDENTE:** a rota de rede e a persistência foram exercitadas automaticamente, mas a causa do erro originalmente observado no ambiente Windows/celular ainda não foi reproduzida. A mensagem genérica de falha de rede continua ocultando a causa técnica original; não declarar o incidente corrigido.
 - **Limites preservados:** nenhum teste humano de navegador/dispositivo/rede; nenhum deploy, merge, alteração em `main` ou modificação do Supabase.
+
+
+## Atualização de continuidade — diagnóstico de transporte e CI do HEAD 76abe2b
+- **HEAD confirmado:** `76abe2bed8203ae23ca3aeb5f56edb986aa3471b` na branch `feat/offline-first-ficha`.
+- **CI CONFIRMADA:** os dois workflows do HEAD concluíram com sucesso: “Validar compilação do WebApp” (run `42132268730`) e “Verificação da ficha offline” (run `42132268735`). Os commits intermediários `74efc34` e `a24987d` também tiveram ambos os workflows concluídos com sucesso.
+- **Diagnóstico de salvamento — IMPLEMENTADO:** quando o `fetch` falha antes de receber resposta HTTP, `ErroServidorLocal` preserva apenas nome e mensagem da exceção, limitados em tamanho, sem cabeçalhos ou token. A interface de salvamento apresenta esse detalhe junto da mensagem amigável. Respostas HTTP de erro continuam sendo tratadas separadamente, sem serem classificadas como falha de transporte.
+- **TESTE AUTOMATIZADO:** o cliente HTTP tem teste para rejeição do fetcher com `TypeError('Failed to fetch')`, verificando status 0, mensagem amigável e diagnóstico preservado. CI verde no HEAD.
+- **LIMITE IMPORTANTE:** isso melhora a observabilidade; não corrige nem comprova a causa raiz do incidente de salvamento. A reprodução em navegador/Windows/celular permanece pendente, conforme decisão de adiar testes humanos.
+- **Próximo trabalho:** continuar a cobertura automatizada da fila de salvamento e avançar em paralelo nas áreas de Mesa/Painel e ficha onde não houver decisão de cânone pendente. QR foi aprovado funcionalmente, mas o projeto ainda não contém biblioteca de QR; qualquer inclusão deve ser pequena e validada no lockfile/CI antes de integrar.
+- **Limites preservados:** sem deploy, merge, alteração em `main`, Supabase ou banco de produção; testes humanos continuam adiados.
