@@ -270,3 +270,6 @@ Foram integrados controles de descanso à ficha, ainda sem cronômetro, rolagem 
 20. Descanso Completo em Sala de Descanso: restaurar PV e SA, encerrar PV Temporários e preservar BI. Em Sala Segura, confirmar que a ação fica indisponível.
 21. Com método Virtual, confirmar que Descanso Parcial não aceita nem presume resultado; com Físicos/Mistos, aceitar somente resultado informado. Descanso Completo não exige rolagem.
 22. Reabrir a ficha após cada modalidade e confirmar persistência; verificar que o aplicativo não usa cronômetro, não fiscaliza localização e não atualiza ainda Habilidades, Condições ou progressões.
+
+
+23. Com qualquer seção da ficha em edição não salva, tentar concluir Descanso Parcial ou Completo; confirmar bloqueio até salvar ou descartar a pendência, evitando que o descanso sobrescreva valores ainda não confirmados.
