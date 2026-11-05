@@ -1,6 +1,6 @@
 import { useRef } from 'react';
 import { dadosDaClasse } from './classesFicha';
-import { PERICIAS_CLASSE, bonusTreinamento, ATRIBUTO_PERICIA, valorBasePericia, valorPassivoPericia } from './pericias';
+import { PERICIAS_CLASSE, ATRIBUTO_PERICIA, valorBasePericia, valorPassivoPericia } from './pericias';
 import { ORIGENS } from './origens';
 import { capacidadeInventario, caracteristicos, equipamentoInicial as itensDoKit, opcoesEquipamento, espacosOcupados } from './equipamento';
 import { HABILIDADES_BASICAS } from './habilidades';
