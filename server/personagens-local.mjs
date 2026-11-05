@@ -150,6 +150,16 @@ export async function tratarRotaPersonagensLocal(req, res, url, db, notificarCon
         responder(res, 200, { personagem: serializar(existente) });
         return true;
       }
+      if (metodo === 'DELETE') {
+        const resultado = db.prepare('DELETE FROM personagens_locais WHERE id = ? AND conta_id = ?').run(id, conta.id);
+        if (Number(resultado.changes) !== 1) {
+          responder(res, 404, { error: 'Rascunho não encontrado.' });
+          return true;
+        }
+        notificarConta(conta.id);
+        responder(res, 200, { deleted: true, id });
+        return true;
+      }
       if (metodo === 'PUT') {
         const corpo = await lerCorpo(req);
         if (!nomeValido(corpo.name) || !ehObjeto(corpo.data) ||
