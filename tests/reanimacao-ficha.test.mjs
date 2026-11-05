@@ -54,6 +54,15 @@ test('0 PV: três falhas sinalizam Morte para registro do Mestre, sem morte auto
   assert.throws(() => aplicar(r, 20), /apta/);
 });
 
+test('Ajuda de Medicina pode ser prestada enquanto aguarda o próximo turno', () => {
+  let r = api.iniciarReanimacao('pv_zero');
+  r = api.concederAjudaMedicina(r, true);
+  assert.equal(r.estado, 'aguardando_proximo_turno');
+  assert.equal(r.vantagemProximoTeste, true);
+  r = api.iniciarTurnoReanimacao(r);
+  assert.equal(aplicar(r, [5, 12]).reanimacao.sucessos, 1);
+});
+
 test('sucesso em Medicina DT 15 concede Vantagem ao próximo Teste e consome a Vantagem', () => {
   let r = api.iniciarTurnoReanimacao(api.iniciarReanimacao('pv_zero'));
   r = api.concederAjudaMedicina(r, true);
