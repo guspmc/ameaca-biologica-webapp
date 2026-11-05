@@ -7,6 +7,7 @@ import { opcoesEquipamento } from './equipamento.ts';
 import { planejarInventarioCriacao } from './inventarioCriacao.ts';
 import { simularCompras } from './comprasIniciais.ts';
 import { configuracaoFuncionamentoValida } from './funcionamentoFicha.ts';
+import { reanimacaoValida } from './reanimacaoFicha.ts';
 
 export type PersonagemValidavel = {
   id: string;
@@ -90,6 +91,7 @@ function validarDadosFicha(valor: unknown): valor is Record<string, unknown> {
     if (campo in valor && (!Number.isSafeInteger(valor[campo]) || (valor[campo] as number) < 0)) return false;
   }
   if ('configuracaoFuncionamento' in valor && !configuracaoFuncionamentoValida(valor.configuracaoFuncionamento)) return false;
+  if ('reanimacao' in valor && valor.reanimacao !== null && !reanimacaoValida(valor.reanimacao)) return false;
 
   if ('classe' in valor
     && (typeof valor.classe !== 'string' || !['Agente', 'Autodidata', 'Operador'].includes(valor.classe))) return false;
