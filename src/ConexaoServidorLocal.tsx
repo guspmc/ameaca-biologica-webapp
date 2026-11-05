@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { criarClienteServidorLocal, ErroServidorLocal, type MesaLocal, type ResumoPersonagemLocal, type SaudeServidorLocal, type SessaoLocal, type PersonagemRascunhoLocal } from './servidorLocal';
 import FichaLocal from './FichaLocal';
 import { calcularAtrasoReconexao } from './reconexaoLocal';
+import { criarFilaSerializada } from './filaSerializada';
 
 const CHAVE_ENDERECO = 'ameaca-biologica:servidor-local:endereco:v1';
 
@@ -30,7 +31,10 @@ export default function ConexaoServidorLocal() {
   const [consultando, setConsultando] = useState(false);
   const [fichaAberta, setFichaAberta] = useState<{ mesa: MesaLocal; personagem: PersonagemRascunhoLocal } | null>(null);
   const [salvandoFicha, setSalvandoFicha] = useState(false);
-  const bloqueioSalvamentoFicha = useRef(false);
+  const filaSalvamentoFicha = useRef(criarFilaSerializada());
+  const fichaAbertaRef = useRef(fichaAberta);
+  fichaAbertaRef.current = fichaAberta;
+  const quantidadeSalvamentosPendentes = useRef(0);
   const socketEventos = useRef<WebSocket | null>(null);
   const mesasInscritas = useRef(new Set<string>());
   const [canalTempoReal, setCanalTempoReal] = useState(false);
@@ -376,22 +380,41 @@ export default function ConexaoServidorLocal() {
     } finally { setConsultando(false); }
   }
 
-  async function salvarDadosFicha(delta: Record<string, unknown>): Promise<boolean> {
-    if (!sessao || !fichaAberta || fichaAberta.mesa.role !== 'jogador') return false;
-    if (bloqueioSalvamentoFicha.current) { setErro('Já existe um salvamento em andamento nesta ficha. Aguarde a confirmação antes de tentar novamente.'); return false; }
-    bloqueioSalvamentoFicha.current = true; setSalvandoFicha(true); setErro(''); setAviso('');
-    try {
-      const dadosAtualizados = { ...fichaAberta.personagem.data, ...delta };
-      const resposta = await criarClienteServidorLocal({ baseUrl: endereco.trim(), token: sessao.token }).atualizarPersonagem(fichaAberta.personagem.id, fichaAberta.personagem.name, dadosAtualizados, fichaAberta.personagem.revision);
-      if (resposta.personagem.id !== fichaAberta.personagem.id || resposta.personagem.mesaId !== fichaAberta.mesa.id) throw new Error('A confirmação do servidor não corresponde à ficha aberta. Reabra a ficha para consultar o estado atual.');
-      setFichaAberta(atual => atual ? { ...atual, personagem: resposta.personagem } : atual);
-      setAviso('Alterações recebidas e confirmadas pelo servidor. O personagem continua como rascunho não ativo.');
-      return true;
-    } catch (problema) {
-      if (problema instanceof ErroServidorLocal && problema.status === 401) encerrarSessao('A sessão expirou ou foi encerrada no servidor. Entre novamente.');
-      else setErro(problema instanceof Error ? problema.message : 'Não foi possível confirmar o salvamento no servidor.');
-      return false;
-    } finally { bloqueioSalvamentoFicha.current = false; setSalvandoFicha(false); }
+  function salvarDadosFicha(delta: Record<string, unknown>): Promise<boolean> {
+    if (!sessao || !fichaAbertaRef.current || fichaAbertaRef.current.mesa.role !== 'jogador') return Promise.resolve(false);
+    quantidadeSalvamentosPendentes.current += 1;
+    setSalvandoFicha(true);
+    return filaSalvamentoFicha.current.enfileirar(async () => {
+      const fichaAtual = fichaAbertaRef.current;
+      if (!sessao || !fichaAtual || fichaAtual.mesa.role !== 'jogador') return false;
+      setErro(''); setAviso('');
+      try {
+        // A base e a revisão são lidas somente quando esta operação chega à vez.
+        // Assim, patches de seções diferentes preservam as confirmações anteriores.
+        const dadosAtualizados = { ...fichaAtual.personagem.data, ...delta };
+        const resposta = await criarClienteServidorLocal({ baseUrl: endereco.trim(), token: sessao.token }).atualizarPersonagem(
+          fichaAtual.personagem.id,
+          fichaAtual.personagem.name,
+          dadosAtualizados,
+          fichaAtual.personagem.revision
+        );
+        if (resposta.personagem.id !== fichaAtual.personagem.id || resposta.personagem.mesaId !== fichaAtual.mesa.id) {
+          throw new Error('A confirmação do servidor não corresponde à ficha aberta. Reabra a ficha para consultar o estado atual.');
+        }
+        const confirmada = { ...fichaAtual, personagem: resposta.personagem };
+        fichaAbertaRef.current = confirmada;
+        setFichaAberta(confirmada);
+        setAviso('Alterações recebidas e confirmadas pelo servidor. O personagem continua como rascunho não ativo.');
+        return true;
+      } catch (problema) {
+        if (problema instanceof ErroServidorLocal && problema.status === 401) encerrarSessao('A sessão expirou ou foi encerrada no servidor. Entre novamente.');
+        else setErro(problema instanceof Error ? problema.message : 'Não foi possível confirmar o salvamento no servidor.');
+        return false;
+      } finally {
+        quantidadeSalvamentosPendentes.current = Math.max(0, quantidadeSalvamentosPendentes.current - 1);
+        setSalvandoFicha(quantidadeSalvamentosPendentes.current > 0);
+      }
+    });
   }
 
   function editarSecaoFicha(secao: 'caracteristicas' | 'pericias' | 'inventario') {
