@@ -81,4 +81,8 @@ test('cliente HTTP local cria, consulta e atualiza rascunho usando o mesmo ender
   assert.equal(aposConflito.personagem.name, 'Claire Redfield');
   assert.equal(aposConflito.personagem.revision, atualizado.personagem.revision);
   assert.deepEqual(aposConflito.personagem.data, dadosAtualizados);
+
+  const excluido = await cliente.excluirPersonagem(id);
+  assert.deepEqual(excluido, { deleted: true, id });
+  await assert.rejects(cliente.consultarPersonagem(id), erro => erro?.status === 404);
 });
