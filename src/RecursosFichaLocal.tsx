@@ -18,7 +18,7 @@ export default function RecursosFichaLocal({ dados, pvMaximo, saMaximo, biMaximo
   const [dano, setDano] = useState('1');
   const [temporarios, setTemporarios] = useState('0');
   const valido = recursosValidos(recursos, pvMaximo, saMaximo);
-  const fase = recursos.biAtual >= biMaximo ? 'Colapso Viral' : 'Fase ' + (Math.floor(recursos.biAtual * 5 / biMaximo) + 1);
+  const fase = biMaximo <= 0 ? 'Indisponível até concluir a Classe' : recursos.biAtual >= biMaximo ? 'Colapso Viral' : 'Fase ' + (Math.floor(recursos.biAtual * 5 / biMaximo) + 1);
 
   function atualizar(proximo: RecursosAtuais) {
     setRecursos(proximo);
@@ -73,8 +73,8 @@ export default function RecursosFichaLocal({ dados, pvMaximo, saMaximo, biMaximo
     <p className="ficha-local-legenda">A ficha registra a quantidade; não compra ações nem controla automaticamente a janela de Esforço.</p>
     <h4>Bio-Infecção</h4>
     <div className="recursos-controles">
-      <button type="button" disabled={ocupado || recursos.biAtual === 0} onClick={() => tentar(() => ajustarBI(recursos, -1, pvMaximo, saMaximo))}>-1 BI</button>
-      <button type="button" disabled={ocupado} onClick={() => tentar(() => ajustarBI(recursos, 1, pvMaximo, saMaximo))}>+1 BI</button>
+      <button type="button" disabled={ocupado || biMaximo <= 0 || recursos.biAtual === 0} onClick={() => tentar(() => ajustarBI(recursos, -1, pvMaximo, saMaximo))}>-1 BI</button>
+      <button type="button" disabled={ocupado || biMaximo <= 0} onClick={() => tentar(() => ajustarBI(recursos, 1, pvMaximo, saMaximo))}>+1 BI</button>
     </div>
     <p className="ficha-local-legenda">BI começa em 0, não aumenta sozinha e só diminui por fonte expressa. Alcançar ou ultrapassar BI Máxima sinaliza Colapso Viral; esta tela não inicia Reanimação ou transformação.</p>
     {erro && <p className="offline-erro" role="alert">{erro}</p>}
