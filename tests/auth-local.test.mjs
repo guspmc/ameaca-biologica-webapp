@@ -117,7 +117,7 @@ test('registra a migração de autenticação uma única vez', async t => {
   const { app, dataDir, fechar, registrarServidor } = await setup(t);
   assert.deepEqual(
     app.db.prepare('SELECT version FROM schema_migrations ORDER BY version').all().map(row => row.version),
-    [1, 2, 3, 4, 5, 6, 7],
+    [1, 2, 3, 4, 5, 6, 7, 8],
   );
   await fechar();
 
@@ -145,7 +145,8 @@ test('migração 7 recupera o registro se a tabela de personagens já existir', 
     VALUES (?, ?, ?, ?, ?, ?, ?)
   `).run('personagem-migracao-7', 'mesa-migracao-7', 'conta-migracao-7', 'Claire', '{"atributos":{}}', agora, agora);
 
-  app.db.prepare('DELETE FROM schema_migrations WHERE version = 7').run();
+  app.db.exec('ALTER TABLE personagens_locais DROP COLUMN revisao');
+  app.db.prepare('DELETE FROM schema_migrations WHERE version >= 7').run();
   await fechar();
 
   const reiniciado = createLocalServer({ host: '127.0.0.1', port: 0, dataDir });
@@ -156,10 +157,9 @@ test('migração 7 recupera o registro se a tabela de personagens já existir', 
     reiniciado.db.prepare('SELECT version FROM schema_migrations ORDER BY version').all().map(row => row.version),
     [1, 2, 3, 4, 5, 6, 7],
   );
-  assert.equal(
-    reiniciado.db.prepare('SELECT nome FROM personagens_locais WHERE id = ?').get('personagem-migracao-7').nome,
-    'Claire',
-  );
+  const personagemMigrado = reiniciado.db.prepare('SELECT nome, revisao FROM personagens_locais WHERE id = ?').get('personagem-migracao-7');
+  assert.equal(personagemMigrado.nome, 'Claire');
+  assert.equal(personagemMigrado.revisao, 1);
 });
 
 test('preserva conta e sessão existentes ao reiniciar o servidor e reaplicar migrações', async t => {
