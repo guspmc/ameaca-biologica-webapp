@@ -26,8 +26,8 @@ test('cliente HTTP local cria, consulta e atualiza rascunho usando o mesmo ender
 
   assert.equal((await cliente.minhaConta()).account.id, sessao.account.id);
   const { mesa } = await cliente.criarMesa('Mesa integração cliente');
-  app.db.prepare('INSERT INTO participantes_mesa (mesa_id, conta_id, papel, entrou_em) VALUES (?, ?, ?, ?)')
-    .run(mesa.id, sessao.account.id, 'jogador', new Date().toISOString());
+  app.db.prepare('UPDATE participantes_mesa SET papel = ? WHERE mesa_id = ? AND conta_id = ?')
+    .run('jogador', mesa.id, sessao.account.id);
 
   const dadosOriginais = { versaoModelo: 1, estadoFicha: 'rascunho' };
   const criado = await cliente.criarPersonagem(mesa.id, 'Claire', dadosOriginais);
