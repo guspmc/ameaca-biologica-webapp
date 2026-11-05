@@ -147,7 +147,7 @@ A proposta de contrato compartilhado da seção 13 do documento `auditoria-esque
 - O patch de salvamento passou a validar o registro mesclado antes de confirmar a transação.
 - Testes específicos foram adicionados/ajustados para refletir o contrato atual.
 - Referência detalhada: `docs/auditoria-esquema-dados-ficha-offline-2026-11-04.md`, seções 14 a 16.
-- **CI/build no HEAD `e162a085`: pendente de confirmação.** Não considerar os testes aprovados até obter o resultado do workflow correspondente.
+- **CI/build nos HEADs posteriores (`0f4c037f` e `0c0ff480`): pendentes de confirmação.** Não considerar os testes aprovados até obter o resultado do workflow correspondente.
 - **Testes humanos:** ainda não iniciados, conforme decisão do usuário; solicitar somente após concluir verificações técnicas e Inventário.
 
 
@@ -191,8 +191,9 @@ Esta seção atualiza pontos do retrato inicial que ficaram desatualizados.
 
 - **CI / `pnpm test` / `pnpm build`: pendentes de confirmação no HEAD atual.** A consulta disponível ao GitHub não retornou status nem execuções associadas aos commits recentes.
 - Não considerar a validação concluída nem iniciar a bateria humana até executar a suíte/build em runner real.
-- Próximo: confirmar automação, revisar o fluxo integrado de criação e backup, depois realizar homologação real de concorrência e concluir o Inventário neste ciclo da Ficha.
-- **HEAD documental:** `fb27e227` foi o último HEAD consultado antes desta atualização; o commit desta atualização deve ser registrado após a gravação.
+- Próximo: confirmar automação, revisar o fluxo integrado de criação e backup, depois homologar em duas abas reais a mesclagem de patches e a invalidação por `geracao` após restauração, e concluir o Inventário neste ciclo da Ficha.
+- **HEAD do código após os últimos ajustes:** `0c0ff48016bc5532949018609c069203cb7eb35d`.
+- **HEAD documental após esta atualização:** `549b817320d0a848e94e752a350970c70aada6b1` (antes da presente correção documental).
 
 ## 13. Continuação da auditoria — 05/11/2026
 
