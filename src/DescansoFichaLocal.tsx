@@ -51,7 +51,7 @@ export default function DescansoFichaLocal({ dados, classe, pvMaximo, saMaximo, 
       </select>
     </label>
     <h4>Descanso Parcial · 30 minutos</h4>
-    <p>Sala de Descanso ou Sala Segura. Recupera PV pelo Dado de Vida da Classe; não recupera SA nem encerra Condições.</p>
+    <p>Sala de Descanso ou Sala Segura. Recupera PV pelo Dado de Vida da Classe; não recupera SA nem pausa Condições.</p>
     {modoDados === 'virtuais' ? <p>O método de dados está em Virtual, mas a rolagem virtual ainda não está implementada. Nenhum resultado será presumido.</p> : <label>Resultado físico informado · 1d{dadoVida ?? '—'}
       <input type="number" min="1" max={dadoVida ?? 1} step="1" value={resultado} disabled={ocupado || !dadoVida} onChange={e => setResultado(e.target.value)}/>
     </label>}
