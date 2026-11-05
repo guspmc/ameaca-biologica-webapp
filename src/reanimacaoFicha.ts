@@ -45,7 +45,7 @@ export function reanimacaoValida(valor: unknown): valor is Reanimacao {
     && (r.estado !== 'morte_a_registrar' || (r.causa === 'pv_zero' && r.falhas === 3))
     && (r.estado !== 'transformacao_no_proximo_turno' || (r.causa === 'colapso_bi' && r.falhas === 3))
     && (r.estado !== 'concluida' || r.sucessos === 3)
-    && (r.estado !== 'aguardando_proximo_turno' || r.tentativas === 0)
+    && (r.estado !== 'aguardando_proximo_turno' || (r.causa === 'pv_zero' && r.tentativas === 0))
     && (r.estado !== 'em_andamento' || (r.sucessos < 3 && r.falhas < 3 && r.tentativas < 5));
 }
 
