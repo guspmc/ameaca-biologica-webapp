@@ -39,11 +39,13 @@ test('preparacao compartilhada serializa a instalacao e respeita o lockfile', as
 
 test('menu permite iniciar os ambientes em paralelo sem compartilhar portas', async () => {
   const script = await readFile(arquivo('../scripts/windows/Menu_Testes.bat'), 'utf8');
+  const ficha = await readFile(arquivo('../scripts/windows/Iniciar_Ficha_Offline.bat'), 'utf8');
+  const lan = await readFile(arquivo('../scripts/windows/Iniciar_Mesa_LAN.bat'), 'utf8');
   assert.match(script, /Iniciar_Ficha_Offline\\.bat/i);
   assert.match(script, /Iniciar_Mesa_LAN\\.bat/i);
   assert.match(script, /goto ambos/i);
-  assert.match(script, /4176/);
-  assert.match(script, /4174/);
+  assert.match(ficha, /4176/);
+  assert.match(lan, /4174/);
 });
 
 test('verificador de ambiente exige versões declaradas pelo projeto e aceita chamada silenciosa', async () => {
