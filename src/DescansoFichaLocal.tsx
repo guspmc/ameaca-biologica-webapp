@@ -9,10 +9,11 @@ type Props = {
   pvMaximo: number;
   saMaximo: number;
   modoDados: ModoDados;
+  bloqueado: boolean;
   aoSalvar: (patch: RecursosAtuais) => Promise<boolean>;
 };
 
-export default function DescansoFichaLocal({ dados, classe, pvMaximo, saMaximo, modoDados, aoSalvar }: Props) {
+export default function DescansoFichaLocal({ dados, classe, pvMaximo, saMaximo, modoDados, bloqueado, aoSalvar }: Props) {
   const [local, setLocal] = useState<LocalDescanso | ''>('');
   const [resultado, setResultado] = useState('');
   const [ocupado, setOcupado] = useState(false);
@@ -21,8 +22,8 @@ export default function DescansoFichaLocal({ dados, classe, pvMaximo, saMaximo, 
   const dadoVida = (() => { try { return dadoVidaClasse(classe); } catch { return null; } })();
   const face = Number(resultado);
   const resultadoValido = resultado.trim() !== '' && Number.isSafeInteger(face) && face >= 1 && face <= (dadoVida ?? 0);
-  const parcialDisponivel = modoDados !== 'virtuais' && dadoVida !== null && resultadoValido && localPermiteDescanso('parcial', local);
-  const completoDisponivel = dadoVida !== null && localPermiteDescanso('completo', local);
+  const parcialDisponivel = !bloqueado && modoDados !== 'virtuais' && dadoVida !== null && resultadoValido && localPermiteDescanso('parcial', local);
+  const completoDisponivel = !bloqueado && dadoVida !== null && localPermiteDescanso('completo', local);
   async function concluir(tipo: 'parcial' | 'completo') {
     if (ocupado) return;
     try {
@@ -43,6 +44,7 @@ export default function DescansoFichaLocal({ dados, classe, pvMaximo, saMaximo, 
   return <details className="ficha-local-editor descanso-ficha">
     <summary>Descanso Parcial e Completo</summary>
     <p>Informe o local ficcional e conclua a modalidade escolhida. Não há cronômetro real nem validação de localização pelo aplicativo.</p>
+    {bloqueado && <p role="status">Salve ou descarte as alterações pendentes da ficha antes de concluir um Descanso.</p>}
     <label>Local do Descanso
       <select value={local} disabled={ocupado} onChange={e => { setLocal(e.target.value as LocalDescanso | ''); setMensagem(''); setErro(''); }}>
         <option value="">Selecione o local</option>
