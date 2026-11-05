@@ -15,6 +15,7 @@ import FuncionamentoFichaLocal from './FuncionamentoFichaLocal';
 import RevisaoCriacaoLocal from './RevisaoCriacaoLocal';
 import CalculadoraTesteLocal from './CalculadoraTesteLocal';
 import RecursosFichaLocal from './RecursosFichaLocal';
+import DescansoFichaLocal from './DescansoFichaLocal';
 import { recursosIniciais } from './recursosFicha';
 import type { FichaRevisao } from './conferenciaCriacao';
 import { normalizarConfiguracaoFuncionamento, type ConfiguracaoFuncionamento } from './funcionamentoFicha';
@@ -194,6 +195,16 @@ export default function FichaLocal({ nome, mesa, dados, aoFechar, aoRecarregar, 
           biMaximo={bi}
           aoSalvar={aoSalvarRecursos}
           aoAlterarPendencia={pendente => registrarPendencia('Recursos', pendente)}
+        />
+
+        <DescansoFichaLocal
+          key={JSON.stringify([ficha.pvAtual ?? null, ficha.pvTemporarios ?? null, ficha.saAtual ?? null, ficha.biAtual ?? null])}
+          dados={dados}
+          classe={classe}
+          pvMaximo={pv}
+          saMaximo={sa}
+          modoDados={configuracaoFuncionamento.modoDados}
+          aoSalvar={aoSalvarRecursos}
         />
 
         <nav className="ficha-local-nav" aria-label="Seções da ficha">
