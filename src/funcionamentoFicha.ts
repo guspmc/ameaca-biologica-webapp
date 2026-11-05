@@ -14,3 +14,18 @@ export function configuracaoInicial():ConfiguracaoFuncionamento{
 export function automacoesEfetivas(config:ConfiguracaoFuncionamento):Record<AutomacaoId,boolean|null>{
  return Object.fromEntries(AUTOMACOES.map(a=>[a.id,config.modo==='automatico'?true:config.modo==='manual'?false:config.preferenciasMisto[a.id]])) as Record<AutomacaoId,boolean|null>;
 }
+
+export function configuracaoFuncionamentoValida(valor: unknown): valor is ConfiguracaoFuncionamento {
+ if (!valor || typeof valor !== 'object' || Array.isArray(valor)) return false;
+ const config = valor as Record<string, unknown>;
+ if (Object.keys(config).sort().join('|') !== 'modo|preferenciasMisto') return false;
+ if (config.modo !== 'automatico' && config.modo !== 'misto' && config.modo !== 'manual') return false;
+ const preferencias = config.preferenciasMisto;
+ if (!preferencias || typeof preferencias !== 'object' || Array.isArray(preferencias)) return false;
+ const escolhas = preferencias as Record<string, unknown>;
+ const ids = AUTOMACOES.map(item => item.id).sort();
+ if (Object.keys(escolhas).sort().join('|') !== ids.join('|')) return false;
+ return AUTOMACOES.every(item => item.padrao === null
+  ? escolhas[item.id] === null || typeof escolhas[item.id] === 'boolean'
+  : typeof escolhas[item.id] === 'boolean');
+}
