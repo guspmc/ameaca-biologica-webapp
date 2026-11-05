@@ -20,7 +20,6 @@ test('proxy LAN mantém API e WebSocket same-origin até o servidor SQLite', asy
       host: '127.0.0.1',
       port: 0,
       strictPort: false,
-      allowedHosts: true,
       proxy: {
         '/api': { target: baseServidor, changeOrigin: false },
         '/ws': { target: baseServidor.replace(/^http/, 'ws'), changeOrigin: false, ws: true },
