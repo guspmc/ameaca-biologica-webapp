@@ -1,6 +1,6 @@
 import { useRef } from 'react';
 import { dadosDaClasse } from './classesFicha';
-import { PERICIAS_CLASSE, bonusTreinamento, ATRIBUTO_PERICIA, valorBasePericia } from './pericias';
+import { PERICIAS_CLASSE, bonusTreinamento, ATRIBUTO_PERICIA, valorBasePericia, valorPassivoPericia } from './pericias';
 import { ORIGENS } from './origens';
 import { capacidadeInventario, caracteristicos, equipamentoInicial as itensDoKit, opcoesEquipamento, espacosOcupados } from './equipamento';
 import { HABILIDADES_BASICAS } from './habilidades';
@@ -182,7 +182,8 @@ export default function FichaLocal({ nome, mesa, dados, aoFechar, aoRecarregar, 
               const rotulo = grau === 2 ? 'Mestre' : grau === 1 ? 'Treinada' : 'Não Treinada';
               const atributo = ATRIBUTO_PERICIA[pericia];
               const totalBase = valorBasePericia(pericia, atributos, treinada || null, distribuicao);
-              return <div key={pericia}><span>{pericia}<small>{rotulo}{pericia === treinada ? ' · Origem' : ''} · {atributo?.toUpperCase()} {atributo ? numero(atributos[atributo]) : ''} + Treinamento</small></span><strong>+{totalBase}</strong></div>;
+              const passivo = valorPassivoPericia(pericia, atributos, treinada || null, distribuicao);
+              return <div key={pericia}><span>{pericia}<small>{rotulo}{pericia === treinada ? ' · Origem' : ''} · {atributo?.toUpperCase()} {atributo ? numero(atributos[atributo]) : ''} + Treinamento · Passivo {passivo}</small></span><strong>+{totalBase}</strong></div>;
             })}
           </div>
           <p className="ficha-local-legenda">O valor exibido soma o Atributo associado e o Treinamento. Modificadores permanentes, temporários e circunstanciais serão apresentados quando seus respectivos módulos estiverem integrados; não some o Atributo novamente ao realizar o Teste.</p>
