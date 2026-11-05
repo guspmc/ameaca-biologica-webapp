@@ -169,3 +169,35 @@ test('ciclo integrado: Mestre remove somente o jogador escolhido, limpa apenas s
   assert.equal((await db.query('select count(*)::int n from public.mesa_participantes where mesa_id=$1 and usuario_id=$2',[T,A])).rows[0].n,1);
  }finally{await db.close();}
 });
+
+test('ciclo integrado: remover jogador preserva ficha arquivada e seu inventario',async()=>{
+ const db=await setup({integrada:true});
+ try{
+  const arquivada=await criar(db,B,'Operador','A');
+  const args=await pedido(db,arquivada,op(707));
+  await uid(db,B);
+  await db.query('select app_private.ativar_ficha_local($1,$2,$3,$4)',args);
+  const completa=await get(db,arquivada);
+  const itensAntes=await instances(db,arquivada);
+
+  await uid(db,M);
+  const preview=(await db.query('select app_private.prever_arquivamento_local($1) r',[arquivada])).rows[0].r;
+  await db.query('select app_private.executar_ciclo_ficha_local($1,$2,$3,$4)',[arquivada,op(708),preview.revisao,'arquivar']);
+  const estadoArquivado=await get(db,arquivada);
+  const itensArquivados=await instances(db,arquivada);
+  assert.equal(estadoArquivado.estado_ficha,'arquivada');
+  assert.equal(estadoArquivado.jogador_id,null);
+
+  await db.query("delete from public.mesa_participantes where mesa_id=$1 and usuario_id=$2 and papel='jogador'",[T,B]);
+  const depois=await get(db,arquivada);
+  assert.ok(depois);
+  assert.equal(depois.estado_ficha,'arquivada');
+  assert.equal(depois.jogador_id,null);
+  assert.equal(depois.pv_atual,completa.pv_atual);
+  assert.equal(depois.sa_atual,completa.sa_atual);
+  assert.equal(depois.bi_atual,completa.bi_atual);
+  assert.deepEqual(await instances(db,arquivada),itensArquivados);
+  assert.ok(itensAntes.length>0);
+  assert.equal((await db.query('select count(*)::int n from public.mesa_participantes where mesa_id=$1 and usuario_id=$2',[T,B])).rows[0].n,0);
+ }finally{await db.close();}
+});
