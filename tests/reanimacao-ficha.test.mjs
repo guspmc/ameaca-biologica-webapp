@@ -11,7 +11,8 @@ function aplicar(r, resultado, pvMaximo = 12, cobaia = false) {
   return api.resolverTesteReanimacao(r, resultado, pvMaximo, cobaia);
 }
 function tresSucessos(causa, pvMaximo = 12, cobaia = false) {
-  let r = api.iniciarTurnoReanimacao(api.iniciarReanimacao(causa));
+  let r = api.iniciarReanimacao(causa);
+  if (r.estado === 'aguardando_proximo_turno') r = api.iniciarTurnoReanimacao(r);
   for (let i = 0; i < 3; i++) r = aplicar(r, cobaia ? [12, 4] : 12, pvMaximo, cobaia).reanimacao;
   return r;
 }
@@ -64,7 +65,8 @@ test('sucesso em Medicina DT 15 concede Vantagem ao próximo Teste e consome a V
   assert.equal(api.concederAjudaMedicina(r, false).vantagemProximoTeste, false);
 });
 
-test('Colapso: Cobaia rola dois d20, três sucessos mantêm Desacordado até BI abaixo do máximo', () => {
+test('Colapso: testes começam imediatamente; Cobaia rola dois d20 e três sucessos mantêm Desacordado até BI abaixo do máximo', () => {
+  assert.equal(api.iniciarReanimacao('colapso_bi').estado, 'em_andamento');
   let r = tresSucessos('colapso_bi', 12, true);
   assert.equal(r.estado, 'desacordada_ate_reducao_bi');
   assert.throws(() => aplicar(r, [20, 20], 12, true), /apta/);
@@ -73,7 +75,7 @@ test('Colapso: Cobaia rola dois d20, três sucessos mantêm Desacordado até BI 
 });
 
 test('Colapso: três falhas deixam transformação pendente para o próximo turno', () => {
-  let r = api.iniciarTurnoReanimacao(api.iniciarReanimacao('colapso_bi'));
+  let r = api.iniciarReanimacao('colapso_bi');
   let out;
   for (let i = 0; i < 3; i++) out = aplicar(r, 1, 12), r = out.reanimacao;
   assert.equal(r.estado, 'transformacao_no_proximo_turno');
