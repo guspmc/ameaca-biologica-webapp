@@ -26,7 +26,7 @@ export default function ConexaoServidorLocal() {
   const [nomeMesa, setNomeMesa] = useState('');
   const [codigoConvite, setCodigoConvite] = useState('');
   const [convitesGerados, setConvitesGerados] = useState<Record<string, string>>({});
-  const [solicitacoes, setSolicitacoes] = useState<Record<string, { id: string; status: 'pendente'; createdAt: string; accountId: string; email: string }[]>>({});
+  const [solicitacoes, setSolicitacoes] = useState<Record<string, { id: string; status: 'pendente'; createdAt: string; accountId: string }[]>>({});
   const [participantes, setParticipantes] = useState<Record<string, ParticipanteMesaLocal[]>>({});
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
