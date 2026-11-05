@@ -214,3 +214,21 @@ O endereço do servidor na interface já será preenchido com a origem atual e p
 - TESTE AUTOMATIZADO: cobre inscrição autorizada/negada, evento após solicitação, notificação da conta após aprovação, invalidação de rascunho e encerramento do canal após logout.
 - PENDENTE: resultado do CI desta alteração; teste manual em dois dispositivos e em navegadores reais; verificação de firewall, reconexão após queda de Wi-Fi e sessão expirada.
 - PENDENTE: não existe ainda sincronização automática entre IndexedDB da Ficha offline e SQLite da Mesa LAN.
+
+
+### Roteiro humano — Mesa LAN em dois dispositivos
+
+Executar somente depois de CI verde. Usar dados fictícios e duas contas distintas.
+
+1. No computador, iniciar o servidor SQLite e o Vite em modo LAN conforme os comandos acima. Abrir a interface local e confirmar que a saúde do servidor responde.
+2. No computador, cadastrar a conta do Mestre, entrar, atualizar a lista e criar uma Mesa.
+3. Gerar um convite e manter a tela de solicitações aberta.
+4. No celular, conectado ao mesmo Wi-Fi, abrir a URL LAN e cadastrar uma segunda conta. Solicitar ingresso usando o código.
+5. Sem tocar em **Ver solicitações** no computador, confirmar que o Mestre recebe a atualização da lista. O evento não deve conter e-mail nem dados do pedido; a interface consulta a rota autenticada.
+6. Aprovar o pedido no computador. Sem atualizar manualmente o celular, confirmar que a Mesa aparece na lista da conta Jogador.
+7. No celular, criar um rascunho de personagem. Em outra sessão autenticada da mesma conta Jogador, confirmar que a lista de rascunhos é atualizada. O Mestre não deve receber conteúdo ou detalhes desse rascunho.
+8. Com a sessão do Jogador aberta, encerrar essa sessão no servidor por logout em outra sessão/cliente. Confirmar que o canal é encerrado e a interface solicita novo login.
+9. Desligar e religar o Wi-Fi do celular. Confirmar tentativa de reconexão e atualização das listas após a nova conexão. Enquanto desconectado, nenhuma operação compartilhada deve ser apresentada como confirmada.
+10. Repetir a solicitação/ aprovação com uma Mesa sem vaga, e confirmar que o servidor recusa o ingresso sem ultrapassar o limite de 10 jogadores.
+
+Registrar cada passo como **aprovado**, **falhou** ou **não executado**, com dispositivo/navegador e mensagem observada. Testes automatizados de autorização não substituem este roteiro, e este roteiro não substitui a verificação de duas contas e sessões reais.
