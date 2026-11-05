@@ -56,6 +56,12 @@ export default function RecursosFichaLocal({ dados, pvMaximo, saMaximo, biMaximo
       <div><small>BIO-INFECÇÃO</small><strong>{recursos.biAtual}/{biMaximo}</strong><p>{fase}</p></div>
     </div>
     {!valido && <p className="offline-erro" role="alert">Há valores acima dos máximos atuais. Eles foram preservados; ajuste-os antes de salvar.</p>}
+    <h4>Ajustes diretos</h4>
+    <div className="recursos-controles">
+      <label>PV Atuais<input type="number" min="0" step="1" value={recursos.pvAtual} disabled={ocupado} onChange={e => { const n = Number(e.target.value); if (Number.isSafeInteger(n) && n >= 0) atualizar({ ...recursos, pvAtual: n }); }}/></label>
+      <label>SA Atual<input type="number" min="0" step="1" value={recursos.saAtual} disabled={ocupado} onChange={e => { const n = Number(e.target.value); if (Number.isSafeInteger(n) && n >= 0) atualizar({ ...recursos, saAtual: n }); }}/></label>
+      <label>BI Atual<input type="number" min="0" step="1" value={recursos.biAtual} disabled={ocupado} onChange={e => { const n = Number(e.target.value); if (Number.isSafeInteger(n) && n >= 0) atualizar({ ...recursos, biAtual: n }); }}/></label>
+    </div>
     <h4>PV Atuais e Temporários</h4>
     <div className="recursos-controles">
       <button type="button" disabled={ocupado || recursos.pvAtual >= pvMaximo} onClick={() => tentar(() => curarPV(recursos, 1, pvMaximo))}>+1 PV</button>
@@ -81,5 +87,6 @@ export default function RecursosFichaLocal({ dados, pvMaximo, saMaximo, biMaximo
     {erro && <p className="offline-erro" role="alert">{erro}</p>}
     {mensagem && <p className="offline-status" role="status">{mensagem}</p>}
     <button type="button" className="acao" disabled={ocupado || !valido} onClick={() => void salvar()}>{ocupado ? 'Salvando…' : 'Salvar recursos'} <span>→</span></button>
+    <button type="button" className="botao-claro" disabled={ocupado} onClick={() => { setRecursos(recursosIniciais(dados, pvMaximo, saMaximo)); aoAlterarPendencia(false); setErro(''); setMensagem('Alterações ainda não salvas descartadas.'); }}>Descartar alterações não salvas</button>
   </details>;
 }
