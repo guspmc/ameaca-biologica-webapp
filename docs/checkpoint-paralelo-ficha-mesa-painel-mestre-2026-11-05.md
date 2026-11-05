@@ -53,3 +53,12 @@ Nenhuma alteração em `main`, merge, publicação, Supabase remoto ou banco de 
 - **Ficha:** `tests/lan-proxy-integration.test.mjs` agora percorre criação, PUT de atualização e reabertura de rascunho pelo proxy same-origin do Vite em modo LAN. Verifica revisão incrementada e preservação de duas seções independentes.
 - **Diagnóstico de salvamento:** inspeção confirmou que o cliente em modo LAN usa `window.location.origin`, portanto chama `/api/personagens/:id` pelo proxy same-origin; a camada HTTP transforma exceções de rede em mensagem genérica. O teste de integração foi ampliado para verificar esse trajeto, mas ainda não reproduz o erro do ambiente Windows/celular do usuário. Causa raiz continua **PENDENTE**; não declarar o incidente corrigido.
 - **CI:** workflows do commit `20b51e8` ainda estavam em execução no momento deste checkpoint.
+
+## Atualização de continuidade — HEAD 011a5a2
+- **HEAD confirmado:** `011a5a20f731e608bd04f7502793fbe3a6fd6586` na branch `feat/offline-first-ficha`.
+- **CI CONFIRMADA:** em 05/11/2026, os dois workflows desse SHA concluíram com `success`: “Validar compilação do WebApp” (run `42125680264`) e “Verificação da ficha offline” (run `42125680289`).
+- **Correção de fixture:** o teste de concorrência do limite de jogadores passou a preparar contas e sessões diretamente no SQLite temporário de teste, evitando acionar repetidamente o endpoint público de cadastro e seu limitador antiabuso. A mudança é restrita ao teste; não altera autenticação de produção.
+- **Teste de concorrência da Mesa:** cobre duas aprovações simultâneas com nove jogadores já presentes; espera uma resposta 200, uma 409, dez jogadores no total e uma solicitação ainda pendente.
+- **Teste do proxy LAN:** percorre criação, atualização e reabertura de rascunho por `/api` same-origin através do proxy Vite; verifica incremento de revisão e preservação de seções independentes. Também verifica a conexão WebSocket pelo proxy.
+- **Diagnóstico do salvamento — PENDENTE:** a rota de rede e a persistência foram exercitadas automaticamente, mas a causa do erro originalmente observado no ambiente Windows/celular ainda não foi reproduzida. A mensagem genérica de falha de rede continua ocultando a causa técnica original; não declarar o incidente corrigido.
+- **Limites preservados:** nenhum teste humano de navegador/dispositivo/rede; nenhum deploy, merge, alteração em `main` ou modificação do Supabase.
