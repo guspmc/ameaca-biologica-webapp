@@ -43,3 +43,6 @@ Nenhuma alteração em `main`, merge, publicação, Supabase remoto ou banco de 
 - **Ficha/Mesa:** proteção por geração foi estendida à criação de Mesa, consulta/criação de rascunhos e logout.
 - **Testes:** novo teste de integração cobre listagem sem exposição de e-mail, isolamento de terceiros, bloqueio de auto-remoção pelo jogador, remoção pelo Mestre, revogação de acesso e exclusão em cascata dos rascunhos.
 - **CI:** a execução offline de `37cec88` concluiu com sucesso. Os workflows posteriores ainda precisam concluir para validar o HEAD atual.
+
+- **Privacidade do Painel:** a API de solicitações deixou de retornar e-mail do solicitante; a interface apresenta apenas uma ordem de solicitação. O teste de integração confirma que a resposta não contém e-mail.
+- **Validação pendente:** os workflows do HEAD `409cf0f` estão executando; a fila do GitHub está lenta e ainda não há resultado final desta rodada.
