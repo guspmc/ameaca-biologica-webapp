@@ -37,3 +37,12 @@ export function valorBasePericia(
   if (!atributo) throw new Error('Perícia desconhecida: ' + nome);
   return atributos[atributo] + bonusTreinamento(grauPericia(nome, treinada, pontos));
 }
+
+export function valorPassivoPericia(
+  nome: string,
+  atributos: Record<'forca' | 'agilidade' | 'vigor' | 'astucia', number>,
+  treinada: string | null,
+  pontos: Record<string, number>,
+): number {
+  return 10 + valorBasePericia(nome, atributos, treinada, pontos);
+}
