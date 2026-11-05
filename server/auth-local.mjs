@@ -623,7 +623,7 @@ export async function tratarRotaMesas(req, res, url, db, notificarMesa = () => {
       const mesaId = solicitacoes[1];
       const mestre = db.prepare("SELECT 1 FROM participantes_mesa WHERE mesa_id = ? AND conta_id = ? AND papel = 'mestre'").get(mesaId, conta.id);
       if (!mestre) { json(res, 404, { error: 'Mesa não encontrada.' }); return true; }
-      const pendentes = db.prepare("SELECT s.id, s.status, s.criada_em AS createdAt, c.id AS accountId, c.email FROM solicitacoes_mesa_locais s JOIN contas_locais c ON c.id = s.conta_id WHERE s.mesa_id = ? AND s.status = 'pendente' ORDER BY s.criada_em, s.id").all(mesaId);
+      const pendentes = db.prepare("SELECT s.id, s.status, s.criada_em AS createdAt, s.conta_id AS accountId FROM solicitacoes_mesa_locais s WHERE s.mesa_id = ? AND s.status = 'pendente' ORDER BY s.criada_em, s.id").all(mesaId);
       json(res, 200, { requests: pendentes });
       return true;
     }
