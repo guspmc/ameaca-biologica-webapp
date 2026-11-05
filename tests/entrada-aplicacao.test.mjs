@@ -16,15 +16,16 @@ test('modo LAN encaminha API e WebSocket pelo mesmo host e mantém a Ficha offli
   const pacote = JSON.parse(await readFile(new URL('../package.json', import.meta.url), 'utf8'));
   const tela = await readFile(new URL('../src/ConexaoServidorLocal.tsx', import.meta.url), 'utf8');
   assert.equal(pacote.scripts['dev:lan'], 'vite --mode lan');
-  assert.match(vite, /mode === 'lan'/);
-  assert.match(vite, /host: '0\\.0\\.0\\.0'/);
+  assert.ok(vite.includes("mode === 'lan'"));
+  assert.ok(vite.includes("host: '0.0.0.0'"));
   // Verifica apenas uma propriedade ativa; comentários podem mencionar a configuração proibida.
-  assert.doesNotMatch(vite, /^\\s*allowedHosts\\s*:\\s*true\\s*,?/m);
+  assert.doesNotMatch(vite, /^\s*allowedHosts\s*:\s*true\s*,?/m);
   assert.ok(vite.includes("'/api': { target: 'http://127.0.0.1:4175'"));
   assert.ok(vite.includes("'/ws': { target: 'ws://127.0.0.1:4175', changeOrigin: false, ws: true }"));
-  assert.match(tela, /import\\.meta\\.env\\.MODE === 'lan'.*window\\.location\\.origin/s);
-  assert.match(tela, /emitirTicketWebSocket/);
-  assert.match(tela, /type: 'subscribe'/);
-  assert.match(tela, /mesa\\.changed/);
-  assert.match(tela, /account\\.changed/);
+  assert.ok(tela.includes("import.meta.env.MODE === 'lan'"));
+  assert.ok(tela.includes('window.location.origin'));
+  assert.ok(tela.includes('emitirTicketWebSocket'));
+  assert.ok(tela.includes("type: 'subscribe'"));
+  assert.ok(tela.includes('mesa.changed'));
+  assert.ok(tela.includes('account.changed'));
 });
