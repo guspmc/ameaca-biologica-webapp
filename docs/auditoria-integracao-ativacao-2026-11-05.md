@@ -85,3 +85,29 @@ Na revisão do fluxo em `src/App.tsx`, foi identificado que qualquer erro retorn
 - **PENDENTE:** CI da correção e teste em navegador real, inclusive com sessão expirada/revogação real.
 
 A classificação é deliberadamente conservadora para códigos de autenticação/permissão conhecidos; não afirma que todo erro HTTP 4xx seja revogação.
+
+## 8. Auditoria das revisões da ficha no ciclo de vida
+
+### Comportamento observado na proposta SQL
+
+- `public.personagens.revisao_criacao` é incrementada pelo trigger `app_private.versionar_criacao` sempre que qualquer coluna da linha muda, exceto a própria revisão (linhas 123–134 da proposta).
+- A ativação compara essa revisão com a revisão enviada pelo cliente e, ao concluir, altera `estado_ficha` e `metodo_criacao`, produzindo uma nova revisão que é devolvida no recibo (função `ativar_ficha_local`).
+- O ciclo de arquivamento/assunção usa a mesma revisão como controle otimista. Arquivar move itens comuns ao Baú e muda estado/proprietário; assumir muda estado e proprietário. Ambos incrementam a mesma revisão.
+- A consulta/recuperação do recibo exige que a revisão do recibo seja maior que a revisão solicitada. Portanto, simplesmente impedir que alterações de estado/proprietário incrementem `revisao_criacao` quebraria a validação atual do recibo e a expectativa dos testes.
+- O Inventário já possui `revisao_inventario` própria, incrementada por trigger sobre as instâncias (linhas 440–450), mas a ficha não tem revisão própria de ciclo de vida.
+
+### Risco e conclusão
+
+A revisão denominada `revisao_criacao` está funcionando na prática como revisão geral da linha da ficha, não apenas como revisão das escolhas de criação. Ela também serve de versão de concorrência para o ciclo de arquivamento/assunção. Isso não é necessariamente incorreto para o controle otimista atual, mas mistura três conceitos: alterações estruturais da ficha, transições de ciclo de vida e a versão usada para confirmar/recuperar uma operação.
+
+**Não alterar o trigger isoladamente.** Uma revisão estrutural separada exigiria revisar em conjunto: pedido e recibo de ativação, consulta de resultado, idempotência, revisão usada no arquivamento/assunção, recuperação após resposta perdida, validação do cliente e cenários de edição concorrente.
+
+### Contrato recomendado para a próxima etapa (ainda não implementado)
+
+1. Manter uma versão monotônica geral da ficha para concorrência e transições, sem reaproveitar seu nome como se fosse apenas criação.
+2. Introduzir revisão estrutural da criação apenas se houver necessidade concreta de comparar escolhas iniciais independentemente do ciclo de vida.
+3. Manter `revisao_inventario` independente, pois instâncias podem mudar sem alterar a estrutura inicial da ficha.
+4. Fazer o recibo identificar a versão/ciclo resultante da ativação, em vez de depender implicitamente de uma regra genérica de que qualquer revisão posterior é maior que a revisão de entrada.
+5. Antes de migration, definir como versões antigas e fichas legadas recebem os valores iniciais e como o cliente distingue revisão de ficha, revisão de criação e revisão de inventário.
+
+**Estado:** auditoria estática concluída; desenho de contrato pendente; nenhuma migration aplicada ou alterada.
