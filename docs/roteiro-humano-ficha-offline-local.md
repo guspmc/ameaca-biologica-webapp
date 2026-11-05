@@ -17,10 +17,10 @@ $env:VITE_PWA_TESTE = "true"
 pnpm.cmd exec tsc --noEmit
 pnpm.cmd exec vite build --mode teste
 Remove-Item Env:VITE_PWA_TESTE
-pnpm.cmd exec vite preview --host 127.0.0.1 --port 4174 --strictPort
+pnpm.cmd exec vite preview --host 127.0.0.1 --port 4176 --strictPort
 ```
 
-3. Abra `http://127.0.0.1:4174/ameaca-biologica-webapp/`.
+3. Abra `http://127.0.0.1:4176/ameaca-biologica-webapp/`.
 4. Confirme que o topo identifica **Ficha do Jogador · Modo offline**, sem conta e sem servidor. Não configure `.env`, Supabase ou credenciais.
 5. Abra DevTools → Application. O banco `ameaca-biologica-ficha` deve aparecer em IndexedDB; o Service Worker deve controlar o escopo da aplicação depois do primeiro carregamento.
 
