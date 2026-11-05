@@ -294,3 +294,37 @@ Requisitos:
 - A branch contém os commits de implementação e testes até `e162a0854d9ff86f07c3e757cc77e75581ac1f78`.
 
 **Ainda pendente:** executar e confirmar `pnpm test` e `pnpm build` neste estado. O status de checks retornado na consulta ao commit não apresentou verificações; não declarar aprovação. A implementação deve ser tratada como em validação, não como concluída.
+
+
+## 16. Segunda revisão da validação incremental — HEAD `0f4c037f`
+
+### Problemas identificados e corrigidos no código
+
+1. **Perícias em seções parciais:** a primeira versão validava principalmente o tipo textual quando ainda não havia contexto completo. Assim, uma Perícia inventada ou incompatível com a Origem poderia permanecer salva em um rascunho parcial. O validador agora:
+   - confere qualquer nome presente contra `NOMES_PERICIAS`;
+   - quando a Origem está presente, confere a Perícia treinada contra as opções daquela Origem;
+   - restringe a segunda Perícia à Origem Amnésico e impede repetição da Perícia treinada;
+   - confere nomes de todas as Perícias da distribuição mesmo antes de o contexto completo estar disponível;
+   - mantém a validação cruzada integral por Classe/Origem quando todos os campos necessários estão presentes.
+
+2. **Serialização JSON sem perda silenciosa:** a primeira implementação percorria apenas valores enumeráveis de objetos e não detectava propriedades simbólicas, propriedades não enumeráveis, getters ou lacunas em arrays. O verificador agora rejeita essas estruturas, além de ciclos, protótipos não simples, valores não finitos e `undefined`. Isso evita aceitar dados que o backup JSON descartaria ou transformaria silenciosamente.
+
+3. **Resolução de imports nos testes Node:** `validacaoPersonagemLocal.ts` importa o planejador de inventário. O módulo `inventarioCriacao.ts` ainda usava imports relativos sem extensão, incompatíveis com a resolução ESM usada diretamente pelo runner Node configurado em `pnpm test`. Os três imports foram explicitados com `.ts`, sem alterar a lógica de domínio.
+
+### Testes acrescentados
+
+- Perícia desconhecida em seção parcial.
+- Perícia conhecida, mas incompatível com Origem já selecionada.
+- Segunda Perícia inválida no caso Amnésico.
+- Nome de Perícia desconhecido na distribuição parcial.
+- Propriedade Symbol, propriedade não enumerável, array com lacuna e getter em objeto.
+
+### Estado de verificação
+
+As alterações estão commitadas na branch de trabalho até `0f4c037fe6f560da1e5a21c909e3e23909155da3`. A inspeção estática confirmou os imports diretos da cadeia de validação; **não houve execução confirmada de `pnpm test` ou `pnpm build`**. O conector GitHub consultado não retornou status nem workflow runs associados ao commit, portanto o CI permanece sem confirmação observável.
+
+### Próximo passo
+
+- Executar a suíte e o build em um runner real.
+- Se aprovados, auditar o ciclo integrado de criação, salvamento parcial, reabertura, backup, cópia e restauração.
+- Depois, tratar explicitamente a geração do conjunto local em substituições multiaba e avançar para o Inventário funcional.
