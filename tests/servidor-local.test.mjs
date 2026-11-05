@@ -365,9 +365,16 @@ test('Mestre consulta participantes sem expor e-mail e remove jogador com revoga
   assert.deepEqual(lista.participants.map(p => p.role), ['mestre', 'jogador']);
   assert.equal(lista.participants[1].accountId, jogador.account.id);
   assert.equal(JSON.stringify(lista).includes(jogador.account.email), false);
+  const listarJogador = await fetch(instancia.url + '/api/mesas/' + mesa.id + '/participantes', { headers: jogador.headers });
+  assert.equal(listarJogador.status, 200);
+  assert.equal((await listarJogador.json()).participants.length, 2);
   const listarTerceiro = await fetch(instancia.url + '/api/mesas/' + mesa.id + '/participantes', { headers: terceiro.headers });
   assert.equal(listarTerceiro.status, 404);
 
+  const remocaoPeloProprioJogador = await fetch(instancia.url + '/api/mesas/' + mesa.id + '/participantes/' + jogador.account.id, {
+    method: 'DELETE', headers: jogador.headers,
+  });
+  assert.equal(remocaoPeloProprioJogador.status, 404);
   const remocaoJogador = await fetch(instancia.url + '/api/mesas/' + mesa.id + '/participantes/' + jogador.account.id, {
     method: 'DELETE', headers: mestre.headers,
   });
