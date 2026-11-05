@@ -3,13 +3,34 @@ export function planejarOrganizacao(entrada:InventarioConsulta,instanciaId:strin
  const antes=lerInventarioConsulta(entrada,entrada.personagemId);
  const item=antes.itens.find(i=>i.instanciaId===instanciaId);
  if(!item||item.local!=='inventario'||item.posicao===null)throw Error('Escolha um exemplar do inventário; Característicos não são movidos.');
- if(!Number.isSafeInteger(destino)||destino<0||destino>=antes.capacidade)throw Error('Escolha um espaço dentro da capacidade atual.');
- if(antes.itens.some(i=>i.local==='inventario'&&(i.posicao===null||i.posicao>=antes.capacidade)))throw Error('Há espaços fora da capacidade atual. Confira o inventário antes de organizar.');
+ if(!Number.isSafeInteger(destino)||destino<0||destino+item.espacos>antes.capacidade)throw Error('O espaço de destino não comporta o exemplar dentro da capacidade atual.');
+ if(antes.itens.some(i=>i.local==='inventario'&&(i.posicao===null||i.posicao+i.espacos>antes.capacidade)))throw Error('Há exemplares fora da capacidade atual. Confira o inventário antes de organizar.');
  if(item.posicao===destino)throw Error('O exemplar já está nesse espaço.');
  if(!Number.isSafeInteger(antes.revisao+1))throw Error('Revisão inválida.');
- const depois=structuredClone(antes),movido=depois.itens.find(i=>i.instanciaId===instanciaId)!;
- const trocado=depois.itens.find(i=>i.local==='inventario'&&i.posicao===destino);
- const origem=item.posicao;movido.posicao=destino;if(trocado)trocado.posicao=origem;depois.revisao++;
+ const celulas=(inicio:number,tamanho:number)=>Array.from({length:tamanho},(_,i)=>inicio+i);
+ const destinoCelulas=new Set(celulas(destino,item.espacos));
+ const colisoes=antes.itens.filter(i=>i.local==='inventario'&&i.instanciaId!==item.instanciaId
+  && i.posicao!==null&&celulas(i.posicao,i.espacos).some(c=>destinoCelulas.has(c)));
+ if(colisoes.length>1)throw Error('O destino cruza mais de um exemplar; mova os itens envolvidos antes.');
+ const trocado=colisoes[0]??null;
+ if(trocado&&trocado.posicao!==null&&trocado.posicao+item.posicao+item.espacos-trocado.posicao>antes.capacidade) {
+  throw Error('A troca não cabe na capacidade atual.');
+ }
+ const depois=structuredClone(antes);
+ const movido=depois.itens.find(i=>i.instanciaId===instanciaId)!;
+ const outro=trocado?depois.itens.find(i=>i.instanciaId===trocado.instanciaId)!:null;
+ const origem=item.posicao;
+ movido.posicao=destino;
+ if(outro)outro.posicao=origem;
+ const ocupadas=new Set<number>();
+ for(const i of depois.itens.filter(i=>i.local==='inventario')){
+  if(i.posicao===null)throw Error('Posição de Inventário inválida.');
+  for(const c of celulas(i.posicao,i.espacos)){
+   if(ocupadas.has(c))throw Error('A troca produziria sobreposição de Espaços.');
+   ocupadas.add(c);
+  }
+ }
+ depois.revisao++;
  return {antes,depois,instanciaId,origem,destino,trocadoId:trocado?.instanciaId??null};
 }
 export type PreviaOrganizacao=ReturnType<typeof planejarOrganizacao>;
