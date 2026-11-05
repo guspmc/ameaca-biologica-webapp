@@ -13,6 +13,7 @@ import EditorInventarioLocal from './EditorInventarioLocal';
 import IdentidadeLocal from './IdentidadeLocal';
 import FuncionamentoFichaLocal from './FuncionamentoFichaLocal';
 import RevisaoCriacaoLocal from './RevisaoCriacaoLocal';
+import CalculadoraTesteLocal from './CalculadoraTesteLocal';
 import type { FichaRevisao } from './conferenciaCriacao';
 import type { ConfiguracaoFuncionamento } from './funcionamentoFicha';
 import { calcularFaseBioInfeccao } from './bioInfeccao';
@@ -217,6 +218,7 @@ export default function FichaLocal({ nome, mesa, dados, aoFechar, aoRecarregar, 
             })}
           </div>
           <p className="ficha-local-legenda">O valor exibido soma o Atributo associado e o Treinamento. Modificadores permanentes, temporários e circunstanciais serão apresentados quando seus respectivos módulos estiverem integrados; não some o Atributo novamente ao realizar o Teste.</p>
+          <CalculadoraTesteLocal atributos={atributos} treinada={treinada} distribuicao={distribuicao} />
         </section>
 
         <section id="ficha-local-combate" className="ficha-local-secao">
