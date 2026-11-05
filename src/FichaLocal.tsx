@@ -157,12 +157,6 @@ export default function FichaLocal({ nome, mesa, dados, aoFechar, aoRecarregar, 
           {alertasCompatibilidade.length > 0 && <p className="ficha-local-aviso" role="alert">Revisão da criação necessária: {alertasCompatibilidade.join("; ")}. As escolhas foram preservadas; corrija os itens incompatíveis antes de confirmar a criação.</p>}
           <EditorCaracteristicasLocal key={JSON.stringify([classe, origem, ficha.armaOperario, ficha.habilidadeBasica, kitSelecionado])} iniciais={{ classe, origem, armaOperario: typeof ficha.armaOperario === 'string' ? ficha.armaOperario : '', habilidadeBasica: typeof ficha.habilidadeBasica === 'string' ? ficha.habilidadeBasica : '', equipamentoInicial: kitSelecionado }} aoSalvar={aoSalvarCaracteristicas} aoAlterarPendencia={pendente => registrarPendencia('Características', pendente)} mensagemSucesso={origemDados === 'servidor' ? 'Características confirmadas pelo servidor.' : undefined} />
           {aoSalvarIdentidade && <IdentidadeLocal key={JSON.stringify([nome, ficha.identidade ?? {}])} nome={nome} identidade={(ficha.identidade as Record<string, string>) ?? {}} aoSalvar={aoSalvarIdentidade} aoAlterarPendencia={pendente => registrarPendencia('Identificação', pendente)} />}
-          <FuncionamentoFichaLocal
-            key={JSON.stringify(ficha.configuracaoFuncionamento ?? null)}
-            inicial={ficha.configuracaoFuncionamento as ConfiguracaoFuncionamento | undefined}
-            aoSalvar={aoSalvarFuncionamento}
-            aoAlterarPendencia={pendente => registrarPendencia('Funcionamento', pendente)}
-          />
           <div className="ficha-local-grade">
             <div><small>CLASSE</small><strong>{classePersonagem(classe || null, genero)}</strong><p>{dadosClasse?.identidade ?? 'Dados da Classe ainda não definidos.'}</p></div>
             <div><small>ORIGEM</small><strong>{termo(origem || 'Pendente')}</strong><p>{dadosOrigem?.beneficio ?? 'Benefício da Origem ainda não definido.'}</p></div>
@@ -235,6 +229,16 @@ export default function FichaLocal({ nome, mesa, dados, aoFechar, aoRecarregar, 
             {inventarioPlanejado ? inventarioPlanejado.itens.map(item => <div key={item.chaveCriacao}><strong>{item.nome} × {item.quantidade}</strong><small>{item.local === 'caracteristico' ? 'Característico · vinculado à Classe' : 'Inventário · ' + item.espacos + ' Espaço(s)'} · {item.estado.tipo.replace('_',' ')}</small></div>) : <p>Não foi possível montar a prévia do inventário. Confira Classe, Origem, kit e compras do rascunho.</p>}
           </div>
           <p className="ficha-local-legenda">A capacidade considera 4 + FOR{origem === 'Mochileiro' ? ' + 1 de Mochileiro' : ''} = {capacidade} Espaços. O conjunto selecionado ocupa {inventarioPlanejado?.ocupados ?? espacosKit} de {capacidade} Espaços. Os itens aparecem em estado inicial guardado/não equipado; operações de Inventário ainda não estão integradas.</p>
+        </section>
+
+        <section className="ficha-local-secao" aria-label="Funcionamento e revisão">
+          <div className="ficha-local-titulo-secao"><h2><span>05</span> Funcionamento</h2><span className="ficha-local-selo">PREFERÊNCIAS</span></div>
+          <FuncionamentoFichaLocal
+            key={JSON.stringify(ficha.configuracaoFuncionamento ?? null)}
+            inicial={ficha.configuracaoFuncionamento as ConfiguracaoFuncionamento | undefined}
+            aoSalvar={aoSalvarFuncionamento}
+            aoAlterarPendencia={pendente => registrarPendencia('Funcionamento', pendente)}
+          />
         </section>
 
         <footer className="ficha-local-rodape">AMEAÇA BIOLÓGICA RPG · {origemDados === 'servidor' ? 'DADOS NO SERVIDOR' : 'DADOS LOCAIS'} · RASCUNHO NÃO ATIVO</footer>
