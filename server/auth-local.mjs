@@ -270,6 +270,22 @@ export function prepararAutenticacaoLocal(db) {
     } catch (erro) { db.exec('ROLLBACK'); throw erro; }
   }
 
+
+  if (versaoAtual < 8) {
+    db.exec('BEGIN IMMEDIATE');
+    try {
+      db.exec(`
+        ALTER TABLE personagens_locais
+          ADD COLUMN revisao INTEGER NOT NULL DEFAULT 1 CHECK (revisao >= 1);
+      `);
+      db.prepare('INSERT INTO schema_migrations (version, applied_at) VALUES (?, ?)').run(8, new Date().toISOString());
+      db.exec('COMMIT');
+    } catch (erro) {
+      db.exec('ROLLBACK');
+      throw erro;
+    }
+  }
+
 }
 
 export function consumirTicketWebSocketLocal(db, ticket) {
