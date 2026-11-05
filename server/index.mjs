@@ -124,6 +124,12 @@ export function createLocalServer({
     }
   }
 
+  function encerrarSessaoWebSocket(tokenHash) {
+    for (const cliente of wss.clients) {
+      if (cliente.sessionTokenHash === tokenHash) cliente.close(4001, 'Sessão encerrada');
+    }
+  }
+
   const listarEventos = db.prepare(
     'SELECT id, mensagem AS message, criado_em AS createdAt FROM eventos_prototipo ORDER BY id DESC LIMIT 50'
   );
@@ -173,7 +179,7 @@ export function createLocalServer({
         return;
       }
 
-      if (await tratarRotaAutenticacao(req, res, url, db)) return;
+      if (await tratarRotaAutenticacao(req, res, url, db, encerrarSessaoWebSocket)) return;
       if (await tratarRotaPersonagensLocal(req, res, url, db, transmitirConta)) return;
       if (await tratarRotaMesas(req, res, url, db, transmitirMesa, transmitirConta)) return;
 
