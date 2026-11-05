@@ -187,7 +187,7 @@ export default function FichaLocal({ nome, mesa, dados, aoFechar, aoRecarregar, 
         </div>
 
         <RecursosFichaLocal
-          key={JSON.stringify([pv, sa, bi, ficha.pvAtual ?? null, ficha.pvTemporarios ?? null, ficha.saAtual ?? null, ficha.biAtual ?? null])}
+          key={JSON.stringify([ficha.pvAtual ?? null, ficha.pvTemporarios ?? null, ficha.saAtual ?? null, ficha.biAtual ?? null])}
           dados={dados}
           pvMaximo={pv}
           saMaximo={sa}
