@@ -485,3 +485,10 @@ footer { margin-top:45px; border-top:1px solid #dce2df; padding-top:19px; color:
 .recursos-ficha .recursos-controles button{min-height:38px;padding:7px 10px;border:1px solid #8d7c65;border-radius:4px;background:#e9dfca;color:#292c29;font-size:11px;font-weight:800}
 .recursos-ficha .recursos-controles button:disabled{opacity:.45}
 @media(max-width:560px){.recursos-ficha .recursos-controles{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}.recursos-ficha .recursos-controles label{min-width:0}.recursos-ficha .recursos-controles input{min-width:0}}
+
+
+.descanso-ficha>summary{cursor:pointer;font:800 14px Georgia,serif;color:#87333d;padding:3px 0}
+.descanso-ficha h4{margin:7px 0 0;font:800 13px Georgia,serif;color:#343a36}
+.descanso-ficha>p{margin:0;font-size:12px;line-height:1.5;color:#675d50}
+.descanso-ficha label{display:grid;gap:6px;font-size:12px;font-weight:800}
+.descanso-ficha input,.descanso-ficha select{width:100%;min-height:40px;padding:8px;border:1px solid #bdae95;border-radius:4px;background:#fffaf0;color:#282a27}
