@@ -74,7 +74,7 @@ test('rascunhos de personagem persistem e ficam isolados por conta e Mesa', asyn
   assert.equal(jogadorForaDaMesa.status, 404);
 
 
-  const dados = { classe: 'Agente', origem: 'Civil', atributos: { vigor: 2, agilidade: 1 } };
+  const dados = { classe: 'Agente', origem: 'Civil', atributos: { vigor: 2, agilidade: 1 }, identidade: { idade: '29', ocupacao: 'Policial' } };
   const criar = await fetch(url + '/api/mesas/' + mesa.id + '/personagens', {
     method: 'POST',
     headers: { ...jogador.headers, 'content-type': 'application/json' },
@@ -95,7 +95,7 @@ test('rascunhos de personagem persistem e ficam isolados por conta e Mesa', asyn
   const atualizar = await fetch(url + '/api/personagens/' + personagem.id, {
     method: 'PUT',
     headers: { ...jogador.headers, 'content-type': 'application/json' },
-    body: JSON.stringify({ name: 'Claire Redfield', data: { ...dados, origem: 'Policial' }, expectedRevision: personagem.revision }),
+    body: JSON.stringify({ name: 'Claire Redfield', data: { ...dados, origem: 'Policial', identidade: { ...dados.identidade, historia: 'Sobreviveu ao incidente.' } }, expectedRevision: personagem.revision }),
   });
   assert.equal(atualizar.status, 200);
   const registroAtualizado = (await atualizar.json()).personagem;
@@ -132,7 +132,7 @@ test('rascunhos de personagem persistem e ficam isolados por conta e Mesa', asyn
   const registroIntegro = await confirmarIntegridade.json();
   assert.equal(registroIntegro.personagem.name, 'Claire Redfield');
   assert.equal(registroIntegro.personagem.revision, registroAtualizado.revision);
-  assert.deepEqual(registroIntegro.personagem.data, { ...dados, origem: 'Policial' });
+  assert.deepEqual(registroIntegro.personagem.data, { ...dados, origem: 'Policial', identidade: { ...dados.identidade, historia: 'Sobreviveu ao incidente.' } });
   const listaMestre = await fetch(url + '/api/mesas/' + mesa.id + '/personagens', { headers: mestre.headers });
   assert.equal(listaMestre.status, 404);
 
