@@ -210,7 +210,7 @@ export default function ConexaoServidorLocal() {
     bloqueioSalvamentoFicha.current = true; setSalvandoFicha(true); setErro(''); setAviso('');
     try {
       const dadosAtualizados = { ...fichaAberta.personagem.data, ...delta };
-      const resposta = await criarClienteServidorLocal({ baseUrl: endereco.trim(), token: sessao.token }).atualizarPersonagem(fichaAberta.personagem.id, fichaAberta.personagem.name, dadosAtualizados);
+      const resposta = await criarClienteServidorLocal({ baseUrl: endereco.trim(), token: sessao.token }).atualizarPersonagem(fichaAberta.personagem.id, fichaAberta.personagem.name, dadosAtualizados, fichaAberta.personagem.revision);
       if (resposta.personagem.id !== fichaAberta.personagem.id || resposta.personagem.mesaId !== fichaAberta.mesa.id) throw new Error('A confirmação do servidor não corresponde à ficha aberta. Reabra a ficha para consultar o estado atual.');
       setFichaAberta(atual => atual ? { ...atual, personagem: resposta.personagem } : atual);
       setAviso('Alterações recebidas e confirmadas pelo servidor. O personagem continua como rascunho não ativo.');
