@@ -63,7 +63,7 @@ function serializar(registro) {
 }
 
 
-export async function tratarRotaPersonagensLocal(req, res, url, db) {
+export async function tratarRotaPersonagensLocal(req, res, url, db, notificarConta = () => {}) {
   const rota = url.pathname;
   if (!rota.startsWith('/api/mesas/') && !rota.startsWith('/api/personagens/')) return false;
 
@@ -116,6 +116,7 @@ export async function tratarRotaPersonagensLocal(req, res, url, db) {
           VALUES (?, ?, ?, ?, ?, ?, ?)
         `).run(id, mesaId, conta.id, corpo.name.trim(), JSON.stringify(corpo.data), agora, agora);
         const personagem = obterPersonagem(db, id, conta.id);
+        notificarConta(conta.id);
         responder(res, 201, { personagem: serializar(personagem) });
         return true;
       }
@@ -149,6 +150,7 @@ export async function tratarRotaPersonagensLocal(req, res, url, db) {
           responder(res, 409, { error: 'Esta ficha foi alterada em outro dispositivo. Reabra o rascunho para consultar a versão atual antes de salvar novamente.' });
           return true;
         }
+        notificarConta(conta.id);
         responder(res, 200, { personagem: serializar(obterPersonagem(db, id, conta.id)) });
         return true;
       }
