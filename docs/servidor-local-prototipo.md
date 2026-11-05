@@ -162,18 +162,16 @@ O servidor mantém o arquivo original. O cliente solicita o documento quando abr
 
 ## Estado atual da interface React — 05/11/2026
 
-A entrada principal agora preserva a Ficha offline como padrão e oferece a rota experimental da Mesa local sob demanda:
+A entrada principal preserva a Ficha offline como padrão e oferece a rota experimental da Mesa local sob demanda:
 
 - Ficha offline: `/ameaca-biologica-webapp/`
 - Interface de conexão LAN: `/ameaca-biologica-webapp/?servidor=local`
 
-A seleção está em `src/main.tsx`; abrir a rota local não altera a entrada padrão nem exige autenticação Supabase. A tela LAN usa a API SQLite local para cadastro/login, criação/listagem de Mesas, convites/solicitações e rascunhos de personagem.
+A seleção está em `src/main.tsx`. A tela LAN usa a API SQLite local para cadastro/login, criação/listagem de Mesas, convites/solicitações e rascunhos de personagem.
 
-**Limites ainda presentes:** a interface LAN não usa o ticket WebSocket emitido pelo servidor; atualizações de Mesas/personagens ainda dependem de ações de atualização manual. Não existe ainda notificação em tempo real por Mesa nem reconexão de estado da campanha. O endpoint de rascunhos persiste dados com revisão esperada e bloqueia escrita concorrente com versão antiga, mas o rascunho LAN não é a mesma base IndexedDB da Ficha offline: não há sincronização automática entre esses dois armazenamentos.
+**Estado observado no código desta branch:** a interface LAN solicita um ticket WebSocket após autenticar, abre o canal, inscreve individualmente as Mesas listadas e reage a invalidações consultando novamente as rotas HTTP autorizadas. Quando o canal fecha, tenta obter outro ticket e reconectar. A inscrição WebSocket não transporta fichas nem substitui a autorização das consultas HTTP.
 
-A rota foi adicionada ao ponto de entrada nesta branch. O CI dos commits que incluem essa alteração ainda precisa terminar antes de declarar a entrada validada. Para teste local do frontend, use a origem de desenvolvimento permitida pelo servidor (localhost/127.0.0.1:5173); o teste em dispositivo móvel exige uma origem LAN autorizada e será preparado separadamente. Não contornar CORS nem expor o servidor em rede pública.
-
-
+**Limites ainda presentes:** a sessão e o token ficam somente na memória da página; recarregar a página exige novo login. A reconexão usa espera fixa de 3 segundos após fechamento e 5 segundos após falha ao obter ticket, sem backoff progressivo. A interface não possui um fluxo de remoção de participante, nem sincronização automática entre o rascunho SQLite da Mesa LAN e a Ficha offline em IndexedDB. O canal LAN e a interface permanecem experimentais; o teste manual em dois dispositivos e com expiração de sessão ainda está pendente.
 
 ## Canal LAN e execução no celular — 05/11/2026
 
