@@ -17,6 +17,8 @@ export default function ConexaoServidorLocal() {
   const [endereco, setEndereco] = useState(enderecoInicial);
   const [saude, setSaude] = useState<SaudeServidorLocal | null>(null);
   const [sessao, setSessao] = useState<SessaoLocal | null>(null);
+  // Distingue sessões sucessivas, inclusive novo login da mesma conta e mesma ficha.
+  const geracaoSessao = useRef(0);
   const [mesas, setMesas] = useState<MesaLocal[]>([]);
   const [personagens, setPersonagens] = useState<Record<string, ResumoPersonagemLocal[]>>({});
   const [nomesPersonagens, setNomesPersonagens] = useState<Record<string, string>>({});
@@ -41,6 +43,7 @@ export default function ConexaoServidorLocal() {
   const [canalTempoReal, setCanalTempoReal] = useState(false);
 
   function encerrarSessao(mensagem: string) {
+    geracaoSessao.current += 1;
     // Dados da ficha não permanecem visíveis após perda/encerramento de sessão.
     fichaAbertaRef.current = null;
     setFichaAberta(null);
@@ -267,6 +270,7 @@ export default function ConexaoServidorLocal() {
         if (Date.parse(novaSessao.expiresAt) <= Date.now()) {
           throw new Error('O servidor retornou uma sessão já expirada. Tente entrar novamente.');
         }
+        geracaoSessao.current += 1;
         setSessao(novaSessao);
         setSenha('');
         setAviso('Sessão confirmada pelo servidor. O token ficará somente na memória desta página.');
@@ -389,13 +393,14 @@ export default function ConexaoServidorLocal() {
     if (!sessao || !fichaSolicitada || fichaSolicitada.mesa.role !== 'jogador') return Promise.resolve(false);
     const personagemIdSolicitado = fichaSolicitada.personagem.id;
     const mesaIdSolicitada = fichaSolicitada.mesa.id;
+    const geracaoSolicitada = geracaoSessao.current;
     quantidadeSalvamentosPendentes.current += 1;
     setSalvandoFicha(true);
     return filaSalvamentoFicha.current.enfileirar(async () => {
       try {
         const fichaAtual = fichaAbertaRef.current;
         // Uma operação enfileirada nunca pode migrar para outra ficha/Mesa.
-        if (!sessao || !fichaAtual || fichaAtual.mesa.role !== 'jogador' ||
+        if (!sessao || geracaoSessao.current !== geracaoSolicitada || !fichaAtual || fichaAtual.mesa.role !== 'jogador' ||
             fichaAtual.personagem.id !== personagemIdSolicitado || fichaAtual.mesa.id !== mesaIdSolicitada) return false;
         setErro(''); setAviso('');
         // A base e a revisão são lidas somente quando esta operação chega à vez.
@@ -410,7 +415,7 @@ export default function ConexaoServidorLocal() {
         // A sessão pode terminar enquanto o HTTP está em andamento. Nesse caso,
         // a resposta tardia não pode recolocar dados privados na interface.
         const fichaAindaAberta = fichaAbertaRef.current;
-        if (!fichaContinuaSendoAlvo(fichaAindaAberta, {
+        if (geracaoSessao.current !== geracaoSolicitada || !fichaContinuaSendoAlvo(fichaAindaAberta, {
           personagemId: personagemIdSolicitado,
           mesaId: mesaIdSolicitada,
         })) return false;
@@ -423,6 +428,8 @@ export default function ConexaoServidorLocal() {
         setAviso('Alterações recebidas e confirmadas pelo servidor. O personagem continua como rascunho não ativo.');
         return true;
       } catch (problema) {
+        // Uma resposta da sessão anterior não pode encerrar ou alterar a sessão recém-aberta.
+        if (geracaoSessao.current !== geracaoSolicitada) return false;
         if (problema instanceof ErroServidorLocal && problema.status === 401) encerrarSessao('A sessão expirou ou foi encerrada no servidor. Entre novamente.');
         else setErro(problema instanceof Error ? problema.message : 'Não foi possível confirmar o salvamento no servidor.');
         return false;
