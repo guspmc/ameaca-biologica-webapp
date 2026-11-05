@@ -342,6 +342,22 @@ export default function ConexaoServidorLocal() {
   }
 
 
+  async function excluirRascunho(mesa: MesaLocal, personagem: ResumoPersonagemLocal) {
+    if (!sessao || mesa.role !== 'jogador') return;
+    const confirmado = window.confirm('Excluir definitivamente o rascunho “' + personagem.name + '”? Esta ação não pode ser desfeita.');
+    if (!confirmado) return;
+    setErro(''); setAviso(''); setConsultando(true);
+    try {
+      const resultado = await criarClienteServidorLocal({ baseUrl: endereco.trim(), token: sessao.token }).excluirPersonagem(personagem.id);
+      if (!resultado.deleted || resultado.id !== personagem.id) throw new Error('O servidor não confirmou a exclusão do rascunho solicitado.');
+      setPersonagens(atual => ({ ...atual, [mesa.id]: (atual[mesa.id] ?? []).filter(item => item.id !== personagem.id) }));
+      if (fichaAbertaRef.current?.personagem.id === personagem.id) { fichaAbertaRef.current = null; setFichaAberta(null); }
+      setAviso('Rascunho excluído e confirmado pelo servidor.');
+    } catch (problema) {
+      if (problema instanceof ErroServidorLocal && problema.status === 401) encerrarSessao('A sessão expirou ou foi encerrada no servidor. Entre novamente.');
+      else setErro(problema instanceof Error ? problema.message : 'Não foi possível excluir o rascunho.');
+    } finally { setConsultando(false); }
+  }
   async function carregarPersonagens(mesa: MesaLocal) {
     if (!sessao || mesa.role !== 'jogador') return;
     setErro(''); setAviso(''); setConsultando(true);
@@ -626,7 +642,7 @@ export default function ConexaoServidorLocal() {
               </div>
               {personagens[mesa.id] ? personagens[mesa.id].length ? <ul className="servidor-local-lista-mesas">{personagens[mesa.id].map(personagem => <li key={personagem.id}>
                 <div><strong>{personagem.name}</strong><small>Rascunho · atualizado em {new Intl.DateTimeFormat('pt-BR', { dateStyle: 'short', timeStyle: 'short' }).format(new Date(personagem.updatedAt))}</small></div>
-                <div className="servidor-local-botoes"><span className="papel-jogador">RASCUNHO</span><button className="botao-claro" type="button" disabled={consultando || salvandoFicha} onClick={() => void abrirFicha(mesa, personagem)}>Abrir ficha</button></div>
+                <div className="servidor-local-botoes"><span className="papel-jogador">RASCUNHO</span><button className="botao-claro" type="button" disabled={consultando || salvandoFicha} onClick={() => void abrirFicha(mesa, personagem)}>Abrir ficha</button><button className="botao-claro" type="button" disabled={consultando || salvandoFicha} onClick={() => void excluirRascunho(mesa, personagem)}>Excluir</button></div>
               </li>)}</ul> : <p className="servidor-local-vazio">Nenhum rascunho nesta Mesa.</p> : <p className="servidor-local-vazio">Consulte os rascunhos para carregar a lista do servidor.</p>}
             </section>)}
             {mesas.filter(mesa => mesa.role === 'mestre').map(mesa => <section className="servidor-local-controle-mesa" key={mesa.id}>
