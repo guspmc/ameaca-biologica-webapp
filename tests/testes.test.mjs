@@ -49,7 +49,7 @@ test('Vantagem e Desvantagem exigem os dois resultados físicos', () => {
 });
 
 test('recusa faces, DT e modificadores inválidos', () => {
-  assert.equal(calcularTesteManual({ valorBase: 0, dt: 12, dado1: 21 }).estado, 'incompleto');
+  assert.throws(() => calcularTesteManual({ valorBase: 0, dt: 12, dado1: 21 }), /entre 1 e 20/);
   assert.throws(() => calcularTesteManual({ valorBase: 0, dt: 0, dado1: 10 }), /DT/);
   assert.throws(() => calcularTesteManual({ valorBase: 0.5, dt: 12, dado1: 10 }), /inteiros/);
 });
