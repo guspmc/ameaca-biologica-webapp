@@ -577,7 +577,7 @@ revoke all on function app_private.excluir_rascunho_local(uuid,bigint,boolean) f
 -- como jogador. A confirmacao, identidade e papel sao validados aqui; a
 -- exclusao e a limpeza dos rascunhos permanecem na mesma transacao.
 create function app_private.sair_mesa_local(p_mesa uuid,p_confirmado boolean) returns void
-language plpgsql security definer set search_path='' as $
+language plpgsql security definer set search_path='' as $$
 declare uid uuid:=(select auth.uid());
 begin
  if uid is null then raise exception 'Autenticacao necessaria.';end if;
@@ -588,7 +588,7 @@ begin
  if not found then raise exception 'Participacao indisponivel.';end if;
  delete from public.mesa_participantes where mesa_id=p_mesa and usuario_id=uid and papel='jogador';
 end;
-$;
+$$;
 revoke all on function app_private.sair_mesa_local(uuid,boolean) from public,anon,authenticated;
 grant execute on function app_private.sair_mesa_local(uuid,boolean) to authenticated;
 
