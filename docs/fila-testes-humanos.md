@@ -247,3 +247,16 @@ Foi integrada à seção de Perícias uma calculadora de conferência que recebe
 9. Conferir padrão inicial Mistos/Pública; alterar para Físicos, Virtuais e Mistos, bem como Pública/Privada; salvar, fechar e reabrir a ficha e confirmar persistência por personagem.
 10. Abrir uma configuração antiga sem os novos campos; confirmar que a interface apresenta Mistos/Pública por normalização, preserva as escolhas de Automação e só grava o formato completo após salvar.
 11. Confirmar que mudar a preferência não gera rolagem, não cria histórico e não revela/oculta registros inexistentes. A execução virtual, histórico e privacidade efetiva continuam pendentes do módulo de rolagens.
+
+
+### H4 — complemento: recursos atuais da ficha (05/11/2026)
+
+Foi integrado ao rascunho o controle manual de PV, PV Temporários, SA e BI. A rodada humana deverá conferir:
+12. Em ficha recém-criada e com Classe definida, confirmar PV Atuais e SA Atuais inicializados nos respectivos máximos e BI Atual em 0, conforme a decisão anterior de criação.
+13. Aplicar dano com PV Temporários disponíveis: conferir que os Temporários são consumidos antes dos PV Atuais; aplicar cura e confirmar que ela altera somente PV Atuais e não ultrapassa o máximo.
+14. Definir novos PV Temporários menores e maiores que o valor atual; confirmar que o maior é conservado, sem soma.
+15. Ajustar SA entre 0 e o máximo; tentar ultrapassar os limites e confirmar bloqueio. Ajustar BI até as cinco fases e além do máximo, confirmando apenas a sinalização de Colapso, sem rolagem ou Reanimação automática.
+16. Testar ajuste direto, desfazer o último ajuste ainda não salvo, descartar alterações pendentes e salvar/reabrir a ficha nos caminhos offline, Laboratório e servidor local.
+17. Alterar Atributos/Classe depois de registrar recursos; confirmar que os valores atuais não são sobrescritos silenciosamente. Se ficarem acima de um máximo reduzido, devem ser preservados e exigir correção explícita antes de salvar.
+
+**Limites conhecidos:** o painel não registra histórico durável de cada ajuste, não oferece Desfazer após confirmação e não implementa Descanso, Reanimação, efeitos, dano de combate ou automações de recursos. Esses fluxos permanecem em etapas posteriores.
