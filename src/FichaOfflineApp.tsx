@@ -273,6 +273,7 @@ export default function FichaOfflineApp() {
     aoSalvarIdentidade={({ nome, identidade }) => salvarDados({ identidade }, nome)}
     aoSalvarAtributosPericias={salvarDados}
     aoSalvarInventario={salvarDados}
+    aoSalvarFuncionamento={configuracao => salvarDados({ configuracaoFuncionamento: configuracao })}
     status={status}
     erro={erro}
   />;
