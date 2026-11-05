@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react';
-import { criarClienteServidorLocal, ErroServidorLocal, type MesaLocal, type ResumoPersonagemLocal, type SaudeServidorLocal, type SessaoLocal, type PersonagemRascunhoLocal } from './servidorLocal';
+import { criarClienteServidorLocal, ErroServidorLocal, type MesaLocal, type ResumoPersonagemLocal, type SaudeServidorLocal, type SessaoLocal, type PersonagemRascunhoLocal, type ParticipanteMesaLocal } from './servidorLocal';
 import FichaLocal from './FichaLocal';
 import PainelMestreLocal from './PainelMestreLocal';
 import { calcularAtrasoReconexao } from './reconexaoLocal';
@@ -27,6 +27,7 @@ export default function ConexaoServidorLocal() {
   const [codigoConvite, setCodigoConvite] = useState('');
   const [convitesGerados, setConvitesGerados] = useState<Record<string, string>>({});
   const [solicitacoes, setSolicitacoes] = useState<Record<string, { id: string; status: 'pendente'; createdAt: string; accountId: string; email: string }[]>>({});
+  const [participantes, setParticipantes] = useState<Record<string, ParticipanteMesaLocal[]>>({});
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
   const [modoCadastro, setModoCadastro] = useState(false);
@@ -54,6 +55,7 @@ export default function ConexaoServidorLocal() {
     setNomesPersonagens({});
     setConvitesGerados({});
     setSolicitacoes({});
+    setParticipantes({});
     setAviso(mensagem);
   }
 
@@ -570,6 +572,44 @@ export default function ConexaoServidorLocal() {
     } finally { setConsultando(false); }
   }
 
+  async function carregarParticipantes(mesa: MesaLocal) {
+    if (!sessao || mesa.role !== 'mestre') return;
+    const geracaoSolicitada = geracaoSessao.current;
+    setErro(''); setAviso(''); setConsultando(true);
+    try {
+      const resposta = await criarClienteServidorLocal({ baseUrl: endereco.trim(), token: sessao.token }).listarParticipantes(mesa.id);
+      if (!sessaoContinuaSendoAtual(geracaoSessao.current, geracaoSolicitada)) return;
+      setParticipantes(atual => ({ ...atual, [mesa.id]: resposta.participants }));
+      setAviso('Participantes consultados e confirmados pelo servidor.');
+    } catch (problema) {
+      if (!sessaoContinuaSendoAtual(geracaoSessao.current, geracaoSolicitada)) return;
+      if (problema instanceof ErroServidorLocal && problema.status === 401) encerrarSessao('A sessão expirou ou foi encerrada no servidor. Entre novamente.');
+      else setErro(problema instanceof Error ? problema.message : 'Não foi possível consultar os participantes.');
+    } finally { setConsultando(false); }
+  }
+
+  async function removerParticipante(mesa: MesaLocal, accountId: string) {
+    if (!sessao || mesa.role !== 'mestre') return;
+    const participante = participantes[mesa.id]?.find(item => item.accountId === accountId && item.role === 'jogador');
+    if (!participante) return;
+    const confirmado = window.confirm('Remover este jogador da Mesa "' + mesa.name + '"? O acesso será revogado e os rascunhos dele nesta Mesa serão excluídos. A ação não pode ser desfeita.');
+    if (!confirmado) return;
+    const geracaoSolicitada = geracaoSessao.current;
+    setErro(''); setAviso(''); setConsultando(true);
+    try {
+      const resultado = await criarClienteServidorLocal({ baseUrl: endereco.trim(), token: sessao.token }).removerParticipante(mesa.id, accountId);
+      if (!sessaoContinuaSendoAtual(geracaoSessao.current, geracaoSolicitada)) return;
+      if (!resultado.removed || resultado.accountId !== accountId) throw new Error('O servidor não confirmou a remoção do participante solicitado.');
+      setParticipantes(atual => ({ ...atual, [mesa.id]: (atual[mesa.id] ?? []).filter(item => item.accountId !== accountId) }));
+      setSolicitacoes(atual => ({ ...atual, [mesa.id]: (atual[mesa.id] ?? []).filter(item => item.accountId !== accountId) }));
+      setAviso('Participante removido e acesso revogado pelo servidor. Os rascunhos vinculados foram excluídos.');
+    } catch (problema) {
+      if (!sessaoContinuaSendoAtual(geracaoSessao.current, geracaoSolicitada)) return;
+      if (problema instanceof ErroServidorLocal && problema.status === 401) encerrarSessao('A sessão expirou ou foi encerrada no servidor. Entre novamente.');
+      else setErro(problema instanceof Error ? problema.message : 'Não foi possível remover o participante.');
+    } finally { setConsultando(false); }
+  }
+
   async function ingressarPorConvite(evento: FormEvent<HTMLFormElement>) {
     evento.preventDefault();
     if (!sessao || !codigoConvite.trim()) return;
@@ -687,12 +727,15 @@ export default function ConexaoServidorLocal() {
               mesa={mesa}
               convite={convitesGerados[mesa.id]}
               solicitacoes={solicitacoes[mesa.id]}
+              participantes={participantes[mesa.id]}
               consultando={consultando}
               aoGerarConvite={item => void gerarConvite(item)}
               aoRevogarConvite={item => void revogarConvite(item)}
               aoCarregarSolicitacoes={item => void carregarSolicitacoes(item)}
               aoCopiarConvite={codigo => void copiarConvite(codigo)}
               aoDecidirSolicitacao={(item, pedidoId, decisao) => void decidirSolicitacao(item, pedidoId, decisao)}
+              aoCarregarParticipantes={item => void carregarParticipantes(item)}
+              aoRemoverParticipante={(item, accountId) => void removerParticipante(item, accountId)}
             />)}
             <form className="formulario servidor-local-form-mesa" onSubmit={ingressarPorConvite}>
               <label>Código de convite recebido<input value={codigoConvite} onChange={evento => setCodigoConvite(evento.target.value)} autoComplete="off" /></label>
