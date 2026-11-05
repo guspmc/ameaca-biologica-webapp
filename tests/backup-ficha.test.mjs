@@ -50,3 +50,27 @@ test('backup preserva os campos narrativos da identidade sem achatá-los', () =>
   const recuperado = lerArquivoBackup(serializarBackup(criarBackup([original])));
   assert.deepEqual(recuperado.personagens[0].dados.identidade, original.dados.identidade);
 });
+
+
+test('backup legado sem geração recebe uma nova geração ao ser validado', () => {
+  const legado = ficha();
+  delete legado.geracao;
+  const recuperado = validarBackup({
+    formato: 'ameaca-biologica-backup',
+    versao: 1,
+    exportadoEm: '2026-11-03T12:00:00.000Z',
+    personagens: [legado],
+  });
+  assert.equal(typeof recuperado.personagens[0].geracao, 'string');
+  assert.ok(recuperado.personagens[0].geracao.length > 0);
+  assert.notEqual(recuperado.personagens[0].geracao, undefined);
+});
+
+test('exportação atual exige geração e rejeita dados que o JSON perderia', () => {
+  const semGeracao = ficha();
+  delete semGeracao.geracao;
+  assert.throws(() => criarBackup([semGeracao]), /fichas inválidas/);
+  const comValorNaoSerializavel = ficha();
+  comValorNaoSerializavel.dados.valorFuturo = undefined;
+  assert.throws(() => criarBackup([comValorNaoSerializavel]), /fichas inválidas/);
+});
