@@ -90,19 +90,22 @@ Outras categorias de munição não devem herdar o limite de 30 por analogia. Ca
 
 ## 4. Arquitetura recomendada antes da grade operacional
 
-### 4.1 Fonte de verdade
+### 4.1 Fonte de verdade e limite offline
 
-O inventário ativo precisa ser um snapshot persistente próprio dentro do registro da personagem offline, não uma reconstrução contínua do kit/catalogo. A materialização inicial é executada uma única vez durante uma transição de ciclo explicitamente definida; abrir/reabrir a ficha apenas lê e valida o snapshot existente.
+O Planejamento v2.1 §14.2 é explícito: offline permite leitura de dados previamente autorizados, identificados como possivelmente desatualizados, e escrita de anotações pessoais. **Não permite alterar offline PV, Inventário, Baú, Iniciativa ou outros dados compartilhados.** Essa regra também consta das diretrizes de segurança do projeto.
 
-A transição que torna uma personagem ativa ainda precisa ser definida para o fluxo offline-first. O estado atual da ficha continua `rascunho`, e o servidor LAN atual também só cria/lê/atualiza rascunhos. Não chamar `materializarInventarioInicial()` ao abrir a ficha nem tratar o snapshot puro como ativação.
+Portanto, a direção offline-first não autoriza transformar o Inventário ativo em um estado mutável local. O aplicativo poderá preparar cache/consulta e interface de leitura offline, sempre com indicação de possível desatualização; adição, movimentação, equipar, uso, moedas, expansão e demais alterações só poderão ser executadas após reconexão e revalidação do acesso/estado atual.
+
+A materialização inicial do inventário altera estado compartilhado e deve ocorrer como parte de uma finalização/ativação autorizada online, não durante a abertura de ficha offline. O estado atual da ficha continua `rascunho`, e o servidor LAN atual também só cria/lê/atualiza rascunhos. Não chamar `materializarInventarioInicial()` ao abrir a ficha nem tratar o snapshot puro como ativação.
 
 ### 4.2 Persistência e concorrência
 
-- Snapshot, expansão e revisão devem ser validados antes da gravação.
-- Alterações que afetem mais de um exemplar (upgrade de expansão, troca de Peça, combinação) precisam de uma única transação e uma única revisão.
-- Usar o patch transacional já existente em `persistenciaFicha.ts`; nunca salvar a grade por uma segunda via que possa sobrescrever campos de ficha concorrentes.
-- Pedido/recibo só é necessário quando uma operação atravessar uma fronteira remota ou puder ter resposta incerta. Para operações estritamente locais, manter atomicidade IndexedDB e histórico/Desfazer conforme escopo aprovado, sem simular RPC.
-- Backup/exportação/importação devem preservar o snapshot ativo sem reconstruí-lo, duplicar IDs ou perder estados.
+- Snapshot, expansão e revisão devem ser validados antes da gravação no servidor autoritativo.
+- Alterações que afetem mais de um exemplar (upgrade de expansão, troca de Peça, combinação) precisam de uma única transação e uma única revisão no servidor.
+- O IndexedDB pode guardar somente a cópia previamente autorizada para leitura offline, marcada como possivelmente desatualizada; não pode confirmar mutações de Inventário como se fossem estado oficial.
+- Operações online devem revalidar sessão, vínculo, permissões e revisão atual antes de gravar; conflitos devem preservar a versão recebida e impedir sobrescrita silenciosa.
+- Backup/exportação/importação não podem reintroduzir mutações compartilhadas offline nem recriar IDs/instâncias apagadas ou revogadas. A política de backup local deve respeitar a proteção de dados da Mesa.
+- Pedido/recibo e idempotência são necessários nas operações remotas com resposta incerta; não simular confirmação local de operação compartilhada.
 - O servidor LAN atual não oferece endpoint de inventário ativo. Sua API de personagens armazena JSON de rascunho com revisão; não declarar que isso já garante a semântica de ativação.
 
 ### 4.3 Separação de operações
@@ -111,15 +114,15 @@ Não implementar todos os comandos de uma vez. Cada comando precisa de regra can
 
 ## 5. Sequência técnica proposta
 
-1. **Contrato persistente:** ampliar o snapshot de modo versionado, incluindo expansão e metadados estritamente necessários; integrar a validação compartilhada da personagem/backup; testar legado e campos desconhecidos.
-2. **Ciclo de vida:** definir e implementar a transição local/offline autorizada para personagem ativa, com materialização exatamente uma vez, estado e recibo recuperáveis; preservar a separação rascunho/ativa.
-3. **Grade de leitura:** integrar snapshot persistido à ficha contínua, com Característicos e expansão em áreas próprias, grade multi-Espaço e avisos de excesso de capacidade.
-4. **Organização:** integrar mover/trocar, mantendo pedido/recibo somente onde necessário e impedindo sobreposição/duplicação.
-5. **Catálogo e adição:** completar catálogo canônico, pilhas por categoria e Itens Chave; impedir adição que não caiba.
-6. **Operações individuais:** implementar separadamente equipar/remover, estados de armas/lanternas/coletes, moedas e Hatchet.
+1. **Contrato de leitura/cache:** ampliar o snapshot de modo versionado, incluindo expansão e metadados estritamente necessários; validar e armazenar somente cópia autorizada para leitura offline, com marcação de possível desatualização.
+2. **Ciclo de vida online:** definir a transição de rascunho para ativa, com autorização do servidor, materialização exatamente uma vez, estado e recibo recuperáveis; preservar a separação rascunho/ativa.
+3. **Grade de leitura:** integrar snapshot à ficha contínua, com Característicos e expansão em áreas próprias, grade multi-Espaço e avisos de excesso de capacidade. Offline, somente leitura.
+4. **API LAN autoritativa:** preparar consulta e mutações online com revalidação de sessão/permissões/revisão, transações atômicas, idempotência e recuperação de resposta incerta.
+5. **Organização e catálogo:** integrar mover/trocar, catálogo canônico, pilhas por categoria e Itens Chave; impedir adição que não caiba.
+6. **Operações individuais:** implementar online e separadamente equipar/remover, estados de armas/lanternas/coletes, moedas e Hatchet.
 7. **Peças, consumíveis, combinação/fabricação:** somente após catálogo, receitas, custos e efeitos conferidos contra o Arquivo do Jogador.
-8. **Backup/ciclo:** testar exportar/importar, fechar/reabrir, exclusão, arquivamento/recuperação e Morte conforme regras; expansão e itens vinculados devem obedecer ao ciclo.
-9. **Integração LAN e Baú:** etapa posterior; não antecipar transferência compartilhada neste ciclo.
+8. **Backup/ciclo:** testar exportar/importar e leitura offline sem permitir reintrodução de mutações compartilhadas; fechar/reabrir, exclusão, arquivamento/recuperação e Morte conforme regras.
+9. **Baú:** somente ao final, junto à integração LAN completa, conforme decisão do usuário.
 
 ## 6. Pontos que exigem decisão ou confirmação posterior
 
@@ -136,7 +139,7 @@ Nenhum desses pontos deve ser resolvido por suposição silenciosa. O restante d
 - **IMPLEMENTADO:** planejamento inicial, materialização pura, parser de consulta, lógica isolada de expansão/moedas e planejamento puro de organização.
 - **TESTADO AUTOMATICAMENTE:** evidência histórica no commit `608abacc` para materialização/validação; a CI posterior `e252755` também passou para a suíte e build existentes.
 - **NÃO INTEGRADO:** persistência de snapshot ativo, ativação offline, grade operacional, catálogo completo e comandos.
-- **PENDENTE:** contrato persistente versionado, ciclo de vida, grade, organização integrada e operações.
+- **PENDENTE:** contrato de leitura/cache versionado, ciclo de vida online, grade, API LAN autoritativa, organização integrada e operações online.
 - **ADIADO POR DECISÃO DO USUÁRIO:** Baú e transferências compartilhadas, até a integração LAN final.
 
 Este documento é uma auditoria/proposta técnica. Não altera regras do RPG, não executa migrações, não toca no Supabase remoto, não publica nem ativa personagens.
