@@ -296,7 +296,7 @@ export default function FichaLocal({ nome, mesa, dados, aoFechar, aoRecarregar, 
             <div><small>DANO CORPO A CORPO</small><strong>{faseBi.danoCorpoACorpoAdicional ? '+' + faseBi.danoCorpoACorpoAdicional : '—'}</strong><p>{faseBi.danoCorpoACorpoAdicional ? 'Dano adicional da 4ª fase.' : 'Sem bônus de dano corpo a corpo por BI.'}</p></div>
             <div><small>DESVANTAGEM POR BI</small><strong>{faseBi.desvantagemAtaquesETestes === null ? '—' : faseBi.desvantagemAtaquesETestes ? 'Sim' : 'Não'}</strong><p>Aplica-se a Ataques e Testes de Perícia e Atributo na 5ª fase.</p></div>
           </div>
-          <p className="ficha-local-legenda">A BI começa em 0, não progride sozinha e só muda por uma fonte expressa. A ficha calcula os modificadores informativos da fase; não altera movimento, ataques ou dano, não aumenta BI, não rola dados nem inicia Reanimação automaticamente.</p>
+          <p className="ficha-local-legenda">A BI começa em 0 e não progride sozinha. Alterações de BI são registradas expressamente no painel de Recursos; este resumo apenas calcula os modificadores da fase e não os aplica automaticamente a movimento, ataques ou dano, nem inicia Reanimação.</p>
 
           <h3 className="ficha-local-subtitulo">Combate ativo</h3>
           <div className="ficha-local-grade">
@@ -304,7 +304,7 @@ export default function FichaLocal({ nome, mesa, dados, aoFechar, aoRecarregar, 
             <div><small>CONDIÇÕES E EFEITOS</small><strong>A integrar</strong><p>Esta ficha ainda não registra nem aplica Condições ou efeitos temporários.</p></div>
             <div><small>ATAQUES E DANO</small><strong>A integrar</strong><p>Resolução de Testes, Defesa de alvos, Dano e consumo de munição não estão implementados nesta seção.</p></div>
           </div>
-          <p className="ficha-local-aviso">Nenhuma rolagem, ação, alteração de recurso ou efeito é simulado nesta versão. PV e SA atuais e seus ajustes ainda dependem da implementação de recursos/combate. A BI atual começa em 0 e sua fase é calculada; alterar BI durante o jogo ainda não está implementado.</p>
+          <p className="ficha-local-aviso">Esta seção não simula rolagens, ações ou efeitos de combate. PV, SA e BI podem ser ajustados expressamente no painel de Recursos; Descanso e Reanimação possuem painéis próprios. O controle de turnos, Condições, ataques, Defesa de alvos, dano e consumo de munição permanece pendente.</p>
         </section>
 
         <section id="ficha-local-inventario" className="ficha-local-secao">
