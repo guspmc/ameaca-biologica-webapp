@@ -179,6 +179,8 @@ Esta seção atualiza pontos do retrato inicial que ficaram desatualizados.
 - `b4060b44`: validação de Perícias em rascunhos parciais.
 - `cf44e7f7`, `3fa4b16c`, `6bb16fc0`: endurecimento da verificação JSON-safe e testes.
 - `0f4c037f`: imports do planejador de inventário compatíveis com a resolução ESM do runner Node.
+- `7de2e0e9`: editor de Identificação remonta quando os dados da ficha são atualizados/recarregados.
+- `30008bb2`, `fb7b66b2`, `0c0ff480`: validação de arrays sem executar getters, regressões e remoção de auxiliar sem uso.
 
 ### Documentação
 
@@ -191,3 +193,11 @@ Esta seção atualiza pontos do retrato inicial que ficaram desatualizados.
 - Não considerar a validação concluída nem iniciar a bateria humana até executar a suíte/build em runner real.
 - Próximo: confirmar automação, revisar o fluxo integrado de criação e backup, depois realizar homologação real de concorrência e concluir o Inventário neste ciclo da Ficha.
 - **HEAD documental:** `fb27e227` foi o último HEAD consultado antes desta atualização; o commit desta atualização deve ser registrado após a gravação.
+
+## 13. Continuação da auditoria — 05/11/2026
+
+- Corrigido o estado do editor de Identificação após recarga de dados externos: agora o componente é remontado quando nome/Identidade mudam. Isso evita manter valores narrativos antigos em memória depois de recarregar a ficha.
+- A validação JSON-safe de arrays agora rejeita lacunas, propriedades extras e getters sem executar esses getters nem criar alocação desnecessária.
+- Testes de regressão foram acrescentados em `tests/pendencias-edicao.test.mjs` e `tests/validacao-personagem-local.test.mjs`.
+- Auditoria detalhada: seção 18 de `docs/auditoria-esquema-dados-ficha-offline-2026-11-04.md`.
+- **CI/build:** ainda sem confirmação observável. Não houve execução local nem retorno de checks do GitHub para o HEAD atual.
