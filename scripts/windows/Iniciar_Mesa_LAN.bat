@@ -36,7 +36,7 @@ echo.
 echo ATENCAO: use somente contas e dados ficticios em uma rede privada confiavel.
 echo O prototipo usa HTTP sem TLS. Nao use dados reais ou senhas reutilizadas.
 echo.
-start "Ameaca Biologica - Servidor LAN (4175)" cmd /k pnpm.cmd run server:local -- --host 0.0.0.0 --port 4175
+start "Ameaca Biologica - Servidor LAN (4175)" cmd /k pnpm.cmd run server:local -- --host 127.0.0.1 --port 4175
 timeout /t 2 /nobreak >nul
 start "Ameaca Biologica - Interface LAN (4174)" cmd /k pnpm.cmd run dev:lan
 timeout /t 3 /nobreak >nul
