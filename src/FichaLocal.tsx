@@ -11,6 +11,8 @@ import EditorAtributosPericiasLocal from './EditorAtributosPericiasLocal';
 import EditorCaracteristicasLocal from './EditorCaracteristicasLocal';
 import EditorInventarioLocal from './EditorInventarioLocal';
 import IdentidadeLocal from './IdentidadeLocal';
+import FuncionamentoFichaLocal from './FuncionamentoFichaLocal';
+import type { ConfiguracaoFuncionamento } from './funcionamentoFicha';
 import { classePersonagem, termoPersonagem } from './textoPersonagem';
 
 type DadosFichaLocal = {
@@ -26,6 +28,7 @@ type DadosFichaLocal = {
   comprasIniciais?: unknown;
   revisaoCompras?: unknown;
   identidade?: unknown;
+  configuracaoFuncionamento?: unknown;
 };
 
 type Props = {
@@ -40,6 +43,7 @@ type Props = {
   aoSalvarCaracteristicas: (dados: { classe: string; origem: string; armaOperario: string; habilidadeBasica: string; equipamentoInicial: string }) => Promise<boolean>;
   aoSalvarIdentidade?: (dados: { nome: string; identidade: Record<string, string> }) => Promise<boolean>;
   aoSalvarInventario: (dados: { equipamentoInicial: string; comprasIniciais: Record<string, number>; revisaoCompras: number }) => Promise<boolean>;
+  aoSalvarFuncionamento: (configuracao: ConfiguracaoFuncionamento) => Promise<boolean>;
   origemDados?: 'local' | 'servidor';
   status?: string;
   erro?: string;
@@ -56,7 +60,7 @@ function numero(valor: unknown): number {
   return typeof valor === 'number' && Number.isFinite(valor) ? valor : 0;
 }
 
-export default function FichaLocal({ nome, mesa, dados, aoFechar, aoRecarregar, aoAlterarPendencia, aoEditar, aoSalvarAtributosPericias, aoSalvarCaracteristicas, aoSalvarIdentidade, aoSalvarInventario, origemDados = 'local', status, erro }: Props) {
+export default function FichaLocal({ nome, mesa, dados, aoFechar, aoRecarregar, aoAlterarPendencia, aoEditar, aoSalvarAtributosPericias, aoSalvarCaracteristicas, aoSalvarIdentidade, aoSalvarInventario, aoSalvarFuncionamento, origemDados = 'local', status, erro }: Props) {
   const pendenciasInternas = useRef(new Set<string>());
   function registrarPendencia(secao: string, pendente: boolean) {
     if (aoAlterarPendencia) {
@@ -149,6 +153,12 @@ export default function FichaLocal({ nome, mesa, dados, aoFechar, aoRecarregar, 
           {alertasCompatibilidade.length > 0 && <p className="ficha-local-aviso" role="alert">Revisão da criação necessária: {alertasCompatibilidade.join("; ")}. As escolhas foram preservadas; corrija os itens incompatíveis antes de confirmar a criação.</p>}
           <EditorCaracteristicasLocal key={JSON.stringify([classe, origem, ficha.armaOperario, ficha.habilidadeBasica, kitSelecionado])} iniciais={{ classe, origem, armaOperario: typeof ficha.armaOperario === 'string' ? ficha.armaOperario : '', habilidadeBasica: typeof ficha.habilidadeBasica === 'string' ? ficha.habilidadeBasica : '', equipamentoInicial: kitSelecionado }} aoSalvar={aoSalvarCaracteristicas} aoAlterarPendencia={pendente => registrarPendencia('Características', pendente)} mensagemSucesso={origemDados === 'servidor' ? 'Características confirmadas pelo servidor.' : undefined} />
           {aoSalvarIdentidade && <IdentidadeLocal key={JSON.stringify([nome, ficha.identidade ?? {}])} nome={nome} identidade={(ficha.identidade as Record<string, string>) ?? {}} aoSalvar={aoSalvarIdentidade} aoAlterarPendencia={pendente => registrarPendencia('Identificação', pendente)} />}
+          <FuncionamentoFichaLocal
+            key={JSON.stringify(ficha.configuracaoFuncionamento ?? null)}
+            inicial={ficha.configuracaoFuncionamento as ConfiguracaoFuncionamento | undefined}
+            aoSalvar={aoSalvarFuncionamento}
+            aoAlterarPendencia={pendente => registrarPendencia('Funcionamento', pendente)}
+          />
           <div className="ficha-local-grade">
             <div><small>CLASSE</small><strong>{classePersonagem(classe || null, genero)}</strong><p>{dadosClasse?.identidade ?? 'Dados da Classe ainda não definidos.'}</p></div>
             <div><small>ORIGEM</small><strong>{termo(origem || 'Pendente')}</strong><p>{dadosOrigem?.beneficio ?? 'Benefício da Origem ainda não definido.'}</p></div>
