@@ -36,7 +36,7 @@ test('0 PV: três sucessos despertam com pelo menos 1 PV ou cura acumulada, resp
   out = aplicar(r, 12); r = out.reanimacao;
   assert.equal(out.pvAoDespertar, 5);
   assert.equal(r.estado, 'concluida');
-  assert.equal(aplicar(tresSucessos('pv_zero'), 12).reanimacao.estado, 'concluida');
+  assert.equal(tresSucessos('pv_zero').estado, 'concluida');
   let curada = api.acumularCuraDuranteReanimacao(api.iniciarTurnoReanimacao(api.iniciarReanimacao('pv_zero')), 30);
   let final;
   for (let i = 0; i < 3; i++) final = aplicar(curada, 12, 8), curada = final.reanimacao;
