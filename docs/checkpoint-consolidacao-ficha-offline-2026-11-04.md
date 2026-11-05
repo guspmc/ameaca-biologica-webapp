@@ -389,7 +389,7 @@ Foi criado o núcleo de regras em src/reanimacaoFicha.ts, com validação para p
 
 **IMPLEMENTADO NA BRANCH:** núcleo de regras, validação de estado, painel visual, persistência no contrato comum da ficha e testes de integração estática.
 
-**TESTADO AUTOMATICAMENTE:** commit b246a19322a5195a5b6747680957e9f5953e9f91; ambos os workflows concluíram com sucesso: **430/430 testes**, TypeScript, build Vite, tipos dos cenários isolados e verificações PostgreSQL aprovados. Testes humanos 24–31 continuam enfileirados e ainda não foram realizados.
+**TESTADO AUTOMATICAMENTE:** commit 61d0ad6282db26b2362703d38a2b33c2a7b0eeea; ambos os workflows concluíram com sucesso: **440/440 testes**, TypeScript, build Vite, tipos dos cenários isolados e verificações PostgreSQL aprovados. Testes humanos 24–32 continuam enfileirados e ainda não foram realizados.
 
 **NÃO CONCLUÍDO:** integração com o motor de Combate, efeitos de Condição, transformação operacional, registro de Morte/retorno e rolagem virtual.
 
@@ -400,11 +400,27 @@ A conferência do cânone e da interface revelou dois casos de fluxo que precisa
 
 - **Ajuda de Medicina e cura durante a espera:** o texto oficial permite Primeiros Socorros em personagem a 0 PV. O painel agora permite registrar o resultado final de Medicina DT 15 e acumular cura enquanto a Reanimação aguarda o próximo turno, sem antecipar o primeiro Teste nem despertar a personagem.
 - **Novo evento após conclusão:** uma Reanimação concluída não bloqueia um evento crítico futuro. Se a personagem voltar a 0 PV ou alcançar novamente BI Máxima, o painel permite iniciar novo processo. O histórico durável de Reanimações continua fora do escopo atual.
+- **Falha Crítica:** 1 natural no Teste de Reanimação sinaliza Falha Crítica e Exposto. A Ajuda de Medicina também diferencia falha comum de 1 natural e direciona o Exposto para a ficha de quem realizou o Teste. Nenhuma Condição é aplicada automaticamente.
+- **Proteção de PV:** quando PV chega a 0, o painel de recursos bloqueia edição direta de PV; a cura deve ser acumulada no painel de Reanimação até o terceiro sucesso. Descanso permanece bloqueado enquanto o processo não estiver concluído.
 
 ### Evidência automatizada
 
-Commit b246a19322a5195a5b6747680957e9f5953e9f91: ambos os workflows concluíram com sucesso; **430/430 testes**, TypeScript, build Vite, tipos dos cenários isolados e verificações PostgreSQL aprovados.
+Commit 61d0ad6282db26b2362703d38a2b33c2a7b0eeea: ambos os workflows concluíram com sucesso; **440/440 testes**, TypeScript, build Vite, tipos dos cenários isolados e verificações PostgreSQL aprovados.
 
 **PENDENTE DE TESTE HUMANO:** casos 24–31 na fila única. Nenhum foi executado pelo autor nesta etapa.
 
 **LIMITES:** não há histórico durável, integração com iniciativa/turnos, execução de efeitos de Condição, rolagem virtual, transformação operacional ou registro de Morte/retorno.
+
+
+## 25. Organização de exemplares de múltiplos Espaços — 05/11/2026
+
+O modelo de consulta e o planejador de organização foram ampliados para itens que ocupam mais de um Espaço, conforme a grade aprovada no Planejamento v2.0, §9.1.
+
+- `ExemplarConsulta.espacos` agora representa quantidade de Espaços, não apenas 0 ou 1.
+- A validação trata cada exemplar como um intervalo de posições, rejeita sobreposições e mantém a leitura de itens excedentes quando a capacidade é reduzida, sem descartar dados.
+- A organização permite mover exemplares para áreas livres e trocar exemplares de tamanhos diferentes quando a nova disposição cabe; recusa destino que cruza vários exemplares ou troca que gere sobreposição.
+- Seis testes novos cobrem leitura, excesso preservado, movimentação, troca válida e recusas.
+
+**Evidência automatizada:** commit 5559dfb7d09dca31e486b776add991b09de4f299 passou com **436/436 testes**, TypeScript, build Vite e verificações PostgreSQL.
+
+**LIMITE:** esta é a base de domínio e organização. Ainda não existe grade ativa integrada e persistente na ficha; a consulta continua somente leitura, sem comandos de jogo. O próximo passo exige modelo persistente local e integração com o ciclo de ativação da personagem.
