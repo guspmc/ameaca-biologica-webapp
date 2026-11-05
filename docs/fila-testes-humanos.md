@@ -312,7 +312,7 @@ Pré-requisito: CI verde; servidor e frontend LAN iniciados conforme [guia do se
 2. Se o Chrome solicitar permissão de acesso à rede local, conceder e confirmar conexão; em perfil de teste separado, recusar e conferir erro claro, sem falso estado de sucesso. Depois conceder e repetir.
 3. Criar duas contas experimentais distintas. Criar Mesa com a conta Mestre, gerar convite e solicitar ingresso com a segunda conta; aprovar pelo Mestre.
 4. Confirmar que a conta Jogador vê apenas a Mesa aprovada e que uma terceira conta sem vínculo não consegue consultar Mesa, solicitações ou personagens por chamadas diretas.
-5. Conferir teto e autorização apenas por testes técnicos preparados; não tentar preencher dez participantes manualmente nesta rodada.
+5. Conferir teto de dez jogadores e autorização apenas por testes técnicos preparados; não tentar preencher dez participantes manualmente nesta rodada. O limite de três rascunhos por jogador em cada Mesa também é aplicado no servidor e coberto por teste automatizado; não é necessário criar quatro manualmente nesta rodada.
 
 ### L2 — Mesa LAN: rascunho, persistência e tempo real
 
@@ -336,7 +336,7 @@ Pré-requisito: CI verde; servidor e frontend LAN iniciados conforme [guia do se
 
 ### A0 — inicializadores Windows (novo pré-teste)
 
-**Implementado na branch; aguarda CI e validação no Windows.** Os atalhos ficam em `scripts/windows/`. O ponto de entrada recomendado é `Menu_Testes.bat`, que permite iniciar a Ficha Offline, a Mesa LAN ou os dois ambientes.
+**Implementado na branch; CI verde no commit `e4e08a9` para a versão anterior aos últimos ajustes; novas alterações aguardam CI e validação no Windows.** Os atalhos ficam em `scripts/windows/`. O ponto de entrada recomendado é `Menu_Testes.bat`, que permite iniciar a Ficha Offline, a Mesa LAN ou os dois ambientes.
 
 1. Executar `Menu_Testes.bat` e escolher **Verificar ambiente**; confirmar Node.js 22.12+ e pnpm 11.25.0 detectados.
 2. Escolher **Iniciar os dois ambientes**. A Ficha Offline deve compilar o modo de teste com PWA e abrir em `http://127.0.0.1:4176/ameaca-biologica-webapp/`; a Mesa LAN deve iniciar a API e o Vite em janelas separadas e abrir em `http://127.0.0.1:4174/ameaca-biologica-webapp/?servidor=local`.
