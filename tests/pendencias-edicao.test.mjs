@@ -81,3 +81,9 @@ test('lista bloqueia abertura, exportacao e selecao de backup enquanto uma opera
   assert.match(fonte, /type="file"[^>]*disabled=\{ocupado\}/);
   assert.match(fonte, /onClick=\{\s*\(\)\s*=>\s*void abrirPersonagem\(p\.id\)\}\s*disabled=\{ocupado\}/);
 });
+
+
+test('recarregar a ficha remonta o editor de Identificação com os dados externos atualizados', async () => {
+  const fonte = await ler('FichaLocal.tsx');
+  assert.match(fonte, /<IdentidadeLocal key=\{JSON\.stringify\(\[nome, ficha\.identidade \?\? \{\}\]\)\}/);
+});
