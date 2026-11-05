@@ -153,7 +153,10 @@ export function createLocalServer({
       const metodo = req.method ?? 'GET';
       const origem = req.headers.origin;
       if (origem) {
-        if (!origensPermitidas.has(origem)) {
+        let mesmaOrigemDoProxy = false;
+        try { mesmaOrigemDoProxy = new URL(origem).host === req.headers.host; }
+        catch { mesmaOrigemDoProxy = false; }
+        if (!origensPermitidas.has(origem) && !mesmaOrigemDoProxy) {
           respostaJson(res, 403, { error: 'Origem não autorizada para acessar o servidor local.' });
           return;
         }
