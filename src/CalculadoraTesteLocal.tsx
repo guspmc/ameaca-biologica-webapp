@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import { ATRIBUTO_PERICIA, valorBasePericia } from './pericias';
 import { calcularTesteManual, type VantagemTeste } from './testes';
+import type { ModoDados } from './funcionamentoFicha';
 import type { AtributosIniciais } from './atributosCriacao';
 
 const PERICIAS = Object.keys(ATRIBUTO_PERICIA);
@@ -15,9 +16,10 @@ type Props = {
   atributos: AtributosIniciais;
   treinada: string;
   distribuicao: Record<string, number>;
+  modoDados: ModoDados;
 };
 
-export default function CalculadoraTesteLocal({ atributos, treinada, distribuicao }: Props) {
+export default function CalculadoraTesteLocal({ atributos, treinada, distribuicao, modoDados }: Props) {
   const [tipo, setTipo] = useState<'pericia' | 'atributo'>('pericia');
   const [pericia, setPericia] = useState('Percepção');
   const [atributo, setAtributo] = useState<keyof AtributosIniciais>('astucia');
@@ -58,9 +60,14 @@ export default function CalculadoraTesteLocal({ atributos, treinada, distribuica
     setDado2('');
   }
 
+  if (modoDados === 'virtuais') return <details className="ficha-local-editor calculadora-teste">
+    <summary>Conferir Teste</summary>
+    <p>O método de dados desta ficha está em Virtual. A rolagem virtual ainda não foi implementada; a calculadora física fica indisponível para respeitar sua preferência.</p>
+  </details>;
+
   return <details className="ficha-local-editor calculadora-teste">
     <summary>Conferir Teste manual</summary>
-    <p>Calculadora de dados físicos: informe a face obtida. Ela não rola dados, não registra uma rolagem e não altera a ficha.</p>
+    <p>{modoDados === 'fisicos' ? 'Modo Físicos: informe a face obtida.' : 'Modo Mistos: neste incremento, somente a entrada física manual está disponível; a rolagem virtual ainda não foi implementada.'} A calculadora não rola dados, não registra uma rolagem e não altera a ficha.</p>
     <p>Se o Teste de Pontaria ou Luta for um Ataque, 20 natural também acerta automaticamente, fecha as Reações defensivas normais e causa Crítico. Arma, Dano e efeitos específicos ainda precisam ser resolvidos no módulo de Combate.</p>
     <label>Tipo de Teste
       <select value={tipo} onChange={evento => mudarTipo(evento.target.value as 'pericia' | 'atributo')}>
