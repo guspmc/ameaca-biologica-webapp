@@ -24,6 +24,22 @@ test('atingir ou ultrapassar BI Máxima representa Colapso Viral, não uma sexta
   assert.equal(calcularFaseBioInfeccao(12, 10).estado, 'colapso');
 });
 
+test('fases derivam modificadores numéricos sem aplicar efeitos à ficha', () => {
+  const fase1 = calcularFaseBioInfeccao(0, 10);
+  const fase2 = calcularFaseBioInfeccao(2, 10);
+  const fase3 = calcularFaseBioInfeccao(4, 10);
+  const fase4 = calcularFaseBioInfeccao(6, 10);
+  const fase5 = calcularFaseBioInfeccao(8, 10);
+  assert.equal(fase1.modificadorMovimento, 0);
+  assert.equal(fase2.modificadorMovimento, 3);
+  assert.equal(fase3.bonusTesteAtaque, 2);
+  assert.equal(fase4.bonusTesteAtaque, 3);
+  assert.equal(fase4.danoCorpoACorpoAdicional, '1d4');
+  assert.equal(fase5.modificadorMovimento, -6);
+  assert.equal(fase5.desvantagemAtaquesETestes, true);
+  assert.equal(calcularFaseBioInfeccao(10, 10).modificadorMovimento, null);
+});
+
 test('fases informam efeitos canônicos sem executar alterações', () => {
   assert.match(calcularFaseBioInfeccao(2, 10).efeito, /Movimento \+3 m/);
   assert.match(calcularFaseBioInfeccao(4, 10).efeito, /Ataques \+2/);
