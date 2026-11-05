@@ -72,13 +72,20 @@ export type ResumoPersonagemLocal = {
   updatedAt: string;
 };
 
+export type DiagnosticoTransporteLocal = {
+  nome: string;
+  mensagem: string;
+};
+
 export class ErroServidorLocal extends Error {
   readonly status: number;
+  readonly diagnostico?: DiagnosticoTransporteLocal;
 
-  constructor(message: string, status: number) {
+  constructor(message: string, status: number, diagnostico?: DiagnosticoTransporteLocal) {
     super(message);
     this.name = 'ErroServidorLocal';
     this.status = status;
+    this.diagnostico = diagnostico;
   }
 }
 
@@ -156,8 +163,16 @@ export function criarClienteServidorLocal({ baseUrl, token, fetcher = fetch }: O
         ...(espacoEndereco ? { targetAddressSpace: espacoEndereco } : {}),
       };
       resposta = await fetcher(base + caminho, configuracao);
-    } catch {
-      throw new ErroServidorLocal('Não foi possível alcançar o servidor local. Confira o endereço e a conexão de rede.', 0);
+    } catch (problema) {
+      // Preserva a causa original do fetch para diagnóstico, sem expor token ou cabeçalhos.
+      const diagnostico = problema instanceof Error
+        ? { nome: problema.name.slice(0, 80), mensagem: problema.message.slice(0, 240) }
+        : { nome: 'Erro desconhecido', mensagem: 'O navegador não forneceu detalhes adicionais.' };
+      throw new ErroServidorLocal(
+        'Não foi possível alcançar o servidor local. Confira o endereço e a conexão de rede.',
+        0,
+        diagnostico,
+      );
     }
 
     const dados = await resposta.json().catch(() => null) as Record<string, unknown> | null;
