@@ -12,6 +12,7 @@ import {
 
 const personagem = (id = 'p-1', nome = 'Claire') => ({
   id,
+  geracao: 'geracao-' + id,
   nome,
   criadoEm: '2026-11-01T10:00:00.000Z',
   atualizadoEm: '2026-11-02T10:00:00.000Z',
