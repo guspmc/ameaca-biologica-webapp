@@ -50,35 +50,50 @@ function tem(dados: Record<string, unknown>, chaves: string[]): boolean {
 function validarDadosFicha(valor: unknown): valor is Record<string, unknown> {
   if (!objeto(valor) || !valorJsonSeguro(valor)) return false;
 
-  // Ausência identifica registros legados conhecidos; valores presentes precisam ser explícitos.
+  // Ausência identifica registros legados/incompletos; valores presentes precisam ser explícitos.
   if ('versaoModelo' in valor && valor.versaoModelo !== 1) return false;
   if ('estadoFicha' in valor && valor.estadoFicha !== 'rascunho') return false;
 
-  const camposCaracteristicas = ['classe', 'origem', 'armaOperario', 'habilidadeBasica', 'equipamentoInicial'];
-  if (tem(valor, camposCaracteristicas)) {
-    if (typeof valor.classe !== 'string' || !['Agente', 'Autodidata', 'Operador'].includes(valor.classe)) return false;
-    if (typeof valor.origem !== 'string' || !ORIGENS.some(item => item.nome === valor.origem)) return false;
+  if ('classe' in valor
+    && (typeof valor.classe !== 'string' || !['Agente', 'Autodidata', 'Operador'].includes(valor.classe))) return false;
+  if ('origem' in valor
+    && (typeof valor.origem !== 'string' || !ORIGENS.some(item => item.nome === valor.origem))) return false;
+  if ('armaOperario' in valor) {
     if (typeof valor.armaOperario !== 'string') return false;
-    if (valor.origem === 'Operário') {
-      if (!armaOperarioValida(valor.armaOperario)) return false;
-    } else if (valor.armaOperario !== '' && !armaOperarioValida(valor.armaOperario)) return false;
-    if (typeof valor.habilidadeBasica !== 'string'
-      || !HABILIDADES_BASICAS.some(item => item.id === valor.habilidadeBasica && item.classe === valor.classe)) return false;
-    if (typeof valor.equipamentoInicial !== 'string'
-      || !opcoesEquipamento(valor.classe).some(item => item.id === valor.equipamentoInicial)) return false;
+    if (valor.armaOperario !== '' && !armaOperarioValida(valor.armaOperario)) return false;
+  }
+  if ('habilidadeBasica' in valor) {
+    if (typeof valor.habilidadeBasica !== 'string') return false;
+    if (valor.habilidadeBasica !== '' && !HABILIDADES_BASICAS.some(item =>
+      item.id === valor.habilidadeBasica && (!('classe' in valor) || item.classe === valor.classe)
+    )) return false;
+  }
+  if ('equipamentoInicial' in valor) {
+    if (typeof valor.equipamentoInicial !== 'string') return false;
+    if (valor.equipamentoInicial !== '' && !opcoesEquipamento(typeof valor.classe === 'string' ? valor.classe : null)
+      .some(item => item.id === valor.equipamentoInicial)) return false;
+  }
+  if (valor.origem === 'Operário' && 'armaOperario' in valor
+    && valor.armaOperario !== '' && !armaOperarioValida(valor.armaOperario)) return false;
+
+  if ('atributos' in valor && !atributosIniciaisValidos(valor.atributos as never)) return false;
+  if ('periciaOrigemTreinada' in valor
+    && typeof valor.periciaOrigemTreinada !== 'string') return false;
+  if ('periciaOrigemExtra' in valor
+    && valor.periciaOrigemExtra !== null && typeof valor.periciaOrigemExtra !== 'string') return false;
+  if ('distribuicaoPericias' in valor) {
+    if (!objeto(valor.distribuicaoPericias)
+      || Object.values(valor.distribuicaoPericias).some(grau => !Number.isInteger(grau) || (grau as number) < 0 || (grau as number) > 2)) return false;
   }
 
-  const camposPericias = ['atributos', 'periciaOrigemTreinada', 'periciaOrigemExtra', 'distribuicaoPericias'];
-  if (tem(valor, camposPericias)) {
-    if (!atributosIniciaisValidos(valor.atributos as never)) return false;
-    if (typeof valor.classe !== 'string' || typeof valor.origem !== 'string'
-      || typeof valor.periciaOrigemTreinada !== 'string' || !objeto(valor.distribuicaoPericias)) return false;
+  const contextoPericiasCompleto = 'atributos' in valor && 'classe' in valor && 'origem' in valor
+    && 'periciaOrigemTreinada' in valor && 'distribuicaoPericias' in valor;
+  if (contextoPericiasCompleto) {
     const extra = valor.periciaOrigemExtra;
-    if (extra !== null && typeof extra !== 'string') return false;
     if (!distribuicaoPericiasValida(
-      valor.classe,
-      valor.origem,
-      valor.periciaOrigemTreinada,
+      valor.classe as string,
+      valor.origem as string,
+      valor.periciaOrigemTreinada as string,
       valor.distribuicaoPericias as Record<string, number>,
       typeof extra === 'string' ? extra : undefined,
     )) return false;
@@ -96,16 +111,20 @@ function validarDadosFicha(valor: unknown): valor is Record<string, unknown> {
     }
   }
 
-  if (tem(valor, ['comprasIniciais', 'revisaoCompras'])) {
-    if (!objeto(valor.comprasIniciais) || !Number.isInteger(valor.revisaoCompras) || (valor.revisaoCompras as number) < 0) return false;
-    if (typeof valor.classe !== 'string' || typeof valor.equipamentoInicial !== 'string'
-      || typeof valor.origem !== 'string' || !objeto(valor.atributos)) return false;
+  if ('comprasIniciais' in valor && !objeto(valor.comprasIniciais)) return false;
+  if ('revisaoCompras' in valor
+    && (!Number.isInteger(valor.revisaoCompras) || (valor.revisaoCompras as number) < 0)) return false;
+
+  const contextoInventarioCompleto = 'comprasIniciais' in valor && 'revisaoCompras' in valor
+    && typeof valor.classe === 'string' && typeof valor.equipamentoInicial === 'string'
+    && typeof valor.origem === 'string' && objeto(valor.atributos);
+  if (contextoInventarioCompleto) {
     try {
       planejarInventarioCriacao({
-        classe: valor.classe,
-        equipamento_inicial: valor.equipamentoInicial,
-        forca: valor.atributos.forca as number,
-        origem: valor.origem,
+        classe: valor.classe as string,
+        equipamento_inicial: valor.equipamentoInicial as string,
+        forca: (valor.atributos as Record<string, unknown>).forca as number,
+        origem: valor.origem as string,
         nivel: 1,
         estado_ficha: 'rascunho',
         compras_iniciais: valor.comprasIniciais as Record<string, number>,
