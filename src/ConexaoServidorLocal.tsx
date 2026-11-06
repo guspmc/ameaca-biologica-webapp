@@ -56,6 +56,7 @@ export default function ConexaoServidorLocal() {
   const socketEventos = useRef<WebSocket | null>(null);
   const mesasInscritas = useRef(new Set<string>());
   const [canalTempoReal, setCanalTempoReal] = useState(false);
+  const paineisMestreConsultados = useRef(new Set<string>());
 
   // No modo LAN, o cookie HttpOnly permite restaurar a sessão após recarga
   // ou reabertura do navegador sem expor o token ao armazenamento JavaScript.
@@ -875,7 +876,24 @@ export default function ConexaoServidorLocal() {
                     const url = new URL(window.location.pathname, 'http://' + ip + ':4174');
                     url.searchParams.set('servidor', 'local');
                     const endereco = url.toString();
-                    return <div className="servidor-local-endereco-lan" key={ip}>
+                    // Ao carregar a lista de Mesas, preenche o painel do Mestre com dados
+  // administrativos reais. A chave por geração evita repetir consultas em
+  // cada render e impede que uma sessão nova herde o carregamento da anterior.
+  useEffect(() => {
+    if (!sessao || !dadosIniciaisCarregados.current) return;
+    for (const mesa of mesas) {
+      if (mesa.role !== 'mestre') continue;
+      const chave = geracaoSessao.current + ':' + mesa.id;
+      if (paineisMestreConsultados.current.has(chave)) continue;
+      paineisMestreConsultados.current.add(chave);
+      void (async () => {
+        await carregarParticipantes(mesa);
+        await carregarSolicitacoes(mesa);
+      })();
+    }
+  }, [sessao, mesas]);
+
+  return <div className="servidor-local-endereco-lan" key={ip}>
                       <a href={endereco}>{endereco}</a>
                       <QRCodeLocal value={endereco} label={'Acesso LAN · ' + ip} />
                     </div>;
