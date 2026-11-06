@@ -108,7 +108,7 @@ test('proxy LAN mantém API e WebSocket same-origin até o servidor SQLite', asy
 
   const ticketResposta = await requisitar('/api/auth/ws-ticket', {
     method: 'POST',
-    headers: { 'content-type': 'application/json', authorization: `Bearer ${token}` },
+    headers: { 'content-type': 'application/json', cookie },
     body: '{}',
   });
   assert.equal(ticketResposta.status, 201);
