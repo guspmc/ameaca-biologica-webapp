@@ -720,6 +720,9 @@ export default function ConexaoServidorLocal() {
       await criarClienteServidorLocal({ baseUrl: endereco.trim(), token: sessao.token }).solicitarIngresso(codigoConvite.trim());
       if (!sessaoContinuaSendoAtual(geracaoSessao.current, geracaoSolicitada)) return;
       setCodigoConvite('');
+      const urlAtual = new URL(window.location.href);
+      urlAtual.searchParams.delete('convite');
+      window.history.replaceState({}, '', urlAtual.toString());
       setAviso('Solicitação enviada. O acesso à Mesa só será liberado após aprovação do Mestre.');
     } catch (problema) {
       if (!sessaoContinuaSendoAtual(geracaoSessao.current, geracaoSolicitada)) return;
