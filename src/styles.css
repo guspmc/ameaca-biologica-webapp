@@ -1071,3 +1071,6 @@ footer { margin-top:45px; border-top:1px solid #dce2df; padding-top:19px; color:
 /* Ajustes tipográficos finos da Ficha — correspondência ao protótipo v0.2. */
 .ficha-local-wordmark{letter-spacing:.6px}
 .ficha-local-chapter-meta{margin-top:16px;padding:0 0 8px;border-bottom:0}
+
+/* Navegação flutuante: recuo e distância da borda iguais aos do aparelho v0.2. */
+.ficha-local-nav{left:17px;right:17px;bottom:15px;width:auto;max-width:none;transform:none}
