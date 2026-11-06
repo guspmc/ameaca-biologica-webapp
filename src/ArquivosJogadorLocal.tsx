@@ -3,8 +3,18 @@ import { useState } from 'react';
 type AbaArquivosJogador = 'documentos' | 'mapa' | 'anotacoes';
 
 /** Estrutura navegável do Arquivos do Jogador; ainda sem leitura/sincronização de conteúdo. */
-export default function ArquivosJogadorLocal({ mesaNome }: { mesaNome: string }) {
-  const [aba, setAba] = useState<AbaArquivosJogador>('documentos');
+export default function ArquivosJogadorLocal({ mesaId, mesaNome }: { mesaId: string; mesaNome: string }) {
+  const chaveAba = 'ameaca-biologica:arquivos-jogador:aba:v1:' + mesaId;
+  const [aba, setAba] = useState<AbaArquivosJogador>(() => {
+    try {
+      const salva = typeof window !== 'undefined' ? window.sessionStorage.getItem(chaveAba) : null;
+      return salva === 'mapa' || salva === 'anotacoes' ? salva : 'documentos';
+    } catch { return 'documentos'; }
+  });
+  function selecionarAba(proxima: AbaArquivosJogador) {
+    setAba(proxima);
+    try { if (typeof window !== 'undefined') window.sessionStorage.setItem(chaveAba, proxima); } catch { /* A navegação funciona sem persistência local. */ }
+  }
   const titulo = aba === 'documentos' ? 'Documentos da Mesa' : aba === 'mapa' ? 'Mapa da operação' : 'Minhas anotações';
   return <section className="arquivos-jogador" aria-label={'Arquivos do Jogador — ' + mesaNome}>
     <header className="arquivos-jogador-topo">
@@ -13,7 +23,7 @@ export default function ArquivosJogadorLocal({ mesaNome }: { mesaNome: string })
     </header>
     <nav className="arquivos-jogador-nav" aria-label="Categorias de Arquivos">
       {([['documentos','Documentos'],['mapa','Mapa'],['anotacoes','Minhas anotações']] as [AbaArquivosJogador,string][]).map(([id,label]) =>
-        <button key={id} type="button" className={aba===id?'ativo':''} aria-pressed={aba===id} onClick={()=>setAba(id)}>{label}</button>
+        <button key={id} type="button" className={aba===id?'ativo':''} aria-pressed={aba===id} onClick={()=>selecionarAba(id)}>{label}</button>
       )}
     </nav>
     <div className="arquivos-jogador-conteudo" role="region" aria-live="polite" aria-label={titulo}>
