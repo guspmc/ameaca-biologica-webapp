@@ -1056,3 +1056,9 @@ footer { margin-top:45px; border-top:1px solid #dce2df; padding-top:19px; color:
  .ficha-local{width:min(100%,425px);height:min(840px,calc(100dvh - 46px));min-height:600px;border:7px solid #111a1c;border-radius:34px;box-shadow:0 32px 74px #050b0bcc,0 0 0 1px #8d8b7c inset,0 0 0 2px #484949}
  .ficha-local-corpo{padding-top:21px;padding-bottom:112px}
 }
+
+
+/* Topline editorial acompanha a rolagem da tela, como no protótipo congelado. */
+.ficha-local-topo{display:block;flex:none;padding:0;background:transparent;color:#252725;border:0}
+.ficha-local-topo .ficha-local-topline{display:flex;align-items:center;justify-content:space-between;padding:9px 0 11px;border-bottom:1px solid #383a32}
+@media(max-width:735px){.ficha-local-topo{padding:0}}
