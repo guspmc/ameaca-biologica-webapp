@@ -72,7 +72,7 @@ test('prévia de compras sincroniza alterações na LAN e mantém aplicação ma
   const editor = await ler('EditorInventarioLocal.tsx');
   assert.match(fonte, /if \(autoSalvar\) aoAlterarPlano\?\.\(proximo\)/);
   assert.match(fonte, /aoAlterarPlano\?\.\(planoLocal\)/);
-  assert.match(fonte, /autoSalvar \? 'As quantidades desta prévia são gravadas automaticamente/);
+  assert.match(fonte, /autoSalvar \? 'As quantidades desta prévia seguem automaticamente/);
   assert.match(editor, /useSalvamentoEditorLocal/);
   assert.match(editor, /autoSalvar=\{autoSalvar\}/);
 });
