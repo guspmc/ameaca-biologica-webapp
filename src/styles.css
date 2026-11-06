@@ -944,3 +944,33 @@ footer { margin-top:45px; border-top:1px solid #dce2df; padding-top:19px; color:
 .painel-mestre-shell.servidor-local-controle-mesa{position:relative;width:100vw;max-width:none;margin-left:calc(50% - 50vw);margin-right:calc(50% - 50vw)}
 .painel-mestre-app{width:100%;max-width:1440px}
 .painel-mestre-main{width:100%;min-width:0}
+
+
+/* Painéis internos da Ficha: controles administrativos no mesmo papel do dossiê. */
+.ficha-local-editor{margin:9px 0;padding:11px;border:1px solid #b7aa92;border-radius:4px;background:#e5dac5;color:#252725}
+.ficha-local-editor>summary{list-style:none;display:flex;align-items:center;justify-content:space-between;gap:8px;padding:2px 1px 9px;border-bottom:1px solid #b7aa92;color:#64252b;font:800 10px 'Courier New',monospace;cursor:pointer}
+.ficha-local-editor>summary::-webkit-details-marker{display:none}
+.ficha-local-editor>summary:after{content:'+';color:#8f2e36;font:20px Georgia,serif}
+.ficha-local-editor[open]>summary:after{content:'−'}
+.ficha-local-editor>h3{margin:10px 0 5px;color:#252725;font:800 15px Georgia,serif}
+.ficha-local-editor>h4{margin:13px 0 7px;padding-bottom:5px;border-bottom:1px solid #b7aa92;color:#64252b;font:800 9px 'Courier New',monospace;letter-spacing:.07em;text-transform:uppercase}
+.ficha-local-editor>p{color:#625b50;font-size:10px;line-height:1.5}
+.ficha-local-editor label{display:grid;gap:5px;margin:8px 0;color:#514b42;font-size:10px;font-weight:750}
+.ficha-local-editor input:not([type=checkbox]),.ficha-local-editor select,.ficha-local-editor textarea{width:100%;min-width:0;min-height:36px;padding:8px 9px;border:1px solid #b7aa92;border-radius:3px;background:#f8f2e5;color:#252725;font-size:11px}
+.ficha-local-editor input[type=checkbox]{accent-color:#8f2e36}
+.ficha-local-editor button{min-height:33px;padding:7px 9px;border:1px solid #9d8c7a;border-radius:3px;background:#f8f2e5;color:#252725;font-size:10px;font-weight:800}
+.ficha-local-editor button.acao{border-color:#8f2e36;background:#8f2e36;color:#fff4e5}
+.ficha-local-editor button:disabled{opacity:.45}
+.recursos-controles{display:flex;align-items:end;gap:6px;flex-wrap:wrap;margin:8px 0}
+.recursos-controles label{flex:1 1 105px;min-width:0;margin:0}
+.recursos-ficha .ficha-local-grade{margin:9px 0}
+.recursos-ficha .ficha-local-grade>div{min-height:62px;padding:8px}
+.recursos-ficha .ficha-local-grade strong{font:800 16px Georgia,serif}
+.descanso-ficha,.reanimacao-ficha,.calculadora-teste{background:#f3ead9}
+.descanso-ficha[open],.reanimacao-ficha[open],.calculadora-teste[open]{border-left:3px solid #8f2e36}
+.funcionamento-opcoes{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+.funcionamento-opcoes>label{margin:0;padding:8px;border:1px solid #c8baa3;background:#f8f2e5}
+.funcionamento-opcoes small{color:#746d61;font-size:9px;font-weight:500;line-height:1.4}
+.ficha-local-resultado{margin:10px 0;padding:10px;border:1px solid #b7aa92;border-left:3px solid #69705e;background:#f8f2e5;color:#252725}
+.ficha-local-resultado strong{color:#64252b}
+@media(max-width:390px){.funcionamento-opcoes{grid-template-columns:1fr}.recursos-controles button{flex:1 1 auto}}
