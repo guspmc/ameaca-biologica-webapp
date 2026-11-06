@@ -17,7 +17,6 @@ test('Painel do Mestre mantém referências ARIA dos destinos principais e das f
   'painel-mestre-arquivos-tab-anotacoes',
   'painel-mestre-arquivos-tab-diario',
   'painel-mestre-arquivos-tab-documentos',
-  'painel-mestre-arquivos-tab-mesa',
   'painel-mestre-arquivos-tab-narracao',
   'painel-mestre-tab-arquivos',
   'painel-mestre-tab-encontros',
@@ -32,7 +31,7 @@ test('Painel do Mestre mantém referências ARIA dos destinos principais e das f
   if(id.startsWith('painel-mestre-encontros-tab-')) {
    assert.ok(['ao-vivo','preparados','catalogo','gerador','perseguicao'].includes(id.slice('painel-mestre-encontros-tab-'.length)),'Rótulo de ferramenta desconhecido: '+id);
   } else if(id.startsWith('painel-mestre-arquivos-tab-')) {
-   assert.ok(['documentos','anotacoes','diario','narracao','mesa'].includes(id.slice('painel-mestre-arquivos-tab-'.length)),'Categoria de arquivo desconhecida: '+id);
+   assert.ok(['documentos','anotacoes','diario','narracao'].includes(id.slice('painel-mestre-arquivos-tab-'.length)),'Categoria de arquivo desconhecida: '+id);
   } else assert.ok(ids.has(id),'Referência ARIA sem destino: '+id);
  }
  const paineis=[...fonte.matchAll(/id="(painel-mestre-encontros-panel-[^"]+)"/g)].map(m=>m[1]);
@@ -41,7 +40,6 @@ test('Painel do Mestre mantém referências ARIA dos destinos principais e das f
   'painel-mestre-arquivos-panel-anotacoes',
   'painel-mestre-arquivos-panel-diario',
   'painel-mestre-arquivos-panel-documentos',
-  'painel-mestre-arquivos-panel-mesa',
   'painel-mestre-arquivos-panel-narracao'
  ].sort());
  assert.deepEqual(paineis.sort(),[
