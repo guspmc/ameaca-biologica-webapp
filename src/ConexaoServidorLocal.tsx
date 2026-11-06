@@ -84,6 +84,7 @@ export default function ConexaoServidorLocal() {
           setRestauracaoFichaConcluida(false);
           restauracaoScrollConcluida.current = false;
           setCarregandoDadosIniciais(true);
+          restaurandoFicha.current = false;
           geracaoSessao.current += 1;
           setSessao({ account: resposta.account, token: '', expiresAt: resposta.expiresAt });
           setAviso('Sessão restaurada. Carregando suas Mesas e permissões...');
@@ -103,6 +104,7 @@ export default function ConexaoServidorLocal() {
   }, []);
 
   function encerrarSessao(mensagem: string) {
+    restaurandoFicha.current = false;
     geracaoSessao.current += 1;
     // Dados da ficha não permanecem visíveis após perda/encerramento de sessão.
     fichaAbertaRef.current = null;
@@ -405,6 +407,7 @@ export default function ConexaoServidorLocal() {
         setRestauracaoFichaConcluida(false);
         restauracaoScrollConcluida.current = false;
         setCarregandoDadosIniciais(true);
+        restaurandoFicha.current = false;
         geracaoSessao.current += 1;
         setSessao(novaSessao);
         setSenha('');
