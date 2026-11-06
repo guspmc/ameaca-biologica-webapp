@@ -59,11 +59,21 @@ export async function lerMesasOffline(usuarioId: string): Promise<LeituraOffline
   return { dados: row.dados as MesaCache[], atualizadoEm: row.atualizadoEm };
 }
 export async function salvarPersonagensOffline<T extends PersonagemCache>(usuarioId: string, personagens: T[]): Promise<string> {
-  const proprias = personagens.filter(personagem => personagem.jogador_id === usuarioId), db = await abrirBanco(), atualizadoEm = new Date().toISOString();
+  const db = await abrirBanco(), atualizadoEm = new Date().toISOString();
   return new Promise((resolve, reject) => {
     const tx = db.transaction(ARMAZENAMENTO, 'readwrite'), store = tx.objectStore(ARMAZENAMENTO), req = store.getAll();
     req.onsuccess = () => {
-      for (const row of req.result as RegistroOffline[]) if (row.usuarioId === usuarioId && (row.tipo === 'personagem' || row.tipo === 'personagens-indice')) store.delete(row.id);
+      const registros = req.result as RegistroOffline[];
+      const autorizacao = registros.find(row => row.usuarioId === usuarioId && row.tipo === 'mesas');
+      const mesasAutorizadas = new Set(
+        autorizacao && Array.isArray(autorizacao.dados)
+          ? (autorizacao.dados as MesaCache[]).map(mesa => mesa.id)
+          : [],
+      );
+      const proprias = personagens.filter(personagem =>
+        personagem.jogador_id === usuarioId && mesasAutorizadas.has(personagem.mesa_id),
+      );
+      for (const row of registros) if (row.usuarioId === usuarioId && (row.tipo === 'personagem' || row.tipo === 'personagens-indice')) store.delete(row.id);
       store.put({ id: usuarioId + ':personagens-indice', usuarioId, tipo: 'personagens-indice', mesaId: null, personagemId: null, atualizadoEm, dados: { quantidade: proprias.length } } satisfies RegistroOffline);
       for (const personagem of proprias) store.put({ id: usuarioId + ':personagem:' + personagem.mesa_id + ':' + personagem.id, usuarioId, tipo: 'personagem', mesaId: personagem.mesa_id, personagemId: personagem.id, atualizadoEm, dados: personagem } satisfies RegistroOffline);
     };
