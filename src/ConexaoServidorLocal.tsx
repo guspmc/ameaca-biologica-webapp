@@ -160,12 +160,18 @@ export default function ConexaoServidorLocal() {
       }
       const outrasFalhas = resultados.filter(resultado => resultado.status === 'rejected');
       const fichaAtual = fichaAbertaRef.current;
-      const acessoFichaRevogado = Boolean(fichaAtual && !resposta.mesas.some(mesa =>
+      const mesaAindaAutorizaJogador = Boolean(fichaAtual && resposta.mesas.some(mesa =>
         mesa.id === fichaAtual.mesa.id && mesa.role === 'jogador'
       ));
-      if (acessoFichaRevogado) {
-        // A remoção da Mesa precisa fechar imediatamente qualquer ficha que
-        // ainda esteja aberta no navegador do participante removido.
+      const listaAtualizada = fichaAtual ? novosPersonagens[fichaAtual.mesa.id] : undefined;
+      const fichaExcluidaEmOutraSessao = Boolean(
+        fichaAtual && mesaAindaAutorizaJogador && Array.isArray(listaAtualizada) &&
+        !listaAtualizada.some(personagem => personagem.id === fichaAtual.personagem.id)
+      );
+      const acessoFichaRevogado = Boolean(fichaAtual && !mesaAindaAutorizaJogador);
+      if (acessoFichaRevogado || fichaExcluidaEmOutraSessao) {
+        // Uma ficha não permanece aberta após remoção da Mesa ou exclusão
+        // confirmada do rascunho em outra sessão/dispositivo.
         fichaAbertaRef.current = null;
         setFichaAberta(null);
         try { localStorage.removeItem(CHAVE_CONTEXTO_FICHA); }
@@ -181,6 +187,8 @@ export default function ConexaoServidorLocal() {
         setErro('A lista de Mesas foi carregada, mas algumas informações administrativas ou fichas não puderam ser atualizadas.');
       } else if (acessoFichaRevogado) {
         setAviso('Seu acesso à Mesa foi revogado. A ficha aberta foi fechada e o contexto salvo foi removido.');
+      } else if (fichaExcluidaEmOutraSessao) {
+        setAviso('O rascunho foi excluído em outra sessão. A ficha aberta foi fechada e o contexto salvo foi removido.');
       } else {
         setAviso('Dados atualizados e confirmados nas consultas ao servidor.');
       }
