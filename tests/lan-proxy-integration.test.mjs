@@ -93,7 +93,7 @@ test('proxy LAN mantém API e WebSocket same-origin até o servidor SQLite', asy
   const dadosAlterados = { ...dadosIniciais, secaoB: { marcador: 2 } };
   const salvarRascunho = await requisitar('/api/personagens/' + personagem.id, {
     method: 'PUT',
-    headers: { 'content-type': 'application/json', authorization: `Bearer ${token}` },
+    headers: { 'content-type': 'application/json', cookie },
     body: JSON.stringify({ name: 'Ficha via proxy', data: dadosAlterados, expectedRevision: personagem.revision }),
   });
   assert.equal(salvarRascunho.status, 200);
