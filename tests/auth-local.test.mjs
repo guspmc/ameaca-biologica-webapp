@@ -532,7 +532,7 @@ test('convite privado exige Mestre e aprovação antes de conceder acesso à Mes
 });
 
 test('remoção de participante exige Mestre, revoga o acesso e exclui os rascunhos vinculados', async t => {
-  const { base } = await setup(t);
+  const { base, app } = await setup(t);
   const senha = 'senha-local-comprida-2026';
   const entrar = async username => {
     assert.equal((await post(base, '/api/auth/register', { username, password: senha })).status, 201);
@@ -581,6 +581,16 @@ test('remoção de participante exige Mestre, revoga o acesso e exclui os rascun
   });
   assert.equal(remocao.status, 200);
   assert.deepEqual(await remocao.json(), { removed: true, accountId: jogadorRemovido.account.id });
+  assert.equal(
+    app.db.prepare('SELECT COUNT(*) AS total FROM personagens_locais WHERE id = ?').get(personagem.id).total,
+    0,
+    'a remoção do vínculo deve excluir efetivamente o rascunho pela FK ON DELETE CASCADE',
+  );
+  assert.equal(
+    app.db.prepare('SELECT COUNT(*) AS total FROM participantes_mesa WHERE mesa_id = ? AND conta_id = ?')
+      .get(mesa.id, jogadorRemovido.account.id).total,
+    0,
+  );
 
   const mesasRemovido = await fetch(base + '/api/mesas', {
     headers: { authorization: `Bearer ${jogadorRemovido.token}` },
