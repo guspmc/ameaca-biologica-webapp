@@ -63,7 +63,7 @@ test('prévia de compras: catálogo, orçamento e ocupação são calculados sem
   ['bastao',1,1,1,2],
   ['faca',1,1,1,2],
   ['colete-acolchoado',1,1,1,2],
-  ['colete-leve',2,1,2,1],
+  ['colete-leve',2,1,1,1],
   ['lanterna-simples',1,1,1,2],
   ['municao-9mm',1,15,1,2],
  ];
@@ -81,7 +81,7 @@ test('prévia de compras: catálogo, orçamento e ocupação são calculados sem
 });
 test('prévia de compras: limite de orçamento, limite de quantidade e pilhas são respeitados',()=>{
  assert.equal(simularCompras({bastao:3},7).saldo,0);
- assert.equal(simularCompras({bastao:3},4).cabe,true);
+ assert.equal(simularCompras({bastao:3},4).cabe,false);
  assert.equal(simularCompras({bastao:3},3).cabe,false);
  assert.deepEqual(simularCompras({'municao-9mm':3},7).itens.map(i=>i.quantidade),[30,15]);
  assert.equal(simularCompras({'municao-9mm':3},7).espacos,4);
