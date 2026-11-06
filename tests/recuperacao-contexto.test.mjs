@@ -104,3 +104,12 @@ test('contexto: copias independentes e erro atual limpa dados sem exibir mensage
  const c=prepararConsultaContextual(),fonte=[{pv:7}];c.selecionar('Mesa');await c.consultar(async()=>fonte);fonte[0].pv=99;const vista=c.estado();vista.valor[0].pv=100;assert.equal(c.estado().valor[0].pv,7);
  await c.consultar(async()=>{throw Error('SEGREDO');});assert.equal(c.estado().valor,null);assert.equal(c.estado().carregando,false);assert.ok(!c.estado().erro.includes('SEGREDO'));
 });
+
+
+test('a ficha impede recarga acidental enquanto há alterações sem confirmação do servidor', async () => {
+  const fonte = await ler('ConexaoServidorLocal.tsx');
+  assert.match(fonte, /Object\.values\(secoesPendentes\)\.some\(Boolean\)/);
+  assert.match(fonte, /evento\.preventDefault\(\)/);
+  assert.match(fonte, /evento\.returnValue = ''/);
+  assert.match(fonte, /addEventListener\('beforeunload', avisarAntesDeSair\)/);
+});
