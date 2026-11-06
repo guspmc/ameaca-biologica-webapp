@@ -19,17 +19,6 @@ export default function EditorCaracteristicasLocal({ iniciais, aoSalvar, aoAlter
     chave: JSON.stringify(dados),
     sujo,
     aoSalvar,
-    validar: atual => {
-      const habilidadesAtuais = HABILIDADES_BASICAS.filter(item => item.classe === atual.classe);
-      const kitsAtuais = opcoesEquipamento(atual.classe);
-      if (!ORIGENS.some(item => item.nome === atual.origem) ||
-          !habilidadesAtuais.some(item => item.id === atual.habilidadeBasica) ||
-          !kitsAtuais.some(item => item.id === atual.equipamentoInicial) ||
-          (atual.origem === 'Operário' && !ARMAS_OPERARIO.includes(atual.armaOperario as never))) {
-        return 'Preencha Origem, Habilidade Básica, conjunto inicial e, para Operário, a arma obrigatória.';
-      }
-      return null;
-    },
     aoConfirmar: () => { setSujo(false); aoAlterarPendencia(false); },
   });
   const ocupado = autosave.estado === 'sincronizando';

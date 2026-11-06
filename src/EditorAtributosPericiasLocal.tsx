@@ -36,11 +36,6 @@ export default function EditorAtributosPericias(props: Props) {
     chave: JSON.stringify({ ...payload, extra }),
     sujo,
     aoSalvar: props.aoSalvar,
-    validar: atual => {
-      if (!atributosIniciaisValidos(atual.atributos)) return 'A distribuição dos Atributos não é válida.';
-      if (!distribuicaoPericiasValida(props.classe, props.origem, atual.periciaOrigemTreinada, atual.distribuicaoPericias, extra)) return 'Confira o Treinamento da Origem e os pontos de Perícia.';
-      return null;
-    },
     aoConfirmar: () => { setSujo(false); props.aoAlterarPendencia(false); },
   });
   const ocupado = autosave.estado === 'sincronizando';

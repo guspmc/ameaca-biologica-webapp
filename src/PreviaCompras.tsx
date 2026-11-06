@@ -8,18 +8,19 @@ export default function PreviaCompras({capacidade,planoSalvo={},revisaoSalva=0,a
   const [salvando,setSalvando]=useState(false);
   const [erro,setErro]=useState('');
   const [aviso,setAviso]=useState('');
+  const [alterada,setAlterada]=useState(false);
   const resultado=simularCompras(plano,capacidade);
   const pesquisar=(texto:string)=>texto.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLocaleLowerCase('pt-BR');
-  function mudar(id:string,n:number){setPlano(p=>({...p,[id]:n}));aoAlterarPendencia?.(true);setErro('');setAviso('');}
+  function mudar(id:string,n:number){setPlano(p=>({...p,[id]:n}));setAlterada(true);aoAlterarPendencia?.(true);setErro('');setAviso('');}
   async function salvar(){
     if(!aoSalvar||salvando||!resultado.cabe||!resultado.orcamentoValido)return;
     setSalvando(true);setErro('');setAviso('');
-    try{const novaRevisao=await aoSalvar({...plano},revisao);setRevisao(novaRevisao);setAviso('Plano aplicado ao formulário. Ele será gravado junto com o rascunho quando você salvar o personagem.');}
+    try{const novaRevisao=await aoSalvar({...plano},revisao);setRevisao(novaRevisao);setAlterada(false);aoAlterarPendencia?.(false);setAviso('Plano aplicado ao rascunho. A sincronização com o servidor ocorre automaticamente.');}
     catch(e){setErro(e instanceof Error?e.message:'Falha ao salvar compras.');}
     finally{setSalvando(false);}
   }
   return <details className="previa-compras"><summary>{aoSalvar?'Compras iniciais · plano e prévia':'Planejar compras · prévia não salva'}</summary>
-    <p>{aoSalvar?'As escolhas são aplicadas ao formulário. Para persistir, salve o rascunho do personagem; fechar ou pressionar F5 antes disso descarta as alterações.':'Simule o uso das 3 Moedas da opção Personalizado. Esta prévia não altera o kit salvo e é descartada ao fechar a ficha ou recarregar a página.'}</p>
+    <p>{aoSalvar?'As escolhas ficam nesta prévia até você clicar em “Aplicar ao rascunho”. Depois disso, o WebApp sincroniza automaticamente com o servidor.':'Simule o uso das 3 Moedas da opção Personalizado. Esta prévia não altera o kit salvo e é descartada ao fechar a ficha ou recarregar a página.'}</p>
     <p className="ficha-dica">Catálogo inicial parcial, com preços conferidos no livro. A compra depende dos itens liberados na Mesa; disponibilidade é validada pelo servidor. Salvar o plano não equipa, consome nem finaliza a personagem.</p>
     <label className="busca-compras">Buscar neste catálogo<input type="search" value={busca} onChange={e=>setBusca(e.target.value)} placeholder="Ex.: colete ou munição"/></label>
     <p className="saldo-compras"><strong>Prévia: {resultado.saldo}/3 Moedas restantes · {resultado.espacos}/{capacidade} Espaços</strong><br/>Inclui Erva Verde, Lanterna Simples e moedas restantes; Característicos ocupam zero.</p>
@@ -38,8 +39,9 @@ export default function PreviaCompras({capacidade,planoSalvo={},revisaoSalva=0,a
     {CATALOGO_INICIAL.every(i=>!pesquisar(i.nome).includes(pesquisar(busca)))&&<p>Nenhum item encontrado neste catálogo.</p>}
     <p className="ficha-dica">Armaduras da prévia continuam guardadas. Comprar munição de reserva não instala Peças nem aumenta o pente de uma arma.</p>
     {erro&&<p className="erro" role="alert">{erro} A prévia foi preservada. Se a versão estiver desatualizada, anote suas escolhas e recarregue para conferir o plano salvo.</p>}
+    {alterada&&aoSalvar&&<p className="ficha-dica" role="status">Prévia alterada, ainda não aplicada ao rascunho. Clique em “Aplicar ao rascunho” para incluir as escolhas e iniciar a sincronização.</p>}
     {aviso&&<p className="sucesso" role="status">{aviso}</p>}
-    <button type="button" className="botao-claro" disabled={salvando} onClick={()=>{setPlano({});aoAlterarPendencia?.(true);setAviso(aoSalvar?'Prévia zerada. Salve o rascunho para persistir a alteração.':'');setErro('');}}>Limpar prévia de compras</button>
-    {aoSalvar&&<><p className="ficha-dica">Revisão local do formulário: {revisao}. Limpar o plano e salvar o rascunho é necessário antes de trocar o kit. Nenhum item é liberado automaticamente.</p><button type="button" className="acao" disabled={salvando||!resultado.cabe||!resultado.orcamentoValido} onClick={()=>{void salvar();}}>{salvando?'Aplicando...':'Aplicar ao rascunho'}</button></>}
+    <button type="button" className="botao-claro" disabled={salvando} onClick={()=>{setPlano({});setAlterada(true);aoAlterarPendencia?.(true);setAviso(aoSalvar?'Prévia zerada. Aplique ao rascunho para sincronizar a alteração.':'');setErro('');}}>Limpar prévia de compras</button>
+    {aoSalvar&&<><p className="ficha-dica">Revisão local do plano: {revisao}. A prévia ainda não aplicada não integra o rascunho. Nenhum item é liberado automaticamente.</p><button type="button" className="acao" disabled={salvando||!resultado.cabe||!resultado.orcamentoValido} onClick={()=>{void salvar();}}>{salvando?'Aplicando...':'Aplicar ao rascunho'}</button></>}
   </details>;
 }

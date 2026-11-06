@@ -22,6 +22,7 @@ export default function EditorInventarioLocal({ classe, capacidade, kitInicial, 
   const [revisao, setRevisao] = useState(revisaoCompras);
   const [sujo, setSujo] = useState(false);
   const [planoAplicado, setPlanoAplicado] = useState(false);
+  const [previsaoPendente, setPrevisaoPendente] = useState(false);
   const opcoes = opcoesEquipamento(classe);
   const valor: Dados = {
     equipamentoInicial: kit,
@@ -33,11 +34,6 @@ export default function EditorInventarioLocal({ classe, capacidade, kitInicial, 
     chave: JSON.stringify({ kit, plano, revisao, planoAplicado }),
     sujo,
     aoSalvar,
-    validar: atual => {
-      if (!opcoes.some(item => item.id === atual.equipamentoInicial)) return 'Selecione um conjunto inicial válido.';
-      if (atual.equipamentoInicial === 'C' && !planoAplicado) return 'Aplique primeiro um plano válido de compras para o conjunto Personalizado.';
-      return null;
-    },
     aoConfirmar: () => { setSujo(false); aoAlterarPendencia(false); },
   });
   const ocupado = autosave.estado === 'sincronizando';
@@ -49,8 +45,15 @@ export default function EditorInventarioLocal({ classe, capacidade, kitInicial, 
 
   return <div className="ficha-local-editor">
     <h3>Editar Inventário inicial</h3>
-    <p>Esta etapa altera somente o planejamento da criação. Não equipa, consome, transfere nem modifica um inventário ativo. A escolha é salva automaticamente após confirmação do plano válido.</p>
-    <label>Conjunto inicial<select value={kit} disabled={ocupado} onChange={e => { setKit(e.target.value); marcarAlteracao(); }}>
+    <p>Esta etapa altera somente o planejamento da criação. Não equipa, consome, transfere nem modifica um inventário ativo. A escolha do conjunto é salva automaticamente; a prévia personalizada só entra no rascunho quando você a aplica.</p>
+    <label>Conjunto inicial<select value={kit} disabled={ocupado} onChange={e => {
+      const proximo = e.target.value;
+      if (kit === 'C' && proximo !== 'C' && previsaoPendente &&
+          !window.confirm('Há uma prévia de compras ainda não aplicada ao rascunho. Deseja descartá-la e trocar o conjunto?')) return;
+      if (proximo !== 'C') { setPlanoAplicado(false); setPrevisaoPendente(false); }
+      setKit(proximo);
+      marcarAlteracao();
+    }}>
       <option value="">Selecione um conjunto</option>{opcoes.map(item => <option key={item.id} value={item.id}>{item.id} · {item.nome}</option>)}
     </select></label>
     {kit === 'C' ? <PreviaCompras
@@ -58,12 +61,13 @@ export default function EditorInventarioLocal({ classe, capacidade, kitInicial, 
       capacidade={capacidade}
       planoSalvo={plano}
       revisaoSalva={revisao}
-      aoAlterarPendencia={pendente => { if (pendente) { setPlanoAplicado(false); marcarAlteracao(); } }}
+      aoAlterarPendencia={pendente => { if (pendente) { setPlanoAplicado(false); setPrevisaoPendente(true); } }}
       aoSalvar={async proximo => {
         setPlano(proximo);
         const nova = revisao + 1;
         setRevisao(nova);
         setPlanoAplicado(true);
+        setPrevisaoPendente(false);
         marcarAlteracao();
         return nova;
       }}
