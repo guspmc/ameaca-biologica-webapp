@@ -324,7 +324,7 @@ export async function tratarRotaAutenticacao(req, res, url, db, encerrarSessaoWe
       // "email" permanece aceito somente como alias transitório para contas/clientes antigos.
       const username = usuarioNormalizado(corpo.username ?? corpo.email);
       const senha = typeof corpo.password === 'string' ? corpo.password : '';
-      if (!username || username.length > USUARIO_MAX || /[\\u0000-\\u001F\\u007F]/.test(username)) {
+      if (!username || username.length > USUARIO_MAX || [...username].some(caractere => caractere.codePointAt(0) < 32 || caractere.codePointAt(0) === 127)) {
         json(res, 422, { error: 'O nome de usuário deve ter entre 1 e 80 caracteres válidos.' });
         return true;
       }
@@ -383,7 +383,7 @@ export async function tratarRotaAutenticacao(req, res, url, db, encerrarSessaoWe
       const corpo = await corpoJson(req);
       const username = usuarioNormalizado(corpo.username ?? corpo.email);
       const senha = typeof corpo.password === 'string' ? corpo.password : '';
-      if (!username || username.length > USUARIO_MAX || /[\\u0000-\\u001F\\u007F]/.test(username)) {
+      if (!username || username.length > USUARIO_MAX || [...username].some(caractere => caractere.codePointAt(0) < 32 || caractere.codePointAt(0) === 127)) {
         json(res, 422, { error: 'Informe um nome de usuário válido.' });
         return true;
       }
