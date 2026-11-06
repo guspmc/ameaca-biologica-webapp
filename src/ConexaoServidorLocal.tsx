@@ -901,6 +901,7 @@ export default function ConexaoServidorLocal() {
       </section>}
 
       {fichaAberta && <FichaLocal
+              autoSalvar
         nome={fichaAberta.personagem.name}
         mesa={fichaAberta.mesa.name}
         contextoId={fichaAberta.mesa.id + ':' + fichaAberta.personagem.id}
