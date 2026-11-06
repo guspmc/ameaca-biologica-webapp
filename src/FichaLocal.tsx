@@ -73,6 +73,20 @@ const ATRIBUTOS: { chave: keyof AtributosIniciais; sigla: string; nome: string }
   { chave: 'astucia', sigla: 'AST', nome: 'Astúcia' },
 ];
 
+function IconeFicha({ tipo }: { tipo: 'perfil' | 'pericias' | 'combate' | 'itens' | 'vida' | 'adrenalina' | 'bio' | 'defesa' }) {
+  const paths: Record<typeof tipo, React.ReactNode> = {
+    perfil: <><circle cx="12" cy="8" r="3.2"/><path d="M5 20c.7-3.1 3.1-4.8 7-4.8s6.3 1.7 7 4.8"/></>,
+    pericias: <><path d="M7 3.5h8l3 3V21H7z"/><path d="M15 3.5V7h3M10 11h5M10 15h5"/></>,
+    combate: <><path d="m4 4 6 6m4 4 6 6M5 19 19 5M8 4l12 12"/></>,
+    itens: <><path d="M4 7h16v13H4zM4 7l2-4h12l2 4M9 7v4h6V7"/></>,
+    vida: <><path d="M20.5 8.8c0 4.1-8.5 10-8.5 10s-8.5-5.9-8.5-10A4.5 4.5 0 0 1 12 6a4.5 4.5 0 0 1 8.5 2.8Z"/></>,
+    adrenalina: <><path d="m13 2-8 12h6l-1 8 9-13h-6z"/></>,
+    bio: <><circle cx="12" cy="12" r="2"/><path d="M12 10c-1-5 3-7 6-5 2 2 1 5-3 7M10 12c-5-1-7 3-5 6 2 2 5 1 7-3M13 14c1 5-3 7-6 5-2-2-1-5 3-7"/></>,
+    defesa: <><path d="M12 3 20 6v5c0 5-3.5 8.5-8 10-4.5-1.5-8-5-8-10V6z"/><path d="m9 12 2 2 4-4"/></>
+  };
+  return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{paths[tipo]}</svg>;
+}
+
 function numero(valor: unknown): number {
   return typeof valor === 'number' && Number.isFinite(valor) ? valor : 0;
 }
@@ -281,10 +295,10 @@ export default function FichaLocal({ nome, mesa, contextoId, dados, aoFechar, ao
         </div>
 
         <div className="ficha-local-recursos">
-          <div><span className="ficha-local-recurso-icone" aria-hidden="true">♥</span><small>PONTOS DE VIDA</small><strong>{recursosAtuais.pvAtual} / {pv}</strong><span>Temporários: {recursosAtuais.pvTemporarios}</span></div>
-          <div><span className="ficha-local-recurso-icone" aria-hidden="true">ϟ</span><small>SURTO DE ADRENALINA</small><strong>{recursosAtuais.saAtual} / {sa}</strong><span>Máximo derivado</span></div>
-          <div><span className="ficha-local-recurso-icone" aria-hidden="true">☣</span><small>BIO-INFECÇÃO</small><strong>{biAtual} / {bi}</strong><span>{faseBi.estado === 'colapso' ? 'Colapso Viral' : faseBi.fase ? 'Fase ' + faseBi.fase : 'Fase indisponível'}</span></div>
-          <div><span className="ficha-local-recurso-icone" aria-hidden="true">⬡</span><small>DEFESA</small><strong>{defesa}</strong><span>Sem equipamento</span></div>
+          <div><span className="ficha-local-recurso-icone"><IconeFicha tipo="vida" /></span><small>PONTOS DE VIDA</small><strong>{recursosAtuais.pvAtual} / {pv}</strong><span>Temporários: {recursosAtuais.pvTemporarios}</span></div>
+          <div><span className="ficha-local-recurso-icone"><IconeFicha tipo="adrenalina" /></span><small>SURTO DE ADRENALINA</small><strong>{recursosAtuais.saAtual} / {sa}</strong><span>Máximo derivado</span></div>
+          <div><span className="ficha-local-recurso-icone"><IconeFicha tipo="bio" /></span><small>BIO-INFECÇÃO</small><strong>{biAtual} / {bi}</strong><span>{faseBi.estado === 'colapso' ? 'Colapso Viral' : faseBi.fase ? 'Fase ' + faseBi.fase : 'Fase indisponível'}</span></div>
+          <div><span className="ficha-local-recurso-icone"><IconeFicha tipo="defesa" /></span><small>DEFESA</small><strong>{defesa}</strong><span>Sem equipamento</span></div>
         </div>
 
         <RecursosFichaLocal autoSalvar={autoSalvar}
@@ -424,10 +438,10 @@ export default function FichaLocal({ nome, mesa, contextoId, dados, aoFechar, ao
         <footer className="ficha-local-rodape">AMEAÇA BIOLÓGICA RPG · {origemDados === 'servidor' ? 'DADOS NO SERVIDOR' : 'DADOS LOCAIS'} · RASCUNHO NÃO ATIVO</footer>
       </div>
       <nav className="ficha-local-nav" aria-label="Atalhos da ficha">
-        <button type="button" className={secaoAtiva === 'caracteristicas' ? 'ativo' : ''} aria-current={secaoAtiva === 'caracteristicas' ? 'location' : undefined} onClick={() => { setSecaoAtiva('caracteristicas'); document.getElementById('ficha-local-caracteristicas')?.scrollIntoView({ behavior: 'smooth', block: 'start' }); }}><span aria-hidden="true">◉</span><small>PERFIL</small></button>
-        <button type="button" className={secaoAtiva === 'pericias' ? 'ativo' : ''} aria-current={secaoAtiva === 'pericias' ? 'location' : undefined} onClick={() => { setSecaoAtiva('pericias'); document.getElementById('ficha-local-pericias')?.scrollIntoView({ behavior: 'smooth', block: 'start' }); }}><span aria-hidden="true">▤</span><small>PERÍCIAS</small></button>
-        <button type="button" className={secaoAtiva === 'combate' ? 'ativo' : ''} aria-current={secaoAtiva === 'combate' ? 'location' : undefined} onClick={() => { setSecaoAtiva('combate'); document.getElementById('ficha-local-combate')?.scrollIntoView({ behavior: 'smooth', block: 'start' }); }}><span aria-hidden="true">◎</span><small>COMBATE</small></button>
-        <button type="button" className={secaoAtiva === 'inventario' ? 'ativo' : ''} aria-current={secaoAtiva === 'inventario' ? 'location' : undefined} onClick={() => { setSecaoAtiva('inventario'); document.getElementById('ficha-local-inventario')?.scrollIntoView({ behavior: 'smooth', block: 'start' }); }}><span aria-hidden="true">▦</span><small>ITENS</small></button>
+        <button type="button" className={secaoAtiva === 'caracteristicas' ? 'ativo' : ''} aria-current={secaoAtiva === 'caracteristicas' ? 'location' : undefined} onClick={() => { setSecaoAtiva('caracteristicas'); document.getElementById('ficha-local-caracteristicas')?.scrollIntoView({ behavior: 'smooth', block: 'start' }); }}><span aria-hidden="true"><IconeFicha tipo="perfil" /></span><small>PERFIL</small></button>
+        <button type="button" className={secaoAtiva === 'pericias' ? 'ativo' : ''} aria-current={secaoAtiva === 'pericias' ? 'location' : undefined} onClick={() => { setSecaoAtiva('pericias'); document.getElementById('ficha-local-pericias')?.scrollIntoView({ behavior: 'smooth', block: 'start' }); }}><span aria-hidden="true"><IconeFicha tipo="pericias" /></span><small>PERÍCIAS</small></button>
+        <button type="button" className={secaoAtiva === 'combate' ? 'ativo' : ''} aria-current={secaoAtiva === 'combate' ? 'location' : undefined} onClick={() => { setSecaoAtiva('combate'); document.getElementById('ficha-local-combate')?.scrollIntoView({ behavior: 'smooth', block: 'start' }); }}><span aria-hidden="true"><IconeFicha tipo="combate" /></span><small>COMBATE</small></button>
+        <button type="button" className={secaoAtiva === 'inventario' ? 'ativo' : ''} aria-current={secaoAtiva === 'inventario' ? 'location' : undefined} onClick={() => { setSecaoAtiva('inventario'); document.getElementById('ficha-local-inventario')?.scrollIntoView({ behavior: 'smooth', block: 'start' }); }}><span aria-hidden="true"><IconeFicha tipo="itens" /></span><small>ITENS</small></button>
       </nav>
     </article>
   </div>;
