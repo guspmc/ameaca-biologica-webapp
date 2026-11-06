@@ -42,6 +42,8 @@ test('health informa que o protótipo usa SQLite e não exige internet', async t
   assert.equal(dados.realtime, 'WebSocket');
   assert.equal(dados.internetRequired, false);
   assert.equal(dados.authentication, 'local-prototype-api');
+  assert.ok(Array.isArray(dados.lanAddresses));
+  assert.ok(dados.lanAddresses.every(ip => typeof ip === 'string' && /^\\d{1,3}(\\.\\d{1,3}){3}$/.test(ip)));
   assert.match(dados.warning, /sem proteção de transporte/i);
 });
 

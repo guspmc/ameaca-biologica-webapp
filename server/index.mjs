@@ -205,6 +205,7 @@ export function createLocalServer({
           realtime: 'WebSocket',
           internetRequired: false,
           authentication: 'local-prototype-api',
+          lanAddresses: enderecosIPv4(),
           warning: AVISO,
         });
         return;

@@ -24,6 +24,7 @@ export type SaudeServidorLocal = {
   realtime: string;
   internetRequired: boolean;
   authentication: string;
+  lanAddresses: string[];
   warning: string;
 };
 

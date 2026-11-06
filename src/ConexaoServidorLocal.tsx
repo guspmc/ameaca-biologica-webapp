@@ -751,6 +751,11 @@ export default function ConexaoServidorLocal() {
             <div><dt>Tempo real</dt><dd>{saude.realtime}</dd></div>
             <div><dt>Internet necessária</dt><dd>{saude.internetRequired ? 'Sim' : 'Não'}</dd></div>
             <div><dt>Autenticação</dt><dd>{saude.authentication}</dd></div>
+            <div><dt>Endereço para outros dispositivos na LAN</dt><dd>
+              {saude.lanAddresses.length
+                ? saude.lanAddresses.map(ip => 'http://' + ip + ':4174/ameaca-biologica-webapp/?servidor=local').join(' · ')
+                : 'Nenhum endereço IPv4 privado foi identificado nesta máquina.'}
+            </dd></div>
           </dl>
           <p className="servidor-local-aviso">{saude.warning}</p>
         </div>}
