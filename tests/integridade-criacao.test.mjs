@@ -59,5 +59,5 @@ test('Equipamento Inicial tem uma única fonte de edição no Inventário', asyn
   assert.match(inventario, /equipamentoInicial/);
   assert.match(inventario, /incompatível com a Classe/);
   assert.match(ficha, /Editar Equipamento Inicial e compras/);
-  assert.match(ficha, /EQUIPAMENTO INICIAL/);
+  assert.match(ficha, /Equipamento Inicial/);
 });
