@@ -521,3 +521,35 @@ footer { margin-top:45px; border-top:1px solid #dce2df; padding-top:19px; color:
 .painel-mestre-resumo small{font:800 9px 'Courier New',monospace;color:#756b5c}
 .painel-mestre-resumo strong{font:800 21px Georgia,serif;color:#87333d}
 @media(max-width:560px){.painel-mestre-resumo{grid-template-columns:1fr 1fr}.painel-mestre-resumo>div:first-child{grid-column:span 2}}
+
+
+/* Terminal do Mestre — estrutura alinhada ao protótipo congelado. */
+.painel-mestre-shell{margin:18px 0;padding:16px;border:1px solid #e2e5e6;border-top:4px solid #b30d28;border-radius:14px;background:#f4f6f6;color:#1c252b;box-shadow:0 5px 20px #07141f0b}
+.painel-mestre-cabecalho{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding-bottom:13px;border-bottom:1px solid #e2e5e6}
+.painel-mestre-cabecalho>div{display:grid;gap:4px;min-width:0}
+.painel-mestre-cabecalho small,.painel-mestre-placeholder>small{font:800 9px 'Courier New',monospace;letter-spacing:.14em;color:#b30d28}
+.painel-mestre-cabecalho h4{margin:2px 0;font:800 21px/1.1 Georgia,serif;color:#1c252b}
+.painel-mestre-cabecalho p{margin:0;color:#717a80;font-size:11px;overflow-wrap:anywhere}
+.painel-mestre-cabecalho>span{flex:none;padding:6px 8px;border:1px solid #d8b6bc;background:#fbecef;color:#790e22;font:800 9px 'Courier New',monospace;letter-spacing:.08em}
+.painel-mestre-resumo{gap:8px;margin:14px 0}
+.painel-mestre-resumo>div{padding:12px;border:1px solid #e2e5e6;border-radius:10px;background:#fff}
+.painel-mestre-resumo small{color:#717a80}
+.painel-mestre-resumo strong{color:#b30d28}
+.painel-mestre-nav{display:flex;gap:5px;overflow-x:auto;padding:0 0 9px;border-bottom:1px solid #e2e5e6}
+.painel-mestre-nav button{flex:1;min-width:86px;padding:10px 12px;border:1px solid #e2e5e6;border-radius:9px;background:#fff;color:#717a80;font-size:11px;font-weight:800}
+.painel-mestre-nav button.ativo{border-color:#273137;background:#273137;color:#fff}
+.painel-mestre-nav button:focus-visible{outline:3px solid #dca03c;outline-offset:2px}
+.painel-mestre-conteudo{padding-top:12px}
+.painel-mestre-orientacao{margin:0 0 12px;color:#717a80;font-size:11px;line-height:1.55}
+.painel-mestre-subsecao{margin-top:17px;padding:13px;border:1px solid #e2e5e6;border-radius:11px;background:#fff}
+.painel-mestre-subsecao-topo{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px}
+.painel-mestre-subsecao-topo h5{margin:0;color:#1c252b;font-size:13px}
+.painel-mestre-subsecao .servidor-local-lista-mesas{margin:8px 0 0}
+.painel-mestre-subsecao .servidor-local-lista-mesas li{border-color:#e2e5e6;background:#f8f9f9}
+.painel-mestre-subsecao .servidor-local-lista-mesas li small{color:#717a80}
+.painel-mestre-placeholder{margin-top:14px;padding:20px;border:1px solid #e2e5e6;border-radius:12px;background:#fff}
+.painel-mestre-placeholder h5{margin:7px 0 10px;font:800 19px Georgia,serif;color:#1c252b}
+.painel-mestre-placeholder p{margin:8px 0;color:#59636a;font-size:12px;line-height:1.6}
+.painel-mestre-shell .servidor-local-codigo input{border-color:#d6dadd;background:#f8f9f9;color:#1c252b}
+.painel-mestre-shell .servidor-local-vazio{border:1px dashed #d6dadd;background:#f8f9f9;color:#59636a}
+@media(max-width:560px){.painel-mestre-shell{padding:12px}.painel-mestre-cabecalho{flex-direction:column}.painel-mestre-cabecalho>span{align-self:flex-start}.painel-mestre-nav button{min-width:0;padding:10px 7px}.painel-mestre-subsecao{padding:10px}.painel-mestre-subsecao-topo{align-items:flex-start;flex-direction:column}}
