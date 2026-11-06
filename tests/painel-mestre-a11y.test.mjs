@@ -14,6 +14,11 @@ test('Painel do Mestre mantém referências ARIA dos destinos principais e das f
   'painel-mestre-encontros-tab-gerador',
   'painel-mestre-encontros-tab-perseguicao',
   'painel-mestre-encontros-tab-preparados',
+  'painel-mestre-arquivos-tab-anotacoes',
+  'painel-mestre-arquivos-tab-diario',
+  'painel-mestre-arquivos-tab-documentos',
+  'painel-mestre-arquivos-tab-mesa',
+  'painel-mestre-arquivos-tab-narracao',
   'painel-mestre-tab-arquivos',
   'painel-mestre-tab-encontros',
   'painel-mestre-tab-mesa'
