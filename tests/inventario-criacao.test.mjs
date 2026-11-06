@@ -83,8 +83,10 @@ test('prévia de compras: limite de orçamento, limite de quantidade e pilhas s�
  assert.equal(simularCompras({bastao:3},7).saldo,0);
  assert.equal(simularCompras({bastao:3},4).cabe,false);
  assert.equal(simularCompras({bastao:3},3).cabe,false);
- assert.deepEqual(simularCompras({'municao-9mm':3},7).itens.map(i=>i.quantidade),[30,15]);
- assert.equal(simularCompras({'municao-9mm':3},7).espacos,4);
+ const previaMunicao=simularCompras({'municao-9mm':3},7);
+ assert.deepEqual(previaMunicao.itens.map(i=>i.quantidade),[45]);
+ assert.equal(previaMunicao.itens[0].espacos,2);
+ assert.equal(previaMunicao.espacos,4);
  for(const plano of [{bastao:4},{bastao:-1},{bastao:1.5},{bastao:'1'},{desconhecido:1}]){
   assert.throws(()=>simularCompras(plano,7));
  }
