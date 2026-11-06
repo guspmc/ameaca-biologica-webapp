@@ -81,6 +81,7 @@ export default function ConexaoServidorLocal() {
           }
           dadosIniciaisCarregados.current = false;
           setRestauracaoFichaConcluida(false);
+          restauracaoScrollConcluida.current = false;
           setCarregandoDadosIniciais(true);
           geracaoSessao.current += 1;
           setSessao({ account: resposta.account, token: '', expiresAt: resposta.expiresAt });
@@ -401,6 +402,7 @@ export default function ConexaoServidorLocal() {
         }
         dadosIniciaisCarregados.current = false;
         setRestauracaoFichaConcluida(false);
+        restauracaoScrollConcluida.current = false;
         setCarregandoDadosIniciais(true);
         geracaoSessao.current += 1;
         setSessao(novaSessao);
