@@ -107,9 +107,11 @@ test('cadastro e login locais não bloqueiam novas tentativas por IP', async t =
     const resposta = await post(base, '/api/auth/register', { username: 'u'.repeat(81), password: 'senha-local-comprida-2026' });
     assert.equal(resposta.status, 422);
   }
-  const login = await post(base, '/api/auth/login', { username: 'nao-existe', password: 'senha-local-comprida-2026' });
-  assert.equal(login.status, 401);
-  assert.notEqual(login.status, 429);
+  for (let tentativa = 0; tentativa < 8; tentativa += 1) {
+    const login = await post(base, '/api/auth/login', { username: 'nao-existe', password: 'senha-local-comprida-2026' });
+    assert.equal(login.status, 401);
+    assert.doesNotMatch((await login.json()).error, /Muitas tentativas/i);
+  }
 });
 
 test('recuperação de senha local redefine a credencial, revoga sessões e preserva a Mesa', async t => {
