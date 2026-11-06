@@ -159,6 +159,18 @@ export default function ConexaoServidorLocal() {
         return;
       }
       const outrasFalhas = resultados.filter(resultado => resultado.status === 'rejected');
+      const fichaAtual = fichaAbertaRef.current;
+      const acessoFichaRevogado = Boolean(fichaAtual && !resposta.mesas.some(mesa =>
+        mesa.id === fichaAtual.mesa.id && mesa.role === 'jogador'
+      ));
+      if (acessoFichaRevogado) {
+        // A remoção da Mesa precisa fechar imediatamente qualquer ficha que
+        // ainda esteja aberta no navegador do participante removido.
+        fichaAbertaRef.current = null;
+        setFichaAberta(null);
+        try { localStorage.removeItem(CHAVE_CONTEXTO_FICHA); }
+        catch { /* A autorização do servidor continua prevalecendo sem armazenamento local. */ }
+      }
       setMesas(resposta.mesas);
       setSolicitacoes(novosPedidos);
       setPersonagens(novosPersonagens);
@@ -167,6 +179,8 @@ export default function ConexaoServidorLocal() {
       setCarregandoDadosIniciais(false);
       if (outrasFalhas.length > 0) {
         setErro('A lista de Mesas foi carregada, mas algumas informações administrativas ou fichas não puderam ser atualizadas.');
+      } else if (acessoFichaRevogado) {
+        setAviso('Seu acesso à Mesa foi revogado. A ficha aberta foi fechada e o contexto salvo foi removido.');
       } else {
         setAviso('Dados atualizados e confirmados nas consultas ao servidor.');
       }
