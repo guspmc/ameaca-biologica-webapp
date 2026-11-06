@@ -1049,3 +1049,10 @@ footer { margin-top:45px; border-top:1px solid #dce2df; padding-top:19px; color:
 .ficha-local:before{content:'';position:absolute;top:0;left:50%;transform:translateX(-50%);width:88px;height:13px;border-radius:0 0 11px 11px;background:#111a1c;z-index:10;pointer-events:none}
 .ficha-local-corpo{scrollbar-width:thin;scrollbar-color:#9a8872 transparent;background:radial-gradient(ellipse at 0 9%,#a08b641a,transparent 34%),radial-gradient(ellipse at 96% 40%,#74432f11,transparent 32%),repeating-linear-gradient(0deg,#1b130b04 0,#1b130b04 1px,transparent 1px,transparent 6px),linear-gradient(165deg,#f8f2e5,#eee7d7 49%,#e7ddc8)}
 @media(max-width:735px){.ficha-local-topo{padding-top:18px}}
+
+
+/* A Ficha permanece no formato de dispositivo também em desktop, como no protótipo. */
+@media(min-width:736px){
+ .ficha-local{width:min(100%,425px);height:min(840px,calc(100dvh - 46px));min-height:600px;border:7px solid #111a1c;border-radius:34px;box-shadow:0 32px 74px #050b0bcc,0 0 0 1px #8d8b7c inset,0 0 0 2px #484949}
+ .ficha-local-corpo{padding-top:21px;padding-bottom:112px}
+}
