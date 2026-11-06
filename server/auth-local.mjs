@@ -38,6 +38,17 @@ async function corpoJson(req) {
   }
 }
 
+const ALFABETO_CONVITE = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+function gerarCodigoConviteCurto() {
+  let valor = BigInt('0x' + randomBytes(5).toString('hex'));
+  let codigo = '';
+  for (let indice = 0; indice < 8; indice += 1) {
+    codigo = ALFABETO_CONVITE[Number(valor & 31n)] + codigo;
+    valor >>= 5n;
+  }
+  return codigo;
+}
+
 function hashToken(token) {
   return createHash('sha256').update(token).digest('hex');
 }
@@ -531,13 +542,22 @@ export async function tratarRotaMesas(req, res, url, db, notificarMesa = () => {
       const mesaId = criarConvite[1];
       const mestre = db.prepare("SELECT 1 FROM participantes_mesa WHERE mesa_id = ? AND conta_id = ? AND papel = 'mestre'").get(mesaId, conta.id);
       if (!mestre) { json(res, 404, { error: 'Mesa não encontrada.' }); return true; }
-      const codigo = randomBytes(32).toString('base64url');
       const conviteId = randomBytes(16).toString('hex');
       const agora = new Date().toISOString();
+      let codigo = '';
       db.exec('BEGIN IMMEDIATE');
       try {
         db.prepare('UPDATE convites_mesa_locais SET revogada_em = ? WHERE mesa_id = ? AND revogada_em IS NULL').run(agora, mesaId);
-        db.prepare('INSERT INTO convites_mesa_locais (id, mesa_id, token_hash, criado_por, criada_em) VALUES (?, ?, ?, ?, ?)').run(conviteId, mesaId, hashToken(codigo), conta.id, agora);
+        for (let tentativa = 0; tentativa < 10; tentativa += 1) {
+          const candidato = gerarCodigoConviteCurto();
+          const hash = hashToken(candidato);
+          const colisao = db.prepare('SELECT 1 FROM convites_mesa_locais WHERE token_hash = ?').get(hash);
+          if (colisao) continue;
+          codigo = candidato;
+          db.prepare('INSERT INTO convites_mesa_locais (id, mesa_id, token_hash, criado_por, criada_em) VALUES (?, ?, ?, ?, ?)').run(conviteId, mesaId, hash, conta.id, agora);
+          break;
+        }
+        if (!codigo) throw new Error('Não foi possível gerar um código de convite exclusivo.');
         db.exec('COMMIT');
       } catch (erro) { db.exec('ROLLBACK'); throw erro; }
       json(res, 201, { invitation: { id: conviteId, code: codigo, createdAt: agora } });
@@ -561,8 +581,11 @@ export async function tratarRotaMesas(req, res, url, db, notificarMesa = () => {
 
     if (metodo === 'POST' && rota === '/api/convites/solicitar') {
       const corpo = await corpoJson(req);
-      const codigo = typeof corpo.code === 'string' ? corpo.code.trim() : '';
-      if (!/^[A-Za-z0-9_-]{40,100}$/.test(codigo)) { json(res, 404, { error: 'Convite inválido ou indisponível.' }); return true; }
+      const codigoInformado = typeof corpo.code === 'string' ? corpo.code.trim() : '';
+      const codigoCurto = /^[A-HJ-NP-Z2-9]{8}$/i.test(codigoInformado);
+      const codigo = codigoCurto ? codigoInformado.toUpperCase() : codigoInformado;
+      const codigoValido = codigoCurto || /^[A-Za-z0-9_-]{40,100}$/.test(codigo);
+      if (!codigoValido) { json(res, 404, { error: 'Convite inválido ou indisponível.' }); return true; }
       const convite = db.prepare('SELECT id, mesa_id FROM convites_mesa_locais WHERE token_hash = ? AND revogada_em IS NULL').get(hashToken(codigo));
       if (!convite) { json(res, 404, { error: 'Convite inválido ou indisponível.' }); return true; }
       const membro = db.prepare('SELECT 1 FROM participantes_mesa WHERE mesa_id = ? AND conta_id = ?').get(convite.mesa_id, conta.id);

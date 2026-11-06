@@ -475,9 +475,9 @@ test('convite privado exige Mestre e aprovação antes de conceder acesso à Mes
   const conviteResposta = await post(base, `/api/mesas/${mesa.id}/convites`, {}, tokenMestre);
   assert.equal(conviteResposta.status, 201);
   const { invitation } = await conviteResposta.json();
-  assert.match(invitation.code, /^[A-Za-z0-9_-]{40,100}$/);
+  assert.match(invitation.code, /^[A-HJ-NP-Z2-9]{8}$/);
   assert.equal((await post(base, '/api/convites/solicitar', { code: 'codigo-invalido' }, tokenJogador)).status, 404);
-  const pedido = await post(base, '/api/convites/solicitar', { code: invitation.code }, tokenJogador);
+  const pedido = await post(base, '/api/convites/solicitar', { code: invitation.code.toLowerCase() }, tokenJogador);
   assert.equal(pedido.status, 202);
   const { request } = await pedido.json();
   assert.equal(request.status, 'pendente');

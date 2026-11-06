@@ -853,7 +853,11 @@ export default function ConexaoServidorLocal() {
               aoRemoverParticipante={(item, accountId) => void removerParticipante(item, accountId)}
             />)}
             <form className="formulario servidor-local-form-mesa" onSubmit={ingressarPorConvite}>
-              <label>Código de convite recebido<input value={codigoConvite} onChange={evento => setCodigoConvite(evento.target.value)} autoComplete="off" /></label>
+              <label>Código de convite recebido<input value={codigoConvite} maxLength={100} autoCapitalize="characters" spellCheck={false} onChange={evento => {
+                const valor = evento.target.value.trim();
+                const legado = /^[A-Za-z0-9_-]{40,100}$/.test(valor);
+                setCodigoConvite(legado ? valor : valor.toUpperCase().replace(/[^A-HJ-NP-Z2-9]/g, '').slice(0, 8));
+              }} autoComplete="off" /></label>
               <button className="acao" type="submit" disabled={consultando || !codigoConvite.trim()}>Solicitar ingresso <span>→</span></button>
             </form>
             <form className="formulario servidor-local-form-mesa" onSubmit={criarNovaMesa}>
