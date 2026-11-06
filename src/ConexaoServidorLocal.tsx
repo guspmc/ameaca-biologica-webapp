@@ -747,7 +747,7 @@ export default function ConexaoServidorLocal() {
       const resposta = await criarClienteServidorLocal({ baseUrl: endereco.trim(), token: sessao.token }).minhaConta();
       if (!sessaoContinuaSendoAtual(geracaoSessao.current, geracaoSolicitada)) return;
       if (resposta.account.id !== sessao.account.id) throw new Error('A conta confirmada não corresponde à sessão atual.');
-      setAviso('Sessão válida. O servidor confirmou a conta ' + resposta.account.email + '.');
+      setAviso('Sessão válida. O servidor confirmou a conta ' + resposta.account.username + '.');
     } catch (problema) {
       if (!sessaoContinuaSendoAtual(geracaoSessao.current, geracaoSolicitada)) return;
       if (problema instanceof ErroServidorLocal && problema.status === 401) {
@@ -882,12 +882,12 @@ export default function ConexaoServidorLocal() {
           <h2>{modoRecuperacao ? 'Redefinir senha' : modoCadastro ? 'Criar conta local' : 'Entrar no servidor'}</h2>
           <p className="secundario">{modoRecuperacao ? 'Informe seu nome de usuário e escolha uma nova senha. Não será enviado e-mail nem código de confirmação.' : modoCadastro ? 'Cadastre uma conta local. A senha deve ter de 4 a 128 caracteres.' : 'Use seu nome de usuário e a senha cadastrados neste servidor local. Contas antigas continuam aceitando o identificador anterior como usuário.'}</p>
           <form className="formulario" onSubmit={autenticar}>
-            <label>E-mail
-              <input type="email" required maxLength={254} autoComplete="email" value={email} onChange={evento => setEmail(evento.target.value)} />
+            <label>Usuário(a)
+              <input type="text" required maxLength={80} autoComplete="username" value={usuario} onChange={evento => setUsuario(evento.target.value)} />
             </label>
-            <label>Senha
+            <label>{modoRecuperacao ? 'Nova senha' : 'Senha'}
               <div className="servidor-local-campo-senha">
-                <input type={mostrarSenha ? 'text' : 'password'} required minLength={modoCadastro ? 4 : 1} maxLength={128} autoComplete={modoCadastro ? 'new-password' : 'current-password'} value={senha} onChange={evento => setSenha(evento.target.value)} />
+                <input type={mostrarSenha ? 'text' : 'password'} required minLength={modoCadastro || modoRecuperacao ? 4 : 1} maxLength={128} autoComplete={modoCadastro || modoRecuperacao ? 'new-password' : 'current-password'} value={senha} onChange={evento => setSenha(evento.target.value)} />
                 <button type="button" aria-label={mostrarSenha ? 'Ocultar senha' : 'Mostrar senha'} aria-pressed={mostrarSenha} onClick={() => setMostrarSenha(valor => !valor)}>{mostrarSenha ? 'Ocultar' : 'Mostrar'}</button>
               </div>
             </label>
