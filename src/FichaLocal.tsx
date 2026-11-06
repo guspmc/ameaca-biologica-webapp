@@ -275,13 +275,13 @@ export default function FichaLocal({ nome, mesa, contextoId, dados, aoFechar, ao
 
   return <div className="ficha-local-fundo" role="dialog" aria-modal="true" aria-labelledby="ficha-local-titulo">
     <article className="ficha-local">
-      <header className="ficha-local-topo">
-        <div className="ficha-local-topline">
-          <div className="ficha-local-wordmark">AMEAÇA<br/><span>BIOLÓGICA</span></div>
-          <div className="ficha-local-top-meta">ARQUIVO DO JOGADOR · V1.0<br/>MESA / {mesa || 'MESA LOCAL'}</div>
-        </div>
-      </header>
       <div className="ficha-local-corpo" ref={corpoRef}>
+        <header className="ficha-local-topo">
+          <div className="ficha-local-topline">
+            <div className="ficha-local-wordmark">AMEAÇA<br/><span>BIOLÓGICA</span></div>
+            <div className="ficha-local-top-meta">ARQUIVO DO JOGADOR · V1.0<br/>MESA / {mesa || 'MESA LOCAL'}</div>
+          </div>
+        </header>
         {status && <p className="offline-status" role="status" aria-live="polite">{status}</p>}
         {avisoFechamento && <div className="offline-status" role="status">
           <p>{avisoFechamento}</p>
