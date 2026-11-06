@@ -8,10 +8,10 @@ type SubAbaEncontros = 'ao-vivo' | 'preparados' | 'catalogo' | 'gerador' | 'pers
 type SubAbaArquivos = 'documentos' | 'anotacoes' | 'diario' | 'narracao' | 'mesa';
 function IconePainel({ tipo }: { tipo: 'umbrella' | 'mesa' | 'encontros' | 'arquivos' }) {
   const desenho = {
-    umbrella: <><path d="M3 12a9 9 0 0 1 18 0H3Z"/><path d="M12 12v7a2 2 0 0 0 4 0"/></>,
-    mesa: <><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18M9 10v10"/></>,
-    encontros: <><path d="m5 4 6 6m2 4 6 6M19 4 5 18M8 4l12 12"/></>,
-    arquivos: <><path d="M5 3h10l4 4v14H5z"/><path d="M15 3v5h4M8 12h8M8 16h8"/></>
+    umbrella: <><path d="M12 2c-3.1 2.5-5.6 5.2-8.5 8.4L12 12l8.5-1.6C17.6 7.2 15.1 4.5 12 2Z"/><path d="M12 12 3.5 10.4 5.8 21 12 12Zm0 0 6.2 9 2.3-10.6L12 12Z"/></>,
+    mesa: <><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></>,
+    encontros: <><path d="m4 20 9-9m-8-7 15 15M14 3l7 7-5 5-7-7zM3 14l7 7"/></>,
+    arquivos: <path d="M4 4h7l2 3h7v13H4zM8 11h8M8 15h6"/>
   };
   return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{desenho[tipo]}</svg>;
 }
