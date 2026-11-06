@@ -4,7 +4,7 @@ import { promisify } from 'node:util';
 const scrypt = promisify(scryptCallback);
 const DURACAO_SESSAO_MS = 7 * 24 * 60 * 60 * 1000;
 const COOKIE_SESSAO_LOCAL = 'ab_local_session';
-const EMAIL_MAX = 254;
+const USUARIO_MAX = 80;
 const SENHA_MIN = 4;
 const SENHA_MAX = 128;
 
@@ -53,9 +53,9 @@ function hashToken(token) {
   return createHash('sha256').update(token).digest('hex');
 }
 
-function emailNormalizado(valor) {
+function usuarioNormalizado(valor) {
   if (typeof valor !== 'string') return '';
-  return valor.trim().toLowerCase();
+  return valor.trim().toLocaleLowerCase('pt-BR');
 }
 
 export function prepararAutenticacaoLocal(db) {
@@ -268,7 +268,7 @@ export function consumirTicketWebSocketLocal(db, ticket) {
   db.exec('BEGIN IMMEDIATE');
   try {
     const registro = db.prepare(`
-      SELECT c.id, c.email, s.token_hash AS sessionTokenHash
+      SELECT c.id, c.email AS username, s.token_hash AS sessionTokenHash
       FROM tickets_websocket_locais t
       JOIN contas_locais c ON c.id = t.conta_id
       JOIN sessoes_locais s
@@ -279,7 +279,7 @@ export function consumirTicketWebSocketLocal(db, ticket) {
     `).get(agora, ticketHash, agora);
     db.prepare('DELETE FROM tickets_websocket_locais WHERE token_hash = ?').run(ticketHash);
     db.exec('COMMIT');
-    return registro ? { id: registro.id, email: registro.email, sessionTokenHash: registro.sessionTokenHash } : null;
+    return registro ? { id: registro.id, username: registro.username, email: registro.username, sessionTokenHash: registro.sessionTokenHash } : null;
   } catch (erro) {
     db.exec('ROLLBACK');
     throw erro;
@@ -305,12 +305,12 @@ export async function autenticarContaLocal(req, db) {
   if (!token) return null;
   const agora = new Date().toISOString();
   const sessao = db.prepare(`
-    SELECT c.id, c.email, s.expira_em AS expiresAt
+    SELECT c.id, c.email AS username, s.expira_em AS expiresAt
     FROM sessoes_locais s
     JOIN contas_locais c ON c.id = s.conta_id
     WHERE s.token_hash = ? AND s.expira_em > ?
   `).get(hashToken(token), agora);
-  return sessao ? { id: sessao.id, email: sessao.email, expiresAt: sessao.expiresAt } : null;
+  return sessao ? { id: sessao.id, username: sessao.username, expiresAt: sessao.expiresAt } : null;
 }
 
 export async function tratarRotaAutenticacao(req, res, url, db, encerrarSessaoWebSocket = () => {}) {
@@ -321,10 +321,11 @@ export async function tratarRotaAutenticacao(req, res, url, db, encerrarSessaoWe
   try {
     if (metodo === 'POST' && rota === '/api/auth/register') {
       const corpo = await corpoJson(req);
-      const email = emailNormalizado(corpo.email);
+      // "email" permanece aceito somente como alias transitório para contas/clientes antigos.
+      const username = usuarioNormalizado(corpo.username ?? corpo.email);
       const senha = typeof corpo.password === 'string' ? corpo.password : '';
-      if (!email || email.length > EMAIL_MAX || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-        json(res, 422, { error: 'Informe um e-mail válido.' });
+      if (!username || username.length > USUARIO_MAX || /[\\u0000-\\u001F\\u007F]/.test(username)) {
+        json(res, 422, { error: 'O nome de usuário deve ter entre 1 e 80 caracteres válidos.' });
         return true;
       }
       if (senha.length < SENHA_MIN || senha.length > SENHA_MAX) {
@@ -336,24 +337,26 @@ export async function tratarRotaAutenticacao(req, res, url, db, encerrarSessaoWe
       const senhaHash = await scrypt(senha, salt, 64);
       const id = randomBytes(16).toString('hex');
       try {
+        // A coluna "email" é mantida internamente para preservar o banco legado;
+        // seu conteúdo passa a ser o nome de usuário e não é exposto como e-mail.
         db.prepare('INSERT INTO contas_locais (id, email, senha_salt, senha_hash, criada_em) VALUES (?, ?, ?, ?, ?)')
-          .run(id, email, salt.toString('hex'), Buffer.from(senhaHash).toString('hex'), new Date().toISOString());
+          .run(id, username, salt.toString('hex'), Buffer.from(senhaHash).toString('hex'), new Date().toISOString());
       } catch (erro) {
         if (String(erro?.code ?? '').includes('CONSTRAINT') || /UNIQUE constraint failed/i.test(String(erro?.message ?? ''))) {
-          json(res, 409, { error: 'Não foi possível criar a conta com esses dados.' });
+          json(res, 409, { error: 'Este nome de usuário já está em uso.' });
           return true;
         }
         throw erro;
       }
-      json(res, 201, { account: { id, email } });
+      json(res, 201, { account: { id, username } });
       return true;
     }
 
     if (metodo === 'POST' && rota === '/api/auth/login') {
       const corpo = await corpoJson(req);
-      const email = emailNormalizado(corpo.email);
+      const username = usuarioNormalizado(corpo.username ?? corpo.email);
       const senha = typeof corpo.password === 'string' ? corpo.password : '';
-      const conta = db.prepare('SELECT id, email, senha_salt, senha_hash FROM contas_locais WHERE email = ? COLLATE NOCASE').get(email);
+      const conta = db.prepare('SELECT id, email AS username, senha_salt, senha_hash FROM contas_locais WHERE email = ? COLLATE NOCASE').get(username);
       let valida = false;
       if (conta && senha.length <= SENHA_MAX) {
         const derivada = Buffer.from(await scrypt(senha, Buffer.from(conta.senha_salt, 'hex'), 64));
@@ -363,7 +366,7 @@ export async function tratarRotaAutenticacao(req, res, url, db, encerrarSessaoWe
         await scrypt('senha-inexistente', Buffer.alloc(16), 64);
       }
       if (!valida) {
-        json(res, 401, { error: 'E-mail ou senha inválidos.' });
+        json(res, 401, { error: 'Usuário(a) ou senha inválidos.' });
         return true;
       }
       const token = randomBytes(32).toString('base64url');
@@ -372,7 +375,45 @@ export async function tratarRotaAutenticacao(req, res, url, db, encerrarSessaoWe
       db.prepare('INSERT INTO sessoes_locais (token_hash, conta_id, criada_em, expira_em) VALUES (?, ?, ?, ?)')
         .run(hashToken(token), conta.id, agora.toISOString(), expira.toISOString());
       res.setHeader('set-cookie', `${COOKIE_SESSAO_LOCAL}=${token}; Path=/; HttpOnly; SameSite=Strict; Max-Age=${Math.floor(DURACAO_SESSAO_MS / 1000)}`);
-      json(res, 200, { account: { id: conta.id, email: conta.email }, token, expiresAt: expira.toISOString() });
+      json(res, 200, { account: { id: conta.id, username: conta.username }, token, expiresAt: expira.toISOString() });
+      return true;
+    }
+
+    if (metodo === 'POST' && rota === '/api/auth/reset-password') {
+      const corpo = await corpoJson(req);
+      const username = usuarioNormalizado(corpo.username ?? corpo.email);
+      const senha = typeof corpo.password === 'string' ? corpo.password : '';
+      if (!username || username.length > USUARIO_MAX || /[\\u0000-\\u001F\\u007F]/.test(username)) {
+        json(res, 422, { error: 'Informe um nome de usuário válido.' });
+        return true;
+      }
+      if (senha.length < SENHA_MIN || senha.length > SENHA_MAX) {
+        json(res, 422, { error: 'A nova senha deve ter entre 4 e 128 caracteres.' });
+        return true;
+      }
+      const conta = db.prepare('SELECT id FROM contas_locais WHERE email = ? COLLATE NOCASE').get(username);
+      if (!conta) {
+        json(res, 404, { error: 'Nome de usuário não encontrado.' });
+        return true;
+      }
+      const salt = randomBytes(16);
+      const senhaHash = await scrypt(senha, salt, 64);
+      db.exec('BEGIN IMMEDIATE');
+      let sessoesAnteriores = [];
+      try {
+        sessoesAnteriores = db.prepare('SELECT token_hash FROM sessoes_locais WHERE conta_id = ?').all(conta.id);
+        db.prepare('UPDATE contas_locais SET senha_salt = ?, senha_hash = ? WHERE id = ?')
+          .run(salt.toString('hex'), Buffer.from(senhaHash).toString('hex'), conta.id);
+        db.prepare('DELETE FROM tickets_websocket_locais WHERE conta_id = ?').run(conta.id);
+        db.prepare('DELETE FROM sessoes_locais WHERE conta_id = ?').run(conta.id);
+        db.exec('COMMIT');
+      } catch (erro) {
+        db.exec('ROLLBACK');
+        throw erro;
+      }
+      for (const sessao of sessoesAnteriores) encerrarSessaoWebSocket(sessao.token_hash);
+      res.setHeader('set-cookie', `${COOKIE_SESSAO_LOCAL}=; Path=/; HttpOnly; SameSite=Strict; Max-Age=0`);
+      json(res, 200, { ok: true });
       return true;
     }
 
@@ -403,7 +444,7 @@ export async function tratarRotaAutenticacao(req, res, url, db, encerrarSessaoWe
         json(res, 401, { error: 'Sessão ausente ou expirada.' });
         return true;
       }
-      json(res, 200, { account: { id: conta.id, email: conta.email }, expiresAt: conta.expiresAt });
+      json(res, 200, { account: { id: conta.id, username: conta.username }, expiresAt: conta.expiresAt });
       return true;
     }
 
