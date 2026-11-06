@@ -26,6 +26,8 @@ test('Painel do Mestre mantém referências ARIA dos destinos principais e das f
  for(const id of [...rotulos,...controles]) {
   if(id.startsWith('painel-mestre-encontros-tab-')) {
    assert.ok(['ao-vivo','preparados','catalogo','gerador','perseguicao'].includes(id.slice('painel-mestre-encontros-tab-'.length)),'Rótulo de ferramenta desconhecido: '+id);
+  } else if(id.startsWith('painel-mestre-arquivos-tab-')) {
+   assert.ok(['documentos','anotacoes','diario','narracao','mesa'].includes(id.slice('painel-mestre-arquivos-tab-'.length)),'Categoria de arquivo desconhecida: '+id);
   } else assert.ok(ids.has(id),'Referência ARIA sem destino: '+id);
  }
  const paineis=[...fonte.matchAll(/id="(painel-mestre-encontros-panel-[^"]+)"/g)].map(m=>m[1]);
