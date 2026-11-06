@@ -1062,3 +1062,8 @@ footer { margin-top:45px; border-top:1px solid #dce2df; padding-top:19px; color:
 .ficha-local-topo{display:block;flex:none;padding:0;background:transparent;color:#252725;border:0}
 .ficha-local-topo .ficha-local-topline{display:flex;align-items:center;justify-content:space-between;padding:9px 0 11px;border-bottom:1px solid #383a32}
 @media(max-width:735px){.ficha-local-topo{padding:0}}
+
+
+/* O Terminal ocupa a área de trabalho, sem o cartão externo da versão antiga. */
+.painel-mestre-shell{margin:0;padding:0;border:0;border-radius:0;box-shadow:none;min-height:100dvh;background:var(--pm-bg)}
+.painel-mestre-app{min-height:100dvh}
