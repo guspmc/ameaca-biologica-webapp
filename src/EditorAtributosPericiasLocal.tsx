@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import type { AtributosIniciais } from './atributosCriacao';
-import { atributosIniciaisValidos, pontosRestantesAtributos } from './atributosCriacao';
-import { NOMES_PERICIAS, periciasPermitidasNaCriacao, distribuicaoPericiasValida, pontosGastosPericias } from './periciasCriacao';
+import { pontosRestantesAtributos } from './atributosCriacao';
+import { NOMES_PERICIAS, periciasPermitidasNaCriacao, pontosGastosPericias } from './periciasCriacao';
 import { PONTOS_CLASSE } from './pericias';
 import { ORIGENS } from './origens';
 import AutoSaveStatusLocal from './AutoSaveStatusLocal';
