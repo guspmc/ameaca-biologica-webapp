@@ -604,6 +604,27 @@ test('preserva a Mesa e o vínculo do Mestre após reiniciar o servidor SQLite',
   const personagemAtualizado = (await atualizacaoFicha.json()).personagem;
   assert.equal(personagemAtualizado.revision, personagem.revision + 1);
 
+  // Uma segunda sessão/dispositivo com revisão antiga não pode sobrescrever
+  // silenciosamente a confirmação mais recente.
+  const gravacaoObsoleta = await fetch(instancia.url + '/api/personagens/' + personagem.id, {
+    method: 'PUT',
+    headers: { 'content-type': 'application/json', authorization: 'Bearer ' + sessaoJogador.token },
+    body: JSON.stringify({
+      name: 'Claire — versão obsoleta',
+      data: { ...dadosFicha, testePersistencia: 'não deve sobrescrever' },
+      expectedRevision: personagem.revision,
+    }),
+  });
+  assert.equal(gravacaoObsoleta.status, 409);
+  const consultaAposConflito = await fetch(instancia.url + '/api/personagens/' + personagem.id, {
+    headers: { authorization: 'Bearer ' + sessaoJogador.token },
+  });
+  assert.equal(consultaAposConflito.status, 200);
+  const fichaPreservada = (await consultaAposConflito.json()).personagem;
+  assert.equal(fichaPreservada.name, 'Claire Redfield');
+  assert.equal(fichaPreservada.revision, personagemAtualizado.revision);
+  assert.equal(fichaPreservada.data.testePersistencia, 'depois');
+
   await instancia.reiniciar();
 
   const loginPosterior = await post('/api/auth/login', credenciais);
