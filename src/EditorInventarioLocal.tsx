@@ -62,9 +62,9 @@ export default function EditorInventarioLocal({ classe, capacidade, kitInicial, 
   }
 
   return <div className="ficha-local-editor">
-    <h3>Editar Inventário inicial</h3>
+    <h3>Editar Equipamento Inicial e compras</h3>
     <p>Esta etapa altera somente o planejamento da criação. Não equipa, consome, transfere nem modifica um inventário ativo. As escolhas são salvas automaticamente no rascunho.</p>
-    <label>Conjunto inicial<select value={kit} disabled={ocupado} onChange={e => alterarKit(e.target.value)}>
+    <label>Equipamento Inicial<select value={kit} disabled={ocupado} onChange={e => alterarKit(e.target.value)}>
       <option value="">Selecione um conjunto</option>{opcoes.map(item => <option key={item.id} value={item.id}>{item.id} · {item.nome}</option>)}
     </select></label>
     {kit === 'C' && <PreviaCompras capacidade={capacidade} plano={plano} revisao={revisao} autoSalvar={autoSalvar} aoAlterarPlano={alterarPlano} aoAlterarPrevia={pendente => {
