@@ -139,3 +139,19 @@ Nenhuma alteração em `main`, merge, publicação, Supabase remoto ou banco de 
 - **QR e convite:** QR local implementado; formato curto agora implementado, sujeito ao CI. Leitura real em celular e conectividade entre dispositivos continuam pendentes.
 - **Falha original de salvamento:** persistência e reabertura foram cobertas por testes automatizados; a causa original do erro observado no ambiente Windows/celular ainda não foi reproduzida. Não declarar incidente totalmente resolvido antes de novo teste humano.
 - **Limites preservados:** alterações somente na branch `feat/offline-first-ficha`; sem merge, deploy, alteração em `main`, Supabase ou banco de produção.
+
+
+## Atualização de continuidade — sessão por cookie e persistência SQLite (06/11/2026)
+
+- **HEAD validado:** `4e3a50e1fec8b55e6655382a76256f82bc4d237a` na branch `feat/offline-first-ficha`.
+- **CI CONFIRMADA:** os dois workflows do HEAD concluíram com sucesso em 06/11/2026:
+  - “Verificação da ficha offline” — run `42214600759`.
+  - “Validar compilação do WebApp” — run `42214600724`.
+- **TESTE AUTOMATIZADO NOVO:** `tests/sessao-cookie-persistencia.test.mjs` registra uma conta, autentica, verifica atributos do cookie HttpOnly/SameSite=Strict/Path=/, cria e lista uma Mesa enviando apenas o cookie, reinicia a API com o mesmo diretório SQLite e confirma que a sessão e a Mesa continuam acessíveis.
+- **LIMITE DO TESTE:** o teste injeta manualmente o cabeçalho Cookie nas requisições Node. Ele valida a API, o cookie emitido e a persistência SQLite, mas não simula o armazenamento automático de cookies pelo navegador nem o reload real da página.
+- **INSPEÇÃO DO FLUXO DE NAVEGAÇÃO:** `src/main.tsx` seleciona `ConexaoServidorLocal` quando a URL contém `?servidor=local`. O script `scripts/windows/Iniciar_Mesa_LAN.bat` abre a aplicação com esse parâmetro. O único `history.replaceState` encontrado na aplicação Supabase preserva `window.location.search`; no fluxo LAN, a remoção do parâmetro `convite` usa `URL.searchParams.delete('convite')` e preserva os demais parâmetros, inclusive `servidor=local`.
+- **INSPEÇÃO DO TRANSPORTE:** no modo LAN, `enderecoInicial()` usa `window.location.origin`; o Vite encaminha `/api` e `/ws` para a API local; `src/servidorLocal.ts` usa `credentials: 'include'`. Portanto, o desenho atual é same-origin e permite ao navegador enviar o cookie sem expor o token no armazenamento JavaScript.
+- **INSPEÇÃO DO RESTORE:** ao montar em modo LAN, `ConexaoServidorLocal` consulta `/api/health` e depois `/api/auth/me`; com sessão válida, define a conta e dispara sincronização inicial das Mesas. Se a verificação de saúde falhar, a sessão não chega a ser consultada. Isso é um ponto de observação para a reprodução do retorno à tela de endereço, mas ainda não identifica a causa.
+- **PENDENTE CRÍTICO:** não foi reproduzido o reload real no navegador Windows nem no celular; não se pode afirmar que a sessão persistente esteja corrigida. A causa do retorno à tela de endereço e o relato de Mesa ausente após novo login continuam sem confirmação humana posterior às correções.
+- **BANCO:** `server/index.mjs` resolve o diretório padrão `.ameaca-local` a partir da localização do arquivo do servidor, e o script oficial informa esse caminho e mantém as duas janelas abertas. O teste de reinício usa explicitamente o mesmo `dataDir`; ainda não comprova que dois processos iniciados manualmente pelo usuário apontem sempre para o mesmo banco.
+- **LIMITES PRESERVADOS:** nenhum deploy, merge, alteração em `main`, modificação no Supabase remoto ou uso de dados reais. Testes de navegador/rede/dispositivo permanecem pendentes.
