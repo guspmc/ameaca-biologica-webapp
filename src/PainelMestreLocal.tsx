@@ -44,29 +44,33 @@ export default function PainelMestreLocal({ mesa, enderecosLan = [], convite, so
   const vagasDisponiveis = totalJogadores === undefined ? undefined : Math.max(0, 10 - totalJogadores);
   const totalSolicitacoes = solicitacoes?.length;
 
+  const titulo = aba === 'mesa' ? 'Centro de Operações' : aba === 'encontros' ? 'Encontros' : 'Arquivos';
+  const subtitulo = aba === 'mesa' ? 'Visão geral do grupo e da administração desta Mesa.' : aba === 'encontros' ? 'Iniciativa, criaturas, preparação e monitor de Perseguição.' : 'Materiais compartilhados, registros privados e textos de narração.';
+  const indice = aba === 'mesa' ? '01 / MESA' : aba === 'encontros' ? '02 / ENCONTROS' : '03 / ARQUIVOS';
   return <section className="servidor-local-controle-mesa painel-mestre-shell" aria-label={'Painel do Mestre — ' + mesa.name}>
-    <header className="painel-mestre-cabecalho">
-      <div>
-        <small>UMBRELLA // TERMINAL DE OPERAÇÕES</small>
-        <h4>Painel do Mestre</h4>
-        <p>{mesa.name} · Administração desta Mesa</p>
-      </div>
-      <span>ACESSO MESTRE</span>
-    </header>
-
-    <div className="painel-mestre-resumo" aria-label="Resumo administrativo da Mesa">
-      <div><small>JOGADORES</small><strong>{totalJogadores === undefined ? '—' : totalJogadores + '/10'}</strong></div>
-      <div><small>VAGAS DISPONÍVEIS</small><strong>{vagasDisponiveis === undefined ? '—' : vagasDisponiveis}</strong></div>
-      <div><small>INGRESSOS PENDENTES</small><strong>{totalSolicitacoes === undefined ? '—' : totalSolicitacoes}</strong></div>
-    </div>
-
-    <nav className="painel-mestre-nav" aria-label="Seções do Painel do Mestre">
-      <button type="button" id="painel-mestre-tab-mesa" className={aba === 'mesa' ? 'ativo' : ''} aria-current={aba === 'mesa' ? 'page' : undefined} aria-controls="painel-mestre-panel-mesa" onClick={() => selecionarAba('mesa')}>Mesa</button>
-      <button type="button" id="painel-mestre-tab-encontros" className={aba === 'encontros' ? 'ativo' : ''} aria-current={aba === 'encontros' ? 'page' : undefined} aria-controls="painel-mestre-panel-encontros" onClick={() => selecionarAba('encontros')}>Encontros</button>
-      <button type="button" id="painel-mestre-tab-arquivos" className={aba === 'arquivos' ? 'ativo' : ''} aria-current={aba === 'arquivos' ? 'page' : undefined} aria-controls="painel-mestre-panel-arquivos" onClick={() => selecionarAba('arquivos')}>Arquivos</button>
-    </nav>
-
-    {aba === 'mesa' && <div id="painel-mestre-panel-mesa" role="region" aria-labelledby="painel-mestre-tab-mesa" className="painel-mestre-conteudo">
+    <div className="painel-mestre-app">
+      <aside className="painel-mestre-sidebar">
+        <div className="painel-mestre-side-mark"><span className="painel-mestre-umbrella">☂</span><div><b>UMBRELLA<br/>TERMINAL</b><small>CONTROLE OPERACIONAL</small></div></div>
+        <div className="painel-mestre-side-kicker">NAVEGAÇÃO / MESTRE</div>
+        <nav className="painel-mestre-side-nav" aria-label="Navegação do Mestre">
+          <button type="button" className={aba==='mesa'?'ativo':''} onClick={()=>selecionarAba('mesa')}><span>▦</span>MESA</button>
+          <button type="button" className={aba==='encontros'?'ativo':''} onClick={()=>selecionarAba('encontros')}><span>⚔</span>ENCONTROS</button>
+          <button type="button" className={aba==='arquivos'?'ativo':''} onClick={()=>selecionarAba('arquivos')}><span>▤</span>ARQUIVOS</button>
+        </nav>
+        <div className="painel-mestre-side-bottom">PROTOCOLO UMB-01<br/>PAINEL DO MESTRE / V0.2<br/>LAN · MESA ATUAL</div>
+      </aside>
+      <div className="painel-mestre-workspace">
+        <header className="painel-mestre-masthead">
+          <div className="painel-mestre-brandline"/>
+          <div className="painel-mestre-head-main">
+            <span className="painel-mestre-umbrella">☂</span>
+            <div className="painel-mestre-head-copy"><small>AMEAÇA BIOLÓGICA · RPG</small><strong>{mesa.name}</strong><span>Mesa do Mestre · Acesso confidencial</span></div>
+            <span className="painel-mestre-acesso">ACESSO MESTRE</span>
+          </div>
+        </header>
+        <main className="painel-mestre-main">
+          <div className="painel-mestre-page-intro"><div><small>UMB / {aba==='mesa'?'OPERATION CENTER':aba==='encontros'?'TACTICAL OPERATIONS':'CONFIDENTIAL RECORDS'}</small><h4>{titulo}</h4><p>{subtitulo}</p></div><span>{indice}</span></div>
+              {aba === 'mesa' && <div id="painel-mestre-panel-mesa" role="region" aria-labelledby="painel-mestre-tab-mesa" className="painel-mestre-conteudo">
       <p className="painel-mestre-orientacao">Convites, solicitações e participantes são administrados nesta Mesa. Aprovações e remoções são confirmadas pelo servidor.</p>
       <div className="servidor-local-botoes">
         <button className="botao-claro" type="button" disabled={consultando} onClick={() => aoGerarConvite(mesa)}>{convite ? 'Renovar convite' : 'Gerar convite'}</button>
@@ -148,5 +152,15 @@ export default function PainelMestreLocal({ mesa, enderecosLan = [], convite, so
       {subAbaArquivos==='mesa' && <div className="painel-mestre-cartao"><small>ESPAÇO DA MESA</small><h6>Documentos da Mesa</h6><p>Área destinada aos documentos que o Mestre decidir disponibilizar aos participantes.</p><div className="painel-mestre-vazio"><b>▤</b><strong>Nenhum documento compartilhado</strong><span>Nenhum conteúdo é visível aos jogadores por esta prévia.</span></div></div>}
       <p className="painel-mestre-aviso-demo">Privacidade preservada: nenhuma anotação privada, texto secreto ou documento é compartilhado por esta interface demonstrativa.</p>
     </section>}
+
+          <footer className="painel-mestre-footer">AMEAÇA BIOLÓGICA RPG · TERMINAL OPERACIONAL · MESA {mesa.name}</footer>
+        </main>
+      </div>
+      <nav className="painel-mestre-floating" aria-label="Navegação principal do Mestre">
+        <button type="button" className={aba==='mesa'?'ativo':''} onClick={()=>selecionarAba('mesa')}><span>▦</span>MESA</button>
+        <button type="button" className={aba==='encontros'?'ativo':''} onClick={()=>selecionarAba('encontros')}><span>⚔</span>ENCONTROS</button>
+        <button type="button" className={aba==='arquivos'?'ativo':''} onClick={()=>selecionarAba('arquivos')}><span>▤</span>ARQUIVOS</button>
+      </nav>
+    </div>
   </section>;
 }
