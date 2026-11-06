@@ -34,9 +34,29 @@ type Props = {
 
 /** Painel administrativo restrito ao contexto da Mesa em que a conta é Mestre. */
 export default function PainelMestreLocal({ mesa, enderecosLan = [], convite, solicitacoes, participantes, consultando, aoGerarConvite, aoRevogarConvite, aoCarregarSolicitacoes, aoCopiarConvite, aoDecidirSolicitacao, aoCarregarParticipantes, aoRemoverParticipante }: Props) {
-  const [subAbaEncontros, setSubAbaEncontros] = useState<SubAbaEncontros>('ao-vivo');
-  const [subAbaArquivos, setSubAbaArquivos] = useState<SubAbaArquivos>('documentos');
+  const chaveSubAbaEncontros = 'ameaca-biologica:painel-mestre:encontros:v1:' + mesa.id;
+  const chaveSubAbaArquivos = 'ameaca-biologica:painel-mestre:arquivos:v1:' + mesa.id;
+  const [subAbaEncontros, setSubAbaEncontros] = useState<SubAbaEncontros>(() => {
+    try {
+      const salva = typeof window !== 'undefined' ? window.sessionStorage.getItem(chaveSubAbaEncontros) : null;
+      return salva === 'preparados' || salva === 'catalogo' || salva === 'gerador' || salva === 'perseguicao' ? salva : 'ao-vivo';
+    } catch { return 'ao-vivo'; }
+  });
+  const [subAbaArquivos, setSubAbaArquivos] = useState<SubAbaArquivos>(() => {
+    try {
+      const salva = typeof window !== 'undefined' ? window.sessionStorage.getItem(chaveSubAbaArquivos) : null;
+      return salva === 'anotacoes' || salva === 'diario' || salva === 'narracao' || salva === 'mesa' ? salva : 'documentos';
+    } catch { return 'documentos'; }
+  });
   const [rascunhoLocal, setRascunhoLocal] = useState('');
+  function selecionarSubAbaEncontros(proxima: SubAbaEncontros) {
+    setSubAbaEncontros(proxima);
+    try { if (typeof window !== 'undefined') window.sessionStorage.setItem(chaveSubAbaEncontros, proxima); } catch { /* A navegação funciona sem persistência local. */ }
+  }
+  function selecionarSubAbaArquivos(proxima: SubAbaArquivos) {
+    setSubAbaArquivos(proxima);
+    try { if (typeof window !== 'undefined') window.sessionStorage.setItem(chaveSubAbaArquivos, proxima); } catch { /* A navegação funciona sem persistência local. */ }
+  }
   const chaveAba = 'ameaca-biologica:painel-mestre:aba:v1:' + mesa.id;
   const [aba, setAba] = useState<AbaPainelMestre>(() => {
     try {
@@ -135,7 +155,7 @@ export default function PainelMestreLocal({ mesa, enderecosLan = [], convite, so
     {aba === 'encontros' && <section id="painel-mestre-panel-encontros" role="region" aria-labelledby="painel-mestre-tab-encontros" className="painel-mestre-conteudo">
       <div className="painel-mestre-modulo-cabecalho"><div><small>TERMINAL TÁTICO // MÓDULO DE ENCONTROS</small><h5>Central de operações</h5></div><span className="painel-mestre-selo-demo">INTERFACE DEMONSTRATIVA</span></div>
       <nav className="painel-mestre-subnav" aria-label="Ferramentas de encontros">
-        {([['ao-vivo','Ao vivo'],['preparados','Preparados'],['catalogo','Catálogo'],['gerador','Gerador'],['perseguicao','Perseguição']] as [SubAbaEncontros,string][]).map(([id,label]) => <button key={id} type="button" className={subAbaEncontros===id?'ativo':''} aria-pressed={subAbaEncontros===id} onClick={()=>setSubAbaEncontros(id)}>{label}</button>)}
+        {([['ao-vivo','Ao vivo'],['preparados','Preparados'],['catalogo','Catálogo'],['gerador','Gerador'],['perseguicao','Perseguição']] as [SubAbaEncontros,string][]).map(([id,label]) => <button key={id} type="button" className={subAbaEncontros===id?'ativo':''} aria-pressed={subAbaEncontros===id} onClick={()=>selecionarSubAbaEncontros(id)}>{label}</button>)}
       </nav>
       {subAbaEncontros==='ao-vivo' && <div className="painel-mestre-grade">
         <article className="painel-mestre-cartao painel-mestre-cartao-destaque"><small>MONITOR DE COMBATE</small><h6>Nenhum encontro em andamento</h6><p>Quando o módulo estiver integrado, esta área reunirá rodada, turno, iniciativa, participantes e estado operacional do encontro.</p><div className="painel-mestre-indicadores"><span>RODADA <b>—</b></span><span>TURNO <b>—</b></span><span>PARTICIPANTES <b>—</b></span></div></article>
@@ -155,7 +175,7 @@ export default function PainelMestreLocal({ mesa, enderecosLan = [], convite, so
     {aba === 'arquivos' && <section id="painel-mestre-panel-arquivos" role="region" aria-labelledby="painel-mestre-tab-arquivos" className="painel-mestre-conteudo">
       <div className="painel-mestre-modulo-cabecalho"><div><small>ARQUIVO CENTRAL // ACESSO RESTRITO</small><h5>Documentos e registros</h5></div><span className="painel-mestre-selo-demo">INTERFACE DEMONSTRATIVA</span></div>
       <nav className="painel-mestre-subnav" aria-label="Categorias de arquivos">
-        {([['documentos','Documentos e mapa'],['anotacoes','Minhas anotações'],['diario','Diário do Mestre'],['narracao','Textos de narração'],['mesa','Documentos da Mesa']] as [SubAbaArquivos,string][]).map(([id,label]) => <button key={id} type="button" className={subAbaArquivos===id?'ativo':''} aria-pressed={subAbaArquivos===id} onClick={()=>setSubAbaArquivos(id)}>{label}</button>)}
+        {([['documentos','Documentos e mapa'],['anotacoes','Minhas anotações'],['diario','Diário do Mestre'],['narracao','Textos de narração'],['mesa','Documentos da Mesa']] as [SubAbaArquivos,string][]).map(([id,label]) => <button key={id} type="button" className={subAbaArquivos===id?'ativo':''} aria-pressed={subAbaArquivos===id} onClick={()=>selecionarSubAbaArquivos(id)}>{label}</button>)}
       </nav>
       {subAbaArquivos==='documentos' && <div className="painel-mestre-grade">
         <article className="painel-mestre-cartao"><small>MAPA</small><h6>Mapa da operação</h6><p>Visualização de mapas e áreas reveladas explicitamente pelo Mestre.</p><div className="painel-mestre-vazio"><b><IconePainel tipo="arquivos" /></b><strong>Nenhum mapa disponível</strong><span>Mapas não são publicados ou revelados automaticamente.</span></div></article>
