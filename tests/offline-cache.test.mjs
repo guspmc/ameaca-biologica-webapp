@@ -66,6 +66,9 @@ test('leitura offline filtra snapshots pela última lista autorizada',async()=>{
   await atualizarAutorizacaoOffline(usuario,[{id:'mesa-ok',nome:'OK',mestre_id:usuario,criada_em:'2026-01-01'}]);
   await salvarPersonagensOffline(usuario,[{id:'visivel',mesa_id:'mesa-ok',jogador_id:usuario},{id:'fora',mesa_id:'mesa-revogada',jogador_id:usuario}]);
   assert.deepEqual((await lerPersonagensOffline(usuario))?.dados.map(p=>p.id),['visivel']);
+  const registros = bancosTeste.get('ameaca-biologica-offline-v1');
+  assert.equal(registros.has(usuario + ':personagem:mesa-revogada:fora'), false,
+    'personagens de Mesas não autorizadas não devem ser gravados no IndexedDB');
  } finally { await limparCacheUsuario(usuario); }
 });
 test('revalidação usa refresh atômico e não ignora falha',()=>{
