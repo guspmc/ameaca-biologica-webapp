@@ -13,10 +13,12 @@ test('todos os editores sinalizam alterações locais e limpam a pendência apó
     'FuncionamentoFichaLocal.tsx',
     'RecursosFichaLocal.tsx',
   ];
+  const hook = await ler('useSalvamentoEditorLocal.ts');
+  assert.match(hook, /aoAlterarPendencia\(false\)/, 'o hook compartilhado deve limpar após confirmação');
   for (const arquivo of arquivos) {
     const fonte = await ler(arquivo);
     assert.match(fonte, /aoAlterarPendencia\(true\)/, arquivo + ': deve sinalizar edição');
-    assert.match(fonte, /aoAlterarPendencia\(false\)/, arquivo + ': deve limpar após salvamento confirmado');
+    assert.match(fonte, /useSalvamentoEditorLocal/, arquivo + ': deve usar o fluxo compartilhado de salvamento');
   }
 });
 
@@ -25,7 +27,8 @@ test('preferências de funcionamento sinalizam pendência e só confirmam após 
   assert.match(fonte, /aoAlterarPendencia\(true\)/);
   assert.match(fonte, /useSalvamentoEditorLocal/);
   assert.match(fonte, /autoSalvar/);
-  assert.match(fonte, /aoAlterarPendencia\(false\)/);
+  const hook = await ler('useSalvamentoEditorLocal.ts');
+  assert.match(hook, /aoAlterarPendencia\(false\)/);
   assert.match(fonte, /Preferências salvas e confirmadas/);
   assert.match(fonte, /value=\{config\.modoDados\}/);
   assert.match(fonte, /value=\{config\.visibilidadeRolagem\}/);
