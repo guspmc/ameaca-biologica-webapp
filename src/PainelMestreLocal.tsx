@@ -25,13 +25,13 @@ export default function PainelMestreLocal({ mesa, enderecosLan = [], convite, so
   const chaveAba = 'ameaca-biologica:painel-mestre:aba:v1:' + mesa.id;
   const [aba, setAba] = useState<AbaPainelMestre>(() => {
     try {
-      const salva = typeof window !== 'undefined' ? sessionStorage.getItem(chaveAba) : null;
+      const salva = typeof window !== 'undefined' ? window.sessionStorage.getItem(chaveAba) : null;
       return salva === 'encontros' || salva === 'arquivos' ? salva : 'mesa';
     } catch { return 'mesa'; }
   });
   function selecionarAba(proxima: AbaPainelMestre) {
     setAba(proxima);
-    try { sessionStorage.setItem(chaveAba, proxima); } catch { /* A navegação funciona sem persistência local. */ }
+    try { if (typeof window !== 'undefined') window.sessionStorage.setItem(chaveAba, proxima); } catch { /* A navegação funciona sem persistência local. */ }
   }
   if (mesa.role !== 'mestre') return null;
 
