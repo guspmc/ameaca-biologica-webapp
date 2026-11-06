@@ -20,9 +20,11 @@ test('o editor narrativo mantém os campos opcionais e envia nome e identidade n
   for (const field of ['idade','genero','ocupacao','apelido','afiliacao','aparencia','personalidade','objetivo','medo','lacos','historia']) {
     assert.ok(editor.includes("id: '" + field + "'"), 'Campo ausente: ' + field);
   }
-  assert.match(editor, /aoSalvar\(\{ nome: nomeLimpo, identidade \}\)/);
+  assert.match(editor, /const valor = \{ nome: nome\.trim\(\), identidade \}/);
+  assert.match(editor, /useSalvamentoEditorLocal/);
+  assert.match(editor, /aoSalvar,/);
   assert.match(ficha, /<IdentidadeLocal/);
-  assert.match(ficha, /<IdentidadeLocal key=\{JSON\.stringify\(\[nome, ficha\.identidade \?\? \{\}\]\)\}/);
+  assert.match(ficha, /<IdentidadeLocal autoSalvar=\{autoSalvar\} key=\{JSON\.stringify\(\[nome, ficha\.identidade \?\? \{\}\]\)\}/);
   assert.match(app, /aoSalvarIdentidade=\{\(\{ nome, identidade \}\) => salvarDados\(\{ identidade \}, nome\)\}/);
   assert.match(storage, /nome: nomeAtualizado\?\.trim\(\) \|\| atual\.nome/);
 });

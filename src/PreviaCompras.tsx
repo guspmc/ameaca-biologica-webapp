@@ -50,7 +50,7 @@ export default function PreviaCompras({ capacidade, plano, revisao, autoSalvar =
   }
 
   return <details className="previa-compras">
-    <summary>Compras iniciais · plano salvo automaticamente</summary>
+    <summary>{autoSalvar ? 'Compras iniciais · plano salvo automaticamente' : 'Compras iniciais · prévia de compras'}</summary>
     <p>{autoSalvar ? 'As quantidades desta prévia são gravadas automaticamente no rascunho. Uma escolha inválida permanece para correção, mas não poderá ser finalizada.' : 'As quantidades ficam nesta prévia até você clicar em “Aplicar ao rascunho”; depois, use “Salvar inventário” para gravá-las neste dispositivo.'}</p>
     <p className="ficha-dica">Catálogo inicial parcial, com preços conferidos no livro. A compra depende dos itens liberados na Mesa; disponibilidade é validada pelo servidor. Salvar o plano não equipa, consome nem finaliza a personagem.</p>
     <label className="busca-compras">Buscar neste catálogo<input type="search" value={busca} onChange={e => setBusca(e.target.value)} placeholder="Ex.: colete ou munição" /></label>

@@ -11,6 +11,7 @@ test('todos os editores sinalizam alterações locais e limpam a pendência apó
     'EditorInventarioLocal.tsx',
     'IdentidadeLocal.tsx',
     'FuncionamentoFichaLocal.tsx',
+    'RecursosFichaLocal.tsx',
   ];
   for (const arquivo of arquivos) {
     const fonte = await ler(arquivo);
@@ -22,8 +23,8 @@ test('todos os editores sinalizam alterações locais e limpam a pendência apó
 test('preferências de funcionamento sinalizam pendência e só confirmam após salvar', async () => {
   const fonte = await ler('FuncionamentoFichaLocal.tsx');
   assert.match(fonte, /aoAlterarPendencia\(true\)/);
-  assert.match(fonte, /const confirmado = await aoSalvar/);
-  assert.match(fonte, /if \(!confirmado\) throw new Error/);
+  assert.match(fonte, /useSalvamentoEditorLocal/);
+  assert.match(fonte, /autoSalvar/);
   assert.match(fonte, /aoAlterarPendencia\(false\)/);
   assert.match(fonte, /Preferências salvas e confirmadas/);
   assert.match(fonte, /value=\{config\.modoDados\}/);
@@ -59,14 +60,18 @@ test('calculadora manual está integrada à seção de Perícias e não rola nem
 
 test('campos narrativos e nome sinalizam pendência de edição', async () => {
   const fonte = await ler('IdentidadeLocal.tsx');
-  assert.match(fonte, /setNome\(evento\.target\.value\); aoAlterarPendencia\(true\)/);
-  assert.match(fonte, /setDados\(atual => \(\{ \.\.\.atual, \[campo\.id\]: evento\.target\.value \}\)\); aoAlterarPendencia\(true\)/);
+  assert.match(fonte, /setNome\(evento\.target\.value\); marcarAlteracao\(\)/);
+  assert.match(fonte, /setDados\(atual => \(\{ \.\.\.atual, \[campo\.id\]: evento\.target\.value \}\)\); marcarAlteracao\(\)/);
 });
 
-test('prévia de compras sinaliza alteração e limpeza do plano', async () => {
+test('prévia de compras sincroniza alterações na LAN e mantém aplicação manual fora dela', async () => {
   const fonte = await ler('PreviaCompras.tsx');
-  assert.match(fonte, /function mudar\([^]*?aoAlterarPendencia\?\.\(true\)/);
-  assert.match(fonte, /setPlano\(\{\}\);aoAlterarPendencia\?\.\(true\)/);
+  const editor = await ler('EditorInventarioLocal.tsx');
+  assert.match(fonte, /if \(autoSalvar\) aoAlterarPlano\(proximo\)/);
+  assert.match(fonte, /aoAlterarPlano\(planoLocal\)/);
+  assert.match(fonte, /autoSalvar \? 'As quantidades desta prévia são gravadas automaticamente/);
+  assert.match(editor, /useSalvamentoEditorLocal/);
+  assert.match(editor, /autoSalvar=\{autoSalvar\}/);
 });
 
 test('a ficha offline recebe pendências de cada seção editável', async () => {
@@ -82,7 +87,8 @@ test('a ficha offline recebe pendências de cada seção editável', async () =>
 test('entradas alternativas da ficha também protegem edições pendentes ao fechar', async () => {
   const fonte = await ler('FichaLocal.tsx');
   assert.match(fonte, /pendenciasInternas\.current\.size > 0/);
-  assert.match(fonte, /Há alterações não salvas em:/);
+  assert.match(fonte, /Aguardando confirmação do servidor:/);
+  assert.match(fonte, /Há alterações pendentes em:/);
 });
 
 test('navegacao para fora alerta quando existem edicoes locais pendentes', async () => {
@@ -94,11 +100,17 @@ test('navegacao para fora alerta quando existem edicoes locais pendentes', async
   assert.match(fonte, /window\.removeEventListener\('beforeunload', prevenirSaida\)/);
 });
 
-test('alterar a prévia depois de aplicá-la invalida o plano aplicado', async () => {
-  const fonte = await ler('EditorInventarioLocal.tsx');
-  assert.match(fonte, /aoAlterarPendencia=\{pendente => \{ aoAlterarPendencia\(pendente\); if \(pendente\) setPlanoAplicado\(false\); \}\}/);
-  assert.match(fonte, /setPlanoAplicado\(true\)/);
-  assert.match(fonte, /kit === 'C' && !planoAplicado/);
+test('autosave só é ativado na conexão LAN e espera confirmação antes de limpar pendência', async () => {
+  const ficha = await ler('FichaLocal.tsx');
+  const conexao = await ler('ConexaoServidorLocal.tsx');
+  const offline = await ler('FichaOfflineApp.tsx');
+  const hook = await ler('useAutoSaveLocal.ts');
+  assert.match(ficha, /autoSalvar = false/);
+  assert.match(conexao, /<FichaLocal\\s+autoSalvar/);
+  assert.doesNotMatch(offline, /<FichaLocal[^>]*autoSalvar/);
+  assert.match(hook, /await referencias\\.current\\.aoSalvar\\(atual\\)/);
+  assert.match(hook, /setEstado\\('salvo'\\)/);
+  assert.match(hook, /referencias\\.current\\.aoConfirmar\\(\\)/);
 });
 
 test('a confirmação local de salvamento limpa a seção correspondente antes do fechamento', async () => {
@@ -124,5 +136,5 @@ test('lista bloqueia abertura, exportacao e selecao de backup enquanto uma opera
 
 test('recarregar a ficha remonta o editor de Identificação com os dados externos atualizados', async () => {
   const fonte = await ler('FichaLocal.tsx');
-  assert.match(fonte, /<IdentidadeLocal key=\{JSON\.stringify\(\[nome, ficha\.identidade \?\? \{\}\]\)\}/);
+  assert.match(fonte, /<IdentidadeLocal autoSalvar=\{autoSalvar\} key=\{JSON\.stringify\(\[nome, ficha\.identidade \?\? \{\}\]\)\}/);
 });

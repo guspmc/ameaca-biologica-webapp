@@ -6,8 +6,8 @@ const ler = async caminho => readFile(new URL('../src/' + caminho, import.meta.u
 
 test('trocar Treinamento ou segunda Perícia preserva os pontos distribuídos', async () => {
   const fonte = await ler('EditorAtributosPericiasLocal.tsx');
-  assert.match(fonte, /setTreinada\(e\.target\.value\);props\.aoAlterarPendencia\(true\);setMensagem/);
-  assert.match(fonte, /setExtra\(e\.target\.value\);props\.aoAlterarPendencia\(true\);setMensagem/);
+  assert.match(fonte, /setTreinada\(e\.target\.value\);marcarAlteracao\(\)/);
+  assert.match(fonte, /setExtra\(e\.target\.value\);marcarAlteracao\(\)/);
   assert.doesNotMatch(fonte, /setDistribuicao\(\{\}\)/);
 });
 
@@ -27,7 +27,8 @@ test('mudanças de Classe e Origem preservam escolhas dependentes até revisão 
   assert.match(editor, /incompatível com a Classe/);
   assert.match(editor, /!habilidades\.some/);
   assert.match(editor, /!kits\.some/);
-  assert.match(editor, /aoSalvar\(\{ \.\.\.dados \}\)/);
+  assert.match(editor, /useSalvamentoEditorLocal/);
+  assert.match(editor, /valor: dados/);
 });
 
 test('a ficha reinicializa o editor ao mudar Classe/Origem e mostra escolhas salvas incompatíveis', async () => {
@@ -37,7 +38,11 @@ test('a ficha reinicializa o editor ao mudar Classe/Origem e mostra escolhas sal
   assert.match(fonte, /Revisão da criação necessária/);
 });
 
-test('editor de Características rejeita Origem fora do catálogo oficial', async () => {
-  const fonte = await ler('EditorCaracteristicasLocal.tsx');
-  assert.match(fonte, /!ORIGENS\.some\(item => item\.nome === dados\.origem\)/);
-});
+test('rascunho preserva escolhas incompletas e a revisão final aponta o que falta', async () => {
+  const editor = await ler('EditorCaracteristicasLocal.tsx');
+  const revisao = await ler('RevisaoCriacaoLocal.tsx');
+  assert.match(editor, /useSalvamentoEditorLocal/);
+  assert.doesNotMatch(editor, /validar:/);
+  assert.match(revisao, /revisarCriacao\\(ficha\\)/);
+  assert.match(revisao, /finalização ainda não está disponível/i);
+});;

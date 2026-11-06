@@ -63,6 +63,9 @@ test('a interface liga recursos ao salvamento do rascunho e explica os limites',
   assert.match(ui, /Dano consome PV Temporários antes dos PV Atuais/);
   assert.match(ui, /Alcançar ou ultrapassar BI Máxima sinaliza Colapso Viral/);
   assert.match(ui, /PV Atuais<input type=\"number\"/);
-  assert.match(ui, /Descartar alterações não salvas/);
+  assert.match(ui, /useSalvamentoEditorLocal/);
+  assert.match(ui, /autoSalvar/);
+  assert.match(ui, /Salvar recursos/);
+  assert.doesNotMatch(ui, /Descartar alterações não salvas/);
   assert.match(ui, /Desfazer último ajuste/);
 });
