@@ -408,7 +408,7 @@ export default function FichaLocal({ nome, mesa, contextoId, dados, aoFechar, ao
           <div className="ficha-local-itens">
             <strong>Itens característicos</strong>
             {itensClasse.length ? itensClasse.map(item => <div key={item.id}><strong>{item.nome}</strong><small>{item.detalhe} · Característico · 0 Espaços</small></div>) : <p>Itens característicos ainda não definidos para esta Classe.</p>}
-            <strong>Conjunto inicial · {kit ? kit.id + ' — ' + kit.nome : 'Não selecionado'}</strong>
+            <strong>Equipamento Inicial · {kit ? kit.id + ' — ' + kit.nome : 'Não selecionado'}</strong>
             {inventarioPlanejado ? inventarioPlanejado.itens.map(item => <div key={item.chaveCriacao}><strong>{item.nome} × {item.quantidade}</strong><small>{item.local === 'caracteristico' ? 'Característico · vinculado à Classe' : 'Inventário · ' + item.espacos + ' Espaço(s)'} · {item.estado.tipo.replace('_',' ')}</small></div>) : <p>Não foi possível montar a prévia do inventário. Confira Classe, Origem, kit e compras do rascunho.</p>}
           </div>
           <p className="ficha-local-legenda">A capacidade considera 4 + FOR{origem === 'Mochileiro' ? ' + 1 de Mochileiro' : ''} = {capacidade} Espaços. O conjunto selecionado ocupa {inventarioPlanejado?.ocupados ?? espacosKit} de {capacidade} Espaços. Os itens aparecem em estado inicial guardado/não equipado; operações de Inventário ainda não estão integradas.</p>
