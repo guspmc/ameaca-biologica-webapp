@@ -50,6 +50,6 @@ export default function EditorCaracteristicasLocal({ iniciais, aoSalvar, aoAlter
           {salvamento.erroManual && <p className="offline-erro" role="alert">{salvamento.erroManual}</p>}
           {salvamento.sucessoManual && <p className="offline-status" role="status">{salvamento.sucessoManual}</p>}
           {sujo && <button type="button" className="botao-claro" disabled={ocupado} onClick={() => void salvamento.salvarManual()}>Salvar características</button>}
-        </>
+        </>}
   </div>;
 }
