@@ -56,12 +56,12 @@ export default function PainelMestreLocal({ mesa, enderecosLan = [], convite, so
     </div>
 
     <nav className="painel-mestre-nav" aria-label="Seções do Painel do Mestre">
-      <button type="button" className={aba === 'mesa' ? 'ativo' : ''} aria-current={aba === 'mesa' ? 'page' : undefined} onClick={() => selecionarAba('mesa')}>Mesa</button>
-      <button type="button" className={aba === 'encontros' ? 'ativo' : ''} aria-current={aba === 'encontros' ? 'page' : undefined} onClick={() => selecionarAba('encontros')}>Encontros</button>
-      <button type="button" className={aba === 'arquivos' ? 'ativo' : ''} aria-current={aba === 'arquivos' ? 'page' : undefined} onClick={() => selecionarAba('arquivos')}>Arquivos</button>
+      <button type="button" id="painel-mestre-tab-mesa" className={aba === 'mesa' ? 'ativo' : ''} aria-current={aba === 'mesa' ? 'page' : undefined} aria-controls="painel-mestre-panel-mesa" onClick={() => selecionarAba('mesa')}>Mesa</button>
+      <button type="button" id="painel-mestre-tab-encontros" className={aba === 'encontros' ? 'ativo' : ''} aria-current={aba === 'encontros' ? 'page' : undefined} aria-controls="painel-mestre-panel-encontros" onClick={() => selecionarAba('encontros')}>Encontros</button>
+      <button type="button" id="painel-mestre-tab-arquivos" className={aba === 'arquivos' ? 'ativo' : ''} aria-current={aba === 'arquivos' ? 'page' : undefined} aria-controls="painel-mestre-panel-arquivos" onClick={() => selecionarAba('arquivos')}>Arquivos</button>
     </nav>
 
-    {aba === 'mesa' && <div className="painel-mestre-conteudo">
+    {aba === 'mesa' && <div id="painel-mestre-panel-mesa" role="region" aria-labelledby="painel-mestre-tab-mesa" className="painel-mestre-conteudo">
       <p className="painel-mestre-orientacao">Convites, solicitações e participantes são administrados nesta Mesa. Aprovações e remoções são confirmadas pelo servidor.</p>
       <div className="servidor-local-botoes">
         <button className="botao-claro" type="button" disabled={consultando} onClick={() => aoGerarConvite(mesa)}>{convite ? 'Renovar convite' : 'Gerar convite'}</button>
@@ -108,14 +108,14 @@ export default function PainelMestreLocal({ mesa, enderecosLan = [], convite, so
       </div>
     </div>}
 
-    {aba === 'encontros' && <section className="painel-mestre-placeholder">
+    {aba === 'encontros' && <section id="painel-mestre-panel-encontros" role="region" aria-labelledby="painel-mestre-tab-encontros" className="painel-mestre-placeholder">
       <small>MÓDULO EM PREPARAÇÃO</small>
       <h5>Encontros</h5>
       <p>Esta área seguirá o protótipo do Terminal do Mestre. A gestão de encontros ainda não está conectada ao servidor LAN.</p>
       <p>Nenhum encontro, iniciativa, criatura, rolagem, PV ou efeito é criado ou alterado nesta tela.</p>
     </section>}
 
-    {aba === 'arquivos' && <section className="painel-mestre-placeholder">
+    {aba === 'arquivos' && <section id="painel-mestre-panel-arquivos" role="region" aria-labelledby="painel-mestre-tab-arquivos" className="painel-mestre-placeholder">
       <small>MÓDULO EM PREPARAÇÃO</small>
       <h5>Arquivos</h5>
       <p>O espaço de Arquivos será organizado por Mesa e respeitará as permissões de Mestre e Jogador previstas no planejamento.</p>
