@@ -30,12 +30,12 @@ export default function ConexaoServidorLocal() {
   const [convitesGerados, setConvitesGerados] = useState<Record<string, string>>({});
   const [solicitacoes, setSolicitacoes] = useState<Record<string, { id: string; status: 'pendente'; createdAt: string; accountId: string }[]>>({});
   const [participantes, setParticipantes] = useState<Record<string, ParticipanteMesaLocal[]>>({});
-  const [email, setEmail] = useState('');
+  const [usuario, setUsuario] = useState('');
   const [senha, setSenha] = useState('');
   const [senhaConfirmacao, setSenhaConfirmacao] = useState('');
   const [mostrarSenha, setMostrarSenha] = useState(false);
   const [mostrarConfirmacao, setMostrarConfirmacao] = useState(false);
-  const [modoCadastro, setModoCadastro] = useState(false);
+  const [modoCadastro, setModoCadastro] = useState(false);\n  const [modoRecuperacao, setModoRecuperacao] = useState(false);
   const [erro, setErro] = useState('');
   const [aviso, setAviso] = useState('');
   const [consultando, setConsultando] = useState(false);
@@ -305,21 +305,28 @@ export default function ConexaoServidorLocal() {
     evento.preventDefault();
     if (!saude) return;
     setErro(''); setAviso('');
-    if (modoCadastro && senha !== senhaConfirmacao) {
+    if ((modoCadastro || modoRecuperacao) && senha !== senhaConfirmacao) {
       setErro('A confirmação não corresponde à senha digitada.');
       return;
     }
     setConsultando(true);
     try {
       const cliente = criarClienteServidorLocal({ baseUrl: endereco.trim() });
-      if (modoCadastro) {
-        await cliente.cadastrar(email.trim(), senha);
+      if (modoRecuperacao) {
+        await cliente.redefinirSenha(usuario.trim(), senha);
+        setSenha('');
+        setSenhaConfirmacao('');
+        setModoRecuperacao(false);
+        setModoCadastro(false);
+        setAviso('Senha alterada. Todas as sessões anteriores foram encerradas. Entre com a nova senha.');
+      } else if (modoCadastro) {
+        await cliente.cadastrar(usuario.trim(), senha);
         setSenha('');
         setSenhaConfirmacao('');
         setModoCadastro(false);
-        setAviso('Conta criada. Agora entre com o e-mail e a senha cadastrados.');
+        setAviso('Conta criada. Agora entre com seu nome de usuário e senha.');
       } else {
-        const novaSessao = await cliente.entrar(email.trim(), senha);
+        const novaSessao = await cliente.entrar(usuario.trim(), senha);
         const autenticado = criarClienteServidorLocal({ baseUrl: endereco.trim(), token: novaSessao.token });
         const confirmacao = await autenticado.minhaConta();
         if (confirmacao.account.id !== novaSessao.account.id) {
@@ -332,7 +339,7 @@ export default function ConexaoServidorLocal() {
         setSessao(novaSessao);
         setSenha('');
         setSenhaConfirmacao('');
-        setAviso('Sessão confirmada pelo servidor. O token ficará somente na memória desta página.');
+        setAviso('Sessão confirmada pelo servidor e mantida por cookie HttpOnly neste navegador.');
       }
     } catch (problema) {
       setErro(problema instanceof Error ? problema.message : 'Não foi possível concluir a autenticação.');
@@ -805,7 +812,7 @@ export default function ConexaoServidorLocal() {
         <p className="rotulo">ETAPA 02 · CONTA LOCAL</p>
         {sessao ? <>
           <h2>Sessão autenticada</h2>
-          <p className="secundario">Conta confirmada: <strong>{sessao.account.email}</strong></p>
+          <p className="secundario">Conta confirmada: <strong>{sessao.account.username}</strong></p>
           <p className="servidor-local-expira">Expira em {new Intl.DateTimeFormat('pt-BR', { dateStyle: 'short', timeStyle: 'short' }).format(new Date(sessao.expiresAt))}. A sessão é restaurada automaticamente neste navegador enquanto permanecer válida.</p>
           <div className="servidor-local-botoes">
             <button className="botao-claro" type="button" disabled={consultando} onClick={() => void consultarSessao()}>Validar sessão</button>
@@ -872,8 +879,8 @@ export default function ConexaoServidorLocal() {
             <p className="servidor-local-explica-mesa">Ao criar uma Mesa, sua conta recebe o papel de Mestre. Convites identificam a Mesa, mas cada ingresso depende de aprovação.</p>
           </div>
         </> : <>
-          <h2>{modoCadastro ? 'Criar conta local' : 'Entrar no servidor'}</h2>
-          <p className="secundario">{modoCadastro ? 'Cadastre uma conta experimental neste servidor. A senha deve ter de 4 a 128 caracteres.' : 'Use a conta cadastrada neste servidor local.'}</p>
+          <h2>{modoRecuperacao ? 'Redefinir senha' : modoCadastro ? 'Criar conta local' : 'Entrar no servidor'}</h2>
+          <p className="secundario">{modoRecuperacao ? 'Informe seu nome de usuário e escolha uma nova senha. Não será enviado e-mail nem código de confirmação.' : modoCadastro ? 'Cadastre uma conta local. A senha deve ter de 4 a 128 caracteres.' : 'Use seu nome de usuário e a senha cadastrados neste servidor local. Contas antigas continuam aceitando o identificador anterior como usuário.'}</p>
           <form className="formulario" onSubmit={autenticar}>
             <label>E-mail
               <input type="email" required maxLength={254} autoComplete="email" value={email} onChange={evento => setEmail(evento.target.value)} />
@@ -884,19 +891,26 @@ export default function ConexaoServidorLocal() {
                 <button type="button" aria-label={mostrarSenha ? 'Ocultar senha' : 'Mostrar senha'} aria-pressed={mostrarSenha} onClick={() => setMostrarSenha(valor => !valor)}>{mostrarSenha ? 'Ocultar' : 'Mostrar'}</button>
               </div>
             </label>
-            {modoCadastro && <label>Confirmar senha
+            {(modoCadastro || modoRecuperacao) && <label>Confirmar senha
               <div className="servidor-local-campo-senha">
                 <input type={mostrarConfirmacao ? 'text' : 'password'} required minLength={4} maxLength={128} autoComplete="new-password" value={senhaConfirmacao} onChange={evento => setSenhaConfirmacao(evento.target.value)} />
                 <button type="button" aria-label={mostrarConfirmacao ? 'Ocultar confirmação' : 'Mostrar confirmação'} aria-pressed={mostrarConfirmacao} onClick={() => setMostrarConfirmacao(valor => !valor)}>{mostrarConfirmacao ? 'Ocultar' : 'Mostrar'}</button>
               </div>
             </label>}
-            <button className="acao" type="submit" disabled={consultando || !email.trim() || !senha || (modoCadastro && !senhaConfirmacao)}>
-              {consultando ? 'Aguarde...' : modoCadastro ? 'Criar conta' : 'Entrar'} <span>→</span>
+            <button className="acao" type="submit" disabled={consultando || !usuario.trim() || !senha || ((modoCadastro || modoRecuperacao) && !senhaConfirmacao)}>
+              {consultando ? 'Aguarde...' : modoRecuperacao ? 'Alterar senha' : modoCadastro ? 'Criar conta' : 'Entrar'} <span>→</span>
             </button>
           </form>
-          <button className="servidor-local-alternar" type="button" disabled={consultando} onClick={() => { setModoCadastro(!modoCadastro); setErro(''); setAviso(''); setSenha(''); setSenhaConfirmacao(''); setMostrarSenha(false); setMostrarConfirmacao(false); }}>
+          {!modoRecuperacao && !modoCadastro && <button className="servidor-local-alternar" type="button" disabled={consultando} onClick={() => { setModoRecuperacao(true); setModoCadastro(false); setSenha(''); setSenhaConfirmacao(''); setMostrarSenha(false); setMostrarConfirmacao(false); setErro(''); setAviso(''); }}>
+            Esqueceu a senha?
+          </button>}
+          {modoRecuperacao && <p className="servidor-local-aviso">Atenção: não há verificação de identidade além do nome de usuário. Qualquer pessoa que saiba esse nome pode redefinir a senha. Use somente em uma rede privada confiável.</p>}
+          {!modoRecuperacao && <button className="servidor-local-alternar" type="button" disabled={consultando} onClick={() => { setModoCadastro(!modoCadastro); setModoRecuperacao(false); setErro(''); setAviso(''); setSenha(''); setSenhaConfirmacao(''); setMostrarSenha(false); setMostrarConfirmacao(false); }}>
             {modoCadastro ? 'Já tenho uma conta — voltar ao login' : 'Ainda não tenho conta — cadastrar'}
-          </button>
+          </button>}
+          {modoRecuperacao && <button className="servidor-local-alternar" type="button" disabled={consultando} onClick={() => { setModoRecuperacao(false); setSenha(''); setSenhaConfirmacao(''); setErro(''); setAviso(''); }}>
+            Voltar ao login
+          </button>}
         </>}
       </section>}
 
