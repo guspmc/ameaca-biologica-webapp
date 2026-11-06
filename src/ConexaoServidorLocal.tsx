@@ -104,6 +104,12 @@ export default function ConexaoServidorLocal() {
     }
   }
 
+  // Após login ou restauração de sessão, a tela precisa consultar novamente as Mesas.
+  // Sem isso, a interface permanecia vazia após recarga mesmo com os registros no SQLite.
+  useEffect(() => {
+    if (sessao) void sincronizarDadosRecebidos();
+  }, [sessao]);
+
   useEffect(() => {
     if (!sessao) {
       socketEventos.current?.close();

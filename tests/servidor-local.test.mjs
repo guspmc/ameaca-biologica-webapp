@@ -545,3 +545,41 @@ test('contas diferentes não enxergam nem consultam Mesas umas das outras', asyn
   });
   assert.equal(detalheAlheio.status, 404);
 });
+
+
+test('preserva a Mesa e o vínculo do Mestre após reiniciar o servidor SQLite', async t => {
+  const instancia = await criarInstancia(t);
+  const credenciais = { email: 'mestre-persistencia@example.test', password: 'senha-local-comprida-2026' };
+  const post = (path, body, token) => fetch(instancia.url + path, {
+    method: 'POST',
+    headers: {
+      'content-type': 'application/json',
+      ...(token ? { authorization: 'Bearer ' + token } : {}),
+    },
+    body: JSON.stringify(body),
+  });
+
+  assert.equal((await post('/api/auth/register', credenciais)).status, 201);
+  const loginInicial = await post('/api/auth/login', credenciais);
+  assert.equal(loginInicial.status, 200);
+  const sessaoInicial = await loginInicial.json();
+
+  const criacao = await post('/api/mesas', { name: 'Mesa persistente' }, sessaoInicial.token);
+  assert.equal(criacao.status, 201);
+  const { mesa } = await criacao.json();
+
+  await instancia.reiniciar();
+
+  const loginPosterior = await post('/api/auth/login', credenciais);
+  assert.equal(loginPosterior.status, 200);
+  const sessaoPosterior = await loginPosterior.json();
+  const respostaMesas = await fetch(instancia.url + '/api/mesas', {
+    headers: { authorization: 'Bearer ' + sessaoPosterior.token },
+  });
+  assert.equal(respostaMesas.status, 200);
+  const dados = await respostaMesas.json();
+  assert.equal(dados.mesas.length, 1);
+  assert.equal(dados.mesas[0].id, mesa.id);
+  assert.equal(dados.mesas[0].name, 'Mesa persistente');
+  assert.equal(dados.mesas[0].role, 'mestre');
+});

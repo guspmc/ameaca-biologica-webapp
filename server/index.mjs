@@ -12,6 +12,7 @@ const PAGINA = readFileSync(new URL('./index.html', import.meta.url), 'utf8');
 const AVISO = 'Protótipo LAN sem proteção de transporte. Use apenas dados fictícios e uma rede privada confiável; não use dados reais de campanha ou segredos.';
 const LIMITE_MENSAGEM = 280;
 const INTERVALO_HEARTBEAT_MS = 25_000;
+const DIRETORIO_DADOS_PADRAO = resolve(fileURLToPath(new URL('..', import.meta.url)), '.ameaca-local');
 const ORIGENS_CORS_PADRAO = ['https://guspmc.github.io', 'http://localhost:5173', 'http://127.0.0.1:5173'];
 
 function respostaJson(res, status, dados) {
@@ -61,7 +62,7 @@ function enderecosIPv4() {
 export function createLocalServer({
   host = '127.0.0.1',
   port = 4175,
-  dataDir = resolve(process.cwd(), '.ameaca-local'),
+  dataDir = DIRETORIO_DADOS_PADRAO,
   heartbeatIntervalMs = INTERVALO_HEARTBEAT_MS,
   allowedOrigins = ORIGENS_CORS_PADRAO,
 } = {}) {
