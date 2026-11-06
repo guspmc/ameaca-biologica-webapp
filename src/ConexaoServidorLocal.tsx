@@ -47,6 +47,7 @@ export default function ConexaoServidorLocal() {
   const [salvandoFicha, setSalvandoFicha] = useState(false);
   const filaSalvamentoFicha = useRef(criarFilaSerializada());
   const restaurandoFicha = useRef(false);
+  const [restauracaoFichaConcluida, setRestauracaoFichaConcluida] = useState(false);
   const dadosIniciaisCarregados = useRef(false);
   const restauracaoScrollConcluida = useRef(false);
   const fichaAbertaRef = useRef(fichaAberta);
@@ -79,6 +80,7 @@ export default function ConexaoServidorLocal() {
             return;
           }
           dadosIniciaisCarregados.current = false;
+          setRestauracaoFichaConcluida(false);
           setCarregandoDadosIniciais(true);
           geracaoSessao.current += 1;
           setSessao({ account: resposta.account, token: '', expiresAt: resposta.expiresAt });
@@ -327,7 +329,7 @@ export default function ConexaoServidorLocal() {
   }, []);
 
   useEffect(() => {
-    if (!sessao || !dadosIniciaisCarregados.current || restauracaoScrollConcluida.current) return;
+    if (!sessao || !dadosIniciaisCarregados.current || !restauracaoFichaConcluida || restauracaoScrollConcluida.current) return;
     restauracaoScrollConcluida.current = true;
     let posicao = 0;
     try { posicao = Number(sessionStorage.getItem(CHAVE_POSICAO_PAGINA)); }
@@ -335,7 +337,7 @@ export default function ConexaoServidorLocal() {
     if (!Number.isFinite(posicao) || posicao <= 0) return;
     const quadro = window.requestAnimationFrame(() => window.scrollTo(0, posicao));
     return () => window.cancelAnimationFrame(quadro);
-  }, [sessao, mesas, personagens, solicitacoes, participantes, carregandoDadosIniciais]);
+  }, [sessao, mesas, personagens, solicitacoes, participantes, carregandoDadosIniciais, restauracaoFichaConcluida]);
 
   useEffect(() => {
     if (!sessao) return;
@@ -398,6 +400,7 @@ export default function ConexaoServidorLocal() {
           throw new Error('O servidor retornou uma sessão já expirada. Tente entrar novamente.');
         }
         dadosIniciaisCarregados.current = false;
+        setRestauracaoFichaConcluida(false);
         setCarregandoDadosIniciais(true);
         geracaoSessao.current += 1;
         setSessao(novaSessao);
@@ -567,7 +570,8 @@ export default function ConexaoServidorLocal() {
   }
 
   useEffect(() => {
-    if (!sessao || fichaAberta || restaurandoFicha.current) return;
+    if (!sessao || !dadosIniciaisCarregados.current || fichaAberta ||
+        restaurandoFicha.current || restauracaoFichaConcluida) return;
     let contexto: { accountId?: string; mesaId?: string; personagemId?: string } | null = null;
     try {
       const salvo = localStorage.getItem(CHAVE_CONTEXTO_FICHA);
@@ -575,14 +579,22 @@ export default function ConexaoServidorLocal() {
     } catch { contexto = null; }
     if (!contexto || contexto.accountId !== sessao.account.id ||
         !/^[a-f0-9]{32}$/.test(contexto.mesaId ?? '') ||
-        !/^[a-f0-9]{32}$/.test(contexto.personagemId ?? '')) return;
+        !/^[a-f0-9]{32}$/.test(contexto.personagemId ?? '')) {
+      setRestauracaoFichaConcluida(true);
+      return;
+    }
     const mesa = mesas.find(item => item.id === contexto?.mesaId && item.role === 'jogador');
-    if (!mesa || !personagens[mesa.id]) return;
-    const personagem = personagens[mesa.id].find(item => item.id === contexto?.personagemId);
-    if (!personagem) return;
+    const personagem = mesa ? personagens[mesa.id]?.find(item => item.id === contexto?.personagemId) : undefined;
+    if (!mesa || !personagem) {
+      setRestauracaoFichaConcluida(true);
+      return;
+    }
     restaurandoFicha.current = true;
-    void abrirFicha(mesa, personagem).finally(() => { restaurandoFicha.current = false; });
-  }, [sessao, mesas, personagens, fichaAberta]);
+    void abrirFicha(mesa, personagem).finally(() => {
+      restaurandoFicha.current = false;
+      setRestauracaoFichaConcluida(true);
+    });
+  }, [sessao, mesas, personagens, fichaAberta, carregandoDadosIniciais, restauracaoFichaConcluida]);
 
   function salvarDadosFicha(delta: Record<string, unknown>, nome?: string): Promise<boolean> {
     const fichaSolicitada = fichaAbertaRef.current;
