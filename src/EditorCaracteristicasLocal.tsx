@@ -2,18 +2,16 @@ import { useState } from 'react';
 import { ORIGENS } from './origens';
 import { ARMAS_OPERARIO } from './armaOperario';
 import { HABILIDADES_BASICAS } from './habilidades';
-import { opcoesEquipamento } from './equipamento';
 import AutoSaveStatusLocal from './AutoSaveStatusLocal';
 import { useSalvamentoEditorLocal } from './useSalvamentoEditorLocal';
 
-type Dados = { classe: string; origem: string; armaOperario: string; habilidadeBasica: string; equipamentoInicial: string };
+type Dados = { classe: string; origem: string; armaOperario: string; habilidadeBasica: string };
 type Props = { iniciais: Dados; aoSalvar: (dados: Dados) => Promise<boolean>; aoAlterarPendencia: (pendente: boolean) => void; mensagemSucesso?: string; autoSalvar?: boolean };
 
 export default function EditorCaracteristicasLocal({ iniciais, aoSalvar, aoAlterarPendencia, mensagemSucesso, autoSalvar = false }: Props) {
   const [dados, setDados] = useState(iniciais);
   const [sujo, setSujo] = useState(false);
   const habilidades = HABILIDADES_BASICAS.filter(item => item.classe === dados.classe);
-  const kits = opcoesEquipamento(dados.classe);
   const salvamento = useSalvamentoEditorLocal({
     autoSalvar, valor: dados, chave: JSON.stringify(dados), sujo, setSujo, aoSalvar, aoAlterarPendencia,
     mensagemSucesso: mensagemSucesso ?? 'Características salvas e confirmadas pelo servidor.',
@@ -40,9 +38,6 @@ export default function EditorCaracteristicasLocal({ iniciais, aoSalvar, aoAlter
     </select></label>}
     <label>Habilidade Básica<select value={dados.habilidadeBasica} disabled={ocupado} onChange={e => alterar({ ...dados, habilidadeBasica: e.target.value })}>
       <option value="">Selecione uma Habilidade</option>{dados.habilidadeBasica && !habilidades.some(item => item.id === dados.habilidadeBasica) && <option value={dados.habilidadeBasica}>{HABILIDADES_BASICAS.find(item => item.id === dados.habilidadeBasica)?.nome ?? dados.habilidadeBasica} · incompatível com a Classe</option>}{habilidades.map(item => <option key={item.id} value={item.id}>{item.nome} · {item.ramo}</option>)}
-    </select></label>
-    <label>Equipamento Inicial<select value={dados.equipamentoInicial} disabled={ocupado} onChange={e => alterar({ ...dados, equipamentoInicial: e.target.value })}>
-      <option value="">Selecione um conjunto</option>{dados.equipamentoInicial && !kits.some(item => item.id === dados.equipamentoInicial) && <option value={dados.equipamentoInicial}>{dados.equipamentoInicial} · incompatível com a Classe</option>}{kits.map(item => <option key={item.id} value={item.id}>{item.id} · {item.nome}</option>)}
     </select></label>
     {autoSalvar
       ? <AutoSaveStatusLocal estado={salvamento.autosave.estado} erro={salvamento.autosave.erro} mensagemSucesso={mensagemSucesso ?? 'Características salvas e confirmadas pelo servidor.'} aoTentarNovamente={salvamento.autosave.tentarNovamente} />
