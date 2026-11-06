@@ -1,5 +1,6 @@
 import { randomBytes } from 'node:crypto';
 import { autenticarContaLocal } from './auth-local.mjs';
+import { validarCriacaoNoServidor } from '../src/validarCriacaoServidor.ts';
 
 function responder(res, status, body) {
   res.writeHead(status, {
@@ -129,8 +130,8 @@ export async function tratarRotaPersonagensLocal(req, res, url, db, notificarCon
       }
     }
 
-    if (item) {
-      const id = item[1];
+    if (item || conferencia) {
+      const id = (item ?? conferencia)[1];
       const existente = obterPersonagem(db, id, conta.id);
       if (!existente) {
         responder(res, 404, { error: 'Personagem não encontrado.' });
@@ -144,6 +145,15 @@ export async function tratarRotaPersonagensLocal(req, res, url, db, notificarCon
       ).get(existente.mesaId, conta.id);
       if (!participanteAtual || participanteAtual.papel !== 'jogador') {
         responder(res, 404, { error: 'Personagem não encontrado.' });
+        return true;
+      }
+      if (conferencia) {
+        if (metodo !== 'GET') {
+          responder(res, 405, { error: 'A conferência aceita somente GET.' });
+          return true;
+        }
+        const resultado = validarCriacaoNoServidor(existente.name, JSON.parse(existente.dataJson));
+        responder(res, 200, { ...resultado, revision: existente.revision });
         return true;
       }
       if (metodo === 'GET') {
