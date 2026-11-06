@@ -61,4 +61,17 @@ test('cookie HttpOnly mantém sessão e Mesa após reinício da API SQLite', asy
   const listaRestaurada = await requisitar('/api/mesas', { headers: { cookie } });
   assert.equal(listaRestaurada.status, 200);
   assert.deepEqual((await listaRestaurada.json()).mesas.map(item => item.id), [mesa.id]);
+
+  const logout = await requisitar('/api/auth/logout', {
+    method: 'POST',
+    headers: { 'content-type': 'application/json', cookie },
+    body: '{}',
+  });
+  assert.equal(logout.status, 200);
+  assert.match(logout.headers.get('set-cookie') ?? '', /ab_local_session=;.*Max-Age=0/i);
+
+  const sessaoRevogada = await requisitar('/api/auth/me', { headers: { cookie } });
+  assert.equal(sessaoRevogada.status, 401);
+  const mesasSemSessao = await requisitar('/api/mesas', { headers: { cookie } });
+  assert.equal(mesasSemSessao.status, 401);
 });
