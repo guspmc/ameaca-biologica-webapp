@@ -503,3 +503,13 @@ footer { margin-top:45px; border-top:1px solid #dce2df; padding-top:19px; color:
 .servidor-local-campo-senha input{flex:1;min-width:0}
 .servidor-local-campo-senha button{flex:none;min-height:40px;padding:8px 11px;border:1px solid #bdae95;border-radius:4px;background:#f8f1e5;color:#87333d;font-size:11px;font-weight:800}
 .servidor-local-campo-senha button:focus-visible{outline:3px solid #c47f33;outline-offset:2px}
+
+
+/* QR Codes locais: gerados no próprio navegador, sem serviço externo. */
+.qr-local{display:grid;justify-items:center;gap:7px;margin:10px 0;padding:10px;border:1px solid #cbbda6;background:#fffaf0;max-width:210px}
+.qr-local img{display:block;width:180px;height:180px;image-rendering:auto;background:white}
+.qr-local figcaption{font:800 10px 'Courier New',monospace;color:#675d50;text-align:center;overflow-wrap:anywhere}
+.servidor-local-enderecos-lan,.servidor-local-qr-convites{display:flex;flex-wrap:wrap;align-items:flex-start;gap:10px;margin-top:8px}
+.servidor-local-endereco-lan{display:grid;gap:5px;max-width:230px}
+.servidor-local-endereco-lan>a{font-size:11px;overflow-wrap:anywhere;color:#87333d}
+@media(max-width:560px){.servidor-local-enderecos-lan,.servidor-local-qr-convites{display:grid;grid-template-columns:1fr}.servidor-local-endereco-lan{max-width:100%}}

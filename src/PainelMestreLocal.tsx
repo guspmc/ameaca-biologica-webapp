@@ -1,8 +1,10 @@
 import type { MesaLocal, ParticipanteMesaLocal } from './servidorLocal';
+import QRCodeLocal from './QRCodeLocal';
 
 type SolicitacaoPendente = { id: string; status: 'pendente'; createdAt: string; accountId: string };
 type Props = {
   mesa: MesaLocal;
+  enderecosLan?: string[];
   convite?: string;
   solicitacoes?: SolicitacaoPendente[];
   participantes?: ParticipanteMesaLocal[];
@@ -17,7 +19,7 @@ type Props = {
 };
 
 /** Painel administrativo restrito ao contexto da Mesa em que a conta é Mestre. */
-export default function PainelMestreLocal({ mesa, convite, solicitacoes, participantes, consultando, aoGerarConvite, aoRevogarConvite, aoCarregarSolicitacoes, aoCopiarConvite, aoDecidirSolicitacao, aoCarregarParticipantes, aoRemoverParticipante }: Props) {
+export default function PainelMestreLocal({ mesa, enderecosLan = [], convite, solicitacoes, participantes, consultando, aoGerarConvite, aoRevogarConvite, aoCarregarSolicitacoes, aoCopiarConvite, aoDecidirSolicitacao, aoCarregarParticipantes, aoRemoverParticipante }: Props) {
   if (mesa.role !== 'mestre') return null;
   return <section className="servidor-local-controle-mesa" aria-label={'Painel do Mestre — ' + mesa.name}>
     <h4>Painel do Mestre · {mesa.name}</h4>
@@ -27,7 +29,17 @@ export default function PainelMestreLocal({ mesa, convite, solicitacoes, partici
       <button className="botao-claro" type="button" disabled={consultando} onClick={() => aoRevogarConvite(mesa)}>Revogar convite ativo</button>
       <button className="botao-claro" type="button" disabled={consultando} onClick={() => aoCarregarSolicitacoes(mesa)}>Ver solicitações</button>
     </div>
-    {convite && <div className="servidor-local-codigo"><label>Código de convite<input readOnly value={convite} /></label><button className="botao-claro" type="button" onClick={() => aoCopiarConvite(convite)}>Copiar código</button></div>}
+    {convite && <>
+      <div className="servidor-local-codigo"><label>Código de convite<input readOnly value={convite} /></label><button className="botao-claro" type="button" onClick={() => aoCopiarConvite(convite)}>Copiar código</button></div>
+      {enderecosLan.length > 0
+        ? <div className="servidor-local-qr-convites">{enderecosLan.map(ip => {
+            const url = new URL(window.location.pathname, 'http://' + ip + ':4174');
+            url.searchParams.set('servidor', 'local');
+            url.searchParams.set('convite', convite);
+            return <QRCodeLocal key={ip} value={url.toString()} label={'Convite · ' + ip} />;
+          })}</div>
+        : <p className="servidor-local-vazio">O QR Code do convite ficará disponível quando o servidor identificar um endereço IPv4 da rede local.</p>}
+    </>}
     <div className="servidor-local-botoes">
       <button className="botao-claro" type="button" disabled={consultando} onClick={() => aoCarregarParticipantes(mesa)}>Ver participantes</button>
     </div>

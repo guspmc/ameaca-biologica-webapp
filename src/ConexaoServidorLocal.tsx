@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { criarClienteServidorLocal, ErroServidorLocal, type MesaLocal, type ResumoPersonagemLocal, type SaudeServidorLocal, type SessaoLocal, type PersonagemRascunhoLocal, type ParticipanteMesaLocal } from './servidorLocal';
 import FichaLocal from './FichaLocal';
 import PainelMestreLocal from './PainelMestreLocal';
+import QRCodeLocal from './QRCodeLocal';
 import { calcularAtrasoReconexao } from './reconexaoLocal';
 import { criarFilaSerializada } from './filaSerializada';
 import { fichaContinuaSendoAlvo, sessaoContinuaSendoAtual } from './fichaContinuaSendoAlvo';
@@ -25,7 +26,7 @@ export default function ConexaoServidorLocal() {
   const [personagens, setPersonagens] = useState<Record<string, ResumoPersonagemLocal[]>>({});
   const [nomesPersonagens, setNomesPersonagens] = useState<Record<string, string>>({});
   const [nomeMesa, setNomeMesa] = useState('');
-  const [codigoConvite, setCodigoConvite] = useState('');
+  const [codigoConvite, setCodigoConvite] = useState(() => new URLSearchParams(window.location.search).get('convite') ?? '');
   const [convitesGerados, setConvitesGerados] = useState<Record<string, string>>({});
   const [solicitacoes, setSolicitacoes] = useState<Record<string, { id: string; status: 'pendente'; createdAt: string; accountId: string }[]>>({});
   const [participantes, setParticipantes] = useState<Record<string, ParticipanteMesaLocal[]>>({});
@@ -781,7 +782,15 @@ export default function ConexaoServidorLocal() {
             <div><dt>Autenticação</dt><dd>{saude.authentication}</dd></div>
             <div><dt>Endereço para outros dispositivos na LAN</dt><dd>
               {saude.lanAddresses.length
-                ? saude.lanAddresses.map(ip => 'http://' + ip + ':4174/ameaca-biologica-webapp/?servidor=local').join(' · ')
+                ? <div className="servidor-local-enderecos-lan">{saude.lanAddresses.map(ip => {
+                    const url = new URL(window.location.pathname, 'http://' + ip + ':4174');
+                    url.searchParams.set('servidor', 'local');
+                    const endereco = url.toString();
+                    return <div className="servidor-local-endereco-lan" key={ip}>
+                      <a href={endereco}>{endereco}</a>
+                      <QRCodeLocal value={endereco} label={'Acesso LAN · ' + ip} />
+                    </div>;
+                  })}</div>
                 : 'Nenhum endereço IPv4 privado foi identificado nesta máquina.'}
             </dd></div>
           </dl>
@@ -830,6 +839,7 @@ export default function ConexaoServidorLocal() {
             {mesas.filter(mesa => mesa.role === 'mestre').map(mesa => <PainelMestreLocal
               key={mesa.id}
               mesa={mesa}
+              enderecosLan={saude?.lanAddresses ?? []}
               convite={convitesGerados[mesa.id]}
               solicitacoes={solicitacoes[mesa.id]}
               participantes={participantes[mesa.id]}
