@@ -80,7 +80,7 @@ test('login cria sessão, /me valida token e logout revoga sessão', async t => 
   assert.ok(dados.expiresAt);
   const me = await fetch(base + '/api/auth/me', { headers: { authorization: `Bearer ${dados.token}` } });
   assert.equal(me.status, 200);
-  assert.equal((await me.json()).account.username, credentials.email);
+  assert.equal((await me.json()).account.username, credentials.username);
   assert.equal((await post(base, '/api/auth/logout', {}, dados.token)).status, 200);
   const depois = await fetch(base + '/api/auth/me', { headers: { authorization: `Bearer ${dados.token}` } });
   assert.equal(depois.status, 401);
