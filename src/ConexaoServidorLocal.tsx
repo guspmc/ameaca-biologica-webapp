@@ -44,6 +44,36 @@ export default function ConexaoServidorLocal() {
   const mesasInscritas = useRef(new Set<string>());
   const [canalTempoReal, setCanalTempoReal] = useState(false);
 
+  // No modo LAN, o cookie HttpOnly permite restaurar a sessão após recarga
+  // ou reabertura do navegador sem expor o token ao armazenamento JavaScript.
+  useEffect(() => {
+    if (import.meta.env.MODE !== 'lan') return;
+    let ativo = true;
+    const cliente = criarClienteServidorLocal({ baseUrl: window.location.origin });
+    void (async () => {
+      try {
+        const disponibilidade = await cliente.verificarSaude();
+        if (!ativo) return;
+        setSaude(disponibilidade);
+        try {
+          const resposta = await cliente.minhaConta();
+          if (!ativo || Date.parse(resposta.expiresAt) <= Date.now()) return;
+          geracaoSessao.current += 1;
+          setSessao({ account: resposta.account, token: '', expiresAt: resposta.expiresAt });
+          setAviso('Sessão restaurada e confirmada pelo servidor.');
+        } catch (problema) {
+          if (!ativo) return;
+          if (!(problema instanceof ErroServidorLocal && problema.status === 401)) {
+            setErro(problema instanceof Error ? problema.message : 'Não foi possível restaurar a sessão local.');
+          }
+        }
+      } catch (problema) {
+        if (ativo) setErro(problema instanceof Error ? problema.message : 'Não foi possível verificar o servidor local.');
+      }
+    })();
+    return () => { ativo = false; };
+  }, []);
+
   function encerrarSessao(mensagem: string) {
     geracaoSessao.current += 1;
     // Dados da ficha não permanecem visíveis após perda/encerramento de sessão.
@@ -721,7 +751,7 @@ export default function ConexaoServidorLocal() {
         {sessao ? <>
           <h2>Sessão autenticada</h2>
           <p className="secundario">Conta confirmada: <strong>{sessao.account.email}</strong></p>
-          <p className="servidor-local-expira">Expira em {new Intl.DateTimeFormat('pt-BR', { dateStyle: 'short', timeStyle: 'short' }).format(new Date(sessao.expiresAt))}. O token não é salvo no navegador e será perdido ao recarregar ou fechar esta página.</p>
+          <p className="servidor-local-expira">Expira em {new Intl.DateTimeFormat('pt-BR', { dateStyle: 'short', timeStyle: 'short' }).format(new Date(sessao.expiresAt))}. A sessão é restaurada automaticamente neste navegador enquanto permanecer válida.</p>
           <div className="servidor-local-botoes">
             <button className="botao-claro" type="button" disabled={consultando} onClick={() => void consultarSessao()}>Validar sessão</button>
             <button className="acao" type="button" disabled={consultando} onClick={() => void sair()}>{consultando ? 'Aguarde...' : 'Encerrar sessão'}</button>

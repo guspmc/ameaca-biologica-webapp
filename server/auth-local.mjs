@@ -3,6 +3,7 @@ import { promisify } from 'node:util';
 
 const scrypt = promisify(scryptCallback);
 const DURACAO_SESSAO_MS = 7 * 24 * 60 * 60 * 1000;
+const COOKIE_SESSAO_LOCAL = 'ab_local_session';
 const EMAIL_MAX = 254;
 const SENHA_MIN = 12;
 const SENHA_MAX = 128;
@@ -316,7 +317,15 @@ export function consumirTicketWebSocketLocal(db, ticket) {
 function obterTokenSessao(req) {
   const cabecalho = req.headers.authorization ?? '';
   const correspondencia = /^Bearer ([A-Za-z0-9_-]{40,100})$/.exec(cabecalho);
-  return correspondencia?.[1] ?? null;
+  if (correspondencia) return correspondencia[1];
+  const cookies = String(req.headers.cookie ?? '').split(';');
+  for (const cookie of cookies) {
+    const separador = cookie.indexOf('=');
+    if (separador < 0 || cookie.slice(0, separador).trim() !== COOKIE_SESSAO_LOCAL) continue;
+    const valor = cookie.slice(separador + 1).trim();
+    if (/^[A-Za-z0-9_-]{40,100}$/.test(valor)) return valor;
+  }
+  return null;
 }
 
 export async function autenticarContaLocal(req, db) {
@@ -324,12 +333,12 @@ export async function autenticarContaLocal(req, db) {
   if (!token) return null;
   const agora = new Date().toISOString();
   const sessao = db.prepare(`
-    SELECT c.id, c.email
+    SELECT c.id, c.email, s.expira_em AS expiresAt
     FROM sessoes_locais s
     JOIN contas_locais c ON c.id = s.conta_id
     WHERE s.token_hash = ? AND s.expira_em > ?
   `).get(hashToken(token), agora);
-  return sessao ? { id: sessao.id, email: sessao.email } : null;
+  return sessao ? { id: sessao.id, email: sessao.email, expiresAt: sessao.expiresAt } : null;
 }
 
 export async function tratarRotaAutenticacao(req, res, url, db, encerrarSessaoWebSocket = () => {}) {
@@ -392,6 +401,7 @@ export async function tratarRotaAutenticacao(req, res, url, db, encerrarSessaoWe
       const expira = new Date(agora.getTime() + DURACAO_SESSAO_MS);
       db.prepare('INSERT INTO sessoes_locais (token_hash, conta_id, criada_em, expira_em) VALUES (?, ?, ?, ?)')
         .run(hashToken(token), conta.id, agora.toISOString(), expira.toISOString());
+      res.setHeader('set-cookie', `${COOKIE_SESSAO_LOCAL}=${token}; Path=/; HttpOnly; SameSite=Strict; Max-Age=${Math.floor(DURACAO_SESSAO_MS / 1000)}`);
       json(res, 200, { account: { id: conta.id, email: conta.email }, token, expiresAt: expira.toISOString() });
       return true;
     }
@@ -423,7 +433,7 @@ export async function tratarRotaAutenticacao(req, res, url, db, encerrarSessaoWe
         json(res, 401, { error: 'Sessão ausente ou expirada.' });
         return true;
       }
-      json(res, 200, { account: conta });
+      json(res, 200, { account: { id: conta.id, email: conta.email }, expiresAt: conta.expiresAt });
       return true;
     }
 
@@ -435,6 +445,7 @@ export async function tratarRotaAutenticacao(req, res, url, db, encerrarSessaoWe
         db.prepare('DELETE FROM sessoes_locais WHERE token_hash = ?').run(tokenHash);
         encerrarSessaoWebSocket(tokenHash);
       }
+      res.setHeader('set-cookie', `${COOKIE_SESSAO_LOCAL}=; Path=/; HttpOnly; SameSite=Strict; Max-Age=0`);
       json(res, 200, { ok: true });
       return true;
     }

@@ -159,7 +159,7 @@ export function criarClienteServidorLocal({ baseUrl, token, fetcher = fetch }: O
         headers,
         body: opcoes.corpo === undefined ? undefined : JSON.stringify(opcoes.corpo),
         cache: 'no-store',
-        credentials: 'omit',
+        credentials: 'include',
         ...(espacoEndereco ? { targetAddressSpace: espacoEndereco } : {}),
       };
       resposta = await fetcher(base + caminho, configuracao);
@@ -205,7 +205,7 @@ export function criarClienteServidorLocal({ baseUrl, token, fetcher = fetch }: O
       });
     },
 
-    minhaConta(): Promise<{ account: ContaLocal }> {
+    minhaConta(): Promise<{ account: ContaLocal; expiresAt: string }> {
       return requisicao('/api/auth/me', { autenticada: true });
     },
 

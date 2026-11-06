@@ -678,3 +678,43 @@ test('LAN: aprovacoes concorrentes disputando a ultima vaga nao excedem dez joga
   assert.deepEqual([statusA, statusB].sort(), ['aprovada', 'pendente']);
 });
 
+
+
+test('cookie HttpOnly restaura a sessão após reiniciar o servidor', async t => {
+  const { base, dataDir, fechar, registrarServidor } = await setup(t);
+  const credentials = { email: 'cookie@example.test', password: 'senha-local-comprida-2026' };
+  assert.equal((await post(base, '/api/auth/register', credentials)).status, 201);
+
+  const login = await post(base, '/api/auth/login', credentials);
+  assert.equal(login.status, 200);
+  const cookieCompleto = login.headers.get('set-cookie');
+  assert.match(cookieCompleto ?? '', /ab_local_session=.*HttpOnly/i);
+  assert.match(cookieCompleto ?? '', /SameSite=Strict/i);
+  const cookie = cookieCompleto.split(';')[0];
+
+  const meAntes = await fetch(base + '/api/auth/me', { headers: { cookie } });
+  assert.equal(meAntes.status, 200);
+  const dadosAntes = await meAntes.json();
+  assert.equal(dadosAntes.account.email, credentials.email);
+  assert.ok(dadosAntes.expiresAt);
+
+  await fechar();
+  const reiniciado = createLocalServer({ host: '127.0.0.1', port: 0, dataDir });
+  await reiniciado.listen();
+  registrarServidor(reiniciado);
+
+  const meDepois = await fetch('http://127.0.0.1:' + reiniciado.address.port + '/api/auth/me', {
+    headers: { cookie },
+  });
+  assert.equal(meDepois.status, 200);
+  assert.equal((await meDepois.json()).account.email, credentials.email);
+
+  const logout = await fetch('http://127.0.0.1:' + reiniciado.address.port + '/api/auth/logout', {
+    method: 'POST',
+    headers: { cookie, 'content-type': 'application/json' },
+    body: '{}',
+  });
+  assert.equal(logout.status, 200);
+  assert.match(logout.headers.get('set-cookie') ?? '', /Max-Age=0/);
+  assert.equal((await fetch('http://127.0.0.1:' + reiniciado.address.port + '/api/auth/me', { headers: { cookie } })).status, 401);
+});
