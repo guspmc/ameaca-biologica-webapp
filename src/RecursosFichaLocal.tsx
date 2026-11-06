@@ -26,7 +26,9 @@ export default function RecursosFichaLocal({ dados, pvMaximo, saMaximo, biMaximo
   const salvamento = useSalvamentoEditorLocal({
     autoSalvar, valor: recursos, chave: JSON.stringify(recursos), sujo, setSujo, aoSalvar, aoAlterarPendencia,
     mensagemSucesso: 'Recursos salvos e confirmados pelo servidor.',
-    validar: undefined,
+    validar: atual => recursosValidos(atual, pvMaximo, saMaximo)
+      ? null
+      : 'Revise os valores: PV e SA Atuais não podem exceder seus máximos.',
   });
   const ocupado = salvamento.ocupado;
 

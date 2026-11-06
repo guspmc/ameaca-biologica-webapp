@@ -11,11 +11,12 @@ type Opcoes<T> = {
   aoSalvar: (valor: T) => Promise<boolean>;
   aoAlterarPendencia: (pendente: boolean) => void;
   mensagemSucesso?: string;
+  validar?: (valor: T) => string | null;
   atraso?: number;
 };
 
 export function useSalvamentoEditorLocal<T>({
-  autoSalvar, valor, chave, sujo, setSujo, aoSalvar, aoAlterarPendencia, mensagemSucesso, atraso,
+  autoSalvar, valor, chave, sujo, setSujo, aoSalvar, aoAlterarPendencia, mensagemSucesso, validar, atraso,
 }: Opcoes<T>) {
   const [salvandoManual, setSalvandoManual] = useState(false);
   const [erroManual, setErroManual] = useState('');
@@ -25,6 +26,7 @@ export function useSalvamentoEditorLocal<T>({
     chave,
     sujo: autoSalvar && sujo,
     aoSalvar,
+    validar,
     atraso,
     aoConfirmar: () => { setSujo(false); aoAlterarPendencia(false); },
   });
@@ -35,6 +37,8 @@ export function useSalvamentoEditorLocal<T>({
     setErroManual('');
     setSucessoManual('');
     try {
+      const erroValidacao = validar?.(valor);
+      if (erroValidacao) throw new Error(erroValidacao);
       const confirmado = await aoSalvar(valor);
       if (!confirmado) throw new Error('O armazenamento não confirmou o salvamento.');
       setSujo(false);
@@ -45,7 +49,7 @@ export function useSalvamentoEditorLocal<T>({
     } finally {
       setSalvandoManual(false);
     }
-  }, [autoSalvar, sujo, salvandoManual, aoSalvar, valor, setSujo, aoAlterarPendencia, mensagemSucesso]);
+  }, [autoSalvar, sujo, salvandoManual, aoSalvar, valor, setSujo, aoAlterarPendencia, mensagemSucesso, validar]);
 
   return {
     autosave,

@@ -36,6 +36,11 @@ export default function IdentidadeLocal({ nome: nomeInicial, identidade: identid
   const chave = JSON.stringify({ nome, dados });
   const salvamento = useSalvamentoEditorLocal({
     autoSalvar, valor, chave, sujo, setSujo, aoSalvar, aoAlterarPendencia, mensagemSucesso,
+    validar: atual => {
+      if (atual.nome.length < 2 || atual.nome.length > 80) return 'O nome deve ter entre 2 e 80 caracteres.';
+      const campoInvalido = CAMPOS.find(campo => (atual.identidade[campo.id] ?? '').length > campo.limite);
+      return campoInvalido ? 'Revise o limite de caracteres do campo ' + campoInvalido.nome + '.' : null;
+    },
   });
   const ocupado = salvamento.ocupado;
 
