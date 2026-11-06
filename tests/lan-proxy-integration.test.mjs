@@ -51,13 +51,13 @@ test('proxy LAN mantém API e WebSocket same-origin até o servidor SQLite', asy
   const cadastro = await requisitar('/api/auth/register', {
     method: 'POST',
     headers: { 'content-type': 'application/json' },
-    body: JSON.stringify({ email: 'proxy-lan@example.test', password: senha }),
+    body: JSON.stringify({ username: 'proxy-lan', password: senha }),
   });
   assert.equal(cadastro.status, 201);
   const login = await requisitar('/api/auth/login', {
     method: 'POST',
     headers: { 'content-type': 'application/json' },
-    body: JSON.stringify({ email: 'proxy-lan@example.test', password: senha }),
+    body: JSON.stringify({ username: 'proxy-lan', password: senha }),
   });
   assert.equal(login.status, 200);
   const cookieCompleto = login.headers.get('set-cookie');
@@ -66,7 +66,7 @@ test('proxy LAN mantém API e WebSocket same-origin até o servidor SQLite', asy
   const sessaoPorCookie = await requisitar('/api/auth/me', { headers: { cookie } });
   assert.equal(sessaoPorCookie.status, 200);
   const contaPorCookie = (await sessaoPorCookie.json()).account;
-  assert.equal(contaPorCookie.email, 'proxy-lan@example.test');
+  assert.equal(contaPorCookie.username, 'proxy-lan');
 
   const criarMesa = await requisitar('/api/mesas', {
     method: 'POST',
