@@ -974,3 +974,29 @@ footer { margin-top:45px; border-top:1px solid #dce2df; padding-top:19px; color:
 .ficha-local-resultado{margin:10px 0;padding:10px;border:1px solid #b7aa92;border-left:3px solid #69705e;background:#f8f2e5;color:#252725}
 .ficha-local-resultado strong{color:#64252b}
 @media(max-width:390px){.funcionamento-opcoes{grid-template-columns:1fr}.recursos-controles button{flex:1 1 auto}}
+
+
+/* Ficha — fatos rápidos e acordeões editoriais do protótipo 0.2. */
+.ficha-local-fatos-rapidos{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;margin:10px 0}
+.ficha-local-fatos-rapidos>div{display:grid;align-content:start;gap:4px;min-width:0;min-height:57px;padding:9px 10px;border:1px solid #d2c5af;background:#f9f4e9a8}
+.ficha-local-fatos-rapidos small{font:800 8px 'Courier New',monospace;letter-spacing:.06em;color:#746d61}
+.ficha-local-fatos-rapidos strong{font:800 13px/1.2 Georgia,serif;color:#252725;overflow-wrap:anywhere}
+.ficha-local-fatos-rapidos span{font:9px/1.4 system-ui,sans-serif;color:#746d61}
+.ficha-local-acordeao{margin:7px 0;border:1px solid #bdb09a;background:#f9f4e988}
+.ficha-local-acordeao>summary{list-style:none;display:flex;align-items:center;justify-content:space-between;gap:8px;padding:11px 10px;cursor:pointer;color:#252725;font-size:11px;font-weight:800}
+.ficha-local-acordeao>summary::-webkit-details-marker{display:none}
+.ficha-local-acordeao>summary:after{content:'+';flex:none;color:#8f2e36;font:normal 18px Georgia,serif}
+.ficha-local-acordeao[open]>summary:after{content:'−'}
+.ficha-local-acordeao>summary span{margin-left:auto;color:#746d61;font:8px 'Courier New',monospace;text-align:right}
+.ficha-local-acordeao-corpo{padding:9px 10px 10px;border-top:1px dotted #c1b49f;color:#514a41;font-size:10px;line-height:1.5}
+.ficha-local-acordeao-corpo p{margin:4px 0 0}
+.ficha-local-acordeao-corpo strong{color:#64252b}
+.ficha-local-acordeao>summary:focus-visible{outline:3px solid #c47f33;outline-offset:-3px}
+.painel-mestre-floating button span{display:grid;place-items:center;min-height:20px}
+.painel-mestre-floating button span svg{display:block;width:20px;height:20px}
+@media(max-width:360px){
+ .ficha-local-fatos-rapidos{gap:5px}
+ .ficha-local-fatos-rapidos>div{padding:8px}
+ .ficha-local-acordeao>summary{align-items:flex-start}
+ .ficha-local-acordeao>summary span{max-width:46%}
+}
