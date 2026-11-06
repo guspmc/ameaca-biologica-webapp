@@ -355,7 +355,7 @@ export default function FichaLocal({ nome, mesa, contextoId, dados, aoFechar, ao
           {aoSalvarIdentidade && <IdentidadeLocal autoSalvar={autoSalvar} key={JSON.stringify([nome, ficha.identidade ?? {}])} nome={nome} identidade={(ficha.identidade as Record<string, string>) ?? {}} aoSalvar={aoSalvarIdentidade} aoAlterarPendencia={pendente => registrarPendencia('Identificação', pendente)} mensagemSucesso={origemDados === 'servidor' ? 'Identificação confirmada pelo servidor.' : undefined} />}
           <div className="ficha-local-fatos-rapidos">
             <div><small>ORIGEM</small><strong>{termo(origem || 'Pendente')}</strong><span>{dadosOrigem?.beneficio ?? 'Benefício ainda não definido.'}</span></div>
-            <div><small>CLASSE / RAMO</small><strong>{classePersonagem(classe || null, genero)}</strong><span>{ramo.length ? ramo.join(' · ') : 'Ramo não selecionado'}</span></div>
+            <div><small>CLASSE</small><strong>{classePersonagem(classe || null, genero)}</strong><span>{ramo.length ? 'Ramos disponíveis: ' + ramo.join(' · ') : 'Ramos ainda não definidos.'}</span></div>
           </div>
           <details className="ficha-local-acordeao">
             <summary>Habilidade Básica <span>{habilidade?.nome ?? 'Não selecionada'}</span></summary>
@@ -365,7 +365,7 @@ export default function FichaLocal({ nome, mesa, contextoId, dados, aoFechar, ao
             </div>
           </details>
           <details className="ficha-local-acordeao">
-            <summary>Identidade e histórico <span>{ficha.identidade && typeof ficha.identidade === 'object' ? 'Registro disponível' : 'Dados pendentes'}</span></summary>
+            <summary>Identidade e histórico <span>{ficha.identidade && typeof ficha.identidade === 'object' && Object.keys(ficha.identidade).length > 0 ? 'Dados registrados' : 'Dados pendentes'}</span></summary>
             <div className="ficha-local-acordeao-corpo">
               <p>Os dados de identificação editáveis permanecem no registro da personagem. Nenhum histórico narrativo é presumido nesta etapa.</p>
             </div>
