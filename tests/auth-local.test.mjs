@@ -531,6 +531,73 @@ test('convite privado exige Mestre e aprovação antes de conceder acesso à Mes
   assert.equal((await detalhe.json()).mesa.role, 'jogador');
 });
 
+test('remoção de participante exige Mestre, revoga o acesso e exclui os rascunhos vinculados', async t => {
+  const { base } = await setup(t);
+  const senha = 'senha-local-comprida-2026';
+  const entrar = async username => {
+    assert.equal((await post(base, '/api/auth/register', { username, password: senha })).status, 201);
+    const login = await post(base, '/api/auth/login', { username, password: senha });
+    assert.equal(login.status, 200);
+    const token = (await login.json()).token;
+    const me = await fetch(base + '/api/auth/me', { headers: { authorization: `Bearer ${token}` } });
+    return { token, account: (await me.json()).account };
+  };
+
+  const mestre = await entrar('mestre-remocao');
+  const jogadorRemovido = await entrar('jogador-removido');
+  const jogadorMantido = await entrar('jogador-mantido');
+  const { mesa } = await (await post(base, '/api/mesas', { name: 'Mesa de remoção' }, mestre.token)).json();
+  const { invitation } = await (await post(base, `/api/mesas/${mesa.id}/convites`, {}, mestre.token)).json();
+
+  for (const jogador of [jogadorRemovido, jogadorMantido]) {
+    const pedido = await post(base, '/api/convites/solicitar', { code: invitation.code }, jogador.token);
+    assert.equal(pedido.status, 202);
+    const { request } = await pedido.json();
+    assert.equal((await post(base, `/api/mesas/${mesa.id}/solicitacoes/${request.id}/aprovar`, {}, mestre.token)).status, 200);
+  }
+
+  const criarRascunho = await post(base, `/api/mesas/${mesa.id}/personagens`, {
+    name: 'Rascunho de teste',
+    data: { estadoFicha: 'rascunho', classe: 'Operador' },
+  }, jogadorRemovido.token);
+  assert.equal(criarRascunho.status, 201);
+  const { personagem } = await criarRascunho.json();
+
+  const tentativaJogador = await fetch(base + `/api/mesas/${mesa.id}/participantes/${jogadorMantido.account.id}`, {
+    method: 'DELETE',
+    headers: { authorization: `Bearer ${jogadorRemovido.token}` },
+  });
+  assert.equal(tentativaJogador.status, 404);
+
+  const tentativaMestre = await fetch(base + `/api/mesas/${mesa.id}/participantes/${mestre.account.id}`, {
+    method: 'DELETE',
+    headers: { authorization: `Bearer ${mestre.token}` },
+  });
+  assert.equal(tentativaMestre.status, 404);
+
+  const remocao = await fetch(base + `/api/mesas/${mesa.id}/participantes/${jogadorRemovido.account.id}`, {
+    method: 'DELETE',
+    headers: { authorization: `Bearer ${mestre.token}` },
+  });
+  assert.equal(remocao.status, 200);
+  assert.deepEqual(await remocao.json(), { removed: true, accountId: jogadorRemovido.account.id });
+
+  const mesasRemovido = await fetch(base + '/api/mesas', {
+    headers: { authorization: `Bearer ${jogadorRemovido.token}` },
+  });
+  assert.deepEqual((await mesasRemovido.json()).mesas, []);
+  const acessoFicha = await fetch(base + `/api/personagens/${personagem.id}`, {
+    headers: { authorization: `Bearer ${jogadorRemovido.token}` },
+  });
+  assert.equal(acessoFicha.status, 404);
+
+  const participantes = await fetch(base + `/api/mesas/${mesa.id}/participantes`, {
+    headers: { authorization: `Bearer ${mestre.token}` },
+  });
+  const lista = (await participantes.json()).participants;
+  assert.deepEqual(lista.map(item => item.accountId).sort(), [mestre.account.id, jogadorMantido.account.id].sort());
+});
+
 test('permite nova solicitação após recusa com convite válido e preserva o histórico', async t => {
   const { base, app } = await setup(t);
   const senha = 'senha-local-comprida-2026';
