@@ -574,3 +574,36 @@ footer { margin-top:45px; border-top:1px solid #dce2df; padding-top:19px; color:
 .ficha-local-recurso-icone{display:block;min-height:19px;color:#8f2e36;font:normal 19px/1 system-ui,sans-serif}
 .ficha-local-recursos>div{align-content:start}
 @media(max-width:560px){.ficha-local-identidade-meta{align-items:flex-start}.ficha-local-carimbo{font-size:8px}}
+
+
+/* Painel do Mestre — submódulos navegáveis de Encontros e Arquivos. */
+.painel-mestre-modulo-cabecalho{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin:15px 0 12px}
+.painel-mestre-modulo-cabecalho>div{display:grid;gap:5px}
+.painel-mestre-modulo-cabecalho small{font:800 9px 'Courier New',monospace;letter-spacing:.12em;color:#b30d28}
+.painel-mestre-modulo-cabecalho h5{margin:0;font:800 20px Georgia,serif;color:#1c252b}
+.painel-mestre-selo-demo{flex:none;padding:6px 8px;border:1px solid #d8b6bc;border-radius:5px;background:#fbecef;color:#790e22;font:800 8px 'Courier New',monospace;letter-spacing:.05em}
+.painel-mestre-subnav{display:flex;gap:6px;overflow-x:auto;padding:2px 0 12px;margin-bottom:12px}
+.painel-mestre-subnav button{flex:0 0 auto;padding:9px 12px;border:1px solid #dfe3e5;border-radius:8px;background:#fff;color:#59636a;font-size:10px;font-weight:800}
+.painel-mestre-subnav button.ativo{border-color:#8d2635;background:#8d2635;color:#fff}
+.painel-mestre-subnav button:focus-visible{outline:3px solid #dca03c;outline-offset:2px}
+.painel-mestre-grade{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.painel-mestre-cartao{min-width:0;padding:15px;border:1px solid #e2e5e6;border-radius:11px;background:#fff}
+.painel-mestre-cartao-destaque{grid-column:1/-1}
+.painel-mestre-cartao>small{font:800 9px 'Courier New',monospace;letter-spacing:.1em;color:#b30d28}
+.painel-mestre-cartao h6{margin:8px 0;font:800 16px Georgia,serif;color:#1c252b}
+.painel-mestre-cartao p{margin:7px 0;color:#59636a;font-size:11px;line-height:1.6}
+.painel-mestre-indicadores{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;margin-top:14px}
+.painel-mestre-indicadores span{display:grid;gap:6px;padding:9px;border:1px solid #e7e9ea;border-radius:7px;background:#f8f9f9;font:800 8px 'Courier New',monospace;color:#717a80}
+.painel-mestre-indicadores b{font:800 17px Georgia,serif;color:#87333d}
+.painel-mestre-vazio-tag{display:inline-block;margin-top:9px;padding:5px 7px;border-radius:4px;background:#f1f2f2;color:#717a80;font:800 8px 'Courier New',monospace;letter-spacing:.05em}
+.painel-mestre-vazio{display:grid;justify-items:center;gap:6px;margin-top:12px;padding:20px 12px;border:1px dashed #d6dadd;border-radius:8px;background:#f8f9f9;text-align:center}
+.painel-mestre-vazio>b{font:normal 25px Georgia,serif;color:#b30d28}
+.painel-mestre-vazio strong{font-size:11px;color:#374148}
+.painel-mestre-vazio span{font-size:10px;line-height:1.5;color:#717a80}
+.painel-mestre-filtros,.painel-mestre-parametros{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin:14px 0}
+.painel-mestre-filtros label,.painel-mestre-parametros label,.painel-mestre-nota{display:grid;gap:6px;color:#465057;font-size:10px;font-weight:800}
+.painel-mestre-filtros input,.painel-mestre-filtros select,.painel-mestre-parametros select,.painel-mestre-nota textarea{width:100%;min-width:0;min-height:39px;padding:9px;border:1px solid #d6dadd;border-radius:6px;background:#f5f6f6;color:#465057;font:11px sans-serif}
+.painel-mestre-nota{margin:12px 0}
+.painel-mestre-nota textarea{min-height:120px;resize:vertical;line-height:1.5}
+.painel-mestre-aviso-demo{margin:13px 0 0;padding:10px 12px;border-left:3px solid #b30d28;background:#fbecef;color:#70414a;font-size:10px;line-height:1.55}
+@media(max-width:560px){.painel-mestre-modulo-cabecalho{flex-direction:column}.painel-mestre-grade{grid-template-columns:1fr}.painel-mestre-cartao-destaque{grid-column:auto}.painel-mestre-filtros,.painel-mestre-parametros{grid-template-columns:1fr}.painel-mestre-indicadores{gap:5px}.painel-mestre-indicadores span{padding:7px;font-size:7px}}
