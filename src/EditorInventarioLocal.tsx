@@ -78,6 +78,6 @@ export default function EditorInventarioLocal({ classe, capacidade, kitInicial, 
           {salvamento.erroManual && <p className="offline-erro" role="alert">{salvamento.erroManual}</p>}
           {salvamento.sucessoManual && <p className="offline-status" role="status">{salvamento.sucessoManual}</p>}
           {sujo && <button type="button" className="botao-claro" disabled={ocupado} onClick={() => void salvamento.salvarManual()}>Salvar inventário</button>}
-        </>
+        </>}
   </div>;
 }
