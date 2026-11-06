@@ -592,6 +592,7 @@ export default function ConexaoServidorLocal() {
       return;
     }
     const personagem = personagens[mesa.id]?.find(item => item.id === contexto?.personagemId);
+    const geracaoSolicitada = geracaoSessao.current;
     restaurandoFicha.current = true;
     void (async () => {
       try {
@@ -603,7 +604,7 @@ export default function ConexaoServidorLocal() {
             baseUrl: endereco.trim(),
             token: sessao.token,
           }).listarPersonagens(mesa.id);
-          if (!sessaoContinuaSendoAtual(geracaoSessao.current, geracaoSessao.current)) return;
+          if (!sessaoContinuaSendoAtual(geracaoSessao.current, geracaoSolicitada)) return;
           setPersonagens(atual => ({ ...atual, [mesa.id]: lista.personagens }));
           personagemRestaurado = lista.personagens.find(item => item.id === contexto?.personagemId);
         }
