@@ -83,9 +83,9 @@ export default function PainelMestreLocal({ mesa, enderecosLan = [], convite, so
         <div className="painel-mestre-side-mark"><span className="painel-mestre-umbrella"><IconePainel tipo="umbrella" /></span><div><b>UMBRELLA<br/>TERMINAL</b><small>CONTROLE OPERACIONAL</small></div></div>
         <div className="painel-mestre-side-kicker">NAVEGAÇÃO / MESTRE</div>
         <nav className="painel-mestre-side-nav" aria-label="Navegação do Mestre">
-          <button type="button" className={aba==='mesa'?'ativo':''} onClick={()=>selecionarAba('mesa')}><span><IconePainel tipo="mesa" /></span>MESA</button>
-          <button type="button" className={aba==='encontros'?'ativo':''} onClick={()=>selecionarAba('encontros')}><span><IconePainel tipo="encontros" /></span>ENCONTROS</button>
-          <button type="button" className={aba==='arquivos'?'ativo':''} onClick={()=>selecionarAba('arquivos')}><span><IconePainel tipo="arquivos" /></span>ARQUIVOS</button>
+          <button id="painel-mestre-tab-mesa" type="button" aria-controls="painel-mestre-panel-mesa" className={aba==='mesa'?'ativo':''} onClick={()=>selecionarAba('mesa')}><span><IconePainel tipo="mesa" /></span>MESA</button>
+          <button id="painel-mestre-tab-encontros" type="button" aria-controls="painel-mestre-panel-encontros" className={aba==='encontros'?'ativo':''} onClick={()=>selecionarAba('encontros')}><span><IconePainel tipo="encontros" /></span>ENCONTROS</button>
+          <button id="painel-mestre-tab-arquivos" type="button" aria-controls="painel-mestre-panel-arquivos" className={aba==='arquivos'?'ativo':''} onClick={()=>selecionarAba('arquivos')}><span><IconePainel tipo="arquivos" /></span>ARQUIVOS</button>
         </nav>
         <div className="painel-mestre-side-bottom">PROTOCOLO UMB-01<br/>PAINEL DO MESTRE / V0.2<br/>LAN · MESA ATUAL</div>
       </aside>
