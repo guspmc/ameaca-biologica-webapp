@@ -65,7 +65,7 @@ test('cria conta local e retorna apenas identificador e e-mail', async t => {
   const resposta = await post(base, '/api/auth/register', { email: 'Teste@Exemplo.com', password: 'uma-senha-local-segura-2026' });
   assert.equal(resposta.status, 201);
   const { account } = await resposta.json();
-  assert.equal(account.email, 'teste@exemplo.com');
+  assert.equal(account.username, 'teste@exemplo.com');
   assert.deepEqual(Object.keys(account).sort(), ['email', 'id']);
 });
 
@@ -80,7 +80,7 @@ test('login cria sessão, /me valida token e logout revoga sessão', async t => 
   assert.ok(dados.expiresAt);
   const me = await fetch(base + '/api/auth/me', { headers: { authorization: `Bearer ${dados.token}` } });
   assert.equal(me.status, 200);
-  assert.equal((await me.json()).account.email, credentials.email);
+  assert.equal((await me.json()).account.username, credentials.email);
   assert.equal((await post(base, '/api/auth/logout', {}, dados.token)).status, 200);
   const depois = await fetch(base + '/api/auth/me', { headers: { authorization: `Bearer ${dados.token}` } });
   assert.equal(depois.status, 401);
@@ -91,7 +91,7 @@ test('rejeita senha curta e usa erro genérico no login inválido', async t => {
   assert.equal((await post(base, '/api/auth/register', { email: 'curta@example.test', password: 'cur' })).status, 422);
   const resposta = await post(base, '/api/auth/login', { email: 'nao-existe@example.test', password: 'senha-local-comprida-2026' });
   assert.equal(resposta.status, 401);
-  assert.equal((await resposta.json()).error, 'E-mail ou senha inválidos.');
+  assert.equal((await resposta.json()).error, 'Usuário(a) ou senha inválidos.');
 });
 
 test('impede duplicação de e-mail sem diferenciar maiúsculas', async t => {
@@ -203,7 +203,7 @@ test('preserva conta e sessão existentes ao reiniciar o servidor e reaplicar mi
     headers: { authorization: `Bearer ${token}` },
   });
   assert.equal(resposta.status, 200);
-  assert.equal((await resposta.json()).account.email, credentials.email);
+  assert.equal((await resposta.json()).account.username, credentials.email);
   assert.equal(reiniciado.db.prepare('SELECT COUNT(*) AS total FROM contas_locais').get().total, 1);
   assert.equal(reiniciado.db.prepare('SELECT COUNT(*) AS total FROM sessoes_locais').get().total, 1);
 });
@@ -694,7 +694,7 @@ test('cookie HttpOnly restaura a sessão após reiniciar o servidor', async t =>
   const meAntes = await fetch(base + '/api/auth/me', { headers: { cookie } });
   assert.equal(meAntes.status, 200);
   const dadosAntes = await meAntes.json();
-  assert.equal(dadosAntes.account.email, credentials.email);
+  assert.equal(dadosAntes.account.username, credentials.email);
   assert.ok(dadosAntes.expiresAt);
 
   await fechar();
@@ -706,7 +706,7 @@ test('cookie HttpOnly restaura a sessão após reiniciar o servidor', async t =>
     headers: { cookie },
   });
   assert.equal(meDepois.status, 200);
-  assert.equal((await meDepois.json()).account.email, credentials.email);
+  assert.equal((await meDepois.json()).account.username, credentials.email);
 
   const logout = await fetch('http://127.0.0.1:' + reiniciado.address.port + '/api/auth/logout', {
     method: 'POST',
