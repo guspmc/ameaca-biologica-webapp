@@ -60,6 +60,12 @@ test('proxy LAN mantém API e WebSocket same-origin até o servidor SQLite', asy
     body: JSON.stringify({ email: 'proxy-lan@example.test', password: senha }),
   });
   assert.equal(login.status, 200);
+  const cookieCompleto = login.headers.get('set-cookie');
+  assert.match(cookieCompleto ?? '', /ab_local_session=.*HttpOnly/i);
+  const cookie = cookieCompleto.split(';')[0];
+  const sessaoPorCookie = await requisitar('/api/auth/me', { headers: { cookie } });
+  assert.equal(sessaoPorCookie.status, 200);
+  assert.equal((await sessaoPorCookie.json()).account.email, 'proxy-lan@example.test');
   const { token } = await login.json();
 
   const criarMesa = await requisitar('/api/mesas', {
