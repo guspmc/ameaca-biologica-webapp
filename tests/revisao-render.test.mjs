@@ -11,7 +11,10 @@ for(const nome of ['textoPersonagem','origens','habilidades','pericias','equipam
  const ext=['RevisaoCriacao','FuncionamentoPrevio'].includes(nome)?'.tsx':'.ts';
  let {outputText:s}=ts.transpileModule(await readFile(new URL('../src/'+nome+ext,import.meta.url),'utf8'),{compilerOptions:{module:ts.ModuleKind.ESNext,target:ts.ScriptTarget.ES2022,jsx:ts.JsxEmit.ReactJSX}});
  s=s.replaceAll("'react'",JSON.stringify(pathToFileURL(require.resolve('react')).href)).replaceAll('"react/jsx-runtime"',JSON.stringify(pathToFileURL(require.resolve('react/jsx-runtime')).href));
- for(const [n,uri] of Object.entries(modulos))s=s.replaceAll("'./"+n+"'",JSON.stringify(uri));
+ for(const [n,uri] of Object.entries(modulos)){
+  s=s.replaceAll("'./"+n+"'",JSON.stringify(uri));
+  s=s.replaceAll("'./"+n+".ts'",JSON.stringify(uri));
+ }
  modulos[nome]='data:text/javascript;base64,'+Buffer.from(s).toString('base64');
 }
 const {default:Revisao}=await import(modulos.RevisaoCriacao);
