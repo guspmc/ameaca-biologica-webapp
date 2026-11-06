@@ -29,6 +29,14 @@ test('Painel do Mestre mantém referências ARIA dos destinos principais e das f
   } else assert.ok(ids.has(id),'Referência ARIA sem destino: '+id);
  }
  const paineis=[...fonte.matchAll(/id="(painel-mestre-encontros-panel-[^"]+)"/g)].map(m=>m[1]);
+ const paineisArquivos=[...fonte.matchAll(/id="(painel-mestre-arquivos-panel-[^"]+)"/g)].map(m=>m[1]);
+ assert.deepEqual(paineisArquivos.sort(),[
+  'painel-mestre-arquivos-panel-anotacoes',
+  'painel-mestre-arquivos-panel-diario',
+  'painel-mestre-arquivos-panel-documentos',
+  'painel-mestre-arquivos-panel-mesa',
+  'painel-mestre-arquivos-panel-narracao'
+ ].sort());
  assert.deepEqual(paineis.sort(),[
   'painel-mestre-encontros-panel-ao-vivo',
   'painel-mestre-encontros-panel-catalogo',
