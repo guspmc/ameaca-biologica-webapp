@@ -26,3 +26,33 @@ test('capacidade baixa bloqueia kit maior; Mochileiro acrescenta um; escolha aus
   assert.equal(espacosOcupados(equipamentoInicial('Operador','A'))>capacidadeInventario(0,null),true);
   for(const [classe,opcao] of [['Outra','A'],['Agente',null],['Agente','D']])assert.deepEqual(equipamentoInicial(classe,opcao),[]);
 });
+
+test('conteúdo de cada conjunto corresponde à Classe e à opção escolhida',()=>{
+  const casos=[
+    ['Agente','A',['erva-verde','lanterna-simples','sentinel-nine','colete-acolchoado']],
+    ['Agente','B',['erva-verde','lanterna-simples','jmb-hp3','moedas']],
+    ['Agente','C',['erva-verde','lanterna-simples','moedas']],
+    ['Autodidata','A',['erva-verde','lanterna-simples','bastao','colete-acolchoado','moedas']],
+    ['Autodidata','B',['erva-verde','lanterna-simples','lemi','moedas']],
+    ['Autodidata','C',['erva-verde','lanterna-simples','moedas']],
+    ['Operador','A',['erva-verde','lanterna-simples','bastao','colete-acolchoado','moedas']],
+    ['Operador','B',['erva-verde','lanterna-simples','lemi','moedas']],
+    ['Operador','C',['erva-verde','lanterna-simples','moedas']],
+  ];
+  for(const [classe,opcao,esperados] of casos){
+    assert.deepEqual(equipamentoInicial(classe,opcao).map(item=>item.id),esperados,classe+' / opção '+opcao);
+  }
+});
+
+test('itens característicos específicos permanecem fora da capacidade',()=>{
+  const esperados={
+    Agente:['gazua-profissional','hatchet'],
+    Autodidata:['kit-socorros','pente-estendido'],
+    Operador:['kendo','kit-ferramentas'],
+  };
+  for(const [classe,ids] of Object.entries(esperados)){
+    const itens=caracteristicos(classe);
+    assert.deepEqual(itens.map(item=>item.id),ids);
+    assert.ok(itens.every(item=>item.espacos===0));
+  }
+});
