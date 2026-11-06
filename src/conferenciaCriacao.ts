@@ -1,9 +1,9 @@
-import {simularCompras} from './comprasIniciais';
-import {classePersonagem,termoPersonagem} from './textoPersonagem';
-import {ORIGENS} from './origens';
-import {HABILIDADES_BASICAS} from './habilidades';
-import {PONTOS_CLASSE,PERICIAS_CLASSE} from './pericias';
-import {capacidadeInventario,equipamentoInicial,espacosOcupados,opcoesEquipamento} from './equipamento';
+import {simularCompras} from './comprasIniciais.ts';
+import {classePersonagem,termoPersonagem} from './textoPersonagem.ts';
+import {ORIGENS} from './origens.ts';
+import {HABILIDADES_BASICAS} from './habilidades.ts';
+import {PONTOS_CLASSE,PERICIAS_CLASSE} from './pericias.ts';
+import {capacidadeInventario,equipamentoInicial,espacosOcupados,opcoesEquipamento} from './equipamento.ts';
 export type FichaRevisao={identidade?:{genero?:string};nome:string;classe:string|null;nivel:number;forca:number;agilidade:number;vigor:number;astucia:number;origem:string|null;pericia_origem_treinada:string|null;pericia_origem_extra:string|null;pontos_pericia_classe:Record<string,number>;habilidade_basica:string|null;equipamento_inicial:string|null;compras_iniciais?:Record<string,number>;revisao_compras?:number;pv_maximo:number|null;sa_maximo:number|null;bi_maximo:number|null;defesa:number|null};
 export type Conferencia={nome:string;estado:'conferido'|'pendente'|'revisar';detalhe:string;secao:string};
 export function revisarCriacao(f:FichaRevisao):Conferencia[]{
