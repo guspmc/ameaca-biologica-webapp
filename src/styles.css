@@ -1000,3 +1000,22 @@ footer { margin-top:45px; border-top:1px solid #dce2df; padding-top:19px; color:
  .ficha-local-acordeao>summary{align-items:flex-start}
  .ficha-local-acordeao>summary span{max-width:46%}
 }
+
+
+/* Fidelidade mobile ao enquadramento do protótipo Ficha v0.2:
+   o aparelho permanece emoldurado; a rolagem ocorre dentro da tela. */
+@media(max-width:735px){
+ .ficha-local-fundo{display:flex;align-items:flex-start;justify-content:center;padding:10px 6px 20px}
+ .ficha-local{width:min(100%,425px);height:780px;max-height:calc(100svh - 112px);min-height:470px;border:7px solid #111a1c;border-radius:34px;box-shadow:0 32px 74px #050b0bcc,0 0 0 1px #8d8b7c inset,0 0 0 2px #484949;overflow:hidden}
+ .ficha-local-corpo{padding-left:13px;padding-right:13px;padding-bottom:112px;overscroll-behavior:contain;scroll-behavior:smooth}
+ .ficha-local-topo{padding-left:13px;padding-right:13px}
+ .ficha-local-nav{bottom:8px;width:calc(100% - 18px);max-width:390px}
+}
+@media(max-width:350px){
+ .ficha-local{border-width:6px;border-radius:29px}
+ .ficha-local-corpo{padding-left:10px;padding-right:10px}
+ .ficha-local-recursos small{font-size:6px;letter-spacing:0}
+ .ficha-local-recursos strong{font-size:16px}
+ .ficha-local-nav button small{font-size:7px}
+}
+@media(prefers-reduced-motion:reduce){.ficha-local-corpo{scroll-behavior:auto}}
