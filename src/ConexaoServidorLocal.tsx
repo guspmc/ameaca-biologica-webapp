@@ -26,7 +26,7 @@ export default function ConexaoServidorLocal() {
   const [sessao, setSessao] = useState<SessaoLocal | null>(null);
   // Distingue sessões sucessivas, inclusive novo login da mesma conta e mesma ficha.
   const geracaoSessao = useRef(0);
-  // Impede que uma consulta de sincronização antiga sobrescreva uma mais recente.
+  // Impede que uma consulta antiga sobrescreva o resultado de uma sincronização mais recente.
   const geracaoSincronizacao = useRef(0);
   const [mesas, setMesas] = useState<MesaLocal[]>([]);
   const [personagens, setPersonagens] = useState<Record<string, ResumoPersonagemLocal[]>>({});
@@ -483,11 +483,11 @@ export default function ConexaoServidorLocal() {
     setErro(''); setAviso(''); setConsultando(true);
     try {
       await criarClienteServidorLocal({ baseUrl: endereco.trim(), token: sessao.token }).sair();
-      if (!sincronizacaoAindaAtual()) return;
+      if (!sessaoContinuaSendoAtual(geracaoSessao.current, geracaoSolicitada)) return;
       try { localStorage.removeItem(CHAVE_CONTEXTO_FICHA); } catch { /* O contexto local pode permanecer se o armazenamento estiver indisponível. */ }
       encerrarSessao('Sessão encerrada no servidor.');
     } catch (problema) {
-      if (!sincronizacaoAindaAtual()) return;
+      if (!sessaoContinuaSendoAtual(geracaoSessao.current, geracaoSolicitada)) return;
       if (problema instanceof ErroServidorLocal && problema.status === 401) {
         encerrarSessao('A sessão já estava ausente ou expirada no servidor.');
       } else {
@@ -502,11 +502,11 @@ export default function ConexaoServidorLocal() {
     setErro(''); setAviso(''); setConsultando(true);
     try {
       const resposta = await criarClienteServidorLocal({ baseUrl: endereco.trim(), token: sessao.token }).listarMesas();
-      if (!sincronizacaoAindaAtual()) return;
+      if (!sessaoContinuaSendoAtual(geracaoSessao.current, geracaoSolicitada)) return;
       setMesas(resposta.mesas);
       setAviso('Lista de Mesas atualizada pelo servidor.');
     } catch (problema) {
-      if (!sincronizacaoAindaAtual()) return;
+      if (!sessaoContinuaSendoAtual(geracaoSessao.current, geracaoSolicitada)) return;
       if (problema instanceof ErroServidorLocal && problema.status === 401) {
         encerrarSessao('A sessão expirou ou foi encerrada no servidor. Entre novamente.');
       } else setErro(problema instanceof Error ? problema.message : 'Não foi possível atualizar as Mesas.');
@@ -525,9 +525,9 @@ export default function ConexaoServidorLocal() {
       let resposta;
       try {
         resposta = await cliente.criarMesa(nome);
-        if (!sincronizacaoAindaAtual()) return;
+        if (!sessaoContinuaSendoAtual(geracaoSessao.current, geracaoSolicitada)) return;
       } catch (problema) {
-        if (!sincronizacaoAindaAtual()) return;
+        if (!sessaoContinuaSendoAtual(geracaoSessao.current, geracaoSolicitada)) return;
         if (problema instanceof ErroServidorLocal && problema.status === 401) {
           encerrarSessao('A sessão expirou ou foi encerrada no servidor. Entre novamente.');
         } else setErro(problema instanceof Error ? problema.message : 'Não foi possível criar a Mesa.');
@@ -536,11 +536,11 @@ export default function ConexaoServidorLocal() {
       setNomeMesa('');
       try {
         const lista = await cliente.listarMesas();
-        if (!sincronizacaoAindaAtual()) return;
+        if (!sessaoContinuaSendoAtual(geracaoSessao.current, geracaoSolicitada)) return;
         setMesas(lista.mesas);
         setAviso('Mesa “' + resposta.mesa.name + '” criada e confirmada pelo servidor. Seu papel nesta Mesa é Mestre.');
       } catch (problema) {
-        if (!sincronizacaoAindaAtual()) return;
+        if (!sessaoContinuaSendoAtual(geracaoSessao.current, geracaoSolicitada)) return;
         if (problema instanceof ErroServidorLocal && problema.status === 401) {
           encerrarSessao('Mesa criada e confirmada pelo servidor, mas a sessão expirou antes da atualização da lista. Entre novamente para consultar o estado atual.');
         } else {
@@ -559,13 +559,13 @@ export default function ConexaoServidorLocal() {
     setErro(''); setAviso(''); setConsultando(true);
     try {
       const resultado = await criarClienteServidorLocal({ baseUrl: endereco.trim(), token: sessao.token }).excluirPersonagem(personagem.id);
-      if (!sincronizacaoAindaAtual()) return;
+      if (!sessaoContinuaSendoAtual(geracaoSessao.current, geracaoSolicitada)) return;
       if (!resultado.deleted || resultado.id !== personagem.id) throw new Error('O servidor não confirmou a exclusão do rascunho solicitado.');
       setPersonagens(atual => ({ ...atual, [mesa.id]: (atual[mesa.id] ?? []).filter(item => item.id !== personagem.id) }));
       if (fichaAbertaRef.current?.personagem.id === personagem.id) { fichaAbertaRef.current = null; setFichaAberta(null); }
       setAviso('Rascunho excluído e confirmado pelo servidor.');
     } catch (problema) {
-      if (!sincronizacaoAindaAtual()) return;
+      if (!sessaoContinuaSendoAtual(geracaoSessao.current, geracaoSolicitada)) return;
       if (problema instanceof ErroServidorLocal && problema.status === 401) encerrarSessao('A sessão expirou ou foi encerrada no servidor. Entre novamente.');
       else setErro(problema instanceof Error ? problema.message : 'Não foi possível excluir o rascunho.');
     } finally { if (sessaoContinuaSendoAtual(geracaoSessao.current, geracaoSolicitada)) setConsultando(false); }
@@ -576,11 +576,11 @@ export default function ConexaoServidorLocal() {
     setErro(''); setAviso(''); setConsultando(true);
     try {
       const resposta = await criarClienteServidorLocal({ baseUrl: endereco.trim(), token: sessao.token }).listarPersonagens(mesa.id);
-      if (!sincronizacaoAindaAtual()) return;
+      if (!sessaoContinuaSendoAtual(geracaoSessao.current, geracaoSolicitada)) return;
       setPersonagens(atual => ({ ...atual, [mesa.id]: resposta.personagens }));
       setAviso('Rascunhos consultados e confirmados pelo servidor.');
     } catch (problema) {
-      if (!sincronizacaoAindaAtual()) return;
+      if (!sessaoContinuaSendoAtual(geracaoSessao.current, geracaoSolicitada)) return;
       if (problema instanceof ErroServidorLocal && problema.status === 401) encerrarSessao('A sessão expirou ou foi encerrada no servidor. Entre novamente.');
       else setErro(problema instanceof Error ? problema.message : 'Não foi possível consultar os personagens.');
     } finally { if (sessaoContinuaSendoAtual(geracaoSessao.current, geracaoSolicitada)) setConsultando(false); }
@@ -596,14 +596,14 @@ export default function ConexaoServidorLocal() {
     try {
       const cliente = criarClienteServidorLocal({ baseUrl: endereco.trim(), token: sessao.token });
       const resposta = await cliente.criarPersonagem(mesa.id, nome, {});
-      if (!sincronizacaoAindaAtual()) return;
+      if (!sessaoContinuaSendoAtual(geracaoSessao.current, geracaoSolicitada)) return;
       setNomesPersonagens(atual => ({ ...atual, [mesa.id]: '' }));
       const lista = await cliente.listarPersonagens(mesa.id);
-      if (!sincronizacaoAindaAtual()) return;
+      if (!sessaoContinuaSendoAtual(geracaoSessao.current, geracaoSolicitada)) return;
       setPersonagens(atual => ({ ...atual, [mesa.id]: lista.personagens }));
       setAviso('Rascunho “' + resposta.personagem.name + '” criado e confirmado pelo servidor.');
     } catch (problema) {
-      if (!sincronizacaoAindaAtual()) return;
+      if (!sessaoContinuaSendoAtual(geracaoSessao.current, geracaoSolicitada)) return;
       if (problema instanceof ErroServidorLocal && problema.status === 401) encerrarSessao('A sessão expirou ou foi encerrada no servidor. Entre novamente.');
       else setErro(problema instanceof Error ? problema.message : 'Não foi possível criar o rascunho.');
     } finally { if (sessaoContinuaSendoAtual(geracaoSessao.current, geracaoSolicitada)) setConsultando(false); }
@@ -615,7 +615,7 @@ export default function ConexaoServidorLocal() {
     setErro(''); setAviso(''); setConsultando(true);
     try {
       const resposta = await criarClienteServidorLocal({ baseUrl: endereco.trim(), token: sessao.token }).consultarPersonagem(personagem.id);
-      if (!sincronizacaoAindaAtual()) return;
+      if (!sessaoContinuaSendoAtual(geracaoSessao.current, geracaoSolicitada)) return;
       if (resposta.personagem.mesaId !== mesa.id) throw new Error('O servidor retornou um personagem vinculado a outra Mesa.');
       setFichaAberta({ mesa, personagem: resposta.personagem });
       try {
@@ -627,7 +627,7 @@ export default function ConexaoServidorLocal() {
       } catch { /* A ficha continua funcional mesmo sem persistência do contexto de navegação. */ }
       setAviso('Ficha consultada e confirmada pelo servidor. As alterações continuam em estado de rascunho.');
     } catch (problema) {
-      if (!sincronizacaoAindaAtual()) return;
+      if (!sessaoContinuaSendoAtual(geracaoSessao.current, geracaoSolicitada)) return;
       if (problema instanceof ErroServidorLocal && problema.status === 401) encerrarSessao('A sessão expirou ou foi encerrada no servidor. Entre novamente.');
       else setErro(problema instanceof Error ? problema.message : 'Não foi possível abrir a ficha.');
     } finally { if (sessaoContinuaSendoAtual(geracaoSessao.current, geracaoSolicitada)) setConsultando(false); }
@@ -669,7 +669,7 @@ export default function ConexaoServidorLocal() {
             baseUrl: endereco.trim(),
             token: sessao.token,
           }).listarPersonagens(mesa.id);
-          if (!sincronizacaoAindaAtual()) return;
+          if (!sessaoContinuaSendoAtual(geracaoSessao.current, geracaoSolicitada)) return;
           setPersonagens(atual => ({ ...atual, [mesa.id]: lista.personagens }));
           personagemRestaurado = lista.personagens.find(item => item.id === contexto?.personagemId);
         }
@@ -682,7 +682,7 @@ export default function ConexaoServidorLocal() {
           setAviso('A sessão e a Mesa foram restauradas, mas o rascunho salvo não existe mais. O contexto antigo foi descartado.');
         }
       } catch (problema) {
-        if (!sincronizacaoAindaAtual()) return;
+        if (!sessaoContinuaSendoAtual(geracaoSessao.current, geracaoSolicitada)) return;
         if (problema instanceof ErroServidorLocal && problema.status === 401) {
           encerrarSessao('A sessão expirou ou foi encerrada no servidor. Entre novamente.');
         } else {
@@ -773,11 +773,11 @@ export default function ConexaoServidorLocal() {
     try {
       const cliente = criarClienteServidorLocal({ baseUrl: endereco.trim(), token: sessao.token });
       const resposta = await cliente.criarConvite(mesa.id);
-      if (!sincronizacaoAindaAtual()) return;
+      if (!sessaoContinuaSendoAtual(geracaoSessao.current, geracaoSolicitada)) return;
       setConvitesGerados(atual => ({ ...atual, [mesa.id]: resposta.invitation.code }));
       setAviso('Convite gerado. Copie e compartilhe o código; ele identifica a Mesa, mas não concede acesso automaticamente.');
     } catch (problema) {
-      if (!sincronizacaoAindaAtual()) return;
+      if (!sessaoContinuaSendoAtual(geracaoSessao.current, geracaoSolicitada)) return;
       if (problema instanceof ErroServidorLocal && problema.status === 401) {
         encerrarSessao('A sessão expirou ou foi encerrada no servidor. Entre novamente.');
       } else setErro(problema instanceof Error ? problema.message : 'Não foi possível gerar o convite.');
@@ -790,13 +790,13 @@ export default function ConexaoServidorLocal() {
     setErro(''); setAviso(''); setConsultando(true);
     try {
       const resposta = await criarClienteServidorLocal({ baseUrl: endereco.trim(), token: sessao.token }).revogarConvite(mesa.id);
-      if (!sincronizacaoAindaAtual()) return;
+      if (!sessaoContinuaSendoAtual(geracaoSessao.current, geracaoSolicitada)) return;
       setConvitesGerados(atual => { const novo = { ...atual }; delete novo[mesa.id]; return novo; });
       setAviso(resposta.revoked
         ? 'Convite ativo revogado. Códigos anteriores não permitem novas solicitações; participantes atuais permanecem na Mesa.'
         : 'Não havia convite ativo para revogar.');
     } catch (problema) {
-      if (!sincronizacaoAindaAtual()) return;
+      if (!sessaoContinuaSendoAtual(geracaoSessao.current, geracaoSolicitada)) return;
       if (problema instanceof ErroServidorLocal && problema.status === 401) {
         encerrarSessao('A sessão expirou ou foi encerrada no servidor. Entre novamente.');
       } else setErro(problema instanceof Error ? problema.message : 'Não foi possível revogar o convite.');
@@ -818,11 +818,11 @@ export default function ConexaoServidorLocal() {
     setErro(''); setAviso(''); setConsultando(true);
     try {
       const resposta = await criarClienteServidorLocal({ baseUrl: endereco.trim(), token: sessao.token }).listarSolicitacoes(mesa.id);
-      if (!sincronizacaoAindaAtual()) return;
+      if (!sessaoContinuaSendoAtual(geracaoSessao.current, geracaoSolicitada)) return;
       setSolicitacoes(atual => ({ ...atual, [mesa.id]: resposta.requests }));
       setAviso('Solicitações pendentes consultadas no servidor.');
     } catch (problema) {
-      if (!sincronizacaoAindaAtual()) return;
+      if (!sessaoContinuaSendoAtual(geracaoSessao.current, geracaoSolicitada)) return;
       if (problema instanceof ErroServidorLocal && problema.status === 401) {
         encerrarSessao('A sessão expirou ou foi encerrada no servidor. Entre novamente.');
       } else setErro(problema instanceof Error ? problema.message : 'Não foi possível consultar as solicitações.');
@@ -836,13 +836,13 @@ export default function ConexaoServidorLocal() {
     try {
       const cliente = criarClienteServidorLocal({ baseUrl: endereco.trim(), token: sessao.token });
       await cliente.analisarSolicitacao(mesa.id, id, decisao);
-      if (!sincronizacaoAindaAtual()) return;
+      if (!sessaoContinuaSendoAtual(geracaoSessao.current, geracaoSolicitada)) return;
       const confirmacao = decisao === 'aprovar'
         ? 'Participante aprovado e vínculo confirmado pelo servidor.'
         : 'Solicitação recusada pelo servidor.';
       setAviso(confirmacao);
       const [lista, pedidos] = await Promise.allSettled([cliente.listarMesas(), cliente.listarSolicitacoes(mesa.id)]);
-      if (!sincronizacaoAindaAtual()) return;
+      if (!sessaoContinuaSendoAtual(geracaoSessao.current, geracaoSolicitada)) return;
       if (lista.status === 'fulfilled') setMesas(lista.value.mesas);
       if (pedidos.status === 'fulfilled') setSolicitacoes(atual => ({ ...atual, [mesa.id]: pedidos.value.requests }));
       const falhas = [lista, pedidos].filter(resultado => resultado.status === 'rejected');
@@ -855,7 +855,7 @@ export default function ConexaoServidorLocal() {
         }
       }
     } catch (problema) {
-      if (!sincronizacaoAindaAtual()) return;
+      if (!sessaoContinuaSendoAtual(geracaoSessao.current, geracaoSolicitada)) return;
       if (problema instanceof ErroServidorLocal && problema.status === 401) encerrarSessao('A sessão expirou ou foi encerrada no servidor. Entre novamente.');
       else setErro(problema instanceof Error ? problema.message : 'Não foi possível analisar a solicitação.');
     } finally { if (sessaoContinuaSendoAtual(geracaoSessao.current, geracaoSolicitada)) setConsultando(false); }
@@ -867,11 +867,11 @@ export default function ConexaoServidorLocal() {
     setErro(''); setAviso(''); setConsultando(true);
     try {
       const resposta = await criarClienteServidorLocal({ baseUrl: endereco.trim(), token: sessao.token }).listarParticipantes(mesa.id);
-      if (!sincronizacaoAindaAtual()) return;
+      if (!sessaoContinuaSendoAtual(geracaoSessao.current, geracaoSolicitada)) return;
       setParticipantes(atual => ({ ...atual, [mesa.id]: resposta.participants }));
       setAviso('Participantes consultados e confirmados pelo servidor.');
     } catch (problema) {
-      if (!sincronizacaoAindaAtual()) return;
+      if (!sessaoContinuaSendoAtual(geracaoSessao.current, geracaoSolicitada)) return;
       if (problema instanceof ErroServidorLocal && problema.status === 401) encerrarSessao('A sessão expirou ou foi encerrada no servidor. Entre novamente.');
       else setErro(problema instanceof Error ? problema.message : 'Não foi possível consultar os participantes.');
     } finally { if (sessaoContinuaSendoAtual(geracaoSessao.current, geracaoSolicitada)) setConsultando(false); }
@@ -887,13 +887,13 @@ export default function ConexaoServidorLocal() {
     setErro(''); setAviso(''); setConsultando(true);
     try {
       const resultado = await criarClienteServidorLocal({ baseUrl: endereco.trim(), token: sessao.token }).removerParticipante(mesa.id, accountId);
-      if (!sincronizacaoAindaAtual()) return;
+      if (!sessaoContinuaSendoAtual(geracaoSessao.current, geracaoSolicitada)) return;
       if (!resultado.removed || resultado.accountId !== accountId) throw new Error('O servidor não confirmou a remoção do participante solicitado.');
       setParticipantes(atual => ({ ...atual, [mesa.id]: (atual[mesa.id] ?? []).filter(item => item.accountId !== accountId) }));
       setSolicitacoes(atual => ({ ...atual, [mesa.id]: (atual[mesa.id] ?? []).filter(item => item.accountId !== accountId) }));
       setAviso('Participante removido e acesso revogado pelo servidor. Os rascunhos vinculados foram excluídos.');
     } catch (problema) {
-      if (!sincronizacaoAindaAtual()) return;
+      if (!sessaoContinuaSendoAtual(geracaoSessao.current, geracaoSolicitada)) return;
       if (problema instanceof ErroServidorLocal && problema.status === 401) encerrarSessao('A sessão expirou ou foi encerrada no servidor. Entre novamente.');
       else setErro(problema instanceof Error ? problema.message : 'Não foi possível remover o participante.');
     } finally { if (sessaoContinuaSendoAtual(geracaoSessao.current, geracaoSolicitada)) setConsultando(false); }
@@ -906,14 +906,14 @@ export default function ConexaoServidorLocal() {
     setErro(''); setAviso(''); setConsultando(true);
     try {
       await criarClienteServidorLocal({ baseUrl: endereco.trim(), token: sessao.token }).solicitarIngresso(codigoConvite.trim());
-      if (!sincronizacaoAindaAtual()) return;
+      if (!sessaoContinuaSendoAtual(geracaoSessao.current, geracaoSolicitada)) return;
       setCodigoConvite('');
       const urlAtual = new URL(window.location.href);
       urlAtual.searchParams.delete('convite');
       window.history.replaceState({}, '', urlAtual.toString());
       setAviso('Solicitação enviada. O acesso à Mesa só será liberado após aprovação do Mestre.');
     } catch (problema) {
-      if (!sincronizacaoAindaAtual()) return;
+      if (!sessaoContinuaSendoAtual(geracaoSessao.current, geracaoSolicitada)) return;
       if (problema instanceof ErroServidorLocal && problema.status === 401) {
         encerrarSessao('A sessão expirou ou foi encerrada no servidor. Entre novamente.');
       } else setErro(problema instanceof Error ? problema.message : 'Não foi possível solicitar ingresso.');
@@ -926,11 +926,11 @@ export default function ConexaoServidorLocal() {
     setErro(''); setAviso(''); setConsultando(true);
     try {
       const resposta = await criarClienteServidorLocal({ baseUrl: endereco.trim(), token: sessao.token }).minhaConta();
-      if (!sincronizacaoAindaAtual()) return;
+      if (!sessaoContinuaSendoAtual(geracaoSessao.current, geracaoSolicitada)) return;
       if (resposta.account.id !== sessao.account.id) throw new Error('A conta confirmada não corresponde à sessão atual.');
       setAviso('Sessão válida. O servidor confirmou a conta ' + resposta.account.username + '.');
     } catch (problema) {
-      if (!sincronizacaoAindaAtual()) return;
+      if (!sessaoContinuaSendoAtual(geracaoSessao.current, geracaoSolicitada)) return;
       if (problema instanceof ErroServidorLocal && problema.status === 401) {
         encerrarSessao('O servidor informou que a sessão expirou ou foi encerrada. Entre novamente.');
       } else setErro(problema instanceof Error ? problema.message : 'Falha ao consultar a sessão.');
