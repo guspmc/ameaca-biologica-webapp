@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import { AUTOMACOES, automacoesEfetivas, normalizarConfiguracaoFuncionamento, type ConfiguracaoFuncionamento, type ConfiguracaoFuncionamentoCompleta, type ModoFuncionamento, type ModoDados, type VisibilidadeRolagem } from './funcionamentoFicha';
+import AutoSaveStatusLocal from './AutoSaveStatusLocal';
+import { useAutoSaveLocal } from './useAutoSaveLocal';
 
 type Props = {
   inicial?: ConfiguracaoFuncionamento;
@@ -9,39 +11,27 @@ type Props = {
 
 export default function FuncionamentoFichaLocal({ inicial, aoSalvar, aoAlterarPendencia }: Props) {
   const [config, setConfig] = useState(() => normalizarConfiguracaoFuncionamento(inicial));
-  const [ocupado, setOcupado] = useState(false);
-  const [mensagem, setMensagem] = useState('');
-  const [erro, setErro] = useState('');
-
+  const [sujo, setSujo] = useState(false);
+  const valor = normalizarConfiguracaoFuncionamento(config);
+  const autosave = useAutoSaveLocal({
+    valor,
+    chave: JSON.stringify(config),
+    sujo,
+    aoSalvar,
+    aoConfirmar: () => { setSujo(false); aoAlterarPendencia(false); },
+  });
+  const ocupado = autosave.estado === 'sincronizando';
   const efetivas = automacoesEfetivas(config);
 
   function atualizar(proxima: ConfiguracaoFuncionamentoCompleta) {
     setConfig(proxima);
+    setSujo(true);
     aoAlterarPendencia(true);
-    setMensagem('');
-    setErro('');
-  }
-
-  async function salvar() {
-    if (ocupado) return;
-    setOcupado(true);
-    setMensagem('');
-    setErro('');
-    try {
-      const confirmado = await aoSalvar(normalizarConfiguracaoFuncionamento(config));
-      if (!confirmado) throw new Error('O armazenamento não confirmou a gravação.');
-      aoAlterarPendencia(false);
-      setMensagem('Preferências salvas e confirmadas.');
-    } catch (problema) {
-      setErro(problema instanceof Error ? problema.message : 'Não foi possível salvar as preferências.');
-    } finally {
-      setOcupado(false);
-    }
   }
 
   return <div className="ficha-local-editor">
     <h3>Funcionamento da ficha</h3>
-    <p>Defina como os controles elegíveis deverão operar. Esta configuração não executa ações, rolagens ou alterações de recursos por conta própria.</p>
+    <p>Defina como os controles elegíveis deverão operar. Cada preferência é salva automaticamente após uma breve pausa. Esta configuração não executa ações, rolagens ou alterações de recursos por conta própria.</p>
     <h4>Dados e histórico</h4>
     <label>Método de dados
       <select value={config.modoDados} disabled={ocupado} onChange={evento => atualizar({ ...config, modoDados: evento.target.value as ModoDados })}>
@@ -93,8 +83,6 @@ export default function FuncionamentoFichaLocal({ inicial, aoSalvar, aoAlterarPe
       <ul>{AUTOMACOES.map(automacao => <li key={automacao.id}>{automacao.nome}: {efetivas[automacao.id] === null ? 'A definir' : efetivas[automacao.id] ? 'Habilitado' : 'Desabilitado'}</li>)}</ul>
     </div>
     <p className="ficha-local-legenda">As escolhas específicas do Misto são preservadas ao alternar para Automático ou Manual. A mudança de modo afeta somente operações futuras quando os respectivos módulos estiverem implementados.</p>
-    {erro && <p className="offline-erro" role="alert">{erro}</p>}
-    {mensagem && <p className="offline-status" role="status">{mensagem}</p>}
-    <button type="button" className="acao" disabled={ocupado} onClick={() => void salvar()}>{ocupado ? 'Salvando…' : 'Salvar funcionamento'} <span>→</span></button>
+    <AutoSaveStatusLocal estado={autosave.estado} erro={autosave.erro} mensagemSucesso="Preferências salvas e confirmadas pelo servidor." aoTentarNovamente={autosave.tentarNovamente} />
   </div>;
 }

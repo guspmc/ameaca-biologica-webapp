@@ -80,6 +80,7 @@ export default function FichaLocal({ nome, mesa, contextoId, dados, aoFechar, ao
   const pendenciasInternas = useRef(new Set<string>());
   const [secoesPendentes, setSecoesPendentes] = useState<Set<string>>(() => new Set());
   const [secaoAtiva, setSecaoAtiva] = useState('caracteristicas');
+  const [avisoFechamento, setAvisoFechamento] = useState('');
   const corpoRef = useRef<HTMLDivElement | null>(null);
   const chavePosicao = 'ameaca-biologica:ficha:posicao:v1:' + (contextoId ?? mesa + ':' + nome);
   useEffect(() => {
@@ -130,9 +131,10 @@ export default function FichaLocal({ nome, mesa, contextoId, dados, aoFechar, ao
   function fecharFicha() {
     if (pendenciasInternas.current.size > 0) {
       const secoes = [...pendenciasInternas.current].join(', ');
-      if (!window.confirm(`Há alterações não salvas em: ${secoes}.\n\nSe fechar agora, essas alterações serão descartadas. Deseja fechar mesmo assim?`)) return;
+      setAvisoFechamento('A ficha permanecerá aberta até o servidor confirmar: ' + secoes + '. Se houver falha, use “Tentar novamente” no editor correspondente.');
+      return;
     }
-    pendenciasInternas.current.clear();
+    setAvisoFechamento('');
     aoFechar();
   }
   const ficha = dados as DadosFichaLocal;
@@ -219,6 +221,7 @@ export default function FichaLocal({ nome, mesa, contextoId, dados, aoFechar, ao
       </header>
       <div className="ficha-local-corpo" ref={corpoRef}>
         {status && <p className="offline-status" role="status" aria-live="polite">{status}</p>}
+        {avisoFechamento && <p className="offline-status" role="status">{avisoFechamento}</p>}
         {erro && <p className="offline-erro" role="alert">{erro}</p>}
         {erro?.includes('alterada em outra aba') && aoRecarregar && <button type="button" className="botao-claro" onClick={aoRecarregar}>Descartar esta edição e carregar a versão mais recente</button>}
         <div className="ficha-local-identidade">

@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import { ajustarBI, ajustarSA, aplicarDanoPV, curarPV, definirPVTemporarios, recursosIniciais, recursosValidos, type RecursosAtuais } from './recursosFicha';
+import AutoSaveStatusLocal from './AutoSaveStatusLocal';
+import { useAutoSaveLocal } from './useAutoSaveLocal';
 
 type Props = {
   dados: Record<string, unknown>;
@@ -14,20 +16,30 @@ type Props = {
 export default function RecursosFichaLocal({ dados, pvMaximo, saMaximo, biMaximo, bloquearPV = false, aoSalvar, aoAlterarPendencia }: Props) {
   const [recursos, setRecursos] = useState(() => recursosIniciais(dados, pvMaximo, saMaximo));
   const [anterior, setAnterior] = useState<RecursosAtuais | null>(null);
-  const [ocupado, setOcupado] = useState(false);
-  const [mensagem, setMensagem] = useState('');
-  const [erro, setErro] = useState('');
+  const [sujo, setSujo] = useState(false);
+  const [erroOperacao, setErroOperacao] = useState('');
   const [dano, setDano] = useState('1');
   const [temporarios, setTemporarios] = useState('0');
   const valido = recursosValidos(recursos, pvMaximo, saMaximo);
   const fase = biMaximo <= 0 ? 'Indisponível até concluir a Classe' : recursos.biAtual >= biMaximo ? 'Colapso Viral' : 'Fase ' + (Math.floor(recursos.biAtual * 5 / biMaximo) + 1);
+  const autosave = useAutoSaveLocal({
+    valor: recursos,
+    chave: JSON.stringify(recursos),
+    sujo,
+    aoSalvar,
+    validar: atual => recursosValidos(atual, pvMaximo, saMaximo)
+      ? null
+      : 'Revise os valores: PV e SA Atuais não podem exceder seus máximos.',
+    aoConfirmar: () => { setSujo(false); aoAlterarPendencia(false); },
+  });
+  const ocupado = autosave.estado === 'sincronizando';
 
   function atualizar(proximo: RecursosAtuais) {
     setAnterior(recursos);
     setRecursos(proximo);
+    setSujo(true);
     aoAlterarPendencia(true);
-    setMensagem('');
-    setErro('');
+    setErroOperacao('');
   }
   function quantidade(valor: string): number {
     const n = Number(valor);
@@ -35,31 +47,19 @@ export default function RecursosFichaLocal({ dados, pvMaximo, saMaximo, biMaximo
     return n;
   }
   function tentar(operacao: () => RecursosAtuais) {
-    try { atualizar(operacao()); } catch (e) { setErro(e instanceof Error ? e.message : 'Operação inválida.'); }
-  }
-  async function salvar() {
-    if (ocupado) return;
-    if (!valido) { setErro('Revise os valores: PV e SA Atuais não podem exceder seus máximos.'); return; }
-    setOcupado(true); setErro(''); setMensagem('');
-    try {
-      if (!await aoSalvar(recursos)) throw new Error('O armazenamento não confirmou a gravação.');
-      aoAlterarPendencia(false);
-      setAnterior(null);
-      setMensagem('Recursos salvos e confirmados.');
-    } catch (e) { setErro(e instanceof Error ? e.message : 'Não foi possível salvar os recursos.'); }
-    finally { setOcupado(false); }
+    try { atualizar(operacao()); } catch (e) { setErroOperacao(e instanceof Error ? e.message : 'Operação inválida.'); }
   }
 
   return <details className="ficha-local-editor recursos-ficha" aria-label="Recursos da personagem">
     <summary>Administrar recursos e Integridade Física</summary>
     <h3>Recursos e Integridade Física</h3>
-    <p>Valores atuais são separados dos máximos derivados. Ajustes aqui não registram descanso, rolagem, ação ou efeito automático.</p>
+    <p>Valores atuais são separados dos máximos derivados. Ajustes aqui são enviados automaticamente ao servidor; não registram descanso, rolagem, ação ou efeito automático.</p>
     <div className="ficha-local-grade">
       <div><small>PONTOS DE VIDA</small><strong>{recursos.pvAtual}/{pvMaximo}</strong><p>Temporários: {recursos.pvTemporarios}</p></div>
       <div><small>SURTO DE ADRENALINA</small><strong>{recursos.saAtual}/{saMaximo}</strong><p>Gasto de SA é sempre uma escolha expressa.</p></div>
       <div><small>BIO-INFECÇÃO</small><strong>{recursos.biAtual}/{biMaximo}</strong><p>{fase}</p></div>
     </div>
-    {!valido && <p className="offline-erro" role="alert">Há valores acima dos máximos atuais. Eles foram preservados; ajuste-os antes de salvar.</p>}
+    {!valido && <p className="offline-erro" role="alert">Há valores acima dos máximos atuais. Eles foram preservados; ajuste-os antes da sincronização.</p>}
     <h4>Ajustes diretos</h4>
     <div className="recursos-controles">
       <label>PV Atuais<input type="number" min="0" step="1" value={recursos.pvAtual} disabled={ocupado || bloquearPV} onChange={e => { const n = Number(e.target.value); if (Number.isSafeInteger(n) && n >= 0) atualizar({ ...recursos, pvAtual: n }); }}/></label>
@@ -88,10 +88,8 @@ export default function RecursosFichaLocal({ dados, pvMaximo, saMaximo, biMaximo
       <button type="button" disabled={ocupado || biMaximo <= 0} onClick={() => tentar(() => ajustarBI(recursos, 1, pvMaximo, saMaximo))}>+1 BI</button>
     </div>
     <p className="ficha-local-legenda">BI começa em 0, não aumenta sozinha e só diminui por fonte expressa. Alcançar ou ultrapassar BI Máxima sinaliza Colapso Viral; esta tela não inicia Reanimação ou transformação.</p>
-    {erro && <p className="offline-erro" role="alert">{erro}</p>}
-    {mensagem && <p className="offline-status" role="status">{mensagem}</p>}
-    <button type="button" className="acao" disabled={ocupado || !valido} onClick={() => void salvar()}>{ocupado ? 'Salvando…' : 'Salvar recursos'} <span>→</span></button>
-    <button type="button" className="botao-claro" disabled={ocupado || !anterior} onClick={() => { if (anterior) { setRecursos(anterior); setAnterior(null); aoAlterarPendencia(true); setMensagem('Último ajuste desfeito.'); } }}>Desfazer último ajuste</button>
-    <button type="button" className="botao-claro" disabled={ocupado} onClick={() => { setRecursos(recursosIniciais(dados, pvMaximo, saMaximo)); setAnterior(null); aoAlterarPendencia(false); setErro(''); setMensagem('Alterações ainda não salvas descartadas.'); }}>Descartar alterações não salvas</button>
+    {erroOperacao && <p className="offline-erro" role="alert">{erroOperacao}</p>}
+    <AutoSaveStatusLocal estado={autosave.estado} erro={autosave.erro} mensagemSucesso="Recursos salvos e confirmados pelo servidor." aoTentarNovamente={autosave.tentarNovamente} />
+    <button type="button" className="botao-claro" disabled={ocupado || !anterior} onClick={() => { if (anterior) { setRecursos(anterior); setAnterior(null); setSujo(true); aoAlterarPendencia(true); setErroOperacao(''); } }}>Desfazer último ajuste</button>
   </details>;
 }
