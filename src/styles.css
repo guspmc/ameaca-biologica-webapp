@@ -1067,3 +1067,7 @@ footer { margin-top:45px; border-top:1px solid #dce2df; padding-top:19px; color:
 /* O Terminal ocupa a área de trabalho, sem o cartão externo da versão antiga. */
 .painel-mestre-shell{margin:0;padding:0;border:0;border-radius:0;box-shadow:none;min-height:100dvh;background:var(--pm-bg)}
 .painel-mestre-app{min-height:100dvh}
+
+/* Ajustes tipográficos finos da Ficha — correspondência ao protótipo v0.2. */
+.ficha-local-wordmark{letter-spacing:.6px}
+.ficha-local-chapter-meta{margin-top:16px;padding:0 0 8px;border-bottom:0}
