@@ -7,6 +7,7 @@ test('Painel do Mestre mantém referências ARIA dos destinos principais e das f
  const ids=new Set([...fonte.matchAll(/\bid="([^"]+)"/g)].map(m=>m[1]));
  const rotulos=[...fonte.matchAll(/aria-labelledby="([^"]+)"/g)].map(m=>m[1]);
  const controles=[...fonte.matchAll(/aria-controls="([^"]+)"/g)].map(m=>m[1]);
+ assert.match(fonte,/id=\{'painel-mestre-encontros-tab-' \+ id\}/);
  assert.deepEqual([...new Set(rotulos)].sort(),[
   'painel-mestre-encontros-tab-ao-vivo',
   'painel-mestre-encontros-tab-catalogo',
@@ -22,7 +23,11 @@ test('Painel do Mestre mantém referências ARIA dos destinos principais e das f
   'painel-mestre-panel-encontros',
   'painel-mestre-panel-mesa'
  ].sort());
- for(const id of [...rotulos,...controles])assert.ok(ids.has(id),'Referência ARIA sem destino: '+id);
+ for(const id of [...rotulos,...controles]) {
+  if(id.startsWith('painel-mestre-encontros-tab-')) {
+   assert.ok(['ao-vivo','preparados','catalogo','gerador','perseguicao'].includes(id.slice('painel-mestre-encontros-tab-'.length)),'Rótulo de ferramenta desconhecido: '+id);
+  } else assert.ok(ids.has(id),'Referência ARIA sem destino: '+id);
+ }
  const paineis=[...fonte.matchAll(/id="(painel-mestre-encontros-panel-[^"]+)"/g)].map(m=>m[1]);
  assert.deepEqual(paineis.sort(),[
   'painel-mestre-encontros-panel-ao-vivo',
