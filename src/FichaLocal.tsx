@@ -85,6 +85,7 @@ export default function FichaLocal({ nome, mesa, contextoId, dados, aoFechar, ao
   const [fecharAposSalvar, setFecharAposSalvar] = useState(false);
   const corpoRef = useRef<HTMLDivElement | null>(null);
   const chavePosicao = 'ameaca-biologica:ficha:posicao:v1:' + (contextoId ?? mesa + ':' + nome);
+  const chaveEditores = 'ameaca-biologica:ficha:editores:v1:' + (contextoId ?? mesa + ':' + nome);
   useEffect(() => {
     const corpo = corpoRef.current;
     if (!corpo) return;
@@ -99,6 +100,33 @@ export default function FichaLocal({ nome, mesa, contextoId, dados, aoFechar, ao
     corpo.addEventListener('scroll', salvarPosicao, { passive: true });
     return () => corpo.removeEventListener('scroll', salvarPosicao);
   }, [chavePosicao]);
+  useEffect(() => {
+    const corpo = corpoRef.current;
+    if (!corpo) return;
+    const ids = ['ficha-local-editor-caracteristicas', 'ficha-local-editor-pericias', 'ficha-local-editor-inventario'];
+    try {
+      const salvo = JSON.parse(localStorage.getItem(chaveEditores) ?? '{}') as Record<string, unknown>;
+      for (const id of ids) {
+        const detalhe = document.getElementById(id) as HTMLDetailsElement | null;
+        if (detalhe && typeof salvo[id] === 'boolean') detalhe.open = salvo[id] as boolean;
+      }
+    } catch { /* Os editores mantêm seus estados padrão se a preferência local estiver indisponível. */ }
+    const salvarEstado = (evento: Event) => {
+      const alvo = evento.target;
+      if (!(alvo instanceof HTMLDetailsElement) || !ids.includes(alvo.id)) return;
+      try {
+        const estado: Record<string, boolean> = {};
+        for (const id of ids) {
+          const detalhe = document.getElementById(id) as HTMLDetailsElement | null;
+          if (detalhe) estado[id] = detalhe.open;
+        }
+        localStorage.setItem(chaveEditores, JSON.stringify(estado));
+      } catch { /* A ficha continua funcional sem persistir a abertura dos editores. */ }
+    };
+    corpo.addEventListener('toggle', salvarEstado, true);
+    return () => corpo.removeEventListener('toggle', salvarEstado, true);
+  }, [chaveEditores]);
+
   useEffect(() => {
     const corpo = corpoRef.current;
     if (!corpo) return;
@@ -219,19 +247,25 @@ export default function FichaLocal({ nome, mesa, contextoId, dados, aoFechar, ao
     bi_maximo: bi,
     defesa,
   };
+  function abrirEditor(secao: 'caracteristicas' | 'pericias' | 'inventario') {
+    const detalhe = document.getElementById('ficha-local-editor-' + secao) as HTMLDetailsElement | null;
+    if (detalhe) detalhe.open = true;
+    aoEditar(secao);
+  }
+
   function irParaRevisao(secao: string) {
-    const ids: Record<string, string> = {
-      perfil: 'ficha-local-caracteristicas',
-      pericias: 'ficha-local-pericias',
-      itens: 'ficha-local-inventario',
+    const destino: Record<string, 'caracteristicas' | 'pericias' | 'inventario'> = {
+      perfil: 'caracteristicas',
+      pericias: 'pericias',
+      itens: 'inventario',
     };
-    document.getElementById(ids[secao] ?? ids.perfil)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    abrirEditor(destino[secao] ?? 'caracteristicas');
   }
 
   return <div className="ficha-local-fundo" role="dialog" aria-modal="true" aria-labelledby="ficha-local-titulo">
     <article className="ficha-local">
       <header className="ficha-local-topo">
-        <div className="ficha-local-acoes"><button type="button" className="ficha-local-voltar" onClick={fecharFicha}>← Voltar</button><button type="button" className="botao-claro" onClick={() => aoEditar("caracteristicas")}>Editar rascunho</button></div>
+        <div className="ficha-local-acoes"><button type="button" className="ficha-local-voltar" onClick={fecharFicha}>← Voltar</button><button type="button" className="botao-claro" onClick={() => abrirEditor('caracteristicas')}>Editar rascunho</button></div>
         <div><strong>AMEAÇA BIOLÓGICA</strong><small>{origemDados === 'servidor' ? 'FICHA NO SERVIDOR · RASCUNHO' : 'FICHA LOCAL · RASCUNHO'}</small></div>
         <span className="ficha-local-selo">NÃO ATIVA</span>
       </header>
@@ -292,9 +326,12 @@ export default function FichaLocal({ nome, mesa, contextoId, dados, aoFechar, ao
         />
 
         <section id="ficha-local-caracteristicas" className="ficha-local-secao">
-          <div className="ficha-local-titulo-secao"><h2><span>01</span> Características</h2><button type="button" className="ficha-local-editar-secao" onClick={() => aoEditar("caracteristicas")}>Editar seção ↗</button></div>
+          <div className="ficha-local-titulo-secao"><h2><span>01</span> Características</h2><button type="button" className="ficha-local-editar-secao" onClick={() => abrirEditor('caracteristicas')}>Editar seção ↗</button></div>
           {alertasCompatibilidade.length > 0 && <p className="ficha-local-aviso" role="alert">Revisão da criação necessária: {alertasCompatibilidade.join("; ")}. As escolhas foram preservadas; corrija os itens incompatíveis antes de confirmar a criação.</p>}
-          <EditorCaracteristicasLocal autoSalvar={autoSalvar} key={JSON.stringify([classe, origem, ficha.armaOperario, ficha.habilidadeBasica, kitSelecionado])} iniciais={{ classe, origem, armaOperario: typeof ficha.armaOperario === 'string' ? ficha.armaOperario : '', habilidadeBasica: typeof ficha.habilidadeBasica === 'string' ? ficha.habilidadeBasica : '', equipamentoInicial: kitSelecionado }} aoSalvar={aoSalvarCaracteristicas} aoAlterarPendencia={pendente => registrarPendencia('Características', pendente)} mensagemSucesso={origemDados === 'servidor' ? 'Características confirmadas pelo servidor.' : undefined} />
+          <details id="ficha-local-editor-caracteristicas" className="ficha-local-editor-detalhe" open data-ficha-editor>
+            <summary><span>Editar características, habilidades e equipamento inicial</span><small>Classe · Origem · Habilidade Básica · Conjunto inicial</small></summary>
+            <EditorCaracteristicasLocal autoSalvar={autoSalvar} key={JSON.stringify([classe, origem, ficha.armaOperario, ficha.habilidadeBasica, kitSelecionado])} iniciais={{ classe, origem, armaOperario: typeof ficha.armaOperario === 'string' ? ficha.armaOperario : '', habilidadeBasica: typeof ficha.habilidadeBasica === 'string' ? ficha.habilidadeBasica : '', equipamentoInicial: kitSelecionado }} aoSalvar={aoSalvarCaracteristicas} aoAlterarPendencia={pendente => registrarPendencia('Características', pendente)} mensagemSucesso={origemDados === 'servidor' ? 'Características confirmadas pelo servidor.' : undefined} />
+          </details>
           {aoSalvarIdentidade && <IdentidadeLocal autoSalvar={autoSalvar} key={JSON.stringify([nome, ficha.identidade ?? {}])} nome={nome} identidade={(ficha.identidade as Record<string, string>) ?? {}} aoSalvar={aoSalvarIdentidade} aoAlterarPendencia={pendente => registrarPendencia('Identificação', pendente)} mensagemSucesso={origemDados === 'servidor' ? 'Identificação confirmada pelo servidor.' : undefined} />}
           <div className="ficha-local-grade">
             <div><small>CLASSE</small><strong>{classePersonagem(classe || null, genero)}</strong><p>{dadosClasse?.identidade ?? 'Dados da Classe ainda não definidos.'}</p></div>
@@ -306,8 +343,11 @@ export default function FichaLocal({ nome, mesa, contextoId, dados, aoFechar, ao
         </section>
 
         <section id="ficha-local-pericias" className="ficha-local-secao">
-          <div className="ficha-local-titulo-secao"><h2><span>02</span> Atributos e Perícias</h2><button type="button" className="ficha-local-editar-secao" onClick={() => aoEditar("pericias")}>Editar seção ↗</button></div>
-          <EditorAtributosPericiasLocal autoSalvar={autoSalvar} key={JSON.stringify([classe, origem, atributos, treinada, extra, distribuicao])} classe={classe} origem={origem} atributosIniciais={atributos} treinadaInicial={treinada} extraInicial={extra} distribuicaoInicial={distribuicao} aoSalvar={aoSalvarAtributosPericias} aoAlterarPendencia={pendente => registrarPendencia('Atributos e Perícias', pendente)} mensagemSucesso={origemDados === 'servidor' ? 'Atributos e Perícias confirmados pelo servidor.' : undefined} />
+          <div className="ficha-local-titulo-secao"><h2><span>02</span> Atributos e Perícias</h2><button type="button" className="ficha-local-editar-secao" onClick={() => abrirEditor('pericias')}>Editar seção ↗</button></div>
+          <details id="ficha-local-editor-pericias" className="ficha-local-editor-detalhe" data-ficha-editor>
+            <summary><span>Editar Atributos e distribuição de Perícias</span><small>Valores · Treinamento · Pontos de Perícia</small></summary>
+            <EditorAtributosPericiasLocal autoSalvar={autoSalvar} key={JSON.stringify([classe, origem, atributos, treinada, extra, distribuicao])} classe={classe} origem={origem} atributosIniciais={atributos} treinadaInicial={treinada} extraInicial={extra} distribuicaoInicial={distribuicao} aoSalvar={aoSalvarAtributosPericias} aoAlterarPendencia={pendente => registrarPendencia('Atributos e Perícias', pendente)} mensagemSucesso={origemDados === 'servidor' ? 'Atributos e Perícias confirmados pelo servidor.' : undefined} />
+          </details>
           <div className="ficha-local-atributos">
             {ATRIBUTOS.map(item => <div key={item.chave}><small>{item.sigla}</small><strong>{numero(atributos[item.chave])}</strong><span>{item.nome}</span></div>)}
           </div>
@@ -363,8 +403,11 @@ export default function FichaLocal({ nome, mesa, contextoId, dados, aoFechar, ao
         </section>
 
         <section id="ficha-local-inventario" className="ficha-local-secao">
-          <div className="ficha-local-titulo-secao"><h2><span>04</span> Inventário</h2><button type="button" className="ficha-local-editar-secao" onClick={() => aoEditar("inventario")}>Editar seção ↗</button></div>
-          <EditorInventarioLocal autoSalvar={autoSalvar} key={JSON.stringify([classe, kitSelecionado, ficha.comprasIniciais, ficha.revisaoCompras, capacidade])} classe={classe} capacidade={capacidade} kitInicial={kitSelecionado} comprasIniciais={(ficha.comprasIniciais as Record<string, number>) ?? {}} revisaoCompras={numero(ficha.revisaoCompras)} aoSalvar={aoSalvarInventario} aoAlterarPendencia={pendente => registrarPendencia('Inventário', pendente)} mensagemSucesso={origemDados === 'servidor' ? 'Planejamento do inventário confirmado pelo servidor.' : undefined} />
+          <div className="ficha-local-titulo-secao"><h2><span>04</span> Inventário</h2><button type="button" className="ficha-local-editar-secao" onClick={() => abrirEditor('inventario')}>Editar seção ↗</button></div>
+          <details id="ficha-local-editor-inventario" className="ficha-local-editor-detalhe" data-ficha-editor>
+            <summary><span>Editar conjunto inicial e compras</span><small>Equipamento · Catálogo · Capacidade</small></summary>
+            <EditorInventarioLocal autoSalvar={autoSalvar} key={JSON.stringify([classe, kitSelecionado, ficha.comprasIniciais, ficha.revisaoCompras, capacidade])} classe={classe} capacidade={capacidade} kitInicial={kitSelecionado} comprasIniciais={(ficha.comprasIniciais as Record<string, number>) ?? {}} revisaoCompras={numero(ficha.revisaoCompras)} aoSalvar={aoSalvarInventario} aoAlterarPendencia={pendente => registrarPendencia('Inventário', pendente)} mensagemSucesso={origemDados === 'servidor' ? 'Planejamento do inventário confirmado pelo servidor.' : undefined} />
+          </details>
           <div className="ficha-local-inventario-topo"><span>CAPACIDADE BASE</span><strong>{capacidade} Espaços</strong></div>
           <div className="ficha-local-itens">
             <strong>Itens característicos</strong>
