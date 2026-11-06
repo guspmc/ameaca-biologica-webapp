@@ -306,6 +306,17 @@ export default function ConexaoServidorLocal() {
     }
   }, [mesas, canalTempoReal]);
 
+  const haAlteracoesNaoConfirmadas = salvandoFicha || Object.values(secoesPendentes).some(Boolean);
+  useEffect(() => {
+    if (!fichaAberta || !haAlteracoesNaoConfirmadas) return;
+    const avisarAntesDeSair = (evento: BeforeUnloadEvent) => {
+      evento.preventDefault();
+      evento.returnValue = '';
+    };
+    window.addEventListener('beforeunload', avisarAntesDeSair);
+    return () => window.removeEventListener('beforeunload', avisarAntesDeSair);
+  }, [fichaAberta, haAlteracoesNaoConfirmadas]);
+
   useEffect(() => {
     const salvarPosicao = () => {
       try { sessionStorage.setItem(CHAVE_POSICAO_PAGINA, String(window.scrollY)); }
