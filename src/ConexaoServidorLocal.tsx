@@ -1004,7 +1004,7 @@ export default function ConexaoServidorLocal() {
           </div>
         </> : <>
           <h2>{modoRecuperacao ? 'Redefinir senha' : modoCadastro ? 'Criar conta local' : 'Entrar no servidor'}</h2>
-          <p className="secundario">{modoRecuperacao ? 'Informe seu nome de usuário e escolha uma nova senha. Não será enviado e-mail nem código de confirmação.' : modoCadastro ? 'Cadastre uma conta local. A senha deve ter de 4 a 128 caracteres.' : 'Use seu nome de usuário e a senha cadastrados neste servidor local. Contas antigas continuam aceitando o identificador anterior como usuário.'}</p>
+          <p className="secundario">{modoRecuperacao ? 'Informe seu nome de usuário e escolha uma nova senha.' : modoCadastro ? 'Cadastre uma conta local. A senha deve ter de 4 a 128 caracteres.' : 'Use seu nome de usuário e a senha cadastrados neste servidor local. Contas antigas continuam aceitando o identificador anterior como usuário.'}</p>
           <form className="formulario" onSubmit={autenticar}>
             <label>Usuário(a)
               <input type="text" required maxLength={80} autoComplete="username" value={usuario} onChange={evento => setUsuario(evento.target.value)} />
@@ -1028,7 +1028,6 @@ export default function ConexaoServidorLocal() {
           {!modoRecuperacao && !modoCadastro && <button className="servidor-local-alternar" type="button" disabled={consultando} onClick={() => { setModoRecuperacao(true); setModoCadastro(false); setSenha(''); setSenhaConfirmacao(''); setMostrarSenha(false); setMostrarConfirmacao(false); setErro(''); setAviso(''); }}>
             Esqueceu a senha?
           </button>}
-          {modoRecuperacao && <p className="servidor-local-aviso">Atenção: não há verificação de identidade além do nome de usuário. Qualquer pessoa que saiba esse nome pode redefinir a senha. Use somente em uma rede privada confiável.</p>}
           {!modoRecuperacao && <button className="servidor-local-alternar" type="button" disabled={consultando} onClick={() => { setModoCadastro(!modoCadastro); setModoRecuperacao(false); setErro(''); setAviso(''); setSenha(''); setSenhaConfirmacao(''); setMostrarSenha(false); setMostrarConfirmacao(false); }}>
             {modoCadastro ? 'Já tenho uma conta — voltar ao login' : 'Ainda não tenho conta — cadastrar'}
           </button>}
