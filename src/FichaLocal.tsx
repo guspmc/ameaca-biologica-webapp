@@ -103,23 +103,19 @@ export default function FichaLocal({ nome, mesa, contextoId, dados, aoFechar, ao
   useEffect(() => {
     const corpo = corpoRef.current;
     if (!corpo) return;
-    const ids = ['ficha-local-editor-caracteristicas', 'ficha-local-editor-pericias', 'ficha-local-editor-inventario'];
+    const listarEditores = () => [...corpo.querySelectorAll<HTMLDetailsElement>('details[data-ficha-editor][id]')];
     try {
       const salvo = JSON.parse(localStorage.getItem(chaveEditores) ?? '{}') as Record<string, unknown>;
-      for (const id of ids) {
-        const detalhe = document.getElementById(id) as HTMLDetailsElement | null;
-        if (detalhe && typeof salvo[id] === 'boolean') detalhe.open = salvo[id] as boolean;
+      for (const detalhe of listarEditores()) {
+        if (typeof salvo[detalhe.id] === 'boolean') detalhe.open = salvo[detalhe.id] as boolean;
       }
     } catch { /* Os editores mantêm seus estados padrão se a preferência local estiver indisponível. */ }
     const salvarEstado = (evento: Event) => {
       const alvo = evento.target;
-      if (!(alvo instanceof HTMLDetailsElement) || !ids.includes(alvo.id)) return;
+      if (!(alvo instanceof HTMLDetailsElement) || !alvo.id || !alvo.hasAttribute('data-ficha-editor')) return;
       try {
         const estado: Record<string, boolean> = {};
-        for (const id of ids) {
-          const detalhe = document.getElementById(id) as HTMLDetailsElement | null;
-          if (detalhe) estado[id] = detalhe.open;
-        }
+        for (const detalhe of listarEditores()) estado[detalhe.id] = detalhe.open;
         localStorage.setItem(chaveEditores, JSON.stringify(estado));
       } catch { /* A ficha continua funcional sem persistir a abertura dos editores. */ }
     };
