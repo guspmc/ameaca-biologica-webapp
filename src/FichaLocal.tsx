@@ -280,11 +280,6 @@ export default function FichaLocal({ nome, mesa, contextoId, dados, aoFechar, ao
           <div className="ficha-local-wordmark">AMEAÇA<br/><span>BIOLÓGICA</span></div>
           <div className="ficha-local-top-meta">ARQUIVO DO JOGADOR · V1.0<br/>MESA / {mesa || 'MESA LOCAL'}</div>
         </div>
-        <div className="ficha-local-acoes">
-          <button type="button" className="ficha-local-voltar" onClick={fecharFicha}>← Voltar</button>
-          <span className="ficha-local-selo">RASCUNHO · NÃO ATIVA</span>
-          <button type="button" className="botao-claro" onClick={() => abrirEditor('caracteristicas')}>Editar rascunho</button>
-        </div>
       </header>
       <div className="ficha-local-corpo" ref={corpoRef}>
         {status && <p className="offline-status" role="status" aria-live="polite">{status}</p>}
@@ -302,6 +297,11 @@ export default function FichaLocal({ nome, mesa, contextoId, dados, aoFechar, ao
             {origem === 'Operário' && typeof ficha.armaOperario === 'string' && <small>Arma escolhida: {ficha.armaOperario}</small>}
           </div>
           <span className="ficha-local-carimbo">DADOS<br/>RESTRITOS</span>
+        </div>
+        <div className="ficha-local-acoes">
+          <button type="button" className="ficha-local-voltar" onClick={fecharFicha}>← Voltar</button>
+          <span className="ficha-local-selo">RASCUNHO · NÃO ATIVA</span>
+          <button type="button" className="botao-claro" onClick={() => abrirEditor('caracteristicas')}>Editar rascunho</button>
         </div>
 
         <div className="ficha-local-recursos">
