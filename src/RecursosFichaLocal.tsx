@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { ajustarBI, ajustarSA, aplicarDanoPV, curarPV, definirPVTemporarios, recursosIniciais, recursosValidos, type RecursosAtuais } from './recursosFicha';
 import AutoSaveStatusLocal from './AutoSaveStatusLocal';
-import { useAutoSaveLocal } from './useAutoSaveLocal';
+import { useSalvamentoEditorLocal } from './useSalvamentoEditorLocal';
 
 type Props = {
   dados: Record<string, unknown>;
@@ -11,9 +11,10 @@ type Props = {
   bloquearPV?: boolean;
   aoSalvar: (patch: RecursosAtuais) => Promise<boolean>;
   aoAlterarPendencia: (pendente: boolean) => void;
+  autoSalvar?: boolean;
 };
 
-export default function RecursosFichaLocal({ dados, pvMaximo, saMaximo, biMaximo, bloquearPV = false, aoSalvar, aoAlterarPendencia }: Props) {
+export default function RecursosFichaLocal({ dados, pvMaximo, saMaximo, biMaximo, bloquearPV = false, aoSalvar, aoAlterarPendencia, autoSalvar = false }: Props) {
   const [recursos, setRecursos] = useState(() => recursosIniciais(dados, pvMaximo, saMaximo));
   const [anterior, setAnterior] = useState<RecursosAtuais | null>(null);
   const [sujo, setSujo] = useState(false);
@@ -22,17 +23,12 @@ export default function RecursosFichaLocal({ dados, pvMaximo, saMaximo, biMaximo
   const [temporarios, setTemporarios] = useState('0');
   const valido = recursosValidos(recursos, pvMaximo, saMaximo);
   const fase = biMaximo <= 0 ? 'Indisponível até concluir a Classe' : recursos.biAtual >= biMaximo ? 'Colapso Viral' : 'Fase ' + (Math.floor(recursos.biAtual * 5 / biMaximo) + 1);
-  const autosave = useAutoSaveLocal({
-    valor: recursos,
-    chave: JSON.stringify(recursos),
-    sujo,
-    aoSalvar,
-    validar: atual => recursosValidos(atual, pvMaximo, saMaximo)
-      ? null
-      : 'Revise os valores: PV e SA Atuais não podem exceder seus máximos.',
-    aoConfirmar: () => { setSujo(false); aoAlterarPendencia(false); },
+  const salvamento = useSalvamentoEditorLocal({
+    autoSalvar, valor: recursos, chave: JSON.stringify(recursos), sujo, setSujo, aoSalvar, aoAlterarPendencia,
+    mensagemSucesso: 'Recursos salvos e confirmados pelo servidor.',
+    validar: undefined,
   });
-  const ocupado = autosave.estado === 'sincronizando';
+  const ocupado = salvamento.ocupado;
 
   function atualizar(proximo: RecursosAtuais) {
     setAnterior(recursos);
@@ -89,7 +85,13 @@ export default function RecursosFichaLocal({ dados, pvMaximo, saMaximo, biMaximo
     </div>
     <p className="ficha-local-legenda">BI começa em 0, não aumenta sozinha e só diminui por fonte expressa. Alcançar ou ultrapassar BI Máxima sinaliza Colapso Viral; esta tela não inicia Reanimação ou transformação.</p>
     {erroOperacao && <p className="offline-erro" role="alert">{erroOperacao}</p>}
-    <AutoSaveStatusLocal estado={autosave.estado} erro={autosave.erro} mensagemSucesso="Recursos salvos e confirmados pelo servidor." aoTentarNovamente={autosave.tentarNovamente} />
+    {autoSalvar
+      ? <AutoSaveStatusLocal estado={salvamento.autosave.estado} erro={salvamento.autosave.erro} mensagemSucesso="Recursos salvos e confirmados pelo servidor." aoTentarNovamente={salvamento.autosave.tentarNovamente} />
+      : <>
+          {salvamento.erroManual && <p className="offline-erro" role="alert">{salvamento.erroManual}</p>}
+          {salvamento.sucessoManual && <p className="offline-status" role="status">{salvamento.sucessoManual}</p>}
+          {sujo && <button type="button" className="botao-claro" disabled={ocupado} onClick={() => void salvamento.salvarManual()}>Salvar recursos</button>}
+        </>
     <button type="button" className="botao-claro" disabled={ocupado || !anterior} onClick={() => { if (anterior) { setRecursos(anterior); setAnterior(null); setSujo(true); aoAlterarPendencia(true); setErroOperacao(''); } }}>Desfazer último ajuste</button>
   </details>;
 }

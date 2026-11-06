@@ -1,26 +1,24 @@
 import { useState } from 'react';
 import { AUTOMACOES, automacoesEfetivas, normalizarConfiguracaoFuncionamento, type ConfiguracaoFuncionamento, type ConfiguracaoFuncionamentoCompleta, type ModoFuncionamento, type ModoDados, type VisibilidadeRolagem } from './funcionamentoFicha';
 import AutoSaveStatusLocal from './AutoSaveStatusLocal';
-import { useAutoSaveLocal } from './useAutoSaveLocal';
+import { useSalvamentoEditorLocal } from './useSalvamentoEditorLocal';
 
 type Props = {
   inicial?: ConfiguracaoFuncionamento;
   aoSalvar: (configuracao: ConfiguracaoFuncionamentoCompleta) => Promise<boolean>;
   aoAlterarPendencia: (pendente: boolean) => void;
+  autoSalvar?: boolean;
 };
 
-export default function FuncionamentoFichaLocal({ inicial, aoSalvar, aoAlterarPendencia }: Props) {
+export default function FuncionamentoFichaLocal({ inicial, aoSalvar, aoAlterarPendencia, autoSalvar = false }: Props) {
   const [config, setConfig] = useState(() => normalizarConfiguracaoFuncionamento(inicial));
   const [sujo, setSujo] = useState(false);
   const valor = normalizarConfiguracaoFuncionamento(config);
-  const autosave = useAutoSaveLocal({
-    valor,
-    chave: JSON.stringify(config),
-    sujo,
-    aoSalvar,
-    aoConfirmar: () => { setSujo(false); aoAlterarPendencia(false); },
+  const salvamento = useSalvamentoEditorLocal({
+    autoSalvar, valor, chave: JSON.stringify(config), sujo, setSujo, aoSalvar, aoAlterarPendencia,
+    mensagemSucesso: 'Preferências salvas e confirmadas pelo servidor.',
   });
-  const ocupado = autosave.estado === 'sincronizando';
+  const ocupado = salvamento.ocupado;
   const efetivas = automacoesEfetivas(config);
 
   function atualizar(proxima: ConfiguracaoFuncionamentoCompleta) {
@@ -83,6 +81,12 @@ export default function FuncionamentoFichaLocal({ inicial, aoSalvar, aoAlterarPe
       <ul>{AUTOMACOES.map(automacao => <li key={automacao.id}>{automacao.nome}: {efetivas[automacao.id] === null ? 'A definir' : efetivas[automacao.id] ? 'Habilitado' : 'Desabilitado'}</li>)}</ul>
     </div>
     <p className="ficha-local-legenda">As escolhas específicas do Misto são preservadas ao alternar para Automático ou Manual. A mudança de modo afeta somente operações futuras quando os respectivos módulos estiverem implementados.</p>
-    <AutoSaveStatusLocal estado={autosave.estado} erro={autosave.erro} mensagemSucesso="Preferências salvas e confirmadas pelo servidor." aoTentarNovamente={autosave.tentarNovamente} />
+    {autoSalvar
+      ? <AutoSaveStatusLocal estado={salvamento.autosave.estado} erro={salvamento.autosave.erro} mensagemSucesso="Preferências salvas e confirmadas pelo servidor." aoTentarNovamente={salvamento.autosave.tentarNovamente} />
+      : <>
+          {salvamento.erroManual && <p className="offline-erro" role="alert">{salvamento.erroManual}</p>}
+          {salvamento.sucessoManual && <p className="offline-status" role="status">{salvamento.sucessoManual}</p>}
+          {sujo && <button type="button" className="botao-claro" disabled={ocupado} onClick={() => void salvamento.salvarManual()}>Salvar preferências</button>}
+        </>
   </div>;
 }
