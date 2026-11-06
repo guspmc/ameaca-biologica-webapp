@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { criarClienteServidorLocal, ErroServidorLocal, type MesaLocal, type ResumoPersonagemLocal, type SaudeServidorLocal, type SessaoLocal, type PersonagemRascunhoLocal, type ParticipanteMesaLocal } from './servidorLocal';
 import FichaLocal from './FichaLocal';
 import PainelMestreLocal from './PainelMestreLocal';
+import ArquivosJogadorLocal from './ArquivosJogadorLocal';
 import QRCodeLocal from './QRCodeLocal';
 import { calcularAtrasoReconexao } from './reconexaoLocal';
 import { criarFilaSerializada } from './filaSerializada';
@@ -925,6 +926,7 @@ export default function ConexaoServidorLocal() {
                 <div className="servidor-local-botoes"><span className="papel-jogador">RASCUNHO</span><button className="botao-claro" type="button" disabled={consultando || salvandoFicha} onClick={() => void abrirFicha(mesa, personagem)}>Abrir ficha</button><button className="botao-claro" type="button" disabled={consultando || salvandoFicha} onClick={() => void excluirRascunho(mesa, personagem)}>Excluir</button></div>
               </li>)}</ul> : <p className="servidor-local-vazio">Nenhum rascunho nesta Mesa.</p> : <p className="servidor-local-vazio">Consulte os rascunhos para carregar a lista do servidor.</p>}
             </section>)}
+            {mesas.filter(mesa => mesa.role === 'jogador').map(mesa => <ArquivosJogadorLocal key={mesa.id} mesaNome={mesa.name} />)}
             {mesas.filter(mesa => mesa.role === 'mestre').map(mesa => <PainelMestreLocal
               key={mesa.id}
               mesa={mesa}
