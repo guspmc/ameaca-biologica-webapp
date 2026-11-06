@@ -26,7 +26,10 @@ test('mudanças de Classe e Origem preservam escolhas dependentes até revisão 
   assert.match(editor, /origem: e\.target\.value\s*\}\)/);
   assert.match(editor, /incompatível com a Classe/);
   assert.match(editor, /!habilidades\.some/);
-  assert.match(editor, /!kits\.some/);
+  assert.doesNotMatch(editor, /equipamentoInicial/);
+  const inventario = await ler('EditorInventarioLocal.tsx');
+  assert.match(inventario, /!opcoes\.some/);
+  assert.match(inventario, /incompatível com a Classe/);
   assert.match(editor, /useSalvamentoEditorLocal/);
   assert.match(editor, /valor: dados/);
 });
