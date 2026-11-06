@@ -353,13 +353,29 @@ export default function FichaLocal({ nome, mesa, contextoId, dados, aoFechar, ao
             <EditorCaracteristicasLocal autoSalvar={autoSalvar} key={JSON.stringify([classe, origem, ficha.armaOperario, ficha.habilidadeBasica])} iniciais={{ classe, origem, armaOperario: typeof ficha.armaOperario === 'string' ? ficha.armaOperario : '', habilidadeBasica: typeof ficha.habilidadeBasica === 'string' ? ficha.habilidadeBasica : '' }} aoSalvar={aoSalvarCaracteristicas} aoAlterarPendencia={pendente => registrarPendencia('Características', pendente)} mensagemSucesso={origemDados === 'servidor' ? 'Características confirmadas pelo servidor.' : undefined} />
           </details>
           {aoSalvarIdentidade && <IdentidadeLocal autoSalvar={autoSalvar} key={JSON.stringify([nome, ficha.identidade ?? {}])} nome={nome} identidade={(ficha.identidade as Record<string, string>) ?? {}} aoSalvar={aoSalvarIdentidade} aoAlterarPendencia={pendente => registrarPendencia('Identificação', pendente)} mensagemSucesso={origemDados === 'servidor' ? 'Identificação confirmada pelo servidor.' : undefined} />}
-          <div className="ficha-local-grade">
-            <div><small>CLASSE</small><strong>{classePersonagem(classe || null, genero)}</strong><p>{dadosClasse?.identidade ?? 'Dados da Classe ainda não definidos.'}</p></div>
-            <div><small>ORIGEM</small><strong>{termo(origem || 'Pendente')}</strong><p>{dadosOrigem?.beneficio ?? 'Benefício da Origem ainda não definido.'}</p></div>
-            <div><small>RAMOS DA CLASSE</small><strong>{ramo.length ? ramo.join(' · ') : 'Pendente'}</strong><p>Ramos disponíveis para desenvolvimento futuro. Nenhum foi escolhido nesta etapa.</p></div>
-            <div><small>PROFICIÊNCIAS</small><strong>{dadosClasse?.proficiencias.length ?? 0} registros</strong><p>{dadosClasse?.proficiencias.join(' · ') ?? 'Pendente'}</p></div>
+          <div className="ficha-local-fatos-rapidos">
+            <div><small>ORIGEM</small><strong>{termo(origem || 'Pendente')}</strong><span>{dadosOrigem?.beneficio ?? 'Benefício ainda não definido.'}</span></div>
+            <div><small>CLASSE / RAMO</small><strong>{classePersonagem(classe || null, genero)}</strong><span>{ramo.length ? ramo.join(' · ') : 'Ramo não selecionado'}</span></div>
           </div>
-          <div className="ficha-local-nota"><strong>Habilidade Básica · {habilidade?.nome ?? 'Não selecionada'}</strong><p>{habilidade ? habilidade.efeito : 'Ainda não selecionada. Nenhuma habilidade foi presumida para o personagem.'}</p></div>
+          <details className="ficha-local-acordeao">
+            <summary>Habilidade Básica <span>{habilidade?.nome ?? 'Não selecionada'}</span></summary>
+            <div className="ficha-local-acordeao-corpo">
+              <strong>{habilidade?.nome ?? 'Habilidade não selecionada'}</strong>
+              <p>{habilidade ? habilidade.efeito : 'Ainda não selecionada. Nenhuma habilidade foi presumida para o personagem.'}</p>
+            </div>
+          </details>
+          <details className="ficha-local-acordeao">
+            <summary>Identidade e histórico <span>{ficha.identidade && typeof ficha.identidade === 'object' ? 'Registro disponível' : 'Dados pendentes'}</span></summary>
+            <div className="ficha-local-acordeao-corpo">
+              <p>Os dados de identificação editáveis permanecem no registro da personagem. Nenhum histórico narrativo é presumido nesta etapa.</p>
+            </div>
+          </details>
+          <details className="ficha-local-acordeao">
+            <summary>Proficiências <span>{dadosClasse?.proficiencias.length ?? 0} registros</span></summary>
+            <div className="ficha-local-acordeao-corpo">
+              <p>{dadosClasse?.proficiencias.length ? dadosClasse.proficiencias.join(' · ') : 'As proficiências desta Classe ainda não estão definidas.'}</p>
+            </div>
+          </details>
         </section>
 
         <section id="ficha-local-pericias" className="ficha-local-secao">
