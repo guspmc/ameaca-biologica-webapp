@@ -73,6 +73,14 @@ export type ResumoPersonagemLocal = {
   updatedAt: string;
 };
 
+export type ResultadoConferenciaCriacaoLocal = {
+  valido: boolean;
+  pendencias: { nome: string; estado: 'conferido' | 'pendente' | 'revisar'; detalhe: string; secao: string }[];
+  conferencia: { nome: string; estado: 'conferido' | 'pendente' | 'revisar'; detalhe: string; secao: string }[];
+  inventario?: { capacidade: number; ocupados: number; itens: unknown[] };
+  revision: number;
+};
+
 export type DiagnosticoTransporteLocal = {
   nome: string;
   mensagem: string;
@@ -296,6 +304,11 @@ export function criarClienteServidorLocal({ baseUrl, token, fetcher = fetch }: O
     consultarPersonagem(id: string): Promise<{ personagem: PersonagemRascunhoLocal }> {
       if (!/^[a-f0-9]{32}$/.test(id)) throw new Error('Identificador de personagem inválido.');
       return requisicao(`/api/personagens/${id}`, { autenticada: true });
+    },
+
+    conferirCriacaoPersonagem(id: string): Promise<ResultadoConferenciaCriacaoLocal> {
+      if (!/^[a-f0-9]{32}$/.test(id)) throw new Error('Identificador de personagem inválido.');
+      return requisicao(`/api/personagens/${id}/conferencia`, { autenticada: true });
     },
 
     excluirPersonagem(id: string): Promise<{ deleted: true; id: string }> {
