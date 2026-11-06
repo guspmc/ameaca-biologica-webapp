@@ -587,16 +587,42 @@ export default function ConexaoServidorLocal() {
       return;
     }
     const mesa = mesas.find(item => item.id === contexto?.mesaId && item.role === 'jogador');
-    const personagem = mesa ? personagens[mesa.id]?.find(item => item.id === contexto?.personagemId) : undefined;
-    if (!mesa || !personagem) {
+    if (!mesa) {
       setRestauracaoFichaConcluida(true);
       return;
     }
+    const personagem = personagens[mesa.id]?.find(item => item.id === contexto?.personagemId);
     restaurandoFicha.current = true;
-    void abrirFicha(mesa, personagem).finally(() => {
-      restaurandoFicha.current = false;
-      setRestauracaoFichaConcluida(true);
-    });
+    void (async () => {
+      try {
+        // A carga inicial pode ter falhado apenas para esta Mesa. Antes de
+        // desistir da restauração, consulta novamente a lista no servidor.
+        let personagemRestaurado = personagem;
+        if (!personagemRestaurado) {
+          const lista = await criarClienteServidorLocal({
+            baseUrl: endereco.trim(),
+            token: sessao.token,
+          }).listarPersonagens(mesa.id);
+          if (!sessaoContinuaSendoAtual(geracaoSessao.current, geracaoSessao.current)) return;
+          setPersonagens(atual => ({ ...atual, [mesa.id]: lista.personagens }));
+          personagemRestaurado = lista.personagens.find(item => item.id === contexto?.personagemId);
+        }
+        if (personagemRestaurado) {
+          await abrirFicha(mesa, personagemRestaurado);
+        } else {
+          setErro('A sessão e a Mesa foram restauradas, mas o personagem salvo no contexto não foi encontrado. Atualize a lista de personagens para conferir.');
+        }
+      } catch (problema) {
+        if (problema instanceof ErroServidorLocal && problema.status === 401) {
+          encerrarSessao('A sessão expirou ou foi encerrada no servidor. Entre novamente.');
+        } else {
+          setErro(problema instanceof Error ? problema.message : 'Não foi possível restaurar a ficha salva.');
+        }
+      } finally {
+        restaurandoFicha.current = false;
+        setRestauracaoFichaConcluida(true);
+      }
+    })();
   }, [sessao, mesas, personagens, fichaAberta, carregandoDadosIniciais, restauracaoFichaConcluida]);
 
   function salvarDadosFicha(delta: Record<string, unknown>, nome?: string): Promise<boolean> {
