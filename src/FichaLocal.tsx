@@ -81,6 +81,7 @@ export default function FichaLocal({ nome, mesa, contextoId, dados, aoFechar, ao
   const [secoesPendentes, setSecoesPendentes] = useState<Set<string>>(() => new Set());
   const [secaoAtiva, setSecaoAtiva] = useState('caracteristicas');
   const [avisoFechamento, setAvisoFechamento] = useState('');
+  const [fecharAposSalvar, setFecharAposSalvar] = useState(false);
   const corpoRef = useRef<HTMLDivElement | null>(null);
   const chavePosicao = 'ameaca-biologica:ficha:posicao:v1:' + (contextoId ?? mesa + ':' + nome);
   useEffect(() => {
@@ -131,12 +132,22 @@ export default function FichaLocal({ nome, mesa, contextoId, dados, aoFechar, ao
   function fecharFicha() {
     if (pendenciasInternas.current.size > 0) {
       const secoes = [...pendenciasInternas.current].join(', ');
-      setAvisoFechamento('A ficha permanecerá aberta até o servidor confirmar: ' + secoes + '. Se houver falha, use “Tentar novamente” no editor correspondente.');
+      setFecharAposSalvar(true);
+      setAvisoFechamento('Aguardando confirmação do servidor: ' + secoes + '. A ficha fechará automaticamente quando todas as alterações forem salvas.');
       return;
     }
+    setFecharAposSalvar(false);
     setAvisoFechamento('');
     aoFechar();
   }
+
+  useEffect(() => {
+    if (fecharAposSalvar && pendenciasInternas.current.size === 0) {
+      setFecharAposSalvar(false);
+      setAvisoFechamento('');
+      aoFechar();
+    }
+  }, [fecharAposSalvar, secoesPendentes, aoFechar]);
   const ficha = dados as DadosFichaLocal;
   const estadoReanimacao = (dados as Record<string, unknown>).reanimacao;
   const reanimacaoEmCurso = reanimacaoValida(estadoReanimacao) && estadoReanimacao.estado !== 'concluida';
@@ -221,7 +232,10 @@ export default function FichaLocal({ nome, mesa, contextoId, dados, aoFechar, ao
       </header>
       <div className="ficha-local-corpo" ref={corpoRef}>
         {status && <p className="offline-status" role="status" aria-live="polite">{status}</p>}
-        {avisoFechamento && <p className="offline-status" role="status">{avisoFechamento}</p>}
+        {avisoFechamento && <div className="offline-status" role="status">
+          <p>{avisoFechamento}</p>
+          {fecharAposSalvar && <button type="button" className="botao-claro" onClick={() => { setFecharAposSalvar(false); setAvisoFechamento(''); }}>Continuar editando</button>}
+        </div>}
         {erro && <p className="offline-erro" role="alert">{erro}</p>}
         {erro?.includes('alterada em outra aba') && aoRecarregar && <button type="button" className="botao-claro" onClick={aoRecarregar}>Descartar esta edição e carregar a versão mais recente</button>}
         <div className="ficha-local-identidade">
