@@ -6,6 +6,16 @@ type SolicitacaoPendente = { id: string; status: 'pendente'; createdAt: string; 
 type AbaPainelMestre = 'mesa' | 'encontros' | 'arquivos';
 type SubAbaEncontros = 'ao-vivo' | 'preparados' | 'catalogo' | 'gerador' | 'perseguicao';
 type SubAbaArquivos = 'documentos' | 'anotacoes' | 'diario' | 'narracao' | 'mesa';
+function IconePainel({ tipo }: { tipo: 'umbrella' | 'mesa' | 'encontros' | 'arquivos' }) {
+  const desenho = {
+    umbrella: <><path d="M3 12a9 9 0 0 1 18 0H3Z"/><path d="M12 12v7a2 2 0 0 0 4 0"/></>,
+    mesa: <><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18M9 10v10"/></>,
+    encontros: <><path d="m5 4 6 6m2 4 6 6M19 4 5 18M8 4l12 12"/></>,
+    arquivos: <><path d="M5 3h10l4 4v14H5z"/><path d="M15 3v5h4M8 12h8M8 16h8"/></>
+  };
+  return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{desenho[tipo]}</svg>;
+}
+
 type Props = {
   mesa: MesaLocal;
   enderecosLan?: string[];
@@ -50,12 +60,12 @@ export default function PainelMestreLocal({ mesa, enderecosLan = [], convite, so
   return <section className="servidor-local-controle-mesa painel-mestre-shell" aria-label={'Painel do Mestre — ' + mesa.name}>
     <div className="painel-mestre-app">
       <aside className="painel-mestre-sidebar">
-        <div className="painel-mestre-side-mark"><span className="painel-mestre-umbrella">☂</span><div><b>UMBRELLA<br/>TERMINAL</b><small>CONTROLE OPERACIONAL</small></div></div>
+        <div className="painel-mestre-side-mark"><span className="painel-mestre-umbrella"><IconePainel tipo="umbrella" /></span><div><b>UMBRELLA<br/>TERMINAL</b><small>CONTROLE OPERACIONAL</small></div></div>
         <div className="painel-mestre-side-kicker">NAVEGAÇÃO / MESTRE</div>
         <nav className="painel-mestre-side-nav" aria-label="Navegação do Mestre">
-          <button type="button" className={aba==='mesa'?'ativo':''} onClick={()=>selecionarAba('mesa')}><span>▦</span>MESA</button>
-          <button type="button" className={aba==='encontros'?'ativo':''} onClick={()=>selecionarAba('encontros')}><span>⚔</span>ENCONTROS</button>
-          <button type="button" className={aba==='arquivos'?'ativo':''} onClick={()=>selecionarAba('arquivos')}><span>▤</span>ARQUIVOS</button>
+          <button type="button" className={aba==='mesa'?'ativo':''} onClick={()=>selecionarAba('mesa')}><span><IconePainel tipo="mesa" /></span>MESA</button>
+          <button type="button" className={aba==='encontros'?'ativo':''} onClick={()=>selecionarAba('encontros')}><span><IconePainel tipo="encontros" /></span>ENCONTROS</button>
+          <button type="button" className={aba==='arquivos'?'ativo':''} onClick={()=>selecionarAba('arquivos')}><span><IconePainel tipo="arquivos" /></span>ARQUIVOS</button>
         </nav>
         <div className="painel-mestre-side-bottom">PROTOCOLO UMB-01<br/>PAINEL DO MESTRE / V0.2<br/>LAN · MESA ATUAL</div>
       </aside>
@@ -63,7 +73,7 @@ export default function PainelMestreLocal({ mesa, enderecosLan = [], convite, so
         <header className="painel-mestre-masthead">
           <div className="painel-mestre-brandline"/>
           <div className="painel-mestre-head-main">
-            <span className="painel-mestre-umbrella">☂</span>
+            <span className="painel-mestre-umbrella"><IconePainel tipo="umbrella" /></span>
             <div className="painel-mestre-head-copy"><small>AMEAÇA BIOLÓGICA · RPG</small><strong>{mesa.name}</strong><span>Mesa do Mestre · Acesso confidencial</span></div>
             <span className="painel-mestre-acesso">ACESSO MESTRE</span>
           </div>
@@ -143,8 +153,8 @@ export default function PainelMestreLocal({ mesa, enderecosLan = [], convite, so
         {([['documentos','Documentos e mapa'],['anotacoes','Minhas anotações'],['diario','Diário do Mestre'],['narracao','Textos de narração'],['mesa','Documentos da Mesa']] as [SubAbaArquivos,string][]).map(([id,label]) => <button key={id} type="button" className={subAbaArquivos===id?'ativo':''} aria-pressed={subAbaArquivos===id} onClick={()=>setSubAbaArquivos(id)}>{label}</button>)}
       </nav>
       {subAbaArquivos==='documentos' && <div className="painel-mestre-grade">
-        <article className="painel-mestre-cartao"><small>MAPA</small><h6>Mapa da operação</h6><p>Visualização de mapas e áreas reveladas explicitamente pelo Mestre.</p><div className="painel-mestre-vazio"><b>▧</b><strong>Nenhum mapa disponível</strong><span>Mapas não são publicados ou revelados automaticamente.</span></div></article>
-        <article className="painel-mestre-cartao"><small>DOCUMENTOS</small><h6>Documentos de referência</h6><p>Arquivos de consulta da campanha, organizados por operação e assunto.</p><div className="painel-mestre-vazio"><b>▤</b><strong>Nenhum documento disponível</strong><span>Adição e consulta de arquivos aguardam integração.</span></div></article>
+        <article className="painel-mestre-cartao"><small>MAPA</small><h6>Mapa da operação</h6><p>Visualização de mapas e áreas reveladas explicitamente pelo Mestre.</p><div className="painel-mestre-vazio"><b><IconePainel tipo="arquivos" /></b><strong>Nenhum mapa disponível</strong><span>Mapas não são publicados ou revelados automaticamente.</span></div></article>
+        <article className="painel-mestre-cartao"><small>DOCUMENTOS</small><h6>Documentos de referência</h6><p>Arquivos de consulta da campanha, organizados por operação e assunto.</p><div className="painel-mestre-vazio"><b><IconePainel tipo="arquivos" /></b><strong>Nenhum documento disponível</strong><span>Adição e consulta de arquivos aguardam integração.</span></div></article>
       </div>}
       {subAbaArquivos==='anotacoes' && <div className="painel-mestre-cartao"><small>ESPAÇO PESSOAL</small><h6>Minhas anotações</h6><p>Área privada da sua conta. Este campo é apenas um rascunho temporário nesta sessão e não será enviado à Mesa.</p><label className="painel-mestre-nota">Rascunho local<textarea value={rascunhoLocal} onChange={e=>setRascunhoLocal(e.target.value)} placeholder="Anote uma ideia ou lembrete..." rows={5}/></label><span className="painel-mestre-vazio-tag">NÃO SALVO · PRIVADO NESTA TELA</span></div>}
       {subAbaArquivos==='diario' && <div className="painel-mestre-cartao"><small>REGISTRO PRIVADO DO MESTRE</small><h6>Diário do Mestre</h6><p>Registro reservado ao papel de Mestre, com previsão de transferência ao sucessor conforme as regras de administração da Mesa.</p><div className="painel-mestre-vazio"><b>▤</b><strong>Diário ainda não iniciado</strong><span>O conteúdo não é compartilhado com jogadores.</span></div></div>}
