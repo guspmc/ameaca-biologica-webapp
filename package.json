@@ -10,7 +10,7 @@
     "dev:teste": "vite --mode teste --host 127.0.0.1 --port 4174 --strictPort",
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview",
-    "server:local": "node --experimental-sqlite server/index.mjs",
+    "server:local": "node --experimental-strip-types --experimental-sqlite server/index.mjs",
     "dev:lan": "vite --mode lan"
   },
   "dependencies": {
