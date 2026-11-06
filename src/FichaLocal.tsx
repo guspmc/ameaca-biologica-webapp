@@ -294,7 +294,7 @@ export default function FichaLocal({ nome, mesa, contextoId, dados, aoFechar, ao
         </div>}
         {erro && <p className="offline-erro" role="alert">{erro}</p>}
         {erro?.includes('alterada em outra aba') && aoRecarregar && <button type="button" className="botao-claro" onClick={aoRecarregar}>Descartar esta edição e carregar a versão mais recente</button>}
-        <div className="ficha-local-chapter-meta">REGISTRO DO SOBREVIVENTE · {origemDados === 'servidor' ? 'DADOS NO SERVIDOR' : 'DADOS LOCAIS'} · RASCUNHO NÃO ATIVO</div>
+        <div className="ficha-local-chapter-meta">{termo('REGISTRO DO SOBREVIVENTE')} · {origemDados === 'servidor' ? 'DADOS NO SERVIDOR' : 'DADOS LOCAIS'} · RASCUNHO NÃO ATIVO</div>
         <div className="ficha-local-identidade">
           <div className="ficha-local-identidade-principal">
             <h1 id="ficha-local-titulo">{nome}</h1>
