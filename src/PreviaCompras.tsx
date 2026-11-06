@@ -77,8 +77,8 @@ export default function PreviaCompras({
   }
 
   return <details className="previa-compras">
-    <summary>{autoSalvar ? 'Compras iniciais · plano salvo automaticamente' : 'Compras iniciais · prévia de compras'}</summary>
-    <p>{autoSalvar ? 'As quantidades desta prévia são gravadas automaticamente no rascunho. Uma escolha inválida permanece para correção, mas não poderá ser finalizada.' : 'As quantidades ficam nesta prévia até você confirmar a aplicação; depois, o plano é salvo pelo fluxo correspondente.'}</p>
+    <summary>{autoSalvar ? 'Compras iniciais · salvamento automático ativo' : 'Compras iniciais · prévia de compras'}</summary>
+    <p>{autoSalvar ? 'As quantidades desta prévia seguem automaticamente para o fluxo de salvamento do rascunho. O plano só é considerado salvo após a confirmação do servidor; o estado da gravação aparece no editor.' : 'As quantidades ficam nesta prévia até você confirmar a aplicação; depois, o plano é salvo pelo fluxo correspondente.'}</p>
     <p className="ficha-dica">Catálogo inicial parcial, com preços conferidos no livro. A compra depende dos itens liberados na Mesa; disponibilidade é validada pelo servidor. Salvar o plano não equipa, consome nem finaliza a personagem.</p>
     <label className="busca-compras">Buscar neste catálogo<input type="search" value={busca} onChange={e => setBusca(e.target.value)} placeholder="Ex.: colete ou munição" /></label>
     <p className="saldo-compras"><strong>Prévia: {resultado.saldo}/3 Moedas restantes · {resultado.espacos}/{capacidade} Espaços</strong><br />Revisão do plano: {revisaoAtual}. Inclui Erva Verde, Lanterna Simples e moedas restantes; Característicos ocupam zero.</p>
