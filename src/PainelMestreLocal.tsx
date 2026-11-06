@@ -21,9 +21,17 @@ type Props = {
 /** Painel administrativo restrito ao contexto da Mesa em que a conta é Mestre. */
 export default function PainelMestreLocal({ mesa, enderecosLan = [], convite, solicitacoes, participantes, consultando, aoGerarConvite, aoRevogarConvite, aoCarregarSolicitacoes, aoCopiarConvite, aoDecidirSolicitacao, aoCarregarParticipantes, aoRemoverParticipante }: Props) {
   if (mesa.role !== 'mestre') return null;
+  const totalJogadores = participantes?.filter(p => p.role === 'jogador').length;
+  const vagasDisponiveis = totalJogadores === undefined ? undefined : Math.max(0, 10 - totalJogadores);
+  const totalSolicitacoes = solicitacoes?.length;
   return <section className="servidor-local-controle-mesa" aria-label={'Painel do Mestre — ' + mesa.name}>
     <h4>Painel do Mestre · {mesa.name}</h4>
     <p className="secundario">Administração desta Mesa. As decisões de ingresso são confirmadas pelo servidor.</p>
+    <div className="painel-mestre-resumo" aria-label="Resumo administrativo da Mesa">
+      <div><small>JOGADORES</small><strong>{totalJogadores === undefined ? '—' : totalJogadores + '/10'}</strong></div>
+      <div><small>VAGAS DISPONÍVEIS</small><strong>{vagasDisponiveis === undefined ? '—' : vagasDisponiveis}</strong></div>
+      <div><small>INGRESSOS PENDENTES</small><strong>{totalSolicitacoes === undefined ? '—' : totalSolicitacoes}</strong></div>
+    </div>
     <div className="servidor-local-botoes">
       <button className="botao-claro" type="button" disabled={consultando} onClick={() => aoGerarConvite(mesa)}>{convite ? 'Renovar convite' : 'Gerar convite'}</button>
       <button className="botao-claro" type="button" disabled={consultando} onClick={() => aoRevogarConvite(mesa)}>Revogar convite ativo</button>
@@ -45,10 +53,15 @@ export default function PainelMestreLocal({ mesa, enderecosLan = [], convite, so
     </div>
     {participantes && <section aria-label="Participantes autorizados">
       <h5>Participantes da Mesa</h5>
-      {participantes.length ? <ul className="servidor-local-lista-mesas">{participantes.map((p, index) => <li key={p.accountId}>
-        <div><strong>{p.role === "mestre" ? "Mestre" : "Jogador " + (index + 1)}</strong><small>{p.role === "mestre" ? "Administração da Mesa" : "Entrou em " + new Date(p.joinedAt).toLocaleDateString("pt-BR")}</small></div>
-        {p.role === "jogador" && <button className="botao-claro" type="button" disabled={consultando} onClick={() => aoRemoverParticipante(mesa, p.accountId)}>Remover</button>}
-      </li>)}</ul> : <p className="servidor-local-vazio">Nenhum participante.</p>}
+      {participantes.length ? <ul className="servidor-local-lista-mesas">{participantes.map((p, index) => {
+        const numeroJogador = p.role === 'jogador'
+          ? participantes.slice(0, index).filter(anterior => anterior.role === 'jogador').length + 1
+          : null;
+        return <li key={p.accountId}>
+          <div><strong>{p.role === 'mestre' ? 'Mestre' : 'Jogador ' + numeroJogador}</strong><small>{p.role === 'mestre' ? 'Administração da Mesa' : 'Entrou em ' + new Date(p.joinedAt).toLocaleDateString('pt-BR')}</small></div>
+          {p.role === 'jogador' && <button className="botao-claro" type="button" disabled={consultando} onClick={() => aoRemoverParticipante(mesa, p.accountId)}>Remover</button>}
+        </li>;
+      })}</ul> : <p className="servidor-local-vazio">Nenhum participante.</p>}
     </section>}
     {(solicitacoes ?? []).length > 0 ? <ul className="servidor-local-lista-mesas">{solicitacoes!.map((pedido, index) => <li key={pedido.id}>
       <div><strong>Solicitação {index + 1}</strong><small>Pedido de ingresso pendente</small></div>

@@ -513,3 +513,11 @@ footer { margin-top:45px; border-top:1px solid #dce2df; padding-top:19px; color:
 .servidor-local-endereco-lan{display:grid;gap:5px;max-width:230px}
 .servidor-local-endereco-lan>a{font-size:11px;overflow-wrap:anywhere;color:#87333d}
 @media(max-width:560px){.servidor-local-enderecos-lan,.servidor-local-qr-convites{display:grid;grid-template-columns:1fr}.servidor-local-endereco-lan{max-width:100%}}
+
+
+/* Resumo operacional do Painel do Mestre. */
+.painel-mestre-resumo{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;margin:13px 0}
+.painel-mestre-resumo>div{display:grid;gap:5px;padding:10px;border:1px solid #cbbda6;background:#fffaf0;min-width:0}
+.painel-mestre-resumo small{font:800 9px 'Courier New',monospace;color:#756b5c}
+.painel-mestre-resumo strong{font:800 21px Georgia,serif;color:#87333d}
+@media(max-width:560px){.painel-mestre-resumo{grid-template-columns:1fr 1fr}.painel-mestre-resumo>div:first-child{grid-column:span 2}}
