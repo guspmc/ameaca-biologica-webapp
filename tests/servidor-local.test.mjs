@@ -585,6 +585,25 @@ test('preserva a Mesa e o vínculo do Mestre após reiniciar o servidor SQLite',
   const aprovacao = await post('/api/mesas/' + mesa.id + '/solicitacoes/' + solicitacao.id + '/aprovar', {}, sessaoInicial.token);
   assert.equal(aprovacao.status, 200);
 
+  const dadosFicha = { estadoFicha: 'rascunho', identidade: { ocupacao: 'Policial' }, testePersistencia: 'antes' };
+  const criacaoFicha = await post('/api/mesas/' + mesa.id + '/personagens', {
+    name: 'Claire', data: dadosFicha,
+  }, sessaoJogador.token);
+  assert.equal(criacaoFicha.status, 201);
+  const { personagem } = await criacaoFicha.json();
+  const atualizacaoFicha = await fetch(instancia.url + '/api/personagens/' + personagem.id, {
+    method: 'PUT',
+    headers: { 'content-type': 'application/json', authorization: 'Bearer ' + sessaoJogador.token },
+    body: JSON.stringify({
+      name: 'Claire Redfield',
+      data: { ...dadosFicha, identidade: { ocupacao: 'Policial', historia: 'Registro atualizado antes da recarga.' }, testePersistencia: 'depois' },
+      expectedRevision: personagem.revision,
+    }),
+  });
+  assert.equal(atualizacaoFicha.status, 200);
+  const personagemAtualizado = (await atualizacaoFicha.json()).personagem;
+  assert.equal(personagemAtualizado.revision, personagem.revision + 1);
+
   await instancia.reiniciar();
 
   const loginPosterior = await post('/api/auth/login', credenciais);
@@ -619,4 +638,14 @@ test('preserva a Mesa e o vínculo do Mestre após reiniciar o servidor SQLite',
   assert.equal(respostaParticipantes.status, 200);
   const participantes = (await respostaParticipantes.json()).participants;
   assert.deepEqual(participantes.map(item => item.role), ['mestre', 'jogador']);
+
+  const fichaDepoisDaRecarga = await fetch(instancia.url + '/api/personagens/' + personagem.id, {
+    headers: { authorization: 'Bearer ' + sessaoJogadorPosterior.token },
+  });
+  assert.equal(fichaDepoisDaRecarga.status, 200);
+  const registroFicha = (await fichaDepoisDaRecarga.json()).personagem;
+  assert.equal(registroFicha.name, 'Claire Redfield');
+  assert.equal(registroFicha.revision, personagemAtualizado.revision);
+  assert.equal(registroFicha.data.testePersistencia, 'depois');
+  assert.equal(registroFicha.data.identidade.historia, 'Registro atualizado antes da recarga.');
 });
