@@ -7,6 +7,7 @@ import { criarFilaSerializada } from './filaSerializada';
 import { fichaContinuaSendoAlvo, sessaoContinuaSendoAtual } from './fichaContinuaSendoAlvo';
 
 const CHAVE_ENDERECO = 'ameaca-biologica:servidor-local:endereco:v1';
+const CHAVE_CONTEXTO_FICHA = 'ameaca-biologica:servidor-local:contexto-ficha:v1';
 
 function enderecoInicial(): string {
   if (import.meta.env.MODE === 'lan') return window.location.origin;
@@ -40,6 +41,7 @@ export default function ConexaoServidorLocal() {
   const [fichaAberta, setFichaAberta] = useState<{ mesa: MesaLocal; personagem: PersonagemRascunhoLocal } | null>(null);
   const [salvandoFicha, setSalvandoFicha] = useState(false);
   const filaSalvamentoFicha = useRef(criarFilaSerializada());
+  const restaurandoFicha = useRef(false);
   const fichaAbertaRef = useRef(fichaAberta);
   fichaAbertaRef.current = fichaAberta;
   const quantidadeSalvamentosPendentes = useRef(0);
@@ -343,6 +345,7 @@ export default function ConexaoServidorLocal() {
     try {
       await criarClienteServidorLocal({ baseUrl: endereco.trim(), token: sessao.token }).sair();
       if (!sessaoContinuaSendoAtual(geracaoSessao.current, geracaoSolicitada)) return;
+      try { localStorage.removeItem(CHAVE_CONTEXTO_FICHA); } catch { /* O contexto local pode permanecer se o armazenamento estiver indisponível. */ }
       encerrarSessao('Sessão encerrada no servidor.');
     } catch (problema) {
       if (!sessaoContinuaSendoAtual(geracaoSessao.current, geracaoSolicitada)) return;
@@ -476,6 +479,13 @@ export default function ConexaoServidorLocal() {
       if (!sessaoContinuaSendoAtual(geracaoSessao.current, geracaoSolicitada)) return;
       if (resposta.personagem.mesaId !== mesa.id) throw new Error('O servidor retornou um personagem vinculado a outra Mesa.');
       setFichaAberta({ mesa, personagem: resposta.personagem });
+      try {
+        localStorage.setItem(CHAVE_CONTEXTO_FICHA, JSON.stringify({
+          accountId: sessao.account.id,
+          mesaId: mesa.id,
+          personagemId: resposta.personagem.id,
+        }));
+      } catch { /* A ficha continua funcional mesmo sem persistência do contexto de navegação. */ }
       setAviso('Ficha consultada e confirmada pelo servidor. As alterações continuam em estado de rascunho.');
     } catch (problema) {
       if (!sessaoContinuaSendoAtual(geracaoSessao.current, geracaoSolicitada)) return;
@@ -483,6 +493,24 @@ export default function ConexaoServidorLocal() {
       else setErro(problema instanceof Error ? problema.message : 'Não foi possível abrir a ficha.');
     } finally { setConsultando(false); }
   }
+
+  useEffect(() => {
+    if (!sessao || fichaAberta || restaurandoFicha.current) return;
+    let contexto: { accountId?: string; mesaId?: string; personagemId?: string } | null = null;
+    try {
+      const salvo = localStorage.getItem(CHAVE_CONTEXTO_FICHA);
+      contexto = salvo ? JSON.parse(salvo) : null;
+    } catch { contexto = null; }
+    if (!contexto || contexto.accountId !== sessao.account.id ||
+        !/^[a-f0-9]{32}$/.test(contexto.mesaId ?? '') ||
+        !/^[a-f0-9]{32}$/.test(contexto.personagemId ?? '')) return;
+    const mesa = mesas.find(item => item.id === contexto?.mesaId && item.role === 'jogador');
+    if (!mesa || !personagens[mesa.id]) return;
+    const personagem = personagens[mesa.id].find(item => item.id === contexto?.personagemId);
+    if (!personagem) return;
+    restaurandoFicha.current = true;
+    void abrirFicha(mesa, personagem).finally(() => { restaurandoFicha.current = false; });
+  }, [sessao, mesas, personagens, fichaAberta]);
 
   function salvarDadosFicha(delta: Record<string, unknown>, nome?: string): Promise<boolean> {
     const fichaSolicitada = fichaAbertaRef.current;
@@ -858,8 +886,13 @@ export default function ConexaoServidorLocal() {
       {fichaAberta && <FichaLocal
         nome={fichaAberta.personagem.name}
         mesa={fichaAberta.mesa.name}
+        contextoId={fichaAberta.mesa.id + ':' + fichaAberta.personagem.id}
         dados={fichaAberta.personagem.data}
-        aoFechar={() => { if (!salvandoFicha) setFichaAberta(null); }}
+        aoFechar={() => {
+          if (salvandoFicha) return;
+          try { localStorage.removeItem(CHAVE_CONTEXTO_FICHA); } catch { /* O fechamento não depende do armazenamento local. */ }
+          setFichaAberta(null);
+        }}
         aoEditar={editarSecaoFicha}
         aoSalvarCaracteristicas={dados => salvarDadosFicha(dados)}
         aoSalvarIdentidade={dados => salvarDadosFicha({ identidade: dados.identidade }, dados.nome)}

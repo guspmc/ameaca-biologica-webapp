@@ -48,6 +48,7 @@ type DadosFichaLocal = {
 type Props = {
   nome: string;
   mesa: string;
+  contextoId?: string;
   dados: Record<string, unknown>;
   aoFechar: () => void;
   aoRecarregar?: () => void;
@@ -75,11 +76,26 @@ function numero(valor: unknown): number {
   return typeof valor === 'number' && Number.isFinite(valor) ? valor : 0;
 }
 
-export default function FichaLocal({ nome, mesa, dados, aoFechar, aoRecarregar, aoAlterarPendencia, aoEditar, aoSalvarAtributosPericias, aoSalvarCaracteristicas, aoSalvarIdentidade, aoSalvarInventario, aoSalvarFuncionamento, aoSalvarRecursos, origemDados = 'local', status, erro }: Props) {
+export default function FichaLocal({ nome, mesa, contextoId, dados, aoFechar, aoRecarregar, aoAlterarPendencia, aoEditar, aoSalvarAtributosPericias, aoSalvarCaracteristicas, aoSalvarIdentidade, aoSalvarInventario, aoSalvarFuncionamento, aoSalvarRecursos, origemDados = 'local', status, erro }: Props) {
   const pendenciasInternas = useRef(new Set<string>());
   const [secoesPendentes, setSecoesPendentes] = useState<Set<string>>(() => new Set());
   const [secaoAtiva, setSecaoAtiva] = useState('caracteristicas');
   const corpoRef = useRef<HTMLDivElement | null>(null);
+  const chavePosicao = 'ameaca-biologica:ficha:posicao:v1:' + (contextoId ?? mesa + ':' + nome);
+  useEffect(() => {
+    const corpo = corpoRef.current;
+    if (!corpo) return;
+    try {
+      const salvo = Number(localStorage.getItem(chavePosicao));
+      if (Number.isFinite(salvo) && salvo > 0) corpo.scrollTop = salvo;
+    } catch { /* A ficha continua navegável sem armazenamento local. */ }
+    const salvarPosicao = () => {
+      try { localStorage.setItem(chavePosicao, String(corpo.scrollTop)); }
+      catch { /* A posição não é essencial ao salvamento da ficha. */ }
+    };
+    corpo.addEventListener('scroll', salvarPosicao, { passive: true });
+    return () => corpo.removeEventListener('scroll', salvarPosicao);
+  }, [chavePosicao]);
   useEffect(() => {
     const corpo = corpoRef.current;
     if (!corpo) return;
