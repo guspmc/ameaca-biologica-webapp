@@ -268,7 +268,7 @@ test('cliente reconecta após fechamento e sincroniza histórico ao voltar à ab
 });
 
 
-test('autenticação local confirma conta, protege Mesas e revoga a sessão no logout', async t => {
+test('autenticação local confirma nome de usuário, protege Mesas e revoga a sessão no logout', async t => {
   const instancia = await criarInstancia(t);
   const origem = 'https://guspmc.github.io';
   const credenciais = { email: 'conta-api@example.test', password: 'senha-local-comprida-2026' };
@@ -281,7 +281,7 @@ test('autenticação local confirma conta, protege Mesas e revoga a sessão no l
   assert.equal(cadastro.headers.get('access-control-allow-origin'), origem);
   const contaCriada = await cadastro.json();
   assert.equal(typeof contaCriada.account.id, 'string');
-  assert.equal(contaCriada.account.email, credenciais.email);
+  assert.equal(contaCriada.account.username, credenciais.email);
 
   const login = await fetch(`${instancia.url}/api/auth/login`, {
     method: 'POST', headers: { origin: origem, 'content-type': 'application/json' },
@@ -324,7 +324,7 @@ test('autenticação local confirma conta, protege Mesas e revoga a sessão no l
 });
 
 
-test('Mestre consulta participantes sem expor e-mail e remove jogador com revogação de acesso e rascunhos', async t => {
+test('Mestre consulta participantes sem expor identificadores e remove jogador com revogação de acesso e rascunhos', async t => {
   const instancia = await criarInstancia(t);
   const origem = 'https://guspmc.github.io';
   async function conta(email) {
@@ -367,7 +367,7 @@ test('Mestre consulta participantes sem expor e-mail e remove jogador com revoga
   const lista = await listar.json();
   assert.deepEqual(lista.participants.map(p => p.role), ['mestre', 'jogador']);
   assert.equal(lista.participants[1].accountId, jogador.account.id);
-  assert.equal(JSON.stringify(lista).includes(jogador.account.email), false);
+  assert.equal(JSON.stringify(lista).includes(jogador.account.username), false);
 
   const convite = await fetch(instancia.url + '/api/mesas/' + mesa.id + '/convites', {
     method: 'POST', headers: { ...mestre.headers, 'content-type': 'application/json' }, body: '{}',
@@ -384,7 +384,7 @@ test('Mestre consulta participantes sem expor e-mail e remove jogador com revoga
   const listaPedidos = await pedidos.json();
   assert.equal(listaPedidos.requests.length, 1);
   assert.equal(listaPedidos.requests[0].accountId, terceiro.account.id);
-  assert.equal(JSON.stringify(listaPedidos).includes(terceiro.account.email), false);
+  assert.equal(JSON.stringify(listaPedidos).includes(terceiro.account.username), false);
 
   const listarJogador = await fetch(instancia.url + '/api/mesas/' + mesa.id + '/participantes', { headers: jogador.headers });
   assert.equal(listarJogador.status, 200);
