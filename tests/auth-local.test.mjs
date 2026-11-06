@@ -598,6 +598,73 @@ test('remoção de participante exige Mestre, revoga o acesso e exclui os rascun
   assert.deepEqual(lista.map(item => item.accountId).sort(), [mestre.account.id, jogadorMantido.account.id].sort());
 });
 
+test('rascunhos ficam isolados por conta mesmo entre jogadores da mesma Mesa', async t => {
+  const { base } = await setup(t);
+  const senha = 'senha-local-comprida-2026';
+  const entrar = async username => {
+    assert.equal((await post(base, '/api/auth/register', { username, password: senha })).status, 201);
+    const login = await post(base, '/api/auth/login', { username, password: senha });
+    assert.equal(login.status, 200);
+    return (await login.json()).token;
+  };
+
+  const tokenMestre = await entrar('mestre-isolamento');
+  const tokenDona = await entrar('jogadora-dona');
+  const tokenOutra = await entrar('jogadora-outra');
+  const { mesa } = await (await post(base, '/api/mesas', { name: 'Mesa de isolamento' }, tokenMestre)).json();
+  const { invitation } = await (await post(base, `/api/mesas/${mesa.id}/convites`, {}, tokenMestre)).json();
+
+  for (const token of [tokenDona, tokenOutra]) {
+    const pedido = await post(base, '/api/convites/solicitar', { code: invitation.code }, token);
+    assert.equal(pedido.status, 202);
+    const { request } = await pedido.json();
+    assert.equal((await post(base, `/api/mesas/${mesa.id}/solicitacoes/${request.id}/aprovar`, {}, tokenMestre)).status, 200);
+  }
+
+  const dadosOriginais = { estadoFicha: 'rascunho', classe: 'Operador', marcador: 'privado-da-dona' };
+  const criado = await post(base, `/api/mesas/${mesa.id}/personagens`, {
+    name: 'Ficha privada',
+    data: dadosOriginais,
+  }, tokenDona);
+  assert.equal(criado.status, 201);
+  const { personagem } = await criado.json();
+
+  const listaDaOutra = await fetch(base + `/api/mesas/${mesa.id}/personagens`, {
+    headers: { authorization: `Bearer ${tokenOutra}` },
+  });
+  assert.equal(listaDaOutra.status, 200);
+  assert.deepEqual((await listaDaOutra.json()).personagens, []);
+
+  const consultaDaOutra = await fetch(base + `/api/personagens/${personagem.id}`, {
+    headers: { authorization: `Bearer ${tokenOutra}` },
+  });
+  assert.equal(consultaDaOutra.status, 404);
+
+  const alteracaoDaOutra = await fetch(base + `/api/personagens/${personagem.id}`, {
+    method: 'PUT',
+    headers: { authorization: `Bearer ${tokenOutra}`, 'content-type': 'application/json' },
+    body: JSON.stringify({ name: 'Tentativa de invasão', data: { sobrescrito: true }, expectedRevision: personagem.revision }),
+  });
+  assert.equal(alteracaoDaOutra.status, 404);
+
+  const exclusaoDaOutra = await fetch(base + `/api/personagens/${personagem.id}`, {
+    method: 'DELETE',
+    headers: { authorization: `Bearer ${tokenOutra}` },
+  });
+  assert.equal(exclusaoDaOutra.status, 404);
+
+  const consultaDoMestre = await fetch(base + `/api/personagens/${personagem.id}`, {
+    headers: { authorization: `Bearer ${tokenMestre}` },
+  });
+  assert.equal(consultaDoMestre.status, 404);
+
+  const confirmacaoDona = await fetch(base + `/api/personagens/${personagem.id}`, {
+    headers: { authorization: `Bearer ${tokenDona}` },
+  });
+  assert.equal(confirmacaoDona.status, 200);
+  assert.deepEqual((await confirmacaoDona.json()).personagem.data, dadosOriginais);
+});
+
 test('permite nova solicitação após recusa com convite válido e preserva o histórico', async t => {
   const { base, app } = await setup(t);
   const senha = 'senha-local-comprida-2026';
