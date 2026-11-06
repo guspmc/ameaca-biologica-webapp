@@ -5,7 +5,7 @@ import ts from 'typescript';
 const nomes=['origens','equipamento','comprasIniciais','inventarioCriacao'];
 const source=(await Promise.all(nomes.map(n=>readFile(new URL('../src/'+n+'.ts',import.meta.url),'utf8')))).map(s=>s.replace(/^import .*;\r?$/gm,'')).join('\n');
 const {outputText}=ts.transpileModule(source,{compilerOptions:{module:ts.ModuleKind.ESNext,target:ts.ScriptTarget.ES2022}});
-const {planejarInventarioCriacao:planejar}=await import('data:text/javascript;base64,'+Buffer.from(outputText).toString('base64'));
+const {planejarInventarioCriacao:planejar,simularCompras}=await import('data:text/javascript;base64,'+Buffer.from(outputText).toString('base64'));
 const ficha=(classe='Agente',kit='C',extra={})=>({classe,equipamento_inicial:kit,forca:3,origem:null,nivel:1,estado_ficha:'rascunho',compras_iniciais:{},...extra});
 test('inventario inicial: nove kits oficiais, Caracteristicos fora da grade e armas carregadas sem reserva extra',()=>{
  for(const classe of ['Agente','Autodidata','Operador'])for(const kit of ['A','B','C']){
@@ -56,4 +56,38 @@ test('inventario inicial: entradas invalidas e excesso nao produzem plano parcia
  assert.throws(()=>planejar(ficha('Operador','A',{forca:0})));
  const p=planejar(ficha('Operador','A',{forca:0,origem:'Mochileiro'}));assert.equal(p.capacidade,5);assert.equal(p.ocupados,5);
  assert.throws(()=>planejar(ficha('Agente','C',{forca:0,compras_iniciais:{faca:2}})));
+});
+
+test('prévia de compras: catálogo, orçamento e ocupação são calculados sem saldo negativo',()=>{
+ const casos=[
+  ['bastao',1,1,1,2],
+  ['faca',1,1,1,2],
+  ['colete-acolchoado',1,1,1,2],
+  ['colete-leve',2,1,2,1],
+  ['lanterna-simples',1,1,1,2],
+  ['municao-9mm',1,15,1,2],
+ ];
+ for(const [id,preco,unidades,espacos,saldo] of casos){
+  const p=simularCompras({[id]:1},7);
+  assert.equal(p.gasto,preco,id+' custo');
+  assert.equal(p.itens[0].quantidade,unidades,id+' quantidade');
+  assert.equal(p.itens[0].espacos,espacos,id+' espaços');
+  assert.equal(p.saldo,saldo,id+' saldo');
+  assert.equal(p.orcamentoValido,true);
+  assert.equal(p.cabe,true);
+ }
+ const semCompra=simularCompras({},4);
+ assert.deepEqual({gasto:semCompra.gasto,saldo:semCompra.saldo,espacos:semCompra.espacos},{gasto:0,saldo:3,espacos:3});
+});
+test('prévia de compras: limite de orçamento, limite de quantidade e pilhas são respeitados',()=>{
+ assert.equal(simularCompras({bastao:3},7).saldo,0);
+ assert.equal(simularCompras({bastao:3},4).cabe,true);
+ assert.equal(simularCompras({bastao:3},3).cabe,false);
+ assert.deepEqual(simularCompras({'municao-9mm':3},7).itens.map(i=>i.quantidade),[30,15]);
+ assert.equal(simularCompras({'municao-9mm':3},7).espacos,4);
+ for(const plano of [{bastao:4},{bastao:-1},{bastao:1.5},{bastao:'1'},{desconhecido:1}]){
+  assert.throws(()=>simularCompras(plano,7));
+ }
+ assert.throws(()=>simularCompras({},-1));
+ assert.throws(()=>simularCompras({},1.5));
 });
