@@ -788,3 +788,19 @@ footer { margin-top:45px; border-top:1px solid #dce2df; padding-top:19px; color:
 .painel-mestre-side-nav button span{display:grid;place-items:center}
 .painel-mestre-side-nav button span svg,.painel-mestre-floating button span svg{display:block;width:19px;height:19px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 .painel-mestre-vazio>b svg{display:block;width:25px;height:25px;stroke:currentColor;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+
+
+/* Hierarquia editorial dos subtítulos dentro de Combate e Inventário. */
+.ficha-local-subtitulo{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  margin:16px 0 8px;
+  padding:0 0 6px;
+  border-bottom:1px solid #b7aa92;
+  color:#64252b;
+  font:800 10px/1.25 'Courier New',monospace;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+}
+.ficha-local-subtitulo:first-child{margin-top:8px}
