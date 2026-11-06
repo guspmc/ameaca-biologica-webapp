@@ -82,6 +82,11 @@ export default function PainelMestreLocal({ mesa, enderecosLan = [], convite, so
           <div className="painel-mestre-page-intro"><div><small>UMB / {aba==='mesa'?'OPERATION CENTER':aba==='encontros'?'TACTICAL OPERATIONS':'CONFIDENTIAL RECORDS'}</small><h4>{titulo}</h4><p>{subtitulo}</p></div><span>{indice}</span></div>
               {aba === 'mesa' && <div id="painel-mestre-panel-mesa" role="region" aria-labelledby="painel-mestre-tab-mesa" className="painel-mestre-conteudo">
       <p className="painel-mestre-orientacao">Convites, solicitações e participantes são administrados nesta Mesa. Aprovações e remoções são confirmadas pelo servidor.</p>
+      <div className="painel-mestre-indicadores" aria-label="Indicadores atuais da Mesa">
+        <span>JOGADORES <b>{totalJogadores === undefined ? '—' : totalJogadores}</b></span>
+        <span>VAGAS RESTANTES <b>{vagasDisponiveis === undefined ? '—' : vagasDisponiveis}</b></span>
+        <span>SOLICITAÇÕES PENDENTES <b>{totalSolicitacoes === undefined ? '—' : totalSolicitacoes}</b></span>
+      </div>
       <div className="servidor-local-botoes">
         <button className="botao-claro" type="button" disabled={consultando} onClick={() => aoGerarConvite(mesa)}>{convite ? 'Renovar convite' : 'Gerar convite'}</button>
         <button className="botao-claro" type="button" disabled={consultando} onClick={() => aoRevogarConvite(mesa)}>Revogar convite ativo</button>
