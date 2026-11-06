@@ -62,16 +62,16 @@ async function post(base, path, body, token) {
 
 test('cria conta local e retorna apenas identificador e nome de usuário', async t => {
   const { base } = await setup(t);
-  const resposta = await post(base, '/api/auth/register', { email: 'Teste@Exemplo.com', password: 'uma-senha-local-segura-2026' });
+  const resposta = await post(base, '/api/auth/register', { username: 'Claire Redfield', password: 'uma-senha-local-segura-2026' });
   assert.equal(resposta.status, 201);
   const { account } = await resposta.json();
-  assert.equal(account.username, 'teste@exemplo.com');
+  assert.equal(account.username, 'claire redfield');
   assert.deepEqual(Object.keys(account).sort(), ['id', 'username']);
 });
 
 test('login cria sessão, /me valida token e logout revoga sessão', async t => {
   const { base } = await setup(t);
-  const credentials = { email: 'jogador@example.test', password: 'senha-local-comprida-2026' };
+  const credentials = { username: 'jogador', password: 'senha-local-comprida-2026' };
   assert.equal((await post(base, '/api/auth/register', credentials)).status, 201);
   const login = await post(base, '/api/auth/login', credentials);
   assert.equal(login.status, 200);
@@ -89,7 +89,7 @@ test('login cria sessão, /me valida token e logout revoga sessão', async t => 
 test('rejeita senha curta e usa erro genérico no login inválido', async t => {
   const { base } = await setup(t);
   assert.equal((await post(base, '/api/auth/register', { email: 'curta@example.test', password: 'cur' })).status, 422);
-  const resposta = await post(base, '/api/auth/login', { email: 'nao-existe@example.test', password: 'senha-local-comprida-2026' });
+  const resposta = await post(base, '/api/auth/login', { username: 'nao-existe', password: 'senha-local-comprida-2026' });
   assert.equal(resposta.status, 401);
   assert.equal((await resposta.json()).error, 'Usuário(a) ou senha inválidos.');
 });
@@ -97,8 +97,8 @@ test('rejeita senha curta e usa erro genérico no login inválido', async t => {
 test('impede duplicação de nome de usuário sem diferenciar maiúsculas', async t => {
   const { base } = await setup(t);
   const password = 'senha-local-comprida-2026';
-  assert.equal((await post(base, '/api/auth/register', { email: 'Conta@example.test', password })).status, 201);
-  assert.equal((await post(base, '/api/auth/register', { email: 'conta@example.test', password })).status, 409);
+  assert.equal((await post(base, '/api/auth/register', { username: 'Conta', password })).status, 201);
+  assert.equal((await post(base, '/api/auth/register', { username: 'conta', password })).status, 409);
 });
 
 test('cadastro e login locais não bloqueiam novas tentativas por IP', async t => {
@@ -107,9 +107,42 @@ test('cadastro e login locais não bloqueiam novas tentativas por IP', async t =
     const resposta = await post(base, '/api/auth/register', { username: 'u'.repeat(81), password: 'senha-local-comprida-2026' });
     assert.equal(resposta.status, 422);
   }
-  const login = await post(base, '/api/auth/login', { email: 'nao-existe@example.test', password: 'senha-local-comprida-2026' });
+  const login = await post(base, '/api/auth/login', { username: 'nao-existe', password: 'senha-local-comprida-2026' });
   assert.equal(login.status, 401);
   assert.notEqual(login.status, 429);
+});
+
+test('recuperação de senha local redefine a credencial, revoga sessões e preserva a Mesa', async t => {
+  const { base, app } = await setup(t);
+  const antiga = { username: 'Claire', password: '1234' };
+  assert.equal((await post(base, '/api/auth/register', antiga)).status, 201);
+  const loginAntigo = await post(base, '/api/auth/login', antiga);
+  assert.equal(loginAntigo.status, 200);
+  const sessaoAntiga = await loginAntigo.json();
+  const criarMesa = await post(base, '/api/mesas', { name: 'Mesa preservada' }, sessaoAntiga.token);
+  assert.equal(criarMesa.status, 201);
+  const mesa = (await criarMesa.json()).mesa;
+  const ticket = await post(base, '/api/auth/ws-ticket', {}, sessaoAntiga.token);
+  assert.equal(ticket.status, 201);
+  const codigoTicket = (await ticket.json()).ticket;
+
+  assert.equal((await post(base, '/api/auth/reset-password', { username: 'nao-existe', password: '5678' })).status, 404);
+  assert.equal((await post(base, '/api/auth/reset-password', { username: 'claire', password: '123' })).status, 422);
+  const redefinicao = await post(base, '/api/auth/reset-password', { username: 'CLAIRE', password: '5678' });
+  assert.equal(redefinicao.status, 200);
+  assert.match(redefinicao.headers.get('set-cookie') ?? '', /Max-Age=0/);
+  assert.equal(app.db.prepare('SELECT COUNT(*) AS total FROM sessoes_locais WHERE conta_id = (SELECT id FROM contas_locais WHERE email = ?)').get('claire').total, 0);
+  assert.equal(app.db.prepare('SELECT COUNT(*) AS total FROM tickets_websocket_locais WHERE conta_id = (SELECT id FROM contas_locais WHERE email = ?)').get('claire').total, 0);
+  assert.equal((await fetch(base + '/api/auth/me', { headers: { authorization: 'Bearer ' + sessaoAntiga.token } })).status, 401);
+  assert.equal(consumirTicketWebSocketLocal(app.db, codigoTicket), null);
+  assert.equal((await post(base, '/api/auth/login', antiga)).status, 401);
+
+  const nova = await post(base, '/api/auth/login', { username: 'claire', password: '5678' });
+  assert.equal(nova.status, 200);
+  const novaSessao = await nova.json();
+  const lista = await fetch(base + '/api/mesas', { headers: { authorization: 'Bearer ' + novaSessao.token } });
+  assert.equal(lista.status, 200);
+  assert.deepEqual((await lista.json()).mesas.map(item => item.id), [mesa.id]);
 });
 
 test('registra a migração de autenticação uma única vez', async t => {
@@ -721,7 +754,7 @@ test('cookie HttpOnly restaura a sessão após reiniciar o servidor', async t =>
 
 test('aceita senha com exatamente quatro caracteres', async t => {
   const { base } = await setup(t);
-  const credentials = { email: 'senha-quatro@example.test', password: '1234' };
+  const credentials = { username: 'senha-quatro', password: '1234' };
   assert.equal((await post(base, '/api/auth/register', credentials)).status, 201);
   assert.equal((await post(base, '/api/auth/login', credentials)).status, 200);
 });
