@@ -643,6 +643,10 @@ export default function ConexaoServidorLocal() {
     }
     const mesa = mesas.find(item => item.id === contexto?.mesaId && item.role === 'jogador');
     if (!mesa) {
+      // A lista de Mesas já foi confirmada pelo servidor. Se o vínculo não
+      // existe mais, o contexto antigo não deve provocar tentativas futuras.
+      try { localStorage.removeItem(CHAVE_CONTEXTO_FICHA); }
+      catch { /* A restauração permanece bloqueada pela lista confirmada do servidor. */ }
       setRestauracaoFichaConcluida(true);
       return;
     }
@@ -666,7 +670,10 @@ export default function ConexaoServidorLocal() {
         if (personagemRestaurado) {
           await abrirFicha(mesa, personagemRestaurado);
         } else {
-          setErro('A sessão e a Mesa foram restauradas, mas o personagem salvo no contexto não foi encontrado. Atualize a lista de personagens para conferir.');
+          // A consulta adicional confirmou que o rascunho não existe mais.
+          try { localStorage.removeItem(CHAVE_CONTEXTO_FICHA); }
+          catch { /* A ausência confirmada do rascunho impede sua restauração. */ }
+          setAviso('A sessão e a Mesa foram restauradas, mas o rascunho salvo não existe mais. O contexto antigo foi descartado.');
         }
       } catch (problema) {
         if (!sessaoContinuaSendoAtual(geracaoSessao.current, geracaoSolicitada)) return;
