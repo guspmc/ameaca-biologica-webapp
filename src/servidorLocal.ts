@@ -1,6 +1,6 @@
 export type ContaLocal = {
   id: string;
-  email: string;
+  username: string;
 };
 
 export type SessaoLocal = {
@@ -192,17 +192,24 @@ export function criarClienteServidorLocal({ baseUrl, token, fetcher = fetch }: O
       return requisicao('/api/health');
     },
 
-    cadastrar(email: string, password: string): Promise<{ account: ContaLocal }> {
+    cadastrar(username: string, password: string): Promise<{ account: ContaLocal }> {
       return requisicao('/api/auth/register', {
         metodo: 'POST',
-        corpo: { email, password },
+        corpo: { username, password },
       });
     },
 
-    entrar(email: string, password: string): Promise<SessaoLocal> {
+    entrar(username: string, password: string): Promise<SessaoLocal> {
       return requisicao('/api/auth/login', {
         metodo: 'POST',
-        corpo: { email, password },
+        corpo: { username, password },
+      });
+    },
+
+    redefinirSenha(username: string, password: string): Promise<{ ok: boolean }> {
+      return requisicao('/api/auth/reset-password', {
+        metodo: 'POST',
+        corpo: { username, password },
       });
     },
 
