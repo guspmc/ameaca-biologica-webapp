@@ -35,7 +35,8 @@ export default function ConexaoServidorLocal() {
   const [senhaConfirmacao, setSenhaConfirmacao] = useState('');
   const [mostrarSenha, setMostrarSenha] = useState(false);
   const [mostrarConfirmacao, setMostrarConfirmacao] = useState(false);
-  const [modoCadastro, setModoCadastro] = useState(false);\n  const [modoRecuperacao, setModoRecuperacao] = useState(false);
+  const [modoCadastro, setModoCadastro] = useState(false);
+  const [modoRecuperacao, setModoRecuperacao] = useState(false);
   const [erro, setErro] = useState('');
   const [aviso, setAviso] = useState('');
   const [consultando, setConsultando] = useState(false);
