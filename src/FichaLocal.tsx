@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { dadosDaClasse } from './classesFicha';
 import { PERICIAS_CLASSE, ATRIBUTO_PERICIA, valorBasePericia, valorPassivoPericia } from './pericias';
 import { ORIGENS } from './origens';
@@ -78,6 +78,30 @@ function numero(valor: unknown): number {
 export default function FichaLocal({ nome, mesa, dados, aoFechar, aoRecarregar, aoAlterarPendencia, aoEditar, aoSalvarAtributosPericias, aoSalvarCaracteristicas, aoSalvarIdentidade, aoSalvarInventario, aoSalvarFuncionamento, aoSalvarRecursos, origemDados = 'local', status, erro }: Props) {
   const pendenciasInternas = useRef(new Set<string>());
   const [secoesPendentes, setSecoesPendentes] = useState<Set<string>>(() => new Set());
+  const [secaoAtiva, setSecaoAtiva] = useState('caracteristicas');
+  const corpoRef = useRef<HTMLDivElement | null>(null);
+  useEffect(() => {
+    const corpo = corpoRef.current;
+    if (!corpo) return;
+    const secoes = [
+      { id: 'ficha-local-caracteristicas', chave: 'caracteristicas' },
+      { id: 'ficha-local-pericias', chave: 'pericias' },
+      { id: 'ficha-local-combate', chave: 'combate' },
+      { id: 'ficha-local-inventario', chave: 'inventario' },
+    ];
+    const atualizarSecaoAtiva = () => {
+      const limite = corpo.getBoundingClientRect().top + Math.min(corpo.clientHeight * 0.4, 180);
+      let atual = secoes[0].chave;
+      for (const secao of secoes) {
+        const elemento = document.getElementById(secao.id);
+        if (elemento && elemento.getBoundingClientRect().top <= limite) atual = secao.chave;
+      }
+      setSecaoAtiva(valor => valor === atual ? valor : atual);
+    };
+    corpo.addEventListener('scroll', atualizarSecaoAtiva, { passive: true });
+    atualizarSecaoAtiva();
+    return () => corpo.removeEventListener('scroll', atualizarSecaoAtiva);
+  }, []);
   function registrarPendencia(secao: string, pendente: boolean) {
     setSecoesPendentes(atual => { const proxima = new Set(atual); if (pendente) proxima.add(secao); else proxima.delete(secao); return proxima; });
     if (aoAlterarPendencia) {
@@ -177,7 +201,7 @@ export default function FichaLocal({ nome, mesa, dados, aoFechar, aoRecarregar, 
         <div><strong>AMEAÇA BIOLÓGICA</strong><small>{origemDados === 'servidor' ? 'FICHA NO SERVIDOR · RASCUNHO' : 'FICHA LOCAL · RASCUNHO'}</small></div>
         <span className="ficha-local-selo">NÃO ATIVA</span>
       </header>
-      <div className="ficha-local-corpo">
+      <div className="ficha-local-corpo" ref={corpoRef}>
         {status && <p className="offline-status" role="status" aria-live="polite">{status}</p>}
         {erro && <p className="offline-erro" role="alert">{erro}</p>}
         {erro?.includes('alterada em outra aba') && aoRecarregar && <button type="button" className="botao-claro" onClick={aoRecarregar}>Descartar esta edição e carregar a versão mais recente</button>}
@@ -228,13 +252,6 @@ export default function FichaLocal({ nome, mesa, dados, aoFechar, aoRecarregar, 
           aoSalvar={aoSalvarRecursos}
           bloqueado={secoesPendentes.size > 0}
         />
-
-        <nav className="ficha-local-nav" aria-label="Seções da ficha">
-          <a href="#ficha-local-caracteristicas">Características</a>
-          <a href="#ficha-local-pericias">Atributos e Perícias</a>
-          <a href="#ficha-local-combate">Combate</a>
-          <a href="#ficha-local-inventario">Inventário</a>
-        </nav>
 
         <section id="ficha-local-caracteristicas" className="ficha-local-secao">
           <div className="ficha-local-titulo-secao"><h2><span>01</span> Características</h2><button type="button" className="ficha-local-editar-secao" onClick={() => aoEditar("caracteristicas")}>Editar seção ↗</button></div>
@@ -329,6 +346,12 @@ export default function FichaLocal({ nome, mesa, dados, aoFechar, aoRecarregar, 
 
         <footer className="ficha-local-rodape">AMEAÇA BIOLÓGICA RPG · {origemDados === 'servidor' ? 'DADOS NO SERVIDOR' : 'DADOS LOCAIS'} · RASCUNHO NÃO ATIVO</footer>
       </div>
+      <nav className="ficha-local-nav" aria-label="Atalhos da ficha">
+        <button type="button" className={secaoAtiva === 'caracteristicas' ? 'ativo' : ''} aria-current={secaoAtiva === 'caracteristicas' ? 'location' : undefined} onClick={() => { setSecaoAtiva('caracteristicas'); document.getElementById('ficha-local-caracteristicas')?.scrollIntoView({ behavior: 'smooth', block: 'start' }); }}><span aria-hidden="true">◉</span><small>PERFIL</small></button>
+        <button type="button" className={secaoAtiva === 'pericias' ? 'ativo' : ''} aria-current={secaoAtiva === 'pericias' ? 'location' : undefined} onClick={() => { setSecaoAtiva('pericias'); document.getElementById('ficha-local-pericias')?.scrollIntoView({ behavior: 'smooth', block: 'start' }); }}><span aria-hidden="true">▤</span><small>PERÍCIAS</small></button>
+        <button type="button" className={secaoAtiva === 'combate' ? 'ativo' : ''} aria-current={secaoAtiva === 'combate' ? 'location' : undefined} onClick={() => { setSecaoAtiva('combate'); document.getElementById('ficha-local-combate')?.scrollIntoView({ behavior: 'smooth', block: 'start' }); }}><span aria-hidden="true">◎</span><small>COMBATE</small></button>
+        <button type="button" className={secaoAtiva === 'inventario' ? 'ativo' : ''} aria-current={secaoAtiva === 'inventario' ? 'location' : undefined} onClick={() => { setSecaoAtiva('inventario'); document.getElementById('ficha-local-inventario')?.scrollIntoView({ behavior: 'smooth', block: 'start' }); }}><span aria-hidden="true">▦</span><small>ITENS</small></button>
+      </nav>
     </article>
   </div>;
 }

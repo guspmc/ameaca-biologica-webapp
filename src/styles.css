@@ -304,7 +304,7 @@ footer { margin-top:45px; border-top:1px solid #dce2df; padding-top:19px; color:
 
 /* Ficha contínua do laboratório local — primeira integração visual */
 .ficha-local-fundo{position:fixed;inset:0;z-index:60;background:#101819ed;display:flex;justify-content:center;padding:10px;overflow:hidden}
-.ficha-local{width:min(100%,760px);height:calc(100dvh - 20px);display:flex;flex-direction:column;overflow:hidden;border:4px solid #151c1d;border-radius:14px;background:#eee6d5;color:#282a27;box-shadow:0 25px 80px #0009}
+.ficha-local{position:relative;width:min(100%,760px);height:calc(100dvh - 20px);display:flex;flex-direction:column;overflow:hidden;border:4px solid #151c1d;border-radius:14px;background:#eee6d5;color:#282a27;box-shadow:0 25px 80px #0009}
 .ficha-local-topo{display:flex;align-items:center;gap:14px;padding:12px 16px;background:#202929;color:#f6eddf;border-bottom:3px solid #8f2e36}
 .ficha-local-topo>div{display:grid;gap:4px;flex:1;font:800 13px Georgia,serif;letter-spacing:.04em}
 .ficha-local-topo small{font:800 9px monospace;color:#c9b7a8}
@@ -321,7 +321,7 @@ footer { margin-top:45px; border-top:1px solid #dce2df; padding-top:19px; color:
 .ficha-local-acoes .botao-claro{white-space:nowrap}
 .ficha-local-voltar{border:1px solid #a75a61;border-radius:4px;background:#87333d;color:white;padding:9px 12px;font-weight:800}
 .ficha-local-selo{font:800 9px monospace;color:#e8bd83;border:1px solid #98744b;padding:6px}
-.ficha-local-corpo{overflow-y:auto;min-height:0;padding:18px 22px 40px;background:repeating-linear-gradient(0deg,#1b130b04 0,#1b130b04 1px,transparent 1px,transparent 6px),linear-gradient(160deg,#faf3e6,#e9dfce)}
+.ficha-local-corpo{overflow-y:auto;min-height:0;padding:18px 22px 125px;background:repeating-linear-gradient(0deg,#1b130b04 0,#1b130b04 1px,transparent 1px,transparent 6px),linear-gradient(160deg,#faf3e6,#e9dfce)}
 .ficha-local-identidade{padding:8px 0 18px;border-bottom:2px solid #343630}
 .ficha-local-identidade>span,.ficha-local-identidade p{font:800 10px monospace;letter-spacing:.06em;color:#8f2e36}
 .ficha-local-identidade h1{font:800 clamp(28px,6vw,42px)/1.05 Georgia,serif;margin:10px 0}
@@ -331,9 +331,13 @@ footer { margin-top:45px; border-top:1px solid #dce2df; padding-top:19px; color:
 .ficha-local-recursos>div{display:grid;gap:5px;justify-items:center;padding:12px 4px;border:1px solid #b9a98f;background:#f9f1e3}
 .ficha-local-recursos small,.ficha-local-recursos span{font:800 9px monospace;color:#837866;text-align:center}
 .ficha-local-recursos strong{font:800 25px Georgia,serif;color:#8f2e36}
-.ficha-local-nav{position:sticky;top:0;z-index:2;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:4px;padding:6px;background:#252d2c;border:1px solid #4c514a}
-.ficha-local-nav a{text-align:center;text-decoration:none;color:#f2e6d5;font:800 10px monospace;padding:9px 3px;border-radius:4px}
-.ficha-local-nav a:focus-visible,.ficha-local-nav a:hover{background:#87333d;outline:2px solid #d3a6a1}
+.ficha-local-nav{position:absolute;left:50%;bottom:13px;transform:translateX(-50%);z-index:8;width:min(calc(100% - 34px),520px);display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:4px;align-items:center;padding:6px;border:1px solid #aaa08d88;border-radius:15px;background:#282f30ec;backdrop-filter:blur(13px);box-shadow:0 9px 22px #1a1818a8,0 1px 0 #ffffff22 inset}
+.ficha-local-nav button{min-width:0;display:flex;flex-direction:column;align-items:center;gap:4px;padding:7px 1px 5px;border:0;border-radius:10px;background:transparent;color:#e4d7c4;font:800 9px 'Courier New',monospace}
+.ficha-local-nav button span{font:normal 19px/1 system-ui,sans-serif;color:#c6bbaa}
+.ficha-local-nav button small{font:800 9px 'Courier New',monospace}
+.ficha-local-nav button.ativo{background:#93424a;color:#fff3e3;box-shadow:inset 0 1px 0 #ffffff33}
+.ficha-local-nav button.ativo span{color:#fff1e0}
+.ficha-local-nav button:hover{background:#5a4141}
 .ficha-local-secao{padding:25px 0 10px;scroll-margin-top:65px}
 .ficha-local-secao h2{display:flex;gap:10px;align-items:center;margin:0 0 14px;padding-bottom:9px;border-bottom:2px solid #333630;font:800 23px Georgia,serif}
 .ficha-local-secao h2 span{font:800 12px monospace;color:#8f2e36}
@@ -364,7 +368,7 @@ footer { margin-top:45px; border-top:1px solid #dce2df; padding-top:19px; color:
 .ficha-local-itens strong{font-size:13px}
 .ficha-local-itens small{font-size:11px;color:#756b5c;line-height:1.5}
 .ficha-local-rodape{padding:18px 0 8px;text-align:center;border-top:1px solid #bdae95;font:9px monospace;letter-spacing:.07em;color:#827765}
-@media(max-width:560px){.ficha-local-fundo{padding:0}.ficha-local{height:100dvh;border:0;border-radius:0;width:100%}.ficha-local-corpo{padding:14px 14px 35px}.ficha-local-topo{padding:10px}.ficha-local-selo{font-size:8px}.ficha-local-recursos{gap:4px}.ficha-local-recursos>div{padding:9px 2px}.ficha-local-recursos strong{font-size:21px}.ficha-local-nav a{font-size:8px;padding:8px 1px}.ficha-local-grade{grid-template-columns:1fr}.ficha-local-pericias{grid-template-columns:1fr}.ficha-local-secao h2{font-size:20px}}
+@media(max-width:560px){.ficha-local-fundo{padding:0}.ficha-local{height:100dvh;border:0;border-radius:0;width:100%}.ficha-local-corpo{padding:14px 14px 125px}.ficha-local-topo{padding:10px}.ficha-local-selo{font-size:8px}.ficha-local-recursos{gap:4px}.ficha-local-recursos>div{padding:9px 2px}.ficha-local-recursos strong{font-size:21px}.ficha-local-nav a{font-size:8px;padding:8px 1px}.ficha-local-grade{grid-template-columns:1fr}.ficha-local-pericias{grid-template-columns:1fr}.ficha-local-secao h2{font-size:20px}}
 
 
 /* Editor contextual de Atributos e Perícias na ficha local */
