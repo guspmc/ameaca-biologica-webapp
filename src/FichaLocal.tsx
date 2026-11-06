@@ -276,9 +276,15 @@ export default function FichaLocal({ nome, mesa, contextoId, dados, aoFechar, ao
   return <div className="ficha-local-fundo" role="dialog" aria-modal="true" aria-labelledby="ficha-local-titulo">
     <article className="ficha-local">
       <header className="ficha-local-topo">
-        <div className="ficha-local-acoes"><button type="button" className="ficha-local-voltar" onClick={fecharFicha}>← Voltar</button><button type="button" className="botao-claro" onClick={() => abrirEditor('caracteristicas')}>Editar rascunho</button></div>
-        <div><strong>AMEAÇA BIOLÓGICA</strong><small>{origemDados === 'servidor' ? 'ARQUIVO DO JOGADOR · DADOS NO SERVIDOR' : 'ARQUIVO DO JOGADOR · DADOS LOCAIS'}</small></div>
-        <span className="ficha-local-selo">NÃO ATIVA</span>
+        <div className="ficha-local-topline">
+          <div className="ficha-local-wordmark">AMEAÇA<br/><span>BIOLÓGICA</span></div>
+          <div className="ficha-local-top-meta">ARQUIVO DO JOGADOR · V1.0<br/>MESA / {mesa || 'MESA LOCAL'}</div>
+        </div>
+        <div className="ficha-local-acoes">
+          <button type="button" className="ficha-local-voltar" onClick={fecharFicha}>← Voltar</button>
+          <span className="ficha-local-selo">RASCUNHO · NÃO ATIVA</span>
+          <button type="button" className="botao-claro" onClick={() => abrirEditor('caracteristicas')}>Editar rascunho</button>
+        </div>
       </header>
       <div className="ficha-local-corpo" ref={corpoRef}>
         {status && <p className="offline-status" role="status" aria-live="polite">{status}</p>}
@@ -288,11 +294,14 @@ export default function FichaLocal({ nome, mesa, contextoId, dados, aoFechar, ao
         </div>}
         {erro && <p className="offline-erro" role="alert">{erro}</p>}
         {erro?.includes('alterada em outra aba') && aoRecarregar && <button type="button" className="botao-claro" onClick={aoRecarregar}>Descartar esta edição e carregar a versão mais recente</button>}
+        <div className="ficha-local-chapter-meta">REGISTRO DO SOBREVIVENTE · {origemDados === 'servidor' ? 'DADOS NO SERVIDOR' : 'DADOS LOCAIS'} · RASCUNHO NÃO ATIVO</div>
         <div className="ficha-local-identidade">
-          <div className="ficha-local-identidade-meta"><span>{termo('REGISTRO DO SOBREVIVENTE')} · {mesa || 'MESA LOCAL'}</span><span className="ficha-local-carimbo">CONFIDENCIAL</span></div>
-          <h1 id="ficha-local-titulo">{nome}</h1>
-          <p>{classePersonagem(classe || null, genero)} · {termo(origem || 'Origem pendente')} · Nível 1 (criação)</p>
-          {origem === 'Operário' && typeof ficha.armaOperario === 'string' && <small>Arma escolhida: {ficha.armaOperario}</small>}
+          <div className="ficha-local-identidade-principal">
+            <h1 id="ficha-local-titulo">{nome}</h1>
+            <p>{classePersonagem(classe || null, genero)} · {termo(origem || 'Origem pendente')} · Nível 1 (criação)</p>
+            {origem === 'Operário' && typeof ficha.armaOperario === 'string' && <small>Arma escolhida: {ficha.armaOperario}</small>}
+          </div>
+          <span className="ficha-local-carimbo">DADOS<br/>RESTRITOS</span>
         </div>
 
         <div className="ficha-local-recursos">
