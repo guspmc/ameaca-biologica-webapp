@@ -184,9 +184,26 @@ export default function ConexaoServidorLocal() {
         catch { /* A autorização do servidor continua prevalecendo sem armazenamento local. */ }
       }
       setMesas(resposta.mesas);
-      setSolicitacoes(novosPedidos);
-      setPersonagens(novosPersonagens);
-      setParticipantes(novosParticipantes);
+      // Uma falha isolada de consulta não deve apagar da tela os últimos dados
+      // confirmados daquela Mesa. Ao mesmo tempo, vínculos que deixaram de
+      // existir são removidos dos estados locais.
+      const idsMestre = new Set(resposta.mesas.filter(mesa => mesa.role === 'mestre').map(mesa => mesa.id));
+      const idsJogador = new Set(resposta.mesas.filter(mesa => mesa.role === 'jogador').map(mesa => mesa.id));
+      setSolicitacoes(atual => {
+        const proximo = Object.fromEntries(Object.entries(atual).filter(([id]) => idsMestre.has(id)));
+        Object.assign(proximo, novosPedidos);
+        return proximo;
+      });
+      setParticipantes(atual => {
+        const proximo = Object.fromEntries(Object.entries(atual).filter(([id]) => idsMestre.has(id)));
+        Object.assign(proximo, novosParticipantes);
+        return proximo;
+      });
+      setPersonagens(atual => {
+        const proximo = Object.fromEntries(Object.entries(atual).filter(([id]) => idsJogador.has(id)));
+        Object.assign(proximo, novosPersonagens);
+        return proximo;
+      });
       dadosIniciaisCarregados.current = true;
       setCarregandoDadosIniciais(false);
       if (outrasFalhas.length > 0) {
