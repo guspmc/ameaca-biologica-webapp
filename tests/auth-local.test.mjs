@@ -88,7 +88,7 @@ test('login cria sessão, /me valida token e logout revoga sessão', async t => 
 
 test('rejeita senha curta e usa erro genérico no login inválido', async t => {
   const { base } = await setup(t);
-  assert.equal((await post(base, '/api/auth/register', { email: 'curta@example.test', password: 'curta' })).status, 422);
+  assert.equal((await post(base, '/api/auth/register', { email: 'curta@example.test', password: 'cur' })).status, 422);
   const resposta = await post(base, '/api/auth/login', { email: 'nao-existe@example.test', password: 'senha-local-comprida-2026' });
   assert.equal(resposta.status, 401);
   assert.equal((await resposta.json()).error, 'E-mail ou senha inválidos.');
@@ -101,16 +101,15 @@ test('impede duplicação de e-mail sem diferenciar maiúsculas', async t => {
   assert.equal((await post(base, '/api/auth/register', { email: 'conta@example.test', password })).status, 409);
 });
 
-test('limita tentativas repetidas de cadastro por IP e informa quando tentar novamente', async t => {
+test('cadastro e login locais não bloqueiam novas tentativas por IP', async t => {
   const { base } = await setup(t);
-  for (let i = 0; i < 5; i += 1) {
+  for (let i = 0; i < 7; i += 1) {
     const resposta = await post(base, '/api/auth/register', { email: 'email-invalido', password: 'senha-local-comprida-2026' });
     assert.equal(resposta.status, 422);
   }
-  const bloqueada = await post(base, '/api/auth/register', { email: 'outro-email-invalido', password: 'senha-local-comprida-2026' });
-  assert.equal(bloqueada.status, 429);
-  assert.ok(Number(bloqueada.headers.get('retry-after')) > 0);
-  assert.equal((await bloqueada.json()).error, 'Muitas tentativas. Aguarde antes de tentar novamente.');
+  const login = await post(base, '/api/auth/login', { email: 'nao-existe@example.test', password: 'senha-local-comprida-2026' });
+  assert.equal(login.status, 401);
+  assert.notEqual(login.status, 429);
 });
 
 test('registra a migração de autenticação uma única vez', async t => {
@@ -717,4 +716,12 @@ test('cookie HttpOnly restaura a sessão após reiniciar o servidor', async t =>
   assert.equal(logout.status, 200);
   assert.match(logout.headers.get('set-cookie') ?? '', /Max-Age=0/);
   assert.equal((await fetch('http://127.0.0.1:' + reiniciado.address.port + '/api/auth/me', { headers: { cookie } })).status, 401);
+});
+
+
+test('aceita senha com exatamente quatro caracteres', async t => {
+  const { base } = await setup(t);
+  const credentials = { email: 'senha-quatro@example.test', password: '1234' };
+  assert.equal((await post(base, '/api/auth/register', credentials)).status, 201);
+  assert.equal((await post(base, '/api/auth/login', credentials)).status, 200);
 });

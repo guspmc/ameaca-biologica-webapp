@@ -30,6 +30,9 @@ export default function ConexaoServidorLocal() {
   const [participantes, setParticipantes] = useState<Record<string, ParticipanteMesaLocal[]>>({});
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
+  const [senhaConfirmacao, setSenhaConfirmacao] = useState('');
+  const [mostrarSenha, setMostrarSenha] = useState(false);
+  const [mostrarConfirmacao, setMostrarConfirmacao] = useState(false);
   const [modoCadastro, setModoCadastro] = useState(false);
   const [erro, setErro] = useState('');
   const [aviso, setAviso] = useState('');
@@ -298,12 +301,18 @@ export default function ConexaoServidorLocal() {
   async function autenticar(evento: FormEvent<HTMLFormElement>) {
     evento.preventDefault();
     if (!saude) return;
-    setErro(''); setAviso(''); setConsultando(true);
+    setErro(''); setAviso('');
+    if (modoCadastro && senha !== senhaConfirmacao) {
+      setErro('A confirmação não corresponde à senha digitada.');
+      return;
+    }
+    setConsultando(true);
     try {
       const cliente = criarClienteServidorLocal({ baseUrl: endereco.trim() });
       if (modoCadastro) {
         await cliente.cadastrar(email.trim(), senha);
         setSenha('');
+        setSenhaConfirmacao('');
         setModoCadastro(false);
         setAviso('Conta criada. Agora entre com o e-mail e a senha cadastrados.');
       } else {
@@ -319,6 +328,7 @@ export default function ConexaoServidorLocal() {
         geracaoSessao.current += 1;
         setSessao(novaSessao);
         setSenha('');
+        setSenhaConfirmacao('');
         setAviso('Sessão confirmada pelo servidor. O token ficará somente na memória desta página.');
       }
     } catch (problema) {
@@ -813,19 +823,28 @@ export default function ConexaoServidorLocal() {
           </div>
         </> : <>
           <h2>{modoCadastro ? 'Criar conta local' : 'Entrar no servidor'}</h2>
-          <p className="secundario">{modoCadastro ? 'Cadastre uma conta experimental neste servidor. A senha deve ter de 12 a 128 caracteres.' : 'Use a conta cadastrada neste servidor local.'}</p>
+          <p className="secundario">{modoCadastro ? 'Cadastre uma conta experimental neste servidor. A senha deve ter de 4 a 128 caracteres.' : 'Use a conta cadastrada neste servidor local.'}</p>
           <form className="formulario" onSubmit={autenticar}>
             <label>E-mail
               <input type="email" required maxLength={254} autoComplete="email" value={email} onChange={evento => setEmail(evento.target.value)} />
             </label>
             <label>Senha
-              <input type="password" required minLength={modoCadastro ? 12 : 1} maxLength={128} autoComplete={modoCadastro ? 'new-password' : 'current-password'} value={senha} onChange={evento => setSenha(evento.target.value)} />
+              <div className="servidor-local-campo-senha">
+                <input type={mostrarSenha ? 'text' : 'password'} required minLength={modoCadastro ? 4 : 1} maxLength={128} autoComplete={modoCadastro ? 'new-password' : 'current-password'} value={senha} onChange={evento => setSenha(evento.target.value)} />
+                <button type="button" aria-label={mostrarSenha ? 'Ocultar senha' : 'Mostrar senha'} aria-pressed={mostrarSenha} onClick={() => setMostrarSenha(valor => !valor)}>{mostrarSenha ? 'Ocultar' : 'Mostrar'}</button>
+              </div>
             </label>
-            <button className="acao" type="submit" disabled={consultando || !email.trim() || !senha}>
+            {modoCadastro && <label>Confirmar senha
+              <div className="servidor-local-campo-senha">
+                <input type={mostrarConfirmacao ? 'text' : 'password'} required minLength={4} maxLength={128} autoComplete="new-password" value={senhaConfirmacao} onChange={evento => setSenhaConfirmacao(evento.target.value)} />
+                <button type="button" aria-label={mostrarConfirmacao ? 'Ocultar confirmação' : 'Mostrar confirmação'} aria-pressed={mostrarConfirmacao} onClick={() => setMostrarConfirmacao(valor => !valor)}>{mostrarConfirmacao ? 'Ocultar' : 'Mostrar'}</button>
+              </div>
+            </label>}
+            <button className="acao" type="submit" disabled={consultando || !email.trim() || !senha || (modoCadastro && !senhaConfirmacao)}>
               {consultando ? 'Aguarde...' : modoCadastro ? 'Criar conta' : 'Entrar'} <span>→</span>
             </button>
           </form>
-          <button className="servidor-local-alternar" type="button" disabled={consultando} onClick={() => { setModoCadastro(!modoCadastro); setErro(''); setAviso(''); setSenha(''); }}>
+          <button className="servidor-local-alternar" type="button" disabled={consultando} onClick={() => { setModoCadastro(!modoCadastro); setErro(''); setAviso(''); setSenha(''); setSenhaConfirmacao(''); setMostrarSenha(false); setMostrarConfirmacao(false); }}>
             {modoCadastro ? 'Já tenho uma conta — voltar ao login' : 'Ainda não tenho conta — cadastrar'}
           </button>
         </>}
