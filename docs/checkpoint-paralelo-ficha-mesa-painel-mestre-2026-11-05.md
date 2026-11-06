@@ -90,3 +90,52 @@ Nenhuma alteração em `main`, merge, publicação, Supabase remoto ou banco de 
 - **Objetivo:** aproximar o teste unitário da condição de rede lenta que pode ocorrer no salvamento LAN; não substitui teste de integração React nem reprodução no navegador.
 - **Commit:** `91b3ceb`; CI ainda pendente.
 - **CI:** os workflows dos commits `21b0550` e `b1908c3` ainda estavam em execução na última consulta. O commit mais recente também precisa concluir ambos os workflows.
+
+
+## Continuidade — retorno dos primeiros testes humanos e correções LAN (05/11/2026)
+
+### Evidência humana recebida
+- Inicialização automatizada do servidor LAN: **APROVADA** pelo autor.
+- Cadastro/login com o fluxo antigo (e-mail e senha mínima de 12): **FUNCIONOU**, mas revelou divergência com o requisito aprovado de nickname e senha mínima 4.
+- Criação de Mesa: **APROVADA**.
+- Geração de convite, solicitação de ingresso e aprovação pelo Mestre: **APROVADAS**.
+- Recarga da página do Mestre: **REPROVADA** — perdeu a sessão e voltou à etapa de endereço do servidor; após novo login, a Mesa não apareceu na interface.
+- Salvamento/recarga da ficha: **INCONCLUSIVO** — os testes seguintes foram interrompidos porque a Mesa não aparecia após a recarga.
+- Interface: controles de senha, confirmação, rótulo de login e alinhamento visual foram apontados como divergentes; endereço LAN e QR Codes estavam ausentes.
+- Nenhum teste humano posterior às correções deste checkpoint foi executado.
+
+### Diagnóstico e alterações implementadas
+- **Mesa não exibida após novo login — causa provável identificada no frontend:** o servidor já persistia Mesa e vínculos no SQLite, mas a interface não fazia sincronização inicial automática da lista depois da autenticação. Agora a sincronização é disparada ao estabelecer/restaurar sessão.
+- **Caminho do SQLite:** diretório padrão passou a ser resolvido a partir da localização do servidor no repositório, evitando criar outro banco por diferença acidental de diretório de trabalho.
+- **Persistência automatizada ampliada:** teste cria Mesa, convite, solicitação, aprovação de jogador, rascunho e atualização de campos; reinicia o servidor com o mesmo diretório e confirma Mesa, vínculo, participante e revisão/dados da ficha.
+- **Sessão persistente:** cookie HttpOnly, SameSite=Strict, validade de sete dias; restauração automática no modo LAN após recarga/reabertura. Logout voluntário revoga a sessão e limpa o cookie. O transporte LAN permanece HTTP sem criptografia.
+- **Contexto da ficha:** Mesa/personagem abertos e posição de rolagem são preservados localmente; após restauração da sessão, o WebApp reabre a ficha autorizada e tenta restaurar a posição.
+- **Senha:** mínimo alterado para quatro caracteres; cadastro ganhou confirmação; controle mostrar/ocultar permanece visível; bloqueio por quantidade de tentativas de cadastro/login por IP foi removido conforme solicitação do autor. Hash de senha continua protegido.
+- **Endereço LAN e QR:** API informa os endereços IPv4 detectados; interface mostra URLs no host LAN e QR Codes gerados localmente, sem serviço externo. QR de convite aponta para o endereço LAN, preenche o código e não aprova ingresso automaticamente.
+- **Código curto:** convite novo usa oito caracteres Base32, alfabeto `ABCDEFGHJKLMNPQRSTUVWXYZ23456789` (40 bits, sem caracteres visualmente ambíguos), comparação sem diferenciar caixa e tentativa de colisão sob transação. Códigos longos antigos continuam aceitos durante a transição. O QR de convite abre a página e pré-preenche o código; o jogador ainda solicita ingresso e aguarda aprovação.
+- **Ficha visual:** navegação foi movida para barra flutuante inferior com quatro atalhos, seção ativa acompanha a rolagem e a posição é restaurada após recarga, alinhando a navegação ao protótipo mobile congelado.
+- **Habilidades/Equipamento Inicial:** inspeção do código confirmou que os seletores já existem em `EditorCaracteristicasLocal.tsx` e `EditorInventarioLocal.tsx`; não foram recriados nem considerados testados. A nova navegação facilita o acesso, mas a confirmação visual/funcional humana continua pendente.
+- **Painel do Mestre:** resumo administrativo mostra jogadores/10, vagas disponíveis e solicitações pendentes; a numeração de jogadores exclui o Mestre. QR de convite aparece para os endereços LAN detectados. Não foi criado acesso do Mestre à ficha integral.
+
+### Commits desta rodada
+- `511370f`: sincronização automática de Mesas após autenticação e caminho SQLite estável.
+- `97ec581` / `54eab6c`: sessão persistente por cookie e restauração de contexto/posição da ficha.
+- `605caa4`: senha mínima 4, confirmação, mostrar/ocultar e remoção do bloqueio por tentativas.
+- `b1fa0cf`: correção do teste de validação IPv4; os dois workflows passaram.
+- `7797718`: navegação flutuante inferior na ficha.
+- `4b72b46`: gerador local de QR Code, URL LAN e QR de convite com pré-preenchimento.
+- `c7466b8`: resumo de vagas/solicitações no Painel do Mestre.
+- `e2a63a7`: persistência de convite, aprovação e participante após reinício.
+- `c15996b`: persistência de atualização da ficha após reinício.
+- `0c9b38b`: validação de cookie HttpOnly através do proxy same-origin.
+- `01176cf`: código curto de convite de oito caracteres.
+- `ed6770f`: remove parâmetro de convite da URL após solicitação concluída.
+
+### CI e pendências
+- **CI CONFIRMADA:** ambos os workflows passaram nos commits `4b72b46`, `c7466b8`, `f9e6905`, `e2a63a7`, `c15996b` e `0c9b38b`.
+- **CI PENDENTE no momento do checkpoint:** workflows de `01176cf` e HEAD `ed6770f` ainda em execução; verificar novamente antes de declarar HEAD validado.
+- **Nickname:** campo ainda usa e-mail. Migração de coluna/contrato e política de normalização continuam pendentes de decisão do autor; preservar contas existentes é obrigatório.
+- **Recuperação de senha:** fluxo solicitado pelo autor (informar nickname e cadastrar nova senha sem e-mail) ainda não implementado. Qualquer pessoa que conheça o nickname poderá assumir a conta; registrar essa consequência na interface.
+- **QR e convite:** QR local implementado; formato curto agora implementado, sujeito ao CI. Leitura real em celular e conectividade entre dispositivos continuam pendentes.
+- **Falha original de salvamento:** persistência e reabertura foram cobertas por testes automatizados; a causa original do erro observado no ambiente Windows/celular ainda não foi reproduzida. Não declarar incidente totalmente resolvido antes de novo teste humano.
+- **Limites preservados:** alterações somente na branch `feat/offline-first-ficha`; sem merge, deploy, alteração em `main`, Supabase ou banco de produção.
