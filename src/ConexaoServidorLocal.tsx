@@ -128,6 +128,7 @@ export default function ConexaoServidorLocal() {
   async function sincronizarDadosRecebidos() {
     if (!sessao) return;
     const geracaoSolicitada = geracaoSessao.current;
+    const fichaAoIniciar = fichaAbertaRef.current;
     const cliente = criarClienteServidorLocal({ baseUrl: endereco.trim(), token: sessao.token });
     try {
       const primeiraCarga = !dadosIniciaisCarregados.current;
@@ -160,15 +161,20 @@ export default function ConexaoServidorLocal() {
       }
       const outrasFalhas = resultados.filter(resultado => resultado.status === 'rejected');
       const fichaAtual = fichaAbertaRef.current;
-      const mesaAindaAutorizaJogador = Boolean(fichaAtual && resposta.mesas.some(mesa =>
-        mesa.id === fichaAtual.mesa.id && mesa.role === 'jogador'
+      const fichaDaConsulta = fichaAtual && fichaAoIniciar &&
+        fichaAtual.mesa.id === fichaAoIniciar.mesa.id &&
+        fichaAtual.personagem.id === fichaAoIniciar.personagem.id
+        ? fichaAtual
+        : null;
+      const mesaAindaAutorizaJogador = Boolean(fichaDaConsulta && resposta.mesas.some(mesa =>
+        mesa.id === fichaDaConsulta.mesa.id && mesa.role === 'jogador'
       ));
-      const listaAtualizada = fichaAtual ? novosPersonagens[fichaAtual.mesa.id] : undefined;
+      const listaAtualizada = fichaDaConsulta ? novosPersonagens[fichaDaConsulta.mesa.id] : undefined;
       const fichaExcluidaEmOutraSessao = Boolean(
-        fichaAtual && mesaAindaAutorizaJogador && Array.isArray(listaAtualizada) &&
-        !listaAtualizada.some(personagem => personagem.id === fichaAtual.personagem.id)
+        fichaDaConsulta && mesaAindaAutorizaJogador && Array.isArray(listaAtualizada) &&
+        !listaAtualizada.some(personagem => personagem.id === fichaDaConsulta.personagem.id)
       );
-      const acessoFichaRevogado = Boolean(fichaAtual && !mesaAindaAutorizaJogador);
+      const acessoFichaRevogado = Boolean(fichaDaConsulta && !mesaAindaAutorizaJogador);
       if (acessoFichaRevogado || fichaExcluidaEmOutraSessao) {
         // Uma ficha não permanece aberta após remoção da Mesa ou exclusão
         // confirmada do rascunho em outra sessão/dispositivo.
