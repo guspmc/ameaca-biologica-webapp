@@ -13,8 +13,8 @@ function textoOuNulo(valor: unknown): string | null {
   return typeof valor === 'string' && valor.trim() ? valor : null;
 }
 
-function numeroOuInvalido(valor: unknown): number {
-  return typeof valor === 'number' ? valor : Number.NaN;
+function numeroOuZero(valor: unknown): number {
+  return typeof valor === 'number' && Number.isFinite(valor) ? valor : 0;
 }
 
 /**
@@ -33,10 +33,11 @@ export function validarCriacaoNoServidor(nome: string, dadosRecebidos: unknown) 
   const habilidade = textoOuNulo(dados.habilidadeBasica);
   const kit = textoOuNulo(dados.equipamentoInicial);
 
-  const forca = numeroOuInvalido(atributos.forca);
-  const agilidade = numeroOuInvalido(atributos.agilidade);
-  const vigor = numeroOuInvalido(atributos.vigor);
-  const astucia = numeroOuInvalido(atributos.astucia);
+  const atributosAusentes = !dados.atributos || typeof dados.atributos !== 'object' || Array.isArray(dados.atributos);
+  const forca = atributosAusentes ? 1 : numeroOuZero(atributos.forca);
+  const agilidade = atributosAusentes ? 1 : numeroOuZero(atributos.agilidade);
+  const vigor = atributosAusentes ? 1 : numeroOuZero(atributos.vigor);
+  const astucia = atributosAusentes ? 1 : numeroOuZero(atributos.astucia);
 
   const pvBase = classe === 'Agente' ? 10 : classe === 'Autodidata' ? 8 : classe === 'Operador' ? 12 : 0;
   const biBase = classe === 'Agente' ? 8 : classe === 'Autodidata' ? 10 : classe === 'Operador' ? 6 : 0;
@@ -61,7 +62,7 @@ export function validarCriacaoNoServidor(nome: string, dadosRecebidos: unknown) 
     habilidade_basica: habilidade,
     equipamento_inicial: kit,
     compras_iniciais: compras as Record<string, number>,
-    revisao_compras: numeroOuInvalido(dados.revisaoCompras),
+    revisao_compras: numeroOuZero(dados.revisaoCompras),
     pv_maximo: pv,
     sa_maximo: sa,
     bi_maximo: bi,
