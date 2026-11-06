@@ -49,7 +49,7 @@ export default function IdentidadeLocal({ nome: nomeInicial, identidade: identid
     aoAlterarPendencia(true);
   }
 
-  return <details className="ficha-local-identidade-detalhe">
+  return <details id="ficha-local-editor-identidade" data-ficha-editor className="ficha-local-identidade-detalhe">
     <summary>Identificação, aparência e história</summary>
     <p>Campos narrativos da personagem. São opcionais e não alteram Atributos ou recursos. Gênero se refere à personagem e auxilia a flexão dos textos da ficha.</p>
     <div className="ficha-local-identidade-form">
