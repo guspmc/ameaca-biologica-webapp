@@ -841,3 +841,99 @@ footer { margin-top:45px; border-top:1px solid #dce2df; padding-top:19px; color:
 .ficha-local-identidade p{font-size:9px;line-height:1.5}
 .ficha-local-identidade .ficha-local-carimbo{flex:none}
 @media(max-width:360px){.ficha-local-top-meta{font-size:7px}.ficha-local-wordmark{font-size:13px}.ficha-local-acoes .ficha-local-selo{font-size:7px;padding:4px}}
+
+
+/* Acabamento da Ficha — hierarquia, cartões e controles do protótipo mobile 0.2. */
+.ficha-local-fundo{display:flex;align-items:flex-start;justify-content:center;min-height:100dvh;overflow:hidden}
+.ficha-local{position:relative;display:flex;flex-direction:column;flex:none}
+.ficha-local-topo{flex:none;z-index:4}
+.ficha-local-corpo{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;scroll-behavior:smooth}
+.ficha-local-topline{min-height:35px}
+.ficha-local-wordmark{font-size:15px;line-height:.9}
+.ficha-local-top-meta{max-width:58%;font-size:8px;line-height:1.45}
+.ficha-local-acoes{display:flex;align-items:center;justify-content:space-between;gap:7px;flex-wrap:wrap}
+.ficha-local-acoes .ficha-local-voltar,.ficha-local-acoes .botao-claro{min-height:29px}
+.ficha-local-acoes .ficha-local-selo{white-space:nowrap}
+.ficha-local-chapter-meta{font:700 9px/1.4 'Courier New',monospace;letter-spacing:.09em}
+.ficha-local-identidade{border-bottom:0;align-items:flex-start}
+.ficha-local-identidade h1{font:800 clamp(27px,7vw,34px)/.99 Georgia,serif;letter-spacing:-.8px}
+.ficha-local-identidade p{font:700 10px/1.4 'Courier New',monospace;letter-spacing:.05em}
+.ficha-local-recursos{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:5px;margin:8px 0 14px}
+.ficha-local-recursos>div{min-height:89px;padding:8px 3px 7px;border:1px solid #b4a58e;border-radius:3px;background:linear-gradient(180deg,#f9f2e4,#e3d7c3);box-shadow:0 1px 1px #5e4b321a}
+.ficha-local-recursos small{font:700 8px/1.2 'Courier New',monospace;letter-spacing:.035em}
+.ficha-local-recursos strong{font:850 16px/1.1 system-ui,sans-serif;letter-spacing:-.5px}
+.ficha-local-recursos>div>span:last-child{font:8px/1.25 'Courier New',monospace;text-align:center}
+.ficha-local-secao{margin-top:17px;padding:17px 0 7px;border-top:1px solid #b7aa92}
+.ficha-local-titulo-secao{margin-bottom:10px}
+.ficha-local-titulo-secao h2{font:800 18px/1 Georgia,serif}
+.ficha-local-grade{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+.ficha-local-grade>div{min-width:0;min-height:70px;padding:9px 10px;border:1px solid #d2c5af;border-radius:0;background:#f9f4e9a8}
+.ficha-local-grade strong{display:block;margin:4px 0;font-size:13px;overflow-wrap:anywhere}
+.ficha-local-grade p{margin:3px 0 0;font-size:10px;line-height:1.45}
+.ficha-local-nota,.ficha-local-aviso{margin:10px 0;border-radius:0 4px 4px 0}
+.ficha-local-atributos{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:5px;margin:10px 0}
+.ficha-local-atributos>div{display:grid;justify-items:center;gap:3px;min-width:0}
+.ficha-local-atributos span{text-align:center}
+.ficha-local-pontos{display:flex;justify-content:space-between;align-items:center;gap:8px;margin:7px 0;padding:9px 10px;border:1px solid #d2c5af;background:#f9f4e9a8;font-size:10px}
+.ficha-local-pontos strong{text-align:right}
+.ficha-local-pericias{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:5px}
+.ficha-local-pericias>div{display:flex;align-items:center;justify-content:space-between;gap:6px;min-width:0;padding:8px 7px;border:1px solid #d2c5af;border-radius:0;background:#f9f4e9a8}
+.ficha-local-pericias>div>span{min-width:0;font-size:10px}
+.ficha-local-pericias small{display:block;margin-top:3px;line-height:1.35}
+.ficha-local-pericias strong{flex:none;font:800 15px Georgia,serif}
+.ficha-local-legenda{margin:9px 0;font-size:9px;line-height:1.5}
+.ficha-local-subtitulo{margin:15px 0 8px;padding-bottom:6px;border-bottom:1px solid #b7aa92;color:#64252b;font:800 10px 'Courier New',monospace;letter-spacing:.08em;text-transform:uppercase}
+.ficha-local-editor-detalhe{margin:8px 0;border-radius:0;background:#f9f4e9}
+.ficha-local-editor-detalhe>summary{min-height:42px;padding:10px 11px;font-size:11px}
+.ficha-local-editor-detalhe>.ficha-local-editor{padding:10px;background:#eee7d7}
+.ficha-local-inventario-topo{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:10px 0;padding:10px;border-radius:3px}
+.ficha-local-itens{display:grid;gap:6px;margin-top:9px}
+.ficha-local-itens>strong{margin-top:5px;color:#64252b;font:800 9px 'Courier New',monospace;letter-spacing:.06em}
+.ficha-local-itens>div{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;border-radius:0}
+.ficha-local-itens>div>small{text-align:right}
+.ficha-local-nav{position:absolute;left:50%;transform:translateX(-50%);bottom:10px;z-index:8;backdrop-filter:blur(12px)}
+.ficha-local-rodape{margin-top:17px}
+@media(max-width:560px){
+ .ficha-local-fundo{min-height:100dvh;padding:0}
+ .ficha-local{width:100%;height:100dvh;min-height:0;border:0;border-radius:0}
+ .ficha-local-corpo{padding-bottom:calc(112px + env(safe-area-inset-bottom))}
+ .ficha-local-nav{bottom:max(9px,env(safe-area-inset-bottom))}
+ .ficha-local-identidade{padding-top:10px}
+ .ficha-local-recursos>div{min-height:83px}
+ .ficha-local-grade{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(min-width:561px){
+ .ficha-local-fundo{align-items:center;padding:23px 14px}
+ .ficha-local{height:min(840px,calc(100dvh - 46px))}
+}
+
+/* Painel do Mestre — Mesa em cartões operacionais, seguindo o painel congelado. */
+.painel-mestre-shell.servidor-local-controle-mesa{display:block;width:100%;max-width:none;margin:0;padding:0;border:0;border-radius:0;background:transparent;box-shadow:none}
+.painel-mestre-mesa-dashboard{display:grid;gap:11px}
+.painel-mestre-mesa-hero{position:relative;display:flex;align-items:flex-start;justify-content:space-between;gap:12px;overflow:hidden;padding:17px 16px;border:1px solid #e2e5e6;border-top:4px solid var(--pm-red);border-radius:13px;background:linear-gradient(125deg,#fff 55%,#fbeff1);box-shadow:0 3px 15px #12212c08}
+.painel-mestre-mesa-hero:after{content:'UMB';position:absolute;right:3px;bottom:-24px;color:#af16300b;font:900 90px Georgia,serif;letter-spacing:-12px;pointer-events:none}
+.painel-mestre-mesa-hero>div,.painel-mestre-mesa-hero>span{position:relative;z-index:1}
+.painel-mestre-mesa-hero small,.painel-mestre-mesa-acoes>div:first-child small,.painel-mestre-mesa-participantes .painel-mestre-subsecao-topo small,.painel-mestre-mesa-solicitacoes .painel-mestre-subsecao-topo small{display:block;color:var(--pm-red);font:800 9px 'Courier New',monospace;letter-spacing:1.1px}
+.painel-mestre-mesa-hero h5{margin:7px 0 5px;color:var(--pm-ink);font:800 20px/1.1 Georgia,serif}
+.painel-mestre-mesa-hero p{margin:0;color:var(--pm-muted);font-size:11px;line-height:1.5}
+.painel-mestre-mesa-stats{grid-template-columns:repeat(3,minmax(0,1fr));margin:0}
+.painel-mestre-mesa-stats span{min-height:68px;padding:10px;border:1px solid var(--pm-line);border-radius:9px;background:#fff;font-size:8px}
+.painel-mestre-mesa-stats b{font:800 23px Georgia,serif}
+.painel-mestre-mesa-acoes{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:13px 14px;border:1px solid var(--pm-line);border-radius:11px;background:#fff}
+.painel-mestre-mesa-acoes>div:first-child{display:grid;gap:4px;min-width:0}
+.painel-mestre-mesa-acoes>div:first-child strong{font-size:13px}
+.painel-mestre-mesa-acoes>div:first-child span{color:var(--pm-muted);font-size:10px;line-height:1.4}
+.painel-mestre-mesa-acoes .servidor-local-botoes{justify-content:flex-end}
+.painel-mestre-mesa-participantes,.painel-mestre-mesa-solicitacoes{margin-top:0;padding:14px;border:1px solid var(--pm-line);border-radius:11px;background:#fff;box-shadow:0 3px 15px #12212c08}
+.painel-mestre-mesa-participantes .painel-mestre-subsecao-topo,.painel-mestre-mesa-solicitacoes .painel-mestre-subsecao-topo{align-items:center;margin-bottom:10px}
+.painel-mestre-mesa-participantes .painel-mestre-subsecao-topo h5,.painel-mestre-mesa-solicitacoes .painel-mestre-subsecao-topo h5{margin:3px 0 0;font-size:15px}
+.painel-mestre-mesa-participantes .servidor-local-lista-mesas li,.painel-mestre-mesa-solicitacoes .servidor-local-lista-mesas li{padding:11px 9px;border:1px solid #e7e9ea;border-radius:8px;background:#f8f9f9}
+@media(max-width:600px){
+ .painel-mestre-mesa-hero{display:block}
+ .painel-mestre-mesa-hero>.painel-mestre-selo-demo{display:inline-flex;margin-top:10px}
+ .painel-mestre-mesa-stats{grid-template-columns:repeat(3,minmax(0,1fr));gap:5px}
+ .painel-mestre-mesa-stats span{padding:8px 5px;font-size:7px}
+ .painel-mestre-mesa-stats b{font-size:19px}
+ .painel-mestre-mesa-acoes{align-items:stretch;flex-direction:column}
+ .painel-mestre-mesa-acoes .servidor-local-botoes{justify-content:flex-start}
+}
