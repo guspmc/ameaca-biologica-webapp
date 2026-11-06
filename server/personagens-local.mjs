@@ -69,7 +69,7 @@ export async function tratarRotaPersonagensLocal(req, res, url, db, notificarCon
   if (!rota.startsWith('/api/mesas/') && !rota.startsWith('/api/personagens/')) return false;
 
   const lista = /^\/api\/mesas\/([a-f0-9]{32})\/personagens$/.exec(rota);
-  const conferencia = /^\\/api\\/personagens\\/([a-f0-9]{32})\\/conferencia$/.exec(rota);
+  const conferencia = /^\/api\/personagens\/([a-f0-9]{32})\/conferencia$/.exec(rota);
   const item = /^\/api\/personagens\/([a-f0-9]{32})$/.exec(rota);
   if (!lista && !item && !conferencia) return false;
 
