@@ -23,10 +23,10 @@ export default function ArquivosJogadorLocal({ mesaId, mesaNome }: { mesaId: str
     </header>
     <nav className="arquivos-jogador-nav" aria-label="Categorias de Arquivos">
       {([['documentos','Documentos'],['mapa','Mapa'],['anotacoes','Minhas anotações']] as [AbaArquivosJogador,string][]).map(([id,label]) =>
-        <button key={id} type="button" className={aba===id?'ativo':''} aria-pressed={aba===id} onClick={()=>selecionarAba(id)}>{label}</button>
+        <button key={id} id={'arquivos-jogador-tab-' + id} type="button" className={aba===id?'ativo':''} aria-pressed={aba===id} onClick={()=>selecionarAba(id)}>{label}</button>
       )}
     </nav>
-    <div className="arquivos-jogador-conteudo" role="region" aria-live="polite" aria-label={titulo}>
+    <div id={'arquivos-jogador-panel-' + aba} className="arquivos-jogador-conteudo" role="region" aria-live="polite" aria-labelledby={'arquivos-jogador-tab-' + aba}>
       {aba === 'documentos' && <>
         <small>DOCUMENTOS REVELADOS</small><h4>Documentos da Mesa</h4>
         <p>Somente documentos que o Mestre publicar para toda a Mesa aparecerão aqui. Abrir ou consultar um documento não o publica nem altera sua visibilidade.</p>
