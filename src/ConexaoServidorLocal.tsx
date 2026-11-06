@@ -9,6 +9,7 @@ import { fichaContinuaSendoAlvo, sessaoContinuaSendoAtual } from './fichaContinu
 
 const CHAVE_ENDERECO = 'ameaca-biologica:servidor-local:endereco:v1';
 const CHAVE_CONTEXTO_FICHA = 'ameaca-biologica:servidor-local:contexto-ficha:v1';
+const CHAVE_POSICAO_PAGINA = 'ameaca-biologica:servidor-local:posicao:v1';
 
 function enderecoInicial(): string {
   if (import.meta.env.MODE === 'lan') return window.location.origin;
@@ -19,6 +20,8 @@ function enderecoInicial(): string {
 export default function ConexaoServidorLocal() {
   const [endereco, setEndereco] = useState(enderecoInicial);
   const [saude, setSaude] = useState<SaudeServidorLocal | null>(null);
+  const [restaurandoSessao, setRestaurandoSessao] = useState(import.meta.env.MODE === 'lan');
+  const [carregandoDadosIniciais, setCarregandoDadosIniciais] = useState(false);
   const [sessao, setSessao] = useState<SessaoLocal | null>(null);
   // Distingue sessões sucessivas, inclusive novo login da mesma conta e mesma ficha.
   const geracaoSessao = useRef(0);
@@ -44,6 +47,8 @@ export default function ConexaoServidorLocal() {
   const [salvandoFicha, setSalvandoFicha] = useState(false);
   const filaSalvamentoFicha = useRef(criarFilaSerializada());
   const restaurandoFicha = useRef(false);
+  const dadosIniciaisCarregados = useRef(false);
+  const restauracaoScrollConcluida = useRef(false);
   const fichaAbertaRef = useRef(fichaAberta);
   fichaAbertaRef.current = fichaAberta;
   const quantidadeSalvamentosPendentes = useRef(0);
@@ -54,8 +59,12 @@ export default function ConexaoServidorLocal() {
   // No modo LAN, o cookie HttpOnly permite restaurar a sessão após recarga
   // ou reabertura do navegador sem expor o token ao armazenamento JavaScript.
   useEffect(() => {
-    if (import.meta.env.MODE !== 'lan') return;
+    if (import.meta.env.MODE !== 'lan') {
+      setRestaurandoSessao(false);
+      return;
+    }
     let ativo = true;
+    setRestaurandoSessao(true);
     const cliente = criarClienteServidorLocal({ baseUrl: window.location.origin });
     void (async () => {
       try {
@@ -64,10 +73,16 @@ export default function ConexaoServidorLocal() {
         setSaude(disponibilidade);
         try {
           const resposta = await cliente.minhaConta();
-          if (!ativo || Date.parse(resposta.expiresAt) <= Date.now()) return;
+          if (!ativo) return;
+          if (Date.parse(resposta.expiresAt) <= Date.now()) {
+            setAviso('A sessão anterior expirou. Entre novamente para continuar.');
+            return;
+          }
+          dadosIniciaisCarregados.current = false;
+          setCarregandoDadosIniciais(true);
           geracaoSessao.current += 1;
           setSessao({ account: resposta.account, token: '', expiresAt: resposta.expiresAt });
-          setAviso('Sessão restaurada e confirmada pelo servidor.');
+          setAviso('Sessão restaurada. Carregando suas Mesas e permissões...');
         } catch (problema) {
           if (!ativo) return;
           if (!(problema instanceof ErroServidorLocal && problema.status === 401)) {
@@ -76,6 +91,8 @@ export default function ConexaoServidorLocal() {
         }
       } catch (problema) {
         if (ativo) setErro(problema instanceof Error ? problema.message : 'Não foi possível verificar o servidor local.');
+      } finally {
+        if (ativo) setRestaurandoSessao(false);
       }
     })();
     return () => { ativo = false; };
@@ -87,6 +104,8 @@ export default function ConexaoServidorLocal() {
     fichaAbertaRef.current = null;
     setFichaAberta(null);
     setSessao(null);
+    dadosIniciaisCarregados.current = false;
+    setCarregandoDadosIniciais(false);
     setMesas([]);
     setPersonagens({});
     setNomesPersonagens({});
@@ -101,9 +120,10 @@ export default function ConexaoServidorLocal() {
     const geracaoSolicitada = geracaoSessao.current;
     const cliente = criarClienteServidorLocal({ baseUrl: endereco.trim(), token: sessao.token });
     try {
+      const primeiraCarga = !dadosIniciaisCarregados.current;
+      if (primeiraCarga) setCarregandoDadosIniciais(true);
       const resposta = await cliente.listarMesas();
       if (!sessaoContinuaSendoAtual(geracaoSessao.current, geracaoSolicitada)) return;
-      setMesas(resposta.mesas);
       const novosPedidos: typeof solicitacoes = {};
       const novosPersonagens: typeof personagens = {};
       const novosParticipantes: typeof participantes = {};
@@ -124,15 +144,25 @@ export default function ConexaoServidorLocal() {
         resultado.reason.status === 401
       );
       if (falhaAutenticacao) {
+        setCarregandoDadosIniciais(false);
         encerrarSessao('A sessão expirou ou foi encerrada no servidor. Entre novamente.');
         return;
       }
+      const outrasFalhas = resultados.filter(resultado => resultado.status === 'rejected');
+      setMesas(resposta.mesas);
       setSolicitacoes(novosPedidos);
       setPersonagens(novosPersonagens);
       setParticipantes(novosParticipantes);
-      setAviso('Dados atualizados e confirmados nas consultas ao servidor.');
+      dadosIniciaisCarregados.current = true;
+      setCarregandoDadosIniciais(false);
+      if (outrasFalhas.length > 0) {
+        setErro('A lista de Mesas foi carregada, mas algumas informações administrativas ou fichas não puderam ser atualizadas.');
+      } else {
+        setAviso('Dados atualizados e confirmados nas consultas ao servidor.');
+      }
     } catch (problema) {
       if (!sessaoContinuaSendoAtual(geracaoSessao.current, geracaoSolicitada)) return;
+      setCarregandoDadosIniciais(false);
       if (problema instanceof ErroServidorLocal && problema.status === 401) {
         encerrarSessao('A sessão expirou ou foi encerrada no servidor. Entre novamente.');
       } else {
@@ -277,6 +307,26 @@ export default function ConexaoServidorLocal() {
   }, [mesas, canalTempoReal]);
 
   useEffect(() => {
+    const salvarPosicao = () => {
+      try { sessionStorage.setItem(CHAVE_POSICAO_PAGINA, String(window.scrollY)); }
+      catch { /* A restauração da posição é uma conveniência, não bloqueia a navegação. */ }
+    };
+    window.addEventListener('beforeunload', salvarPosicao);
+    return () => window.removeEventListener('beforeunload', salvarPosicao);
+  }, []);
+
+  useEffect(() => {
+    if (!sessao || !dadosIniciaisCarregados.current || restauracaoScrollConcluida.current) return;
+    restauracaoScrollConcluida.current = true;
+    let posicao = 0;
+    try { posicao = Number(sessionStorage.getItem(CHAVE_POSICAO_PAGINA)); }
+    catch { posicao = 0; }
+    if (!Number.isFinite(posicao) || posicao <= 0) return;
+    const quadro = window.requestAnimationFrame(() => window.scrollTo(0, posicao));
+    return () => window.cancelAnimationFrame(quadro);
+  }, [sessao, mesas, personagens, solicitacoes, participantes, carregandoDadosIniciais]);
+
+  useEffect(() => {
     if (!sessao) return;
     const verificarExpiracao = () => {
       if (Date.parse(sessao.expiresAt) <= Date.now()) {
@@ -336,6 +386,8 @@ export default function ConexaoServidorLocal() {
         if (Date.parse(novaSessao.expiresAt) <= Date.now()) {
           throw new Error('O servidor retornou uma sessão já expirada. Tente entrar novamente.');
         }
+        dadosIniciaisCarregados.current = false;
+        setCarregandoDadosIniciais(true);
         geracaoSessao.current += 1;
         setSessao(novaSessao);
         setSenha('');
@@ -772,7 +824,8 @@ export default function ConexaoServidorLocal() {
       </div>
       <section className="cartao cartao-padrao servidor-local-cartao">
         <p className="rotulo">ETAPA 01 · CONECTIVIDADE</p>
-        <h2>Endereço do servidor</h2>
+        <h2>{sessao ? 'Servidor conectado' : 'Endereço do servidor'}</h2>
+        {restaurandoSessao && <p className="servidor-local-feedback" role="status">Restaurando sua sessão e consultando suas Mesas. Aguarde um instante...</p>}
         <p className="secundario">Informe o endereço HTTP/HTTPS da máquina que está executando o servidor local. Em outro dispositivo da mesma rede, use o IP da máquina servidora e a porta configurada.</p>
         <form className="formulario" onSubmit={evento => { evento.preventDefault(); void verificar(); }}>
           <label>URL do servidor
@@ -809,7 +862,7 @@ export default function ConexaoServidorLocal() {
         </div>}
       </section>
 
-      {saude && <section className="cartao cartao-padrao servidor-local-cartao servidor-local-auth">
+      {saude && !restaurandoSessao && <section className="cartao cartao-padrao servidor-local-cartao servidor-local-auth">
         <p className="rotulo">ETAPA 02 · CONTA LOCAL</p>
         {sessao ? <>
           <h2>Sessão autenticada</h2>
@@ -824,7 +877,7 @@ export default function ConexaoServidorLocal() {
               <div><p className="rotulo">ETAPA 03 · SUAS MESAS</p><h3>Mesas vinculadas à conta</h3></div>
               <button className="botao-claro" type="button" disabled={consultando} onClick={() => void atualizarMesas()}>Atualizar lista</button>
             </div>
-            {mesas.length ? <ul className="servidor-local-lista-mesas">
+            {carregandoDadosIniciais ? <p className="servidor-local-vazio" role="status">Carregando suas Mesas, participantes e permissões...</p> : mesas.length ? <ul className="servidor-local-lista-mesas">
               {mesas.map(mesa => <li key={mesa.id}>
                 <div><strong>{mesa.name}</strong><small>Criada em {new Intl.DateTimeFormat('pt-BR', { dateStyle: 'short' }).format(new Date(mesa.createdAt))}</small></div>
                 <span className={mesa.role === 'mestre' ? 'papel-mestre' : 'papel-jogador'}>{mesa.role === 'mestre' ? 'MESTRE' : 'JOGADOR'}</span>
