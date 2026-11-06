@@ -1019,3 +1019,26 @@ footer { margin-top:45px; border-top:1px solid #dce2df; padding-top:19px; color:
  .ficha-local-nav button small{font-size:7px}
 }
 @media(prefers-reduced-motion:reduce){.ficha-local-corpo{scroll-behavior:auto}}
+
+
+/* Cabeçalho editorial em papel, como no protótipo: marca e metadados no topline;
+   ações seguem a identificação, sem transformar o topo em uma barra escura. */
+.ficha-local-topo{background:transparent;color:#252725;border-bottom:0;padding:14px 15px 0}
+.ficha-local-topo:before{display:none}
+.ficha-local-topline{padding:9px 0 11px;border-bottom:1px solid #383a32}
+.ficha-local-wordmark{color:#252725}
+.ficha-local-wordmark span{color:#8f2e36}
+.ficha-local-top-meta{color:#746d61}
+.ficha-local-acoes{padding:5px 0 13px;border-bottom:1px solid #cfbfa7}
+.ficha-local-acoes .ficha-local-voltar,.ficha-local-acoes .botao-claro{border:1px solid #b7aa92;border-radius:4px;background:#f8f2e5;color:#64252b;font:800 9px 'Courier New',monospace}
+.ficha-local-acoes .ficha-local-selo{border:1px solid #8f2e36;color:#8f2e36;background:#f5e6d7}
+@media(max-width:735px){
+ .ficha-local-topo{padding:8px 13px 0}
+ .ficha-local-acoes{gap:5px;padding:5px 0 10px}
+ .ficha-local-acoes .ficha-local-voltar,.ficha-local-acoes .botao-claro{padding:6px 7px;min-height:28px}
+}
+@media(max-width:360px){
+ .ficha-local-top-meta{max-width:55%;font-size:6.5px}
+ .ficha-local-acoes .ficha-local-selo{font-size:6px;padding:4px}
+ .ficha-local-acoes .ficha-local-voltar,.ficha-local-acoes .botao-claro{font-size:7px;padding:5px}
+}
