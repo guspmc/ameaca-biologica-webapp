@@ -114,6 +114,7 @@ export default function ConexaoServidorLocal() {
     fichaAbertaRef.current = null;
     setFichaAberta(null);
     setSessao(null);
+    setConsultando(false);
     dadosIniciaisCarregados.current = false;
     setCarregandoDadosIniciais(false);
     setMesas([]);
@@ -486,7 +487,7 @@ export default function ConexaoServidorLocal() {
       } else {
         setErro(problema instanceof Error ? problema.message : 'Não foi possível confirmar o encerramento da sessão.');
       }
-    } finally { setConsultando(false); }
+    } finally { if (sessaoContinuaSendoAtual(geracaoSessao.current, geracaoSolicitada)) setConsultando(false); }
   }
 
   async function atualizarMesas() {
@@ -503,7 +504,7 @@ export default function ConexaoServidorLocal() {
       if (problema instanceof ErroServidorLocal && problema.status === 401) {
         encerrarSessao('A sessão expirou ou foi encerrada no servidor. Entre novamente.');
       } else setErro(problema instanceof Error ? problema.message : 'Não foi possível atualizar as Mesas.');
-    } finally { setConsultando(false); }
+    } finally { if (sessaoContinuaSendoAtual(geracaoSessao.current, geracaoSolicitada)) setConsultando(false); }
   }
 
   async function criarNovaMesa(evento: FormEvent<HTMLFormElement>) {
@@ -540,7 +541,7 @@ export default function ConexaoServidorLocal() {
           setAviso('Mesa “' + resposta.mesa.name + '” criada e confirmada pelo servidor, mas não foi possível atualizar a lista. Use “Atualizar lista” para consultar o estado atual.');
         }
       }
-    } finally { setConsultando(false); }
+    } finally { if (sessaoContinuaSendoAtual(geracaoSessao.current, geracaoSolicitada)) setConsultando(false); }
   }
 
 
@@ -561,7 +562,7 @@ export default function ConexaoServidorLocal() {
       if (!sessaoContinuaSendoAtual(geracaoSessao.current, geracaoSolicitada)) return;
       if (problema instanceof ErroServidorLocal && problema.status === 401) encerrarSessao('A sessão expirou ou foi encerrada no servidor. Entre novamente.');
       else setErro(problema instanceof Error ? problema.message : 'Não foi possível excluir o rascunho.');
-    } finally { setConsultando(false); }
+    } finally { if (sessaoContinuaSendoAtual(geracaoSessao.current, geracaoSolicitada)) setConsultando(false); }
   }
   async function carregarPersonagens(mesa: MesaLocal) {
     if (!sessao || mesa.role !== 'jogador') return;
@@ -576,7 +577,7 @@ export default function ConexaoServidorLocal() {
       if (!sessaoContinuaSendoAtual(geracaoSessao.current, geracaoSolicitada)) return;
       if (problema instanceof ErroServidorLocal && problema.status === 401) encerrarSessao('A sessão expirou ou foi encerrada no servidor. Entre novamente.');
       else setErro(problema instanceof Error ? problema.message : 'Não foi possível consultar os personagens.');
-    } finally { setConsultando(false); }
+    } finally { if (sessaoContinuaSendoAtual(geracaoSessao.current, geracaoSolicitada)) setConsultando(false); }
   }
 
   async function criarPersonagem(mesa: MesaLocal, evento: FormEvent<HTMLFormElement>) {
@@ -599,7 +600,7 @@ export default function ConexaoServidorLocal() {
       if (!sessaoContinuaSendoAtual(geracaoSessao.current, geracaoSolicitada)) return;
       if (problema instanceof ErroServidorLocal && problema.status === 401) encerrarSessao('A sessão expirou ou foi encerrada no servidor. Entre novamente.');
       else setErro(problema instanceof Error ? problema.message : 'Não foi possível criar o rascunho.');
-    } finally { setConsultando(false); }
+    } finally { if (sessaoContinuaSendoAtual(geracaoSessao.current, geracaoSolicitada)) setConsultando(false); }
   }
 
   async function abrirFicha(mesa: MesaLocal, personagem: ResumoPersonagemLocal) {
@@ -623,7 +624,7 @@ export default function ConexaoServidorLocal() {
       if (!sessaoContinuaSendoAtual(geracaoSessao.current, geracaoSolicitada)) return;
       if (problema instanceof ErroServidorLocal && problema.status === 401) encerrarSessao('A sessão expirou ou foi encerrada no servidor. Entre novamente.');
       else setErro(problema instanceof Error ? problema.message : 'Não foi possível abrir a ficha.');
-    } finally { setConsultando(false); }
+    } finally { if (sessaoContinuaSendoAtual(geracaoSessao.current, geracaoSolicitada)) setConsultando(false); }
   }
 
   useEffect(() => {
@@ -767,7 +768,7 @@ export default function ConexaoServidorLocal() {
       if (problema instanceof ErroServidorLocal && problema.status === 401) {
         encerrarSessao('A sessão expirou ou foi encerrada no servidor. Entre novamente.');
       } else setErro(problema instanceof Error ? problema.message : 'Não foi possível gerar o convite.');
-    } finally { setConsultando(false); }
+    } finally { if (sessaoContinuaSendoAtual(geracaoSessao.current, geracaoSolicitada)) setConsultando(false); }
   }
 
   async function revogarConvite(mesa: MesaLocal) {
@@ -786,7 +787,7 @@ export default function ConexaoServidorLocal() {
       if (problema instanceof ErroServidorLocal && problema.status === 401) {
         encerrarSessao('A sessão expirou ou foi encerrada no servidor. Entre novamente.');
       } else setErro(problema instanceof Error ? problema.message : 'Não foi possível revogar o convite.');
-    } finally { setConsultando(false); }
+    } finally { if (sessaoContinuaSendoAtual(geracaoSessao.current, geracaoSolicitada)) setConsultando(false); }
   }
 
   async function copiarConvite(codigo: string) {
@@ -812,7 +813,7 @@ export default function ConexaoServidorLocal() {
       if (problema instanceof ErroServidorLocal && problema.status === 401) {
         encerrarSessao('A sessão expirou ou foi encerrada no servidor. Entre novamente.');
       } else setErro(problema instanceof Error ? problema.message : 'Não foi possível consultar as solicitações.');
-    } finally { setConsultando(false); }
+    } finally { if (sessaoContinuaSendoAtual(geracaoSessao.current, geracaoSolicitada)) setConsultando(false); }
   }
 
   async function decidirSolicitacao(mesa: MesaLocal, id: string, decisao: 'aprovar' | 'recusar') {
@@ -844,7 +845,7 @@ export default function ConexaoServidorLocal() {
       if (!sessaoContinuaSendoAtual(geracaoSessao.current, geracaoSolicitada)) return;
       if (problema instanceof ErroServidorLocal && problema.status === 401) encerrarSessao('A sessão expirou ou foi encerrada no servidor. Entre novamente.');
       else setErro(problema instanceof Error ? problema.message : 'Não foi possível analisar a solicitação.');
-    } finally { setConsultando(false); }
+    } finally { if (sessaoContinuaSendoAtual(geracaoSessao.current, geracaoSolicitada)) setConsultando(false); }
   }
 
   async function carregarParticipantes(mesa: MesaLocal) {
@@ -860,7 +861,7 @@ export default function ConexaoServidorLocal() {
       if (!sessaoContinuaSendoAtual(geracaoSessao.current, geracaoSolicitada)) return;
       if (problema instanceof ErroServidorLocal && problema.status === 401) encerrarSessao('A sessão expirou ou foi encerrada no servidor. Entre novamente.');
       else setErro(problema instanceof Error ? problema.message : 'Não foi possível consultar os participantes.');
-    } finally { setConsultando(false); }
+    } finally { if (sessaoContinuaSendoAtual(geracaoSessao.current, geracaoSolicitada)) setConsultando(false); }
   }
 
   async function removerParticipante(mesa: MesaLocal, accountId: string) {
@@ -882,7 +883,7 @@ export default function ConexaoServidorLocal() {
       if (!sessaoContinuaSendoAtual(geracaoSessao.current, geracaoSolicitada)) return;
       if (problema instanceof ErroServidorLocal && problema.status === 401) encerrarSessao('A sessão expirou ou foi encerrada no servidor. Entre novamente.');
       else setErro(problema instanceof Error ? problema.message : 'Não foi possível remover o participante.');
-    } finally { setConsultando(false); }
+    } finally { if (sessaoContinuaSendoAtual(geracaoSessao.current, geracaoSolicitada)) setConsultando(false); }
   }
 
   async function ingressarPorConvite(evento: FormEvent<HTMLFormElement>) {
@@ -903,7 +904,7 @@ export default function ConexaoServidorLocal() {
       if (problema instanceof ErroServidorLocal && problema.status === 401) {
         encerrarSessao('A sessão expirou ou foi encerrada no servidor. Entre novamente.');
       } else setErro(problema instanceof Error ? problema.message : 'Não foi possível solicitar ingresso.');
-    } finally { setConsultando(false); }
+    } finally { if (sessaoContinuaSendoAtual(geracaoSessao.current, geracaoSolicitada)) setConsultando(false); }
   }
 
   async function consultarSessao() {
@@ -920,7 +921,7 @@ export default function ConexaoServidorLocal() {
       if (problema instanceof ErroServidorLocal && problema.status === 401) {
         encerrarSessao('O servidor informou que a sessão expirou ou foi encerrada. Entre novamente.');
       } else setErro(problema instanceof Error ? problema.message : 'Falha ao consultar a sessão.');
-    } finally { setConsultando(false); }
+    } finally { if (sessaoContinuaSendoAtual(geracaoSessao.current, geracaoSolicitada)) setConsultando(false); }
   }
 
   return <div className="aplicativo">
