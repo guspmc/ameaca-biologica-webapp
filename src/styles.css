@@ -825,3 +825,19 @@ footer { margin-top:45px; border-top:1px solid #dce2df; padding-top:19px; color:
 .arquivos-jogador-mapa strong{padding:8px 12px;background:#f8f2e5dd;color:#64252b;font:700 16px Georgia,serif}
 .arquivos-jogador-aviso{margin:10px 0 0;padding-top:10px;border-top:1px solid #b7aa92;color:#746d61;font:800 8px/1.5 'Courier New',monospace;letter-spacing:.04em}
 @media(max-width:560px){.arquivos-jogador{margin:16px 0;padding:12px}.arquivos-jogador-topo{display:block}.arquivos-jogador-topo>span{display:inline-block;margin-top:8px}.arquivos-jogador-nav button{font-size:9px;padding:8px}.arquivos-jogador-conteudo{min-height:170px}}
+
+/* Ficha — cabeçalho editorial do protótipo congelado v0.2. */
+.ficha-local-topo{display:block;padding:13px 15px 11px}
+.ficha-local-topline{display:flex;align-items:center;justify-content:space-between;gap:12px;padding-bottom:10px;border-bottom:1px solid #59605d}
+.ficha-local-wordmark{font:900 15px/.88 Georgia,serif;letter-spacing:.12em;color:#f8f2e5}
+.ficha-local-wordmark span{color:#d9b5a9;font-size:12px;letter-spacing:.2em}
+.ficha-local-top-meta{text-align:right;color:#c5b9a6;font:8px/1.55 'Courier New',monospace;letter-spacing:.07em}
+.ficha-local-acoes{display:flex;align-items:center;justify-content:space-between;gap:7px;padding-top:9px}
+.ficha-local-acoes .ficha-local-selo{grid-column:auto;grid-row:auto;margin-left:auto}
+.ficha-local-chapter-meta{padding:9px 0 7px;border-bottom:1px solid #b7aa92;color:#8f2e36;font:800 8px 'Courier New',monospace;letter-spacing:.08em}
+.ficha-local-identidade{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 0 13px}
+.ficha-local-identidade-principal{min-width:0}
+.ficha-local-identidade h1{margin:0 0 5px;font-size:clamp(27px,7vw,34px)}
+.ficha-local-identidade p{font-size:9px;line-height:1.5}
+.ficha-local-identidade .ficha-local-carimbo{flex:none}
+@media(max-width:360px){.ficha-local-top-meta{font-size:7px}.ficha-local-wordmark{font-size:13px}.ficha-local-acoes .ficha-local-selo{font-size:7px;padding:4px}}
