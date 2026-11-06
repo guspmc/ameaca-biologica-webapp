@@ -133,8 +133,12 @@ export default function FichaLocal({ nome, mesa, contextoId, dados, aoFechar, ao
   function fecharFicha() {
     if (pendenciasInternas.current.size > 0) {
       const secoes = [...pendenciasInternas.current].join(', ');
-      setFecharAposSalvar(true);
-      setAvisoFechamento('Aguardando confirmação do servidor: ' + secoes + '. A ficha fechará automaticamente quando todas as alterações forem salvas.');
+      if (autoSalvar) {
+        setFecharAposSalvar(true);
+        setAvisoFechamento('Aguardando confirmação do servidor: ' + secoes + '. A ficha fechará automaticamente quando todas as alterações forem salvas.');
+      } else {
+        setAvisoFechamento('Há alterações pendentes em: ' + secoes + '. Salve-as antes de fechar a ficha.');
+      }
       return;
     }
     setFecharAposSalvar(false);
@@ -143,12 +147,12 @@ export default function FichaLocal({ nome, mesa, contextoId, dados, aoFechar, ao
   }
 
   useEffect(() => {
-    if (fecharAposSalvar && pendenciasInternas.current.size === 0) {
+    if (autoSalvar && fecharAposSalvar && pendenciasInternas.current.size === 0) {
       setFecharAposSalvar(false);
       setAvisoFechamento('');
       aoFechar();
     }
-  }, [fecharAposSalvar, secoesPendentes, aoFechar]);
+  }, [autoSalvar, fecharAposSalvar, secoesPendentes, aoFechar]);
   const ficha = dados as DadosFichaLocal;
   const estadoReanimacao = (dados as Record<string, unknown>).reanimacao;
   const reanimacaoEmCurso = reanimacaoValida(estadoReanimacao) && estadoReanimacao.estado !== 'concluida';
