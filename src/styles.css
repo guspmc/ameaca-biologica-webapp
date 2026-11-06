@@ -804,3 +804,24 @@ footer { margin-top:45px; border-top:1px solid #dce2df; padding-top:19px; color:
   text-transform:uppercase;
 }
 .ficha-local-subtitulo:first-child{margin-top:8px}
+
+/* Arquivos do Jogador: estrutura de consulta alinhada ao dossiê da Ficha. */
+.arquivos-jogador{margin:22px 0;padding:16px;border:1px solid #b7aa92;border-radius:8px;background:#eee7d7;color:#252725;box-shadow:0 8px 24px #161c1c12}
+.arquivos-jogador-topo{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding-bottom:13px;border-bottom:1px solid #b7aa92}
+.arquivos-jogador-topo small,.arquivos-jogador-conteudo>small{font:800 9px/1.4 'Courier New',monospace;letter-spacing:.08em;color:#746d61}
+.arquivos-jogador-topo h3{margin:5px 0;color:#64252b;font:700 24px Georgia,serif}
+.arquivos-jogador-topo p,.arquivos-jogador-conteudo p{margin:5px 0;color:#514b42;font:12px/1.55 system-ui,sans-serif}
+.arquivos-jogador-topo>span{padding:5px 7px;border:1px solid #8f2e36;border-radius:3px;color:#8f2e36;font:800 8px 'Courier New',monospace;white-space:nowrap}
+.arquivos-jogador-nav{display:flex;gap:6px;overflow-x:auto;padding:12px 0;border-bottom:1px solid #b7aa92}
+.arquivos-jogador-nav button{flex:0 0 auto;padding:8px 11px;border:1px solid #b7aa92;border-radius:4px;background:#f8f2e5;color:#514b42;font:800 10px system-ui,sans-serif}
+.arquivos-jogador-nav button.ativo{border-color:#64252b;background:#64252b;color:#fff4e5}
+.arquivos-jogador-conteudo{min-height:190px;padding:16px 2px 8px}
+.arquivos-jogador-conteudo h4{margin:5px 0 8px;color:#252725;font:700 19px Georgia,serif}
+.arquivos-jogador-vazio{display:grid;gap:5px;margin-top:16px;padding:20px 14px;border:1px dashed #b7aa92;border-radius:5px;background:#f8f2e5;text-align:center}
+.arquivos-jogador-vazio strong{color:#64252b;font:700 14px Georgia,serif}
+.arquivos-jogador-vazio span{color:#746d61;font:11px/1.5 system-ui,sans-serif}
+.arquivos-jogador-mapa{display:grid;place-content:center;gap:10px;min-height:180px;margin-top:14px;border:1px solid #b7aa92;border-radius:5px;background:repeating-linear-gradient(0deg,#e9e1d1 0,#e9e1d1 1px,#f5efdf 1px,#f5efdf 24px),repeating-linear-gradient(90deg,transparent 0,transparent 23px,#d9cdb7 24px);text-align:center}
+.arquivos-jogador-mapa span{color:#746d61;font:800 9px 'Courier New',monospace;letter-spacing:.12em}
+.arquivos-jogador-mapa strong{padding:8px 12px;background:#f8f2e5dd;color:#64252b;font:700 16px Georgia,serif}
+.arquivos-jogador-aviso{margin:10px 0 0;padding-top:10px;border-top:1px solid #b7aa92;color:#746d61;font:800 8px/1.5 'Courier New',monospace;letter-spacing:.04em}
+@media(max-width:560px){.arquivos-jogador{margin:16px 0;padding:12px}.arquivos-jogador-topo{display:block}.arquivos-jogador-topo>span{display:inline-block;margin-top:8px}.arquivos-jogador-nav button{font-size:9px;padding:8px}.arquivos-jogador-conteudo{min-height:170px}}
