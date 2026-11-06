@@ -60,13 +60,13 @@ async function post(base, path, body, token) {
   });
 }
 
-test('cria conta local e retorna apenas identificador e e-mail', async t => {
+test('cria conta local e retorna apenas identificador e nome de usuário', async t => {
   const { base } = await setup(t);
   const resposta = await post(base, '/api/auth/register', { email: 'Teste@Exemplo.com', password: 'uma-senha-local-segura-2026' });
   assert.equal(resposta.status, 201);
   const { account } = await resposta.json();
   assert.equal(account.username, 'teste@exemplo.com');
-  assert.deepEqual(Object.keys(account).sort(), ['email', 'id']);
+  assert.deepEqual(Object.keys(account).sort(), ['id', 'username']);
 });
 
 test('login cria sessão, /me valida token e logout revoga sessão', async t => {
@@ -94,7 +94,7 @@ test('rejeita senha curta e usa erro genérico no login inválido', async t => {
   assert.equal((await resposta.json()).error, 'Usuário(a) ou senha inválidos.');
 });
 
-test('impede duplicação de e-mail sem diferenciar maiúsculas', async t => {
+test('impede duplicação de nome de usuário sem diferenciar maiúsculas', async t => {
   const { base } = await setup(t);
   const password = 'senha-local-comprida-2026';
   assert.equal((await post(base, '/api/auth/register', { email: 'Conta@example.test', password })).status, 201);
@@ -104,7 +104,7 @@ test('impede duplicação de e-mail sem diferenciar maiúsculas', async t => {
 test('cadastro e login locais não bloqueiam novas tentativas por IP', async t => {
   const { base } = await setup(t);
   for (let i = 0; i < 7; i += 1) {
-    const resposta = await post(base, '/api/auth/register', { email: 'email-invalido', password: 'senha-local-comprida-2026' });
+    const resposta = await post(base, '/api/auth/register', { username: 'u'.repeat(81), password: 'senha-local-comprida-2026' });
     assert.equal(resposta.status, 422);
   }
   const login = await post(base, '/api/auth/login', { email: 'nao-existe@example.test', password: 'senha-local-comprida-2026' });
