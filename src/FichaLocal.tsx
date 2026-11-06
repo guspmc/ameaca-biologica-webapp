@@ -400,7 +400,7 @@ export default function FichaLocal({ nome, mesa, contextoId, dados, aoFechar, ao
 
         <section id="ficha-local-inventario" className="ficha-local-secao">
           <div className="ficha-local-titulo-secao"><h2><span>04</span> Inventário</h2><button type="button" className="ficha-local-editar-secao" onClick={() => abrirEditor('inventario')}>Editar seção ↗</button></div>
-          <details id="ficha-local-editor-inventario" className="ficha-local-editor-detalhe" data-ficha-editor open={!kitSelecionado}>
+          <details id="ficha-local-editor-inventario" className="ficha-local-editor-detalhe" data-ficha-editor open>
             <summary><span>Editar Equipamento Inicial e compras</span><small>Equipamento · Catálogo · Capacidade</small></summary>
             <EditorInventarioLocal autoSalvar={autoSalvar} key={JSON.stringify([classe, kitSelecionado, ficha.comprasIniciais, ficha.revisaoCompras, capacidade])} classe={classe} capacidade={capacidade} kitInicial={kitSelecionado} comprasIniciais={(ficha.comprasIniciais as Record<string, number>) ?? {}} revisaoCompras={numero(ficha.revisaoCompras)} aoSalvar={aoSalvarInventario} aoAlterarPendencia={pendente => registrarPendencia('Inventário', pendente)} mensagemSucesso={origemDados === 'servidor' ? 'Planejamento do inventário confirmado pelo servidor.' : undefined} />
           </details>
