@@ -77,6 +77,19 @@ test('service worker nunca intercepta nem armazena requisições cross-origin do
  assert.equal(w.chamadas.length,antes);
 });
 
+test('service worker não intercepta nem armazena rotas same-origin da API LAN',async()=>{
+ const w=criarWorker();
+ let instalacao;w.eventos.get('install')({waitUntil(p){instalacao=p;}});await instalacao;
+ const antes=w.chamadas.length;
+ let interceptada=false;
+ w.eventos.get('fetch')({
+  request:{url:new URL('api/mesas',w.scope).href,method:'GET',mode:'cors'},
+  respondWith(){interceptada=true;},
+ });
+ assert.equal(interceptada,false);
+ assert.equal(w.chamadas.length,antes);
+});
+
 test('navegação offline retorna o shell guardado',async()=>{
  const w=criarWorker();
  let instalacao;w.eventos.get('install')({waitUntil(p){instalacao=p;}});await instalacao;
