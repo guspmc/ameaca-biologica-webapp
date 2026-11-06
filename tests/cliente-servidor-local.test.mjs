@@ -19,10 +19,19 @@ test('cliente HTTP local cria, consulta e atualiza rascunho usando o mesmo ender
   // O cliente conecta por loopback para manter o teste isolado na própria máquina.
   const baseUrl = `http://127.0.0.1:${app.address.port}`;
   const origem = 'http://localhost:5173';
-  const fetchComOrigem = (url, init = {}) => {
+  let cookieSessao = '';
+  const fetchComOrigem = async (url, init = {}) => {
     const headers = new Headers(init.headers);
     headers.set('origin', origem);
-    return fetch(url, { ...init, headers });
+    if (init.credentials === 'include' && cookieSessao) {
+      headers.set('cookie', cookieSessao);
+      assert.equal(headers.has('authorization'), false,
+        'o cliente LAN deve usar o cookie HttpOnly sem enviar token Bearer');
+    }
+    const resposta = await fetch(url, { ...init, headers });
+    const setCookie = resposta.headers.get('set-cookie');
+    if (setCookie) cookieSessao = setCookie.split(';')[0];
+    return resposta;
   };
   const anonimo = criarClienteServidorLocal({ baseUrl, fetcher: fetchComOrigem });
   const email = 'cliente-integracao@example.test';
@@ -30,7 +39,7 @@ test('cliente HTTP local cria, consulta e atualiza rascunho usando o mesmo ender
 
   await anonimo.cadastrar(email, senha);
   const sessao = await anonimo.entrar(email, senha);
-  const cliente = criarClienteServidorLocal({ baseUrl, token: sessao.token, fetcher: fetchComOrigem });
+  const cliente = criarClienteServidorLocal({ baseUrl, fetcher: fetchComOrigem });
 
   assert.equal((await cliente.minhaConta()).account.id, sessao.account.id);
   const { mesa } = await cliente.criarMesa('Mesa integração cliente');
