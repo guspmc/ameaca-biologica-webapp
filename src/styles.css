@@ -778,3 +778,13 @@ footer { margin-top:45px; border-top:1px solid #dce2df; padding-top:19px; color:
  .ficha-local-secao h2{font-size:17px}
 }
 @media(min-width:561px){.ficha-local-fundo{align-items:center}.ficha-local-corpo{padding-left:18px;padding-right:18px}}
+
+
+/* Ícones SVG dos protótipos: dimensões explícitas para manter alinhamento responsivo. */
+.ficha-local-recurso-icone svg{display:block;width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.ficha-local-nav button>span{display:grid;place-items:center;min-height:19px}
+.ficha-local-nav button>span svg{display:block;width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.painel-mestre-umbrella svg{display:block;width:26px;height:26px;stroke:currentColor;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.painel-mestre-side-nav button span{display:grid;place-items:center}
+.painel-mestre-side-nav button span svg,.painel-mestre-floating button span svg{display:block;width:19px;height:19px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.painel-mestre-vazio>b svg{display:block;width:25px;height:25px;stroke:currentColor;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
