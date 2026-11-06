@@ -46,7 +46,17 @@ test('cliente HTTP local cria, consulta e atualiza rascunho usando o mesmo ender
   app.db.prepare('UPDATE participantes_mesa SET papel = ? WHERE mesa_id = ? AND conta_id = ?')
     .run('jogador', mesa.id, sessao.account.id);
 
-  const dadosOriginais = { versaoModelo: 1, estadoFicha: 'rascunho' };
+  const dadosOriginais = {
+    versaoModelo: 1,
+    estadoFicha: 'rascunho',
+    classe: 'Operador',
+    origem: 'Operário',
+    armaOperario: 'Faca',
+    habilidadeBasica: 'golpe-sujo',
+    equipamentoInicial: 'B',
+    comprasIniciais: {},
+    revisaoCompras: 0,
+  };
   const criado = await cliente.criarPersonagem(mesa.id, 'Claire', dadosOriginais);
   const id = criado.personagem.id;
   assert.equal(criado.personagem.name, 'Claire');
@@ -54,6 +64,9 @@ test('cliente HTTP local cria, consulta e atualiza rascunho usando o mesmo ender
 
   const consultado = await cliente.consultarPersonagem(id);
   assert.deepEqual(consultado.personagem.data, dadosOriginais);
+  assert.equal(consultado.personagem.data.habilidadeBasica, 'golpe-sujo');
+  assert.equal(consultado.personagem.data.equipamentoInicial, 'B');
+  assert.deepEqual(consultado.personagem.data.comprasIniciais, {});
 
   const preflight = await fetch(baseUrl + `/api/personagens/${id}`, {
     method: 'OPTIONS',
