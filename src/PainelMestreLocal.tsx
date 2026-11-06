@@ -192,9 +192,9 @@ export default function PainelMestreLocal({ mesa, enderecosLan = [], convite, so
         </main>
       </div>
       <nav className="painel-mestre-floating" aria-label="Navegação principal do Mestre">
-        <button type="button" className={aba==='mesa'?'ativo':''} onClick={()=>selecionarAba('mesa')}><span>▦</span>MESA</button>
-        <button type="button" className={aba==='encontros'?'ativo':''} onClick={()=>selecionarAba('encontros')}><span>⚔</span>ENCONTROS</button>
-        <button type="button" className={aba==='arquivos'?'ativo':''} onClick={()=>selecionarAba('arquivos')}><span>▤</span>ARQUIVOS</button>
+        <button type="button" className={aba==='mesa'?'ativo':''} aria-current={aba==='mesa'?'page':undefined} onClick={()=>selecionarAba('mesa')}><span><IconePainel tipo="mesa" /></span>MESA</button>
+        <button type="button" className={aba==='encontros'?'ativo':''} aria-current={aba==='encontros'?'page':undefined} onClick={()=>selecionarAba('encontros')}><span><IconePainel tipo="encontros" /></span>ENCONTROS</button>
+        <button type="button" className={aba==='arquivos'?'ativo':''} aria-current={aba==='arquivos'?'page':undefined} onClick={()=>selecionarAba('arquivos')}><span><IconePainel tipo="arquivos" /></span>ARQUIVOS</button>
       </nav>
     </div>
   </section>;
