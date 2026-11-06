@@ -553,3 +553,15 @@ footer { margin-top:45px; border-top:1px solid #dce2df; padding-top:19px; color:
 .painel-mestre-shell .servidor-local-codigo input{border-color:#d6dadd;background:#f8f9f9;color:#1c252b}
 .painel-mestre-shell .servidor-local-vazio{border:1px dashed #d6dadd;background:#f8f9f9;color:#59636a}
 @media(max-width:560px){.painel-mestre-shell{padding:12px}.painel-mestre-cabecalho{flex-direction:column}.painel-mestre-cabecalho>span{align-self:flex-start}.painel-mestre-nav button{min-width:0;padding:10px 7px}.painel-mestre-subsecao{padding:10px}.painel-mestre-subsecao-topo{align-items:flex-start;flex-direction:column}}
+
+
+/* Editores em acordeão: resumo sempre visível e controles sob demanda. */
+.ficha-local-editor-detalhe{margin:13px 0;border:1px solid #b7aa92;background:#f9f4e9}
+.ficha-local-editor-detalhe>summary{list-style:none;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 13px;cursor:pointer;color:#252725;font-size:12px;font-weight:800}
+.ficha-local-editor-detalhe>summary::-webkit-details-marker{display:none}
+.ficha-local-editor-detalhe>summary::after{content:'+';flex:none;color:#8f2e36;font:normal 20px Georgia,serif}
+.ficha-local-editor-detalhe[open]>summary::after{content:'−'}
+.ficha-local-editor-detalhe>summary small{display:block;margin-left:auto;color:#746d61;font:9px 'Courier New',monospace;text-align:right}
+.ficha-local-editor-detalhe>.ficha-local-editor{margin:0;border:0;border-top:1px solid #c9bba4;background:#f7efdf}
+.ficha-local-editor-detalhe>summary:focus-visible{outline:3px solid #c47f33;outline-offset:-3px}
+@media(max-width:560px){.ficha-local-editor-detalhe>summary{align-items:flex-start;flex-wrap:wrap}.ficha-local-editor-detalhe>summary small{width:100%;margin:0;text-align:left}}
