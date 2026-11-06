@@ -45,4 +45,4 @@ test('rascunho preserva escolhas incompletas e a revisão final aponta o que fal
   assert.doesNotMatch(editor, /validar:/);
   assert.match(revisao, /revisarCriacao\\(ficha\\)/);
   assert.match(revisao, /finalização ainda não está disponível/i);
-});;
+});
