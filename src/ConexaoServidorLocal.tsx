@@ -306,7 +306,7 @@ export default function ConexaoServidorLocal() {
     }
   }, [mesas, canalTempoReal]);
 
-  const haAlteracoesNaoConfirmadas = salvandoFicha || Object.values(secoesPendentes).some(Boolean);
+  const haAlteracoesNaoConfirmadas = salvandoFicha;
   useEffect(() => {
     if (!fichaAberta || !haAlteracoesNaoConfirmadas) return;
     const avisarAntesDeSair = (evento: BeforeUnloadEvent) => {
