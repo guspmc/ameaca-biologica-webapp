@@ -86,6 +86,8 @@ export default function ConexaoServidorLocal() {
           setCarregandoDadosIniciais(true);
           restaurandoFicha.current = false;
           geracaoSessao.current += 1;
+          quantidadeSalvamentosPendentes.current = 0;
+          setSalvandoFicha(false);
           setSessao({ account: resposta.account, token: '', expiresAt: resposta.expiresAt });
           setAviso('Sessão restaurada. Carregando suas Mesas e permissões...');
         } catch (problema) {
@@ -106,6 +108,8 @@ export default function ConexaoServidorLocal() {
   function encerrarSessao(mensagem: string) {
     restaurandoFicha.current = false;
     geracaoSessao.current += 1;
+    quantidadeSalvamentosPendentes.current = 0;
+    setSalvandoFicha(false);
     // Dados da ficha não permanecem visíveis após perda/encerramento de sessão.
     fichaAbertaRef.current = null;
     setFichaAberta(null);
@@ -409,6 +413,8 @@ export default function ConexaoServidorLocal() {
         setCarregandoDadosIniciais(true);
         restaurandoFicha.current = false;
         geracaoSessao.current += 1;
+        quantidadeSalvamentosPendentes.current = 0;
+        setSalvandoFicha(false);
         setSessao(novaSessao);
         setSenha('');
         setSenhaConfirmacao('');
@@ -686,8 +692,12 @@ export default function ConexaoServidorLocal() {
         }
         return false;
       } finally {
-        quantidadeSalvamentosPendentes.current = Math.max(0, quantidadeSalvamentosPendentes.current - 1);
-        setSalvandoFicha(quantidadeSalvamentosPendentes.current > 0);
+        // A contagem pertence à geração que iniciou o salvamento. Uma resposta
+        // antiga não pode alterar o indicador de uma sessão que entrou depois.
+        if (sessaoContinuaSendoAtual(geracaoSessao.current, geracaoSolicitada)) {
+          quantidadeSalvamentosPendentes.current = Math.max(0, quantidadeSalvamentosPendentes.current - 1);
+          setSalvandoFicha(quantidadeSalvamentosPendentes.current > 0);
+        }
       }
     });
   }
