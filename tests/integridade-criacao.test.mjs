@@ -49,3 +49,15 @@ test('rascunho preserva escolhas incompletas e a revisão final aponta o que fal
   assert.match(revisao, /revisarCriacao\(ficha\)/);
   assert.match(revisao, /finalização ainda não está disponível/i);
 });
+
+
+test('Equipamento Inicial tem uma única fonte de edição no Inventário', async () => {
+  const caracteristicas = await ler('EditorCaracteristicasLocal.tsx');
+  const inventario = await ler('EditorInventarioLocal.tsx');
+  const ficha = await ler('FichaLocal.tsx');
+  assert.doesNotMatch(caracteristicas, /equipamentoInicial/);
+  assert.match(inventario, /equipamentoInicial/);
+  assert.match(inventario, /incompatível com a Classe/);
+  assert.match(ficha, /Editar Equipamento Inicial e compras/);
+  assert.match(ficha, /EQUIPAMENTO INICIAL/);
+});
