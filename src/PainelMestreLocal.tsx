@@ -5,7 +5,7 @@ import QRCodeLocal from './QRCodeLocal';
 type SolicitacaoPendente = { id: string; status: 'pendente'; createdAt: string; accountId: string };
 type AbaPainelMestre = 'mesa' | 'encontros' | 'arquivos';
 type SubAbaEncontros = 'ao-vivo' | 'preparados' | 'catalogo' | 'gerador' | 'perseguicao';
-type SubAbaArquivos = 'documentos' | 'anotacoes' | 'diario' | 'narracao' | 'mesa';
+type SubAbaArquivos = 'documentos' | 'anotacoes' | 'diario' | 'narracao';
 function IconePainel({ tipo }: { tipo: 'umbrella' | 'mesa' | 'encontros' | 'arquivos' }) {
   const desenho = {
     umbrella: <><path d="M12 2c-3.1 2.5-5.6 5.2-8.5 8.4L12 12l8.5-1.6C17.6 7.2 15.1 4.5 12 2Z"/><path d="M12 12 3.5 10.4 5.8 21 12 12Zm0 0 6.2 9 2.3-10.6L12 12Z"/></>,
@@ -45,7 +45,7 @@ export default function PainelMestreLocal({ mesa, enderecosLan = [], convite, so
   const [subAbaArquivos, setSubAbaArquivos] = useState<SubAbaArquivos>(() => {
     try {
       const salva = typeof window !== 'undefined' ? window.sessionStorage.getItem(chaveSubAbaArquivos) : null;
-      return salva === 'anotacoes' || salva === 'diario' || salva === 'narracao' || salva === 'mesa' ? salva : 'documentos';
+      return salva === 'anotacoes' || salva === 'diario' || salva === 'narracao' ? salva : 'documentos';
     } catch { return 'documentos'; }
   });
   const [rascunhoLocal, setRascunhoLocal] = useState('');
@@ -184,14 +184,15 @@ export default function PainelMestreLocal({ mesa, enderecosLan = [], convite, so
     {aba === 'arquivos' && <section id="painel-mestre-panel-arquivos" role="region" aria-labelledby="painel-mestre-tab-arquivos" className="painel-mestre-conteudo">
       <div className="painel-mestre-modulo-cabecalho"><div><small>ARQUIVO CENTRAL // ACESSO RESTRITO</small><h5>Documentos e registros</h5></div><span className="painel-mestre-selo-demo">INTERFACE DEMONSTRATIVA</span></div>
       <nav className="painel-mestre-subnav" aria-label="Categorias de arquivos">
-        {([['documentos','Documentos e mapa'],['anotacoes','Minhas anotações'],['diario','Diário do Mestre'],['narracao','Textos de narração'],['mesa','Documentos da Mesa']] as [SubAbaArquivos,string][]).map(([id,label]) => <button key={id} id={'painel-mestre-arquivos-tab-' + id} type="button" className={subAbaArquivos===id?'ativo':''} aria-pressed={subAbaArquivos===id} onClick={()=>selecionarSubAbaArquivos(id)}>{label}</button>)}
+        {([['documentos','Documentos e Mapa'],['anotacoes','Minhas anotações'],['diario','Arquivos do Mestre'],['narracao','Textos de Narração']] as [SubAbaArquivos,string][]).map(([id,label]) => <button key={id} id={'painel-mestre-arquivos-tab-' + id} type="button" className={subAbaArquivos===id?'ativo':''} aria-pressed={subAbaArquivos===id} onClick={()=>selecionarSubAbaArquivos(id)}>{label}</button>)}
       </nav>
       {subAbaArquivos==='documentos' && <div id="painel-mestre-arquivos-panel-documentos" role="region" aria-labelledby="painel-mestre-arquivos-tab-documentos" className="painel-mestre-grade">
         <article className="painel-mestre-cartao"><small>MAPA</small><h6>Mapa da operação</h6><p>Visualização de mapas e áreas reveladas explicitamente pelo Mestre.</p><div className="painel-mestre-vazio"><b><IconePainel tipo="arquivos" /></b><strong>Nenhum mapa disponível</strong><span>Mapas não são publicados ou revelados automaticamente.</span></div></article>
         <article className="painel-mestre-cartao"><small>DOCUMENTOS</small><h6>Documentos de referência</h6><p>Arquivos de consulta da campanha, organizados por operação e assunto.</p><div className="painel-mestre-vazio"><b><IconePainel tipo="arquivos" /></b><strong>Nenhum documento disponível</strong><span>Adição e consulta de arquivos aguardam integração.</span></div></article>
+         <article className="painel-mestre-cartao"><small>COMPARTILHADOS COM A MESA</small><h6>Documentos da Mesa</h6><p>Materiais que o Mestre decidir disponibilizar aos participantes.</p><div className="painel-mestre-vazio"><b><IconePainel tipo="arquivos" /></b><strong>Nenhum documento compartilhado</strong><span>A revelação e o compartilhamento aguardam integração.</span></div></article>
       </div>}
       {subAbaArquivos==='anotacoes' && <div id="painel-mestre-arquivos-panel-anotacoes" role="region" aria-labelledby="painel-mestre-arquivos-tab-anotacoes" className="painel-mestre-cartao"><small>ESPAÇO PESSOAL</small><h6>Minhas anotações</h6><p>Área privada da sua conta. Este campo é apenas um rascunho temporário nesta sessão e não será enviado à Mesa.</p><label className="painel-mestre-nota">Rascunho local<textarea value={rascunhoLocal} onChange={e=>setRascunhoLocal(e.target.value)} placeholder="Anote uma ideia ou lembrete..." rows={5}/></label><span className="painel-mestre-vazio-tag">NÃO SALVO · PRIVADO NESTA TELA</span></div>}
-      {subAbaArquivos==='diario' && <div id="painel-mestre-arquivos-panel-diario" role="region" aria-labelledby="painel-mestre-arquivos-tab-diario" className="painel-mestre-cartao"><small>REGISTRO PRIVADO DO MESTRE</small><h6>Diário do Mestre</h6><p>Registro reservado ao papel de Mestre, com previsão de transferência ao sucessor conforme as regras de administração da Mesa.</p><div className="painel-mestre-vazio"><b>▤</b><strong>Diário ainda não iniciado</strong><span>O conteúdo não é compartilhado com jogadores.</span></div></div>}
+      {subAbaArquivos==='diario' && <div id="painel-mestre-arquivos-panel-diario" role="region" aria-labelledby="painel-mestre-arquivos-tab-diario" className="painel-mestre-cartao"><small>ARQUIVOS RESTRITOS À FUNÇÃO</small><h6>Diário do Mestre</h6><p>Registro reservado ao papel de Mestre, com previsão de transferência ao sucessor conforme as regras de administração da Mesa.</p><div className="painel-mestre-vazio"><b>▤</b><strong>Diário ainda não iniciado</strong><span>O conteúdo não é compartilhado com jogadores.</span></div></div>}
       {subAbaArquivos==='narracao' && <div id="painel-mestre-arquivos-panel-narracao" role="region" aria-labelledby="painel-mestre-arquivos-tab-narracao" className="painel-mestre-cartao"><small>PREPARAÇÃO DE CENA</small><h6>Textos de narração</h6><p>Textos preparados para leitura durante a sessão, separados de segredos e anotações privadas.</p><div className="painel-mestre-vazio"><b>¶</b><strong>Nenhum texto de narração</strong><span>O modo de leitura e a publicação controlada serão integrados depois.</span></div></div>}
       {subAbaArquivos==='mesa' && <div id="painel-mestre-arquivos-panel-mesa" role="region" aria-labelledby="painel-mestre-arquivos-tab-mesa" className="painel-mestre-cartao"><small>ESPAÇO DA MESA</small><h6>Documentos da Mesa</h6><p>Área destinada aos documentos que o Mestre decidir disponibilizar aos participantes.</p><div className="painel-mestre-vazio"><b>▤</b><strong>Nenhum documento compartilhado</strong><span>Nenhum conteúdo é visível aos jogadores por esta prévia.</span></div></div>}
       <p className="painel-mestre-aviso-demo">Privacidade preservada: nenhuma anotação privada, texto secreto ou documento é compartilhado por esta interface demonstrativa.</p>
