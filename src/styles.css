@@ -937,3 +937,10 @@ footer { margin-top:45px; border-top:1px solid #dce2df; padding-top:19px; color:
  .painel-mestre-mesa-acoes{align-items:stretch;flex-direction:column}
  .painel-mestre-mesa-acoes .servidor-local-botoes{justify-content:flex-start}
 }
+
+
+/* O Terminal do Mestre ocupa a largura da aplicação, mesmo quando aberto dentro
+   da coluna central de conexão do servidor local. */
+.painel-mestre-shell.servidor-local-controle-mesa{position:relative;width:100vw;max-width:none;margin-left:calc(50% - 50vw);margin-right:calc(50% - 50vw)}
+.painel-mestre-app{width:100%;max-width:1440px}
+.painel-mestre-main{width:100%;min-width:0}
