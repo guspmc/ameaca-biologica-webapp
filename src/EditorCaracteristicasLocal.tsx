@@ -4,24 +4,21 @@ import { ARMAS_OPERARIO } from './armaOperario';
 import { HABILIDADES_BASICAS } from './habilidades';
 import { opcoesEquipamento } from './equipamento';
 import AutoSaveStatusLocal from './AutoSaveStatusLocal';
-import { useAutoSaveLocal } from './useAutoSaveLocal';
+import { useSalvamentoEditorLocal } from './useSalvamentoEditorLocal';
 
 type Dados = { classe: string; origem: string; armaOperario: string; habilidadeBasica: string; equipamentoInicial: string };
-type Props = { iniciais: Dados; aoSalvar: (dados: Dados) => Promise<boolean>; aoAlterarPendencia: (pendente: boolean) => void; mensagemSucesso?: string };
+type Props = { iniciais: Dados; aoSalvar: (dados: Dados) => Promise<boolean>; aoAlterarPendencia: (pendente: boolean) => void; mensagemSucesso?: string; autoSalvar?: boolean };
 
-export default function EditorCaracteristicasLocal({ iniciais, aoSalvar, aoAlterarPendencia, mensagemSucesso }: Props) {
+export default function EditorCaracteristicasLocal({ iniciais, aoSalvar, aoAlterarPendencia, mensagemSucesso, autoSalvar = false }: Props) {
   const [dados, setDados] = useState(iniciais);
   const [sujo, setSujo] = useState(false);
   const habilidades = HABILIDADES_BASICAS.filter(item => item.classe === dados.classe);
   const kits = opcoesEquipamento(dados.classe);
-  const autosave = useAutoSaveLocal({
-    valor: dados,
-    chave: JSON.stringify(dados),
-    sujo,
-    aoSalvar,
-    aoConfirmar: () => { setSujo(false); aoAlterarPendencia(false); },
+  const salvamento = useSalvamentoEditorLocal({
+    autoSalvar, valor: dados, chave: JSON.stringify(dados), sujo, setSujo, aoSalvar, aoAlterarPendencia,
+    mensagemSucesso: mensagemSucesso ?? 'Características salvas e confirmadas pelo servidor.',
   });
-  const ocupado = autosave.estado === 'sincronizando';
+  const ocupado = salvamento.ocupado;
 
   function alterar(proxima: Dados) {
     setDados(proxima);
@@ -47,6 +44,12 @@ export default function EditorCaracteristicasLocal({ iniciais, aoSalvar, aoAlter
     <label>Equipamento Inicial<select value={dados.equipamentoInicial} disabled={ocupado} onChange={e => alterar({ ...dados, equipamentoInicial: e.target.value })}>
       <option value="">Selecione um conjunto</option>{dados.equipamentoInicial && !kits.some(item => item.id === dados.equipamentoInicial) && <option value={dados.equipamentoInicial}>{dados.equipamentoInicial} · incompatível com a Classe</option>}{kits.map(item => <option key={item.id} value={item.id}>{item.id} · {item.nome}</option>)}
     </select></label>
-    <AutoSaveStatusLocal estado={autosave.estado} erro={autosave.erro} mensagemSucesso={mensagemSucesso ?? 'Características salvas e confirmadas pelo servidor.'} aoTentarNovamente={autosave.tentarNovamente} />
+    {autoSalvar
+      ? <AutoSaveStatusLocal estado={salvamento.autosave.estado} erro={salvamento.autosave.erro} mensagemSucesso={mensagemSucesso ?? 'Características salvas e confirmadas pelo servidor.'} aoTentarNovamente={salvamento.autosave.tentarNovamente} />
+      : <>
+          {salvamento.erroManual && <p className="offline-erro" role="alert">{salvamento.erroManual}</p>}
+          {salvamento.sucessoManual && <p className="offline-status" role="status">{salvamento.sucessoManual}</p>}
+          {sujo && <button type="button" className="botao-claro" disabled={ocupado} onClick={() => void salvamento.salvarManual()}>Salvar características</button>}
+        </>
   </div>;
 }

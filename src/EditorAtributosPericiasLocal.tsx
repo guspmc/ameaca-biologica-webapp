@@ -5,7 +5,7 @@ import { NOMES_PERICIAS, periciasPermitidasNaCriacao, pontosGastosPericias } fro
 import { PONTOS_CLASSE } from './pericias';
 import { ORIGENS } from './origens';
 import AutoSaveStatusLocal from './AutoSaveStatusLocal';
-import { useAutoSaveLocal } from './useAutoSaveLocal';
+import { useSalvamentoEditorLocal } from './useSalvamentoEditorLocal';
 
 type Dados = { atributos: AtributosIniciais; periciaOrigemTreinada: string; periciaOrigemExtra: string | null; distribuicaoPericias: Record<string, number> };
 type Props = {
@@ -14,6 +14,7 @@ type Props = {
   aoSalvar: (dados: Dados) => Promise<boolean>;
   aoAlterarPendencia: (pendente: boolean) => void;
   mensagemSucesso?: string;
+  autoSalvar?: boolean;
 };
 const chaves: { chave: keyof AtributosIniciais; sigla: string; nome: string }[] = [
   { chave: 'forca', sigla: 'FOR', nome: 'Força' }, { chave: 'agilidade', sigla: 'AGI', nome: 'Agilidade' },
@@ -31,14 +32,17 @@ export default function EditorAtributosPericias(props: Props) {
     periciaOrigemExtra: props.origem === 'Amnésico' ? extra : null,
     distribuicaoPericias: distribuicao,
   };
-  const autosave = useAutoSaveLocal({
+  const salvamento = useSalvamentoEditorLocal({
+    autoSalvar: props.autoSalvar ?? false,
     valor: payload,
     chave: JSON.stringify({ ...payload, extra }),
     sujo,
+    setSujo,
     aoSalvar: props.aoSalvar,
-    aoConfirmar: () => { setSujo(false); props.aoAlterarPendencia(false); },
+    aoAlterarPendencia: props.aoAlterarPendencia,
+    mensagemSucesso: props.mensagemSucesso ?? 'Atributos e Perícias salvos e confirmados pelo servidor.',
   });
-  const ocupado = autosave.estado === 'sincronizando';
+  const ocupado = salvamento.ocupado;
   const permitidas = periciasPermitidasNaCriacao(props.classe, props.origem, treinada, extra);
   const validas = new Set(permitidas);
   const visiveis = [...new Set([...permitidas, ...Object.keys(distribuicao)])].sort();
@@ -73,6 +77,12 @@ export default function EditorAtributosPericias(props: Props) {
     <strong>Distribuição de Perícias · {gastos}/{limite} pontos</strong>
     {visiveis.map(nome=>{const gasto=distribuicao[nome]??0;const grau=gasto+(nome===treinada?1:0);const compativel=validas.has(nome);return <div className="linha-pericia-lab" key={nome}><span><strong>{nome}</strong><small>{!compativel?'Incompatível · revisar':grau===0?'Não Treinada':grau===1?'Treinada':'Mestre'}</small></span><div className="controle-stat"><button type="button" onClick={()=>mudarPericia(nome,-1)} disabled={ocupado||gasto===0} aria-label={gasto===0?'Sem pontos para remover em '+nome:'Reduzir grau de '+nome}>−</button><b>{gasto}</b><button type="button" onClick={()=>mudarPericia(nome,1)} disabled={ocupado||!compativel||gasto >= (nome===treinada?1:2)||gastos>=limite}>+</button></div></div>})}
     {Object.keys(distribuicao).some(nome=>!validas.has(nome)) && <p role="alert">Há Perícias salvas que não são compatíveis com as escolhas atuais. Os pontos foram preservados; ajuste as escolhas para concluir a sincronização.</p>}
-    <AutoSaveStatusLocal estado={autosave.estado} erro={autosave.erro} mensagemSucesso={props.mensagemSucesso ?? 'Atributos e Perícias salvos e confirmados pelo servidor.'} aoTentarNovamente={autosave.tentarNovamente} />
+    {props.autoSalvar
+      ? <AutoSaveStatusLocal estado={salvamento.autosave.estado} erro={salvamento.autosave.erro} mensagemSucesso={props.mensagemSucesso ?? 'Atributos e Perícias salvos e confirmados pelo servidor.'} aoTentarNovamente={salvamento.autosave.tentarNovamente} />
+      : <>
+          {salvamento.erroManual && <p className="offline-erro" role="alert">{salvamento.erroManual}</p>}
+          {salvamento.sucessoManual && <p className="offline-status" role="status">{salvamento.sucessoManual}</p>}
+          {sujo && <button type="button" className="botao-claro" disabled={ocupado} onClick={() => void salvamento.salvarManual()}>Salvar Atributos e Perícias</button>}
+        </>
   </div>;
 }
