@@ -614,14 +614,17 @@ export default function ConexaoServidorLocal() {
           setErro('A sessão e a Mesa foram restauradas, mas o personagem salvo no contexto não foi encontrado. Atualize a lista de personagens para conferir.');
         }
       } catch (problema) {
+        if (!sessaoContinuaSendoAtual(geracaoSessao.current, geracaoSolicitada)) return;
         if (problema instanceof ErroServidorLocal && problema.status === 401) {
           encerrarSessao('A sessão expirou ou foi encerrada no servidor. Entre novamente.');
         } else {
           setErro(problema instanceof Error ? problema.message : 'Não foi possível restaurar a ficha salva.');
         }
       } finally {
-        restaurandoFicha.current = false;
-        setRestauracaoFichaConcluida(true);
+        if (sessaoContinuaSendoAtual(geracaoSessao.current, geracaoSolicitada)) {
+          restaurandoFicha.current = false;
+          setRestauracaoFichaConcluida(true);
+        }
       }
     })();
   }, [sessao, mesas, personagens, fichaAberta, carregandoDadosIniciais, restauracaoFichaConcluida]);
