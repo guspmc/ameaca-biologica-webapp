@@ -1074,3 +1074,6 @@ footer { margin-top:45px; border-top:1px solid #dce2df; padding-top:19px; color:
 
 /* Navegação flutuante: recuo e distância da borda iguais aos do aparelho v0.2. */
 .ficha-local-nav{left:17px;right:17px;bottom:15px;width:auto;max-width:none;transform:none}
+
+/* Seções contínuas: espaçamento do protótipo sem uma linha divisória duplicada. */
+.ficha-local-secao{margin-top:22px;padding:0 0 7px;border-top:0;scroll-margin-top:12px}
