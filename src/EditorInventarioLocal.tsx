@@ -48,8 +48,10 @@ export default function EditorInventarioLocal({ classe, capacidade, kitInicial, 
   }
 
   function alterarKit(proximo: string) {
-    if (kit === 'C' && proximo !== 'C' && (previsaoPendente || Object.values(plano).some(quantidade => quantidade > 0)) &&
-        !window.confirm('O plano de compras personalizado será removido do rascunho. Deseja trocar o conjunto?')) return;
+    if (kit === 'C' && proximo !== 'C' && (previsaoPendente || Object.values(plano).some(quantidade => quantidade > 0))) {
+      if (!window.confirm('O plano de compras personalizado será removido do rascunho. Deseja trocar o conjunto?')) return;
+      if (!autoSalvar && previsaoPendente) aoAlterarPendencia(false);
+    }
     if (proximo !== 'C') {
       setPlano({});
       setRevisao(0);
@@ -65,7 +67,10 @@ export default function EditorInventarioLocal({ classe, capacidade, kitInicial, 
     <label>Conjunto inicial<select value={kit} disabled={ocupado} onChange={e => alterarKit(e.target.value)}>
       <option value="">Selecione um conjunto</option>{opcoes.map(item => <option key={item.id} value={item.id}>{item.id} · {item.nome}</option>)}
     </select></label>
-    {kit === 'C' && <PreviaCompras capacidade={capacidade} plano={plano} revisao={revisao} autoSalvar={autoSalvar} aoAlterarPlano={alterarPlano} aoAlterarPrevia={setPrevisaoPendente} />}
+    {kit === 'C' && <PreviaCompras capacidade={capacidade} plano={plano} revisao={revisao} autoSalvar={autoSalvar} aoAlterarPlano={alterarPlano} aoAlterarPrevia={pendente => {
+      setPrevisaoPendente(pendente);
+      if (!autoSalvar && pendente) aoAlterarPendencia(true);
+    }} />}
     {kit !== 'C' && <p>O conjunto A ou B usa os itens previstos no livro. Ao confirmar a escolha no servidor, o plano de compras personalizado anterior será removido do rascunho.</p>}
     {autoSalvar
       ? <AutoSaveStatusLocal estado={salvamento.autosave.estado} erro={salvamento.autosave.erro} mensagemSucesso={mensagemSucesso ?? 'Planejamento do inventário salvo e confirmado pelo servidor.'} aoTentarNovamente={salvamento.autosave.tentarNovamente} />
