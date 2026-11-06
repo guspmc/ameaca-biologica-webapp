@@ -262,7 +262,7 @@ export default function FichaLocal({ nome, mesa, contextoId, dados, aoFechar, ao
     <article className="ficha-local">
       <header className="ficha-local-topo">
         <div className="ficha-local-acoes"><button type="button" className="ficha-local-voltar" onClick={fecharFicha}>← Voltar</button><button type="button" className="botao-claro" onClick={() => abrirEditor('caracteristicas')}>Editar rascunho</button></div>
-        <div><strong>AMEAÇA BIOLÓGICA</strong><small>{origemDados === 'servidor' ? 'FICHA NO SERVIDOR · RASCUNHO' : 'FICHA LOCAL · RASCUNHO'}</small></div>
+        <div><strong>AMEAÇA BIOLÓGICA</strong><small>{origemDados === 'servidor' ? 'ARQUIVO DO JOGADOR · DADOS NO SERVIDOR' : 'ARQUIVO DO JOGADOR · DADOS LOCAIS'}</small></div>
         <span className="ficha-local-selo">NÃO ATIVA</span>
       </header>
       <div className="ficha-local-corpo" ref={corpoRef}>
@@ -274,17 +274,17 @@ export default function FichaLocal({ nome, mesa, contextoId, dados, aoFechar, ao
         {erro && <p className="offline-erro" role="alert">{erro}</p>}
         {erro?.includes('alterada em outra aba') && aoRecarregar && <button type="button" className="botao-claro" onClick={aoRecarregar}>Descartar esta edição e carregar a versão mais recente</button>}
         <div className="ficha-local-identidade">
-          <span>{termo('REGISTRO DO SOBREVIVENTE')} · {mesa || 'MESA LOCAL'}</span>
+          <div className="ficha-local-identidade-meta"><span>{termo('REGISTRO DO SOBREVIVENTE')} · {mesa || 'MESA LOCAL'}</span><span className="ficha-local-carimbo">CONFIDENCIAL</span></div>
           <h1 id="ficha-local-titulo">{nome}</h1>
           <p>{classePersonagem(classe || null, genero)} · {termo(origem || 'Origem pendente')} · Nível 1 (criação)</p>
           {origem === 'Operário' && typeof ficha.armaOperario === 'string' && <small>Arma escolhida: {ficha.armaOperario}</small>}
         </div>
 
         <div className="ficha-local-recursos">
-          <div><small>PONTOS DE VIDA</small><strong>{recursosAtuais.pvAtual} / {pv}</strong><span>Temporários: {recursosAtuais.pvTemporarios}</span></div>
-          <div><small>SURTO DE ADRENALINA</small><strong>{recursosAtuais.saAtual} / {sa}</strong><span>Máximo derivado</span></div>
-          <div><small>BIO-INFECÇÃO</small><strong>{biAtual} / {bi}</strong><span>{faseBi.estado === 'colapso' ? 'Colapso Viral' : faseBi.fase ? 'Fase ' + faseBi.fase : 'Fase indisponível'}</span></div>
-          <div><small>DEFESA</small><strong>{defesa}</strong><span>Sem equipamento</span></div>
+          <div><span className="ficha-local-recurso-icone" aria-hidden="true">♥</span><small>PONTOS DE VIDA</small><strong>{recursosAtuais.pvAtual} / {pv}</strong><span>Temporários: {recursosAtuais.pvTemporarios}</span></div>
+          <div><span className="ficha-local-recurso-icone" aria-hidden="true">ϟ</span><small>SURTO DE ADRENALINA</small><strong>{recursosAtuais.saAtual} / {sa}</strong><span>Máximo derivado</span></div>
+          <div><span className="ficha-local-recurso-icone" aria-hidden="true">☣</span><small>BIO-INFECÇÃO</small><strong>{biAtual} / {bi}</strong><span>{faseBi.estado === 'colapso' ? 'Colapso Viral' : faseBi.fase ? 'Fase ' + faseBi.fase : 'Fase indisponível'}</span></div>
+          <div><span className="ficha-local-recurso-icone" aria-hidden="true">⬡</span><small>DEFESA</small><strong>{defesa}</strong><span>Sem equipamento</span></div>
         </div>
 
         <RecursosFichaLocal autoSalvar={autoSalvar}
