@@ -109,11 +109,11 @@ test('autosave só é ativado na conexão LAN e espera confirmação antes de li
   const offline = await ler('FichaOfflineApp.tsx');
   const hook = await ler('useAutoSaveLocal.ts');
   assert.match(ficha, /autoSalvar = false/);
-  assert.match(conexao, /<FichaLocal\\s+autoSalvar/);
+  assert.match(conexao, /<FichaLocal\s+autoSalvar/);
   assert.doesNotMatch(offline, /<FichaLocal[^>]*autoSalvar/);
-  assert.match(hook, /await referencias\\.current\\.aoSalvar\\(atual\\)/);
-  assert.match(hook, /setEstado\\('salvo'\\)/);
-  assert.match(hook, /referencias\\.current\\.aoConfirmar\\(\\)/);
+  assert.match(hook, /await referencias\.current\.aoSalvar\(atual\)/);
+  assert.match(hook, /setEstado\('salvo'\)/);
+  assert.match(hook, /referencias\.current\.aoConfirmar\(\)/);
 });
 
 test('a confirmação local de salvamento limpa a seção correspondente antes do fechamento', async () => {
