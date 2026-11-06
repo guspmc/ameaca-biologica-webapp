@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import type { ReactNode } from 'react';
 import { dadosDaClasse } from './classesFicha';
 import { PERICIAS_CLASSE, ATRIBUTO_PERICIA, valorBasePericia, valorPassivoPericia } from './pericias';
 import { ORIGENS } from './origens';
@@ -74,7 +75,7 @@ const ATRIBUTOS: { chave: keyof AtributosIniciais; sigla: string; nome: string }
 ];
 
 function IconeFicha({ tipo }: { tipo: 'perfil' | 'pericias' | 'combate' | 'itens' | 'vida' | 'adrenalina' | 'bio' | 'defesa' }) {
-  const paths: Record<typeof tipo, React.ReactNode> = {
+  const paths: Record<typeof tipo, ReactNode> = {
     perfil: <><circle cx="12" cy="8" r="3.2"/><path d="M5 20c.7-3.1 3.1-4.8 7-4.8s6.3 1.7 7 4.8"/></>,
     pericias: <><path d="M7 3.5h8l3 3V21H7z"/><path d="M15 3.5V7h3M10 11h5M10 15h5"/></>,
     combate: <><path d="m4 4 6 6m4 4 6 6M5 19 19 5M8 4l12 12"/></>,
