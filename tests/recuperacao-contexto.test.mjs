@@ -107,7 +107,7 @@ test('contexto: copias independentes e erro atual limpa dados sem exibir mensage
 
 
 test('a ficha impede recarga acidental enquanto há alterações sem confirmação do servidor', async () => {
-  const fonte = await ler('ConexaoServidorLocal.tsx');
+  const fonte = await readFile(new URL('../src/ConexaoServidorLocal.tsx', import.meta.url), 'utf8');
   assert.match(fonte, /Object\.values\(secoesPendentes\)\.some\(Boolean\)/);
   assert.match(fonte, /evento\.preventDefault\(\)/);
   assert.match(fonte, /evento\.returnValue = ''/);
