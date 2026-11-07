@@ -37,8 +37,8 @@ test('Aparar usa Luta e Esquivar usa Reflexos contra resultado do Ataque', () =>
 });
 
 test('Contra-Ataque exige defesa bem-sucedida e gasta 1 SA em Manobra', () => {
-  assert.throws(() => prepararContraAtaque({ economia: economiaAcoesInicial(3), defesaBemSucedida: false, mesmaReacaoAutorizada: false }), /bem-sucedido/);
-  const resultado = prepararContraAtaque({ economia: economiaAcoesInicial(3), defesaBemSucedida: true, mesmaReacaoAutorizada: true });
+  assert.throws(() => prepararContraAtaque({ economia: economiaAcoesInicial(3), defesaBemSucedida: false, ataqueCorpoACorpo: true, mesmaReacaoAutorizada: false }), /bem-sucedido/);
+  const resultado = prepararContraAtaque({ economia: economiaAcoesInicial(3), defesaBemSucedida: true, ataqueCorpoACorpo: true, mesmaReacaoAutorizada: true });
   assert.equal(resultado.economia.saAtual, 2);
   assert.equal(resultado.economia.saGastaNaJanela, 1);
   assert.equal(resultado.reacaoAdicionalComprada, false);
@@ -104,4 +104,10 @@ test('Reação defensiva não pode ser registrada com janela fechada ou manobra 
   assert.throws(() => registrarReacaoDefensiva({ economia: economiaAcoesInicial(3), manobra: 'aparar', janela: fechada }), /janela.*fechada/);
   const semAparar = avaliarJanelaReacao({ resultadoAtaque: 12, dadoNaturalAtaque: 12, ataqueCorpoACorpo: false, ataqueAcertou: true, ataqueAparavel: false, gatilhoEsquivaAutorizado: false });
   assert.throws(() => registrarReacaoDefensiva({ economia: economiaAcoesInicial(3), manobra: 'aparar', janela: semAparar }), /não está disponível/);
+});
+
+test('Contra-Ataque não responde a Ataque à distância sem exceção específica', () => {
+  assert.throws(() => prepararContraAtaque({ economia: economiaAcoesInicial(3), defesaBemSucedida: true, ataqueCorpoACorpo: false, mesmaReacaoAutorizada: false }), /apenas a Ataques Corpo a Corpo/);
+  const autorizado = prepararContraAtaque({ economia: economiaAcoesInicial(3), defesaBemSucedida: true, ataqueCorpoACorpo: false, excecaoContraAtaqueADistancia: true, mesmaReacaoAutorizada: false });
+  assert.equal(autorizado.economia.saAtual, 2);
 });
