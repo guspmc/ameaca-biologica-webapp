@@ -10,8 +10,8 @@ WebApp gratuito e de código aberto para **Ameaça Biológica**, RPG de horror e
 
 Requisitos: Node.js 22 ou superior.
 
-1. Rode `npm install`.
-2. Rode `npm run dev`.
+1. Instale pnpm 11.25.0 e rode `pnpm install --frozen-lockfile --ignore-scripts`.
+2. Rode `pnpm run dev`.
 3. Abra o endereço indicado pelo Vite.
 
 No primeiro acesso, forneça a URL do projeto Supabase e **somente** uma chave pública `sb_publishable_...` (ou JWT público com role `anon`). Esses dados ficam no `localStorage` do navegador. Nunca use senha do banco nem `service_role`.
@@ -60,3 +60,59 @@ O projeto deve permitir exportar campanhas, migrar o banco PostgreSQL e utilizar
 - Em `personagens`, os valores de Origem e Treinamento ainda não são conhecidos, por isso Defesa e demais derivados exibidos são **valores básicos, não necessariamente os valores finais**.
 
 A Ficha v0.2.1 e o Painel do Mestre v0.2 continuam congelados como referências; esta implementação não altera aqueles protótipos.
+
+## Proposta de privacidade e limite de rascunhos (PR #1)
+
+A migração `20261022224633_privacidade_e_limite_rascunhos.sql` está somente preparada para revisão. Ela reserva rascunhos ao autor e limita novas criações a três por conta/Mesa, sem excluir excedentes legados. A interface desta branch acompanha essa proposta. **Não publicar antes de aprovar e aplicar a migração no ambiente de destino.** O limite de dez ativas será implementado na futura finalização, ainda indisponível.
+
+Execute `pnpm test` para recriar PostgreSQL em memória com fixtures fictícias e aplicar os arquivos SQL reais. Não usa Supabase remoto, contas, chaves ou rede. As verificações cobrem RLS e RPC; não substituem testes de Auth, PostgREST, Realtime e concorrência com conexões independentes. Execute `pnpm run build` para validar o aplicativo.
+
+Consulte [o checkpoint e roteiro humano](docs/checkpoint-privacidade-rascunhos.md). As seções antigas acima descrevem a Alfa anterior; o relatório de auditoria preserva o estado observado em produção, sem afirmar que esta proposta foi aplicada.
+
+O [ambiente gratuito de teste](docs/ambiente-de-teste.md) já recebeu as sete migrações e passou no teste SQL com rollback. Para a prévia isolada, preencha `.env.teste` usando `.env.example` e execute `pnpm run dev:teste`. A faixa AMBIENTE DE TESTE identifica essa versão. Ela ignora conexão guardada no navegador e não aceita o projeto de produção como alternativa. Produção permanece sem a nova proposta.
+
+Incremento de 23/10: [distribuição dos Pontos de Perícia da Classe](docs/pericias-criacao.md), com oito migrações no ambiente de teste e 16 testes automatizados. Fichas continuam em rascunho de nível 1; Habilidades, equipamento e finalização ainda estão pendentes. Aplicar a migração aprovada no destino antes de publicar esta interface; ela seleciona a nova coluna.
+
+Incremento seguinte: [Habilidade Básica de nível 1](docs/habilidades-basicas.md). O ambiente de teste tem agora dez migrações; 19 testes automatizados cobrem os incrementos. Perícias foram aprovadas nos testes humanos do Gus; a seleção de Habilidade e persistência aguardam o novo checkpoint. Equipamento e finalização continuam pendentes. As contagens e pendências dos parágrafos anteriores são históricas.
+
+Novo incremento: [equipamento inicial no rascunho](docs/equipamento-inicial.md), com kits A/B/C, Característicos e grade de criação. Onze migrações no teste; 24 testes passaram. Habilidades aprovadas pelo Gus; persistência humana do equipamento aguarda checkpoint. Compras, inventário ativo e finalização continuam pendentes.
+
+[Identidade narrativa](docs/identidade-rascunho.md) adicionada: campos opcionais e edição do nome no rascunho. Doze migrações no teste, 27 testes passaram. Gus confirmou equipamento persistente após F5; o checkpoint atual é a narrativa. Autosave geral, compras, inventário ativo e finalização seguem pendentes.
+
+## Desenvolvimento supervisionado
+
+Seguir o [fluxo autônomo autorizado](docs/fluxo-autonomo-supervisionado.md). A [rodada de revisão da criação](docs/relatorio-revisao-criacao.md) adiciona conferência de escolhas salvas, fórmulas e flexão de Classe, com 32 testes. Sem mudança no banco nesta rodada; finalização segue indisponível.
+
+[Flexões e prévia local de compras](docs/relatorio-flexoes-compras.md): Investigadora/Armeira e demais termos, simulador não salvo da opção C. Sem alteração de banco ou permissões.
+
+[Contrato local de compras persistidas](docs/contrato-compras-persistidas.md): proposta com 43 testes integrados, ainda NÃO aplicada em nenhum Supabase remoto. Não executar db push/reparação de histórico automaticamente. Prévia continua não salva.
+
+
+Estado de compras persistidas no TESTE: [implementação, evidências e pendências humanas](docs/relatorio-compras-integradas.md).
+
+Disponibilidade por Mesa: [preparação local](docs/relatorio-disponibilidade-local.md) e [fila única de testes humanos](docs/fila-testes-humanos.md). Painel ainda isolado, sem nova aplicação remota.
+
+Disponibilidade integrada somente ao TESTE após checkpoint: [evidências e rodada humana](docs/relatorio-disponibilidade-integrada.md).
+
+Revisão da criação integrada às compras salvas: [resultado e pendência visual](docs/relatorio-revisao-compras.md).
+
+Resumo de pendências e plano vazio inicial: [evidências](docs/relatorio-resumo-revisao.md).
+
+Prévia local de funcionamento: [resultado](docs/relatorio-funcionamento-previo.md). Próxima ativação: [contrato e dependências](docs/contrato-ativacao-ficha.md).
+
+Persistência do funcionamento pronta para revisão, sem aplicação remota: [contrato, testes e operação do checkpoint](docs/contrato-persistencia-funcionamento.md).
+
+Preferências persistidas exclusivamente no TESTE: [evidências e roteiro humano](docs/relatorio-funcionamento-integrado.md).
+
+Inventário ativo em preparação local: [plano de instâncias, regras e limites verificados](docs/inventario-criacao-instancias.md). Nenhuma materialização remota ou ativação habilitada.
+
+Inventário: [protótipo privado de persistência transacional, testes e limites](docs/inventario-persistencia-local.md). Não aplicado ao Supabase nem exposto ao cliente.
+
+
+## Protótipo do servidor local (LAN-first)
+
+A direção aprovada é que o uso normal da Mesa funcione pela rede local, sem depender da internet. O frontend atual ainda depende do Supabase hospedado para autenticação e dados compartilhados; ele não foi migrado.
+
+O primeiro protótipo técnico separado usa Node.js, SQLite e WebSocket para validar persistência e eventos em tempo real entre navegadores. Ele **não contém autenticação nem dados de campanha** e não deve ser usado com informações reais.
+
+Consulte o [guia de execução e teste do servidor local](docs/servidor-local-prototipo.md). O protótipo ainda precisa passar pela validação automatizada e pelo teste manual em dois dispositivos antes de avançarmos para autenticação local.

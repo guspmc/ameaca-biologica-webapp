@@ -1,3 +1,5 @@
+import DisponibilidadeInicial from './DisponibilidadeInicial';
+import {listarDisponibilidade,alterarDisponibilidade} from './servicoDisponibilidade';
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react';
 import type { SupabaseClient } from '@supabase/supabase-js';
 
@@ -12,6 +14,7 @@ type Membro = {
 
 type Props = {
   supabase: SupabaseClient;
+  permitirDisponibilidade?: boolean;
   usuarioId: string;
   mesas: Mesa[];
   sinalAtualizacao: number;
@@ -25,7 +28,7 @@ function dataCurta(valor: string): string {
 }
 
 export default function Participantes({
-  supabase, usuarioId, mesas, sinalAtualizacao, aoAtualizarMesas
+  supabase, usuarioId, mesas, sinalAtualizacao, aoAtualizarMesas, permitirDisponibilidade=false
 }: Props) {
   const [idSelecionado, setIdSelecionado] = useState('');
   const [membros, setMembros] = useState<Membro[]>([]);
@@ -159,6 +162,7 @@ export default function Participantes({
         <p className="aviso">Remover revoga o acesso do jogador, mas não apaga seus registros. E-mails e dados privados de outros participantes não são exibidos.</p>
       </section>
     </div>}
+    {permitirDisponibilidade&&souMestre&&mesa&&<DisponibilidadeInicial key={mesa.id} mesaNome={mesa.nome} aoListar={()=>listarDisponibilidade(supabase,mesa.id)} aoAlterar={(item,liberado,esperado)=>alterarDisponibilidade(supabase,mesa.id,item,liberado,esperado)}/>}
     {erro && <p className="erro" role="alert">{erro}</p>}
     {mensagem && <p className="sucesso" role="status">{mensagem}</p>}
   </section>;

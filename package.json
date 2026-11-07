@@ -3,17 +3,23 @@
   "private": true,
   "version": "0.1.0-alpha",
   "type": "module",
+  "packageManager": "pnpm@11.25.0",
   "scripts": {
+    "test": "node --experimental-sqlite --test tests/*.test.mjs",
     "dev": "vite",
+    "dev:teste": "vite --mode teste --host 127.0.0.1 --port 4174 --strictPort",
     "build": "tsc --noEmit && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "server:local": "node --experimental-sqlite server/index.mjs"
   },
   "dependencies": {
-    "@supabase/supabase-js": "^2.76.0",
+    "@supabase/supabase-js": "2.118.0",
     "react": "^19.2.0",
-    "react-dom": "^19.2.0"
+    "react-dom": "^19.2.0",
+    "ws": "8.18.3"
   },
   "devDependencies": {
+    "@electric-sql/pglite": "0.5.11",
     "@types/node": "^22.18.0",
     "@types/react": "^19.2.0",
     "@types/react-dom": "^19.2.0",
