@@ -7,7 +7,7 @@ import ts from 'typescript';
 import React from 'react';
 import {renderToStaticMarkup} from 'react-dom/server';
 const require=createRequire(import.meta.url),modulos={};
-for(const nome of ['textoPersonagem','origens','habilidades','pericias','equipamento','comprasIniciais','conferenciaCriacao','funcionamentoFicha','FuncionamentoPrevio','RevisaoCriacao']){
+for(const nome of ['textoPersonagem','origens','habilidades','armaOperario','pericias','equipamento','comprasIniciais','conferenciaCriacao','funcionamentoFicha','FuncionamentoPrevio','RevisaoCriacao']){
  const ext=['RevisaoCriacao','FuncionamentoPrevio'].includes(nome)?'.tsx':'.ts';
  let {outputText:s}=ts.transpileModule(await readFile(new URL('../src/'+nome+ext,import.meta.url),'utf8'),{compilerOptions:{module:ts.ModuleKind.ESNext,target:ts.ScriptTarget.ES2022,jsx:ts.JsxEmit.ReactJSX}});
  s=s.replaceAll("'react'",JSON.stringify(pathToFileURL(require.resolve('react')).href)).replaceAll('"react/jsx-runtime"',JSON.stringify(pathToFileURL(require.resolve('react/jsx-runtime')).href));
