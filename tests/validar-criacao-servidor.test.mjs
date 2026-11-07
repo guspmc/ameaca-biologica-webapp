@@ -57,3 +57,26 @@ test('validador compartilhado não aceita nome inválido', () => {
   assert.equal(resultado.valido, false);
   assert.ok(resultado.pendencias.some(item => item.nome === 'Identificação'));
 });
+
+test('validador compartilhado exige e reconhece a arma da Origem Operário', () => {
+  const dados = {
+    classe: 'Operador',
+    origem: 'Operário',
+    atributos: { forca: 2, agilidade: 2, vigor: 2, astucia: 1 },
+    periciaOrigemTreinada: 'Fortitude',
+    distribuicaoPericias: { Luta: 2, Atletismo: 1 },
+    habilidadeBasica: 'armeiro',
+    equipamentoInicial: 'B',
+  };
+  const semArma = validarCriacaoNoServidor('Alex', dados);
+  assert.equal(semArma.valido, false);
+  assert.ok(semArma.pendencias.some(item => item.nome === 'Arma da Origem'));
+
+  const armaValida = validarCriacaoNoServidor('Alex', { ...dados, armaOperario: 'Martelo' });
+  assert.equal(armaValida.valido, true);
+  assert.deepEqual(armaValida.pendencias, []);
+
+  const armaInvalida = validarCriacaoNoServidor('Alex', { ...dados, armaOperario: 'Chave inglesa' });
+  assert.equal(armaInvalida.valido, false);
+  assert.ok(armaInvalida.pendencias.some(item => item.nome === 'Arma da Origem'));
+});
