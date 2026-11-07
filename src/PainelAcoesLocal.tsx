@@ -40,8 +40,7 @@ export default function PainelAcoesLocal({ dados, saAtual, aoSalvar }: Props) {
       setSalvando(true);
       setErro('');
       setConfirmacao('');
-      const { saAtual: novoSA, ...economiaPersistida } = proximo;
-      const salvo = await aoSalvar({ saAtual: novoSA, economiaAcoes: economiaPersistida });
+      const salvo = await aoSalvar({ saAtual: proximo.saAtual, economiaAcoes: proximo });
       if (!salvo) throw new Error('O servidor não confirmou a atualização. Nenhum gasto foi registrado na ficha.');
       setEstado(proximo);
       setConfirmacao('Economia de ações confirmada pelo servidor.');
