@@ -85,3 +85,20 @@ test('ganhos de Perícia ocorrem nos níveis 4 e 8 e só aceitam Perícias da Cl
   assert.equal(validarGanhoPericiaProgressao('Operador', 4, 'Fortitude', 2).valido, false);
   assert.equal(validarGanhoPericiaProgressao('Operador', 5, 'Luta', 0).valido, false);
 });
+
+test('validadores de progressão recusam Classe e nível inválidos sem lançar exceção', () => {
+  assert.equal(validarProgressaoHabilidades('Criatura', 1, []).valida, false);
+  assert.equal(validarProgressaoHabilidades('Agente', 0, []).valida, false);
+  assert.equal(validarProgressaoHabilidades('Agente', 11, []).valida, false);
+  assert.equal(validarGanhoAtributoProgressao(0, 'forca', 1).valido, false);
+  assert.equal(validarGanhoAtributoProgressao(11, 'forca', 1).valido, false);
+  assert.equal(validarGanhoPericiaProgressao('Criatura', 4, 'Luta', 0).valido, false);
+  assert.equal(validarGanhoPericiaProgressao('Agente', 11, 'Luta', 0).valido, false);
+});
+
+test('escolhas de Habilidade precisam ser objetos simples, sem protótipo personalizado', () => {
+  const escolha = Object.assign(Object.create({ admin: true }), {
+    nivel: 1, habilidadeId: 'anatomia-de-combate',
+  });
+  assert.equal(validarProgressaoHabilidades('Agente', 1, [escolha]).valida, false);
+});
