@@ -151,6 +151,15 @@ test('valida o estado persistível de Reanimação sem misturar causas ou contad
 });
 
 
+test('valida Condições persistidas e preserva múltiplas fontes sem duplicar IDs', () => {
+  const a = { id: 'cond-1', condicao: 'exposto', fonte: 'Falha Crítica', duracao: 'até o fim do próximo turno', observacao: '' };
+  const b = { id: 'cond-2', condicao: 'exposto', fonte: 'Habilidade', duracao: 'até o fim da rodada', observacao: '' };
+  assert.equal(validarPersonagemLocal(base({ versaoModelo: 1, estadoFicha: 'rascunho', condicoes: [a, b] })), true);
+  assert.equal(validarPersonagemLocal(base({ versaoModelo: 1, estadoFicha: 'rascunho', condicoes: [a, a] })), false);
+  assert.equal(validarPersonagemLocal(base({ versaoModelo: 1, estadoFicha: 'rascunho', condicoes: [{ ...a, condicao: 'inventada' }] })), false);
+  assert.equal(validarPersonagemLocal(base({ versaoModelo: 1, estadoFicha: 'rascunho', condicoes: [{ ...a, campoExtra: true }] })), false);
+});
+
 test('valida a economia de ações persistida e mantém o saldo de SA sincronizado', () => {
   const economia = economiaAcoesInicial(4);
   const dados = { versaoModelo: 1, estadoFicha: 'rascunho', saAtual: 4, economiaAcoes: economia };
