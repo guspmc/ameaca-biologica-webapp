@@ -46,7 +46,7 @@ test('Contra-Ataque exige defesa bem-sucedida e gasta 1 SA em Manobra', () => {
 
 test('Contra-Ataque normal exige Reação; se já usada, compra Reação adicional por Esforço', () => {
   let economia = consumirRecursoNormal(economiaAcoesInicial(3), 'reacao');
-  const resultado = prepararContraAtaque({ economia, defesaBemSucedida: true, mesmaReacaoAutorizada: false });
+  const resultado = prepararContraAtaque({ economia, defesaBemSucedida: true, ataqueCorpoACorpo: true, mesmaReacaoAutorizada: false });
   assert.equal(resultado.economia.saAtual, 1);
   assert.equal(resultado.economia.saGastaNaJanela, 2);
   assert.equal(resultado.reacaoAdicionalComprada, true);
@@ -56,7 +56,7 @@ test('Contra-Ataque normal exige Reação; se já usada, compra Reação adicion
 test('Contra-Ataque Instintivo pode usar a mesma Reação, conforme Habilidade', () => {
   let economia = consumirRecursoNormal(economiaAcoesInicial(2), 'reacao');
   economia = encerrarTurnoAcoes(economia);
-  const resultado = prepararContraAtaque({ economia, defesaBemSucedida: true, mesmaReacaoAutorizada: true });
+  const resultado = prepararContraAtaque({ economia, defesaBemSucedida: true, ataqueCorpoACorpo: true, mesmaReacaoAutorizada: true });
   assert.equal(resultado.economia.saAtual, 1);
   assert.equal(resultado.economia.normaisUsados.reacao, true);
 });
