@@ -98,3 +98,13 @@ export function encerrarTurnoAcoes(estado: EstadoEconomiaAcoes): EstadoEconomiaA
   if (!estado.turnoEmAndamento) throw new Error('Não há turno próprio em andamento para encerrar.');
   return { ...estado, saGastaNaJanela: 0, turnoEmAndamento: false };
 }
+
+/** Valida dados persistidos antes de reabrir o painel, sem corrigir silenciosamente registros inválidos. */
+export function estadoEconomiaAcoesValido(valor: unknown): valor is EstadoEconomiaAcoes {
+  try {
+    validarEstado(valor as EstadoEconomiaAcoes);
+    return (valor as EstadoEconomiaAcoes).saGastaNaJanela <= LIMITE_SA_JANELA_ESFORCO;
+  } catch {
+    return false;
+  }
+}
