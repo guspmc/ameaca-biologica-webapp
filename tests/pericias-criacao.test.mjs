@@ -20,7 +20,7 @@ test('Perícias permitidas combinam Classe e treinamento gratuito da Origem sem 
 test('Amnésico escolhe duas Perícias distintas e ambas podem receber distribuição',()=>{
   assert.equal(distribuicaoPericiasValida('Agente','Amnésico','Medicina',{Luta:1,Reflexos:1},'Luta'),true);
   assert.equal(distribuicaoPericiasValida('Agente','Amnésico','Medicina',{Medicina:1},'Medicina'),false);
-  assert.equal(distribuicaoPericiasValida('Agente','Amnésico','Medicina',{Medicina:1,Vontade:1},'Vontade'),false);
+  assert.equal(distribuicaoPericiasValida('Agente','Amnésico','Medicina',{Medicina:1,Vontade:1},'Vontade'),true);
 });
 
 test('distribuição respeita limite por Classe, grau Mestre e Perícias permitidas',()=>{
