@@ -1,5 +1,5 @@
-import { calcularTesteManual, type ResultadoTeste, type VantagemTeste } from './testes';
-import { comprarRecursoPorEsforco, consumirRecursoNormal, gastarSAEmManobra, type EstadoEconomiaAcoes } from './economiaAcoes';
+import { calcularTesteManual, type ResultadoTeste, type VantagemTeste } from './testes.ts';
+import { comprarRecursoPorEsforco, consumirRecursoNormal, gastarSAEmManobra, type EstadoEconomiaAcoes } from './economiaAcoes.ts';
 
 export type GatilhoReacao = {
   resultadoAtaque: number;
