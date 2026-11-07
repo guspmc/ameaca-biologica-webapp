@@ -75,3 +75,25 @@ export function prepararContraAtaque(args: {
   economia = gastarSAEmManobra(economia, 1);
   return { economia, reacaoAdicionalComprada, custoSA: 1 + (reacaoAdicionalComprada ? 1 : 0) };
 }
+
+export type EstadoDurabilidadeAparar = {
+  durabilidadeAtual: number | null;
+  indestrutivel: boolean;
+};
+
+/** Valida se o item pode Aparar e aplica o custo somente quando a automação está habilitada. */
+export function registrarUsoAparar(args: {
+  item: EstadoDurabilidadeAparar;
+  automacaoAtiva: boolean;
+}): EstadoDurabilidadeAparar {
+  const { item, automacaoAtiva } = args;
+  if (typeof item.indestrutivel !== 'boolean') throw new Error('Estado Indestrutível inválido.');
+  if (item.indestrutivel) return { ...item };
+  if (!Number.isSafeInteger(item.durabilidadeAtual) || (item.durabilidadeAtual as number) < 0) {
+    throw new Error('Durabilidade atual inválida ou não informada.');
+  }
+  if ((item.durabilidadeAtual as number) === 0) throw new Error('Durabilidade 0: este item não pode Aparar.');
+  return automacaoAtiva
+    ? { ...item, durabilidadeAtual: (item.durabilidadeAtual as number) - 1 }
+    : { ...item };
+}
