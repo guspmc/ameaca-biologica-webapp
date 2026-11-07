@@ -20,7 +20,12 @@ export type JanelaReacao = {
 
 /** Registra a janela após conhecer o resultado do Ataque e antes de Dano, BI ou Condições. */
 export function avaliarJanelaReacao(gatilho: GatilhoReacao): JanelaReacao {
-  if (typeof gatilho.ataqueCorpoACorpo !== 'boolean' || typeof gatilho.ataqueAcertou !== 'boolean'
+  if (!gatilho || typeof gatilho !== 'object' || Array.isArray(gatilho)) {
+    throw new Error('Gatilho de Reação inválido.');
+  }
+  const chavesGatilho = ['resultadoAtaque', 'dadoNaturalAtaque', 'ataqueCorpoACorpo', 'ataqueAcertou', 'ataqueAparavel', 'gatilhoEsquivaAutorizado'];
+  if (Object.keys(gatilho).sort().join('|') !== chavesGatilho.sort().join('|')
+    || typeof gatilho.ataqueCorpoACorpo !== 'boolean' || typeof gatilho.ataqueAcertou !== 'boolean'
     || typeof gatilho.ataqueAparavel !== 'boolean' || typeof gatilho.gatilhoEsquivaAutorizado !== 'boolean'
     || !Number.isSafeInteger(gatilho.resultadoAtaque) || gatilho.resultadoAtaque < 1
     || !Number.isSafeInteger(gatilho.dadoNaturalAtaque) || gatilho.dadoNaturalAtaque < 1 || gatilho.dadoNaturalAtaque > 20) {
@@ -49,7 +54,12 @@ export function resolverTesteDefensivo(args: {
   dado2?: number | null;
   vantagem?: VantagemTeste;
 }): ResultadoTeste {
+  if (!args || typeof args !== 'object' || Array.isArray(args)) throw new Error('Dados do Teste defensivo inválidos.');
   if (args.tipo !== 'aparar' && args.tipo !== 'esquivar') throw new Error('Manobra defensiva desconhecida.');
+  if (!Number.isSafeInteger(args.resultadoAtaque) || args.resultadoAtaque < 1) throw new Error('Resultado do Ataque inválido para o Teste defensivo.');
+  if (args.vantagem !== undefined && !['normal', 'vantagem', 'desvantagem'].includes(args.vantagem)) {
+    throw new Error('Tipo de Vantagem/Desvantagem inválido.');
+  }
   const valorBase = args.tipo === 'aparar' ? args.valorLuta : args.valorReflexos;
   if (!Number.isSafeInteger(valorBase) || (valorBase as number) < 0) throw new Error('O valor da Perícia defensiva não foi informado corretamente.');
   return calcularTesteManual({
@@ -98,8 +108,12 @@ export function registrarUsoAparar(args: {
   item: EstadoDurabilidadeAparar;
   automacaoAtiva: boolean;
 }): EstadoDurabilidadeAparar {
+  if (!args || typeof args !== 'object' || Array.isArray(args)) throw new Error('Estado de Aparar inválido.');
   const { item, automacaoAtiva } = args;
-  if (!item || typeof item !== 'object' || typeof item.indestrutivel !== 'boolean' || typeof automacaoAtiva !== 'boolean') throw new Error('Estado de Aparar inválido.');
+  if (!item || typeof item !== 'object' || Array.isArray(item)
+    || Object.getPrototypeOf(item) !== Object.prototype
+    || Object.keys(item).sort().join('|') !== ['durabilidadeAtual', 'indestrutivel'].sort().join('|')
+    || typeof item.indestrutivel !== 'boolean' || typeof automacaoAtiva !== 'boolean') throw new Error('Estado de Aparar inválido.');
   if (item.indestrutivel) return { ...item };
   if (!Number.isSafeInteger(item.durabilidadeAtual) || (item.durabilidadeAtual as number) < 0) {
     throw new Error('Durabilidade atual inválida ou não informada.');
