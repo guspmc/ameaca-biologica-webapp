@@ -28,7 +28,7 @@ export function revisarCriacao(f:FichaRevisao):Conferencia[]{
   const pontos=f.pontos_pericia_classe??{};
   const usados=Object.values(pontos).reduce((a,b)=>a+b,0);
   const limite=PONTOS_CLASSE[f.classe??'']??0;
-  const permitidas=new Set([...(PERICIAS_CLASSE[f.classe??'']??[]),...(origemValida&&extra?[extra]:[])]);
+  const permitidas=new Set([...(PERICIAS_CLASSE[f.classe??'']??[]),...(origemValida&&f.origem==='Amnésico'&&treinada?[treinada]:[]),...(origemValida&&extra?[extra]:[])]);
   const pontosValidos=classeValida&&origemValida&&Object.entries(pontos).every(([p,n])=>permitidas.has(p)&&Number.isInteger(n)&&n>=0&&n+(p===treinada?1:0)<=2)&&usados<=limite;
   add('Pontos de Perícia',!pontosValidos?'revisar':usados===limite?'conferido':'pendente',`${usados}/${limite} pontos salvos. Treinamento da Origem é gratuito; Mestre é o grau máximo.`,'pericias');
   const hab=HABILIDADES_BASICAS.find(h=>h.id===f.habilidade_basica&&h.classe===f.classe);
