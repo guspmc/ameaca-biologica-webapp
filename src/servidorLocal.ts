@@ -13,6 +13,7 @@ export type MesaLocal = {
   id: string;
   name: string;
   role: 'mestre' | 'jogador';
+  creationMethod: 'padrao' | 'regra_da_casa';
   createdAt: string;
 };
 
@@ -237,10 +238,10 @@ export function criarClienteServidorLocal({ baseUrl, token, fetcher = fetch }: O
       return requisicao('/api/mesas', { autenticada: true });
     },
 
-    criarMesa(name: string): Promise<{ mesa: MesaLocal }> {
+    criarMesa(name: string, creationMethod: MesaLocal['creationMethod'] = 'padrao'): Promise<{ mesa: MesaLocal }> {
       return requisicao('/api/mesas', {
         metodo: 'POST',
-        corpo: { name },
+        corpo: { name, creationMethod },
         autenticada: true,
       });
     },

@@ -32,6 +32,7 @@ export default function ConexaoServidorLocal() {
   const [personagens, setPersonagens] = useState<Record<string, ResumoPersonagemLocal[]>>({});
   const [nomesPersonagens, setNomesPersonagens] = useState<Record<string, string>>({});
   const [nomeMesa, setNomeMesa] = useState('');
+  const [metodoCriacaoMesa, setMetodoCriacaoMesa] = useState<'padrao' | 'regra_da_casa'>('padrao');
   const [codigoConvite, setCodigoConvite] = useState(() => new URLSearchParams(window.location.search).get('convite') ?? '');
   const [convitesGerados, setConvitesGerados] = useState<Record<string, string>>({});
   const [solicitacoes, setSolicitacoes] = useState<Record<string, { id: string; status: 'pendente'; createdAt: string; accountId: string }[]>>({});
@@ -525,7 +526,7 @@ export default function ConexaoServidorLocal() {
       const cliente = criarClienteServidorLocal({ baseUrl: endereco.trim(), token: sessao.token });
       let resposta;
       try {
-        resposta = await cliente.criarMesa(nome);
+        resposta = await cliente.criarMesa(nome, metodoCriacaoMesa);
         if (!sessaoContinuaSendoAtual(geracaoSessao.current, geracaoSolicitada)) return;
       } catch (problema) {
         if (!sessaoContinuaSendoAtual(geracaoSessao.current, geracaoSolicitada)) return;
@@ -535,6 +536,7 @@ export default function ConexaoServidorLocal() {
         return;
       }
       setNomeMesa('');
+      setMetodoCriacaoMesa('padrao');
       try {
         const lista = await cliente.listarMesas();
         if (!sessaoContinuaSendoAtual(geracaoSessao.current, geracaoSolicitada)) return;
@@ -1060,9 +1062,15 @@ export default function ConexaoServidorLocal() {
               <label>Nome da nova Mesa
                 <input value={nomeMesa} onChange={evento => setNomeMesa(evento.target.value)} maxLength={80} required placeholder="Ex.: Operação Raccoon City" />
               </label>
+              <label>Método de criação
+                <select value={metodoCriacaoMesa} onChange={evento => setMetodoCriacaoMesa(evento.target.value as 'padrao' | 'regra_da_casa')}>
+                  <option value="padrao">Padrão · regras oficiais</option>
+                  <option value="regra_da_casa">Regra da Casa · derivados personalizáveis</option>
+                </select>
+              </label>
               <button className="acao" type="submit" disabled={consultando || !nomeMesa.trim()}>Criar Mesa <span>→</span></button>
             </form>
-            <p className="servidor-local-explica-mesa">Ao criar uma Mesa, sua conta recebe o papel de Mestre. Convites identificam a Mesa, mas cada ingresso depende de aprovação.</p>
+            <p className="servidor-local-explica-mesa">Ao criar uma Mesa, sua conta recebe o papel de Mestre. O método de criação fica registrado na Mesa; convites dependem de aprovação.</p>
           </div>
         </> : <>
           <h2>{modoRecuperacao ? 'Redefinir senha' : modoCadastro ? 'Criar conta local' : 'Entrar no servidor'}</h2>

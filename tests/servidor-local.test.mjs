@@ -352,6 +352,7 @@ test('Mestre consulta participantes sem expor identificadores e remove jogador c
   });
   assert.equal(criarMesa.status, 201);
   const { mesa } = await criarMesa.json();
+  assert.equal(mesa.creationMethod, 'padrao');
   instancia.app.db.prepare('INSERT INTO participantes_mesa (mesa_id, conta_id, papel, entrou_em) VALUES (?, ?, ?, ?)')
     .run(mesa.id, jogador.account.id, 'jogador', new Date().toISOString());
 

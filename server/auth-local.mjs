@@ -259,6 +259,15 @@ export function prepararAutenticacaoLocal(db) {
     }
   }
 
+  if (versaoAtual < 9) {
+    db.exec('BEGIN IMMEDIATE');
+    try {
+      db.exec("ALTER TABLE mesas ADD COLUMN metodo_criacao TEXT NOT NULL DEFAULT 'padrao' CHECK (metodo_criacao IN ('padrao', 'regra_da_casa'))");
+      db.prepare('INSERT INTO schema_migrations (version, applied_at) VALUES (?, ?)').run(9, new Date().toISOString());
+      db.exec('COMMIT');
+    } catch (erro) { db.exec('ROLLBACK'); throw erro; }
+  }
+
 }
 
 export function consumirTicketWebSocketLocal(db, ticket) {
@@ -335,6 +344,10 @@ export async function tratarRotaAutenticacao(req, res, url, db, encerrarSessaoWe
 
       const salt = randomBytes(16);
       const senhaHash = await scrypt(senha, salt, 64);
+      if (!['padrao', 'regra_da_casa'].includes(metodoCriacao)) {
+        json(res, 422, { error: 'Escolha um método de criação válido.' });
+        return true;
+      }
       const id = randomBytes(16).toString('hex');
       try {
         // A coluna "email" é mantida internamente para preservar o banco legado;
@@ -489,7 +502,7 @@ export async function tratarRotaMesas(req, res, url, db, notificarMesa = () => {
   try {
     if (metodo === 'GET' && rota === '/api/mesas') {
       const mesas = db.prepare(`
-        SELECT m.id, m.nome AS name, p.papel AS role, m.criada_em AS createdAt
+        SELECT m.id, m.nome AS name, p.papel AS role, m.metodo_criacao AS creationMethod, m.criada_em AS createdAt
         FROM participantes_mesa p
         JOIN mesas m ON m.id = p.mesa_id
         WHERE p.conta_id = ?
@@ -502,6 +515,7 @@ export async function tratarRotaMesas(req, res, url, db, notificarMesa = () => {
     if (metodo === 'POST' && rota === '/api/mesas') {
       const corpo = await corpoJson(req);
       const nome = typeof corpo.name === 'string' ? corpo.name.trim() : '';
+      const metodoCriacao = corpo.creationMethod ?? 'padrao';
       if (nome.length < 1 || nome.length > 80) {
         json(res, 422, { error: 'O nome da Mesa deve ter entre 1 e 80 caracteres.' });
         return true;
@@ -511,8 +525,8 @@ export async function tratarRotaMesas(req, res, url, db, notificarMesa = () => {
       const agora = new Date().toISOString();
       db.exec('BEGIN IMMEDIATE');
       try {
-        db.prepare('INSERT INTO mesas (id, nome, criada_por, criada_em) VALUES (?, ?, ?, ?)')
-          .run(id, nome, conta.id, agora);
+        db.prepare('INSERT INTO mesas (id, nome, criada_por, criada_em, metodo_criacao) VALUES (?, ?, ?, ?, ?)')
+          .run(id, nome, conta.id, agora, metodoCriacao);
         db.prepare('INSERT INTO participantes_mesa (mesa_id, conta_id, papel, entrou_em) VALUES (?, ?, ?, ?)')
           .run(id, conta.id, 'mestre', agora);
         db.exec('COMMIT');
@@ -520,7 +534,7 @@ export async function tratarRotaMesas(req, res, url, db, notificarMesa = () => {
         db.exec('ROLLBACK');
         throw erro;
       }
-      json(res, 201, { mesa: { id, name: nome, role: 'mestre', createdAt: agora } });
+      json(res, 201, { mesa: { id, name: nome, role: 'mestre', creationMethod: metodoCriacao, createdAt: agora } });
       return true;
     }
 
