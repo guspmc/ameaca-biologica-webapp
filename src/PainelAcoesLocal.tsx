@@ -43,9 +43,9 @@ export default function PainelAcoesLocal({ dados, saAtual, aoSalvar }: Props) {
       setErro('');
       setConfirmacao('');
       const salvo = await aoSalvar({ saAtual: proximo.saAtual, economiaAcoes: proximo, economiaAcoesSaldoBase: estado.saAtual });
-      if (!salvo) throw new Error('O servidor não confirmou a atualização. Nenhum gasto foi registrado na ficha.');
+      if (!salvo) throw new Error('O armazenamento local não confirmou a atualização. Nenhum gasto foi registrado na ficha.');
       setEstado(proximo);
-      setConfirmacao('Economia de ações confirmada pelo servidor.');
+      setConfirmacao('Economia de ações salva neste dispositivo.');
     } catch (problema) {
       setErro(problema instanceof Error ? problema.message : 'Não foi possível registrar a ação.');
     } finally {
@@ -101,7 +101,7 @@ export default function PainelAcoesLocal({ dados, saAtual, aoSalvar }: Props) {
           </div>
           {erro && <p className="offline-erro" role="alert">{erro}</p>}
           {confirmacao && <p className="offline-status" role="status">{confirmacao}</p>}
-          {salvando && <p className="ficha-local-legenda" role="status">Confirmando alteração no servidor…</p>}
+          {salvando && <p className="ficha-local-legenda" role="status">Salvando no dispositivo…</p>}
         </>}
   </details>;
 }
