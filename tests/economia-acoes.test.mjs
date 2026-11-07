@@ -86,6 +86,7 @@ test('validador recusa estado persistido malformado ou acima do limite da janela
   const estado = economiaAcoesInicial(3);
   assert.equal(estadoEconomiaAcoesValido(estado), true);
   assert.equal(estadoEconomiaAcoesValido({ ...estado, saGastaNaJanela: 4 }), false);
+  assert.throws(() => gastarSAEmManobra({ ...estado, saGastaNaJanela: 4 }), /Estado da economia de ações inválido/);
   assert.equal(estadoEconomiaAcoesValido({ ...estado, turnoEmAndamento: 'sim' }), false);
   assert.equal(estadoEconomiaAcoesValido({ ...estado, comprasEsforco: { ...estado.comprasEsforco, acao: 1 } }), false);
 });
