@@ -1,12 +1,12 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { economiaAcoesInicial, consumirRecursoNormal, consumirAcaoCompleta, consumirInteracaoGratuita, comprarRecursoPorEsforco, encerrarTurnoAcoes, saNaJanelaEsforco } from '../src/economiaAcoes.ts';
+import { economiaAcoesInicial, consumirRecursoNormal, consumirAcaoCompleta, consumirInteracaoGratuita, comprarRecursoPorEsforco, gastarSAEmManobra, iniciarTurnoAcoes, encerrarTurnoAcoes, saNaJanelaEsforco } from '../src/economiaAcoes.ts';
 
-test('recursos normais são únicos por turno e renovam ao encerrar o turno', () => {
+test('recursos normais são únicos por turno e renovam no início do próximo turno', () => {
   let estado = economiaAcoesInicial(5);
   for (const recurso of ['acao', 'movimento', 'acaoBonus', 'reacao']) estado = consumirRecursoNormal(estado, recurso);
   assert.throws(() => consumirRecursoNormal(estado, 'acao'), /já foi utilizado/);
-  estado = encerrarTurnoAcoes(estado);
+  estado = iniciarTurnoAcoes(estado);
   assert.deepEqual(estado.usados, { acao: 0, movimento: 0, acaoBonus: 0, reacao: 0 });
 });
 
@@ -35,12 +35,23 @@ test('custos de Esforço são 1 SA para Movimento, Ação Bônus e Reação e 2 
   assert.equal(comprarRecursoPorEsforco(economiaAcoesInicial(2), 'acao').saAtual, 0);
 });
 
-test('a janela de 3 SA persiste até o fim do próximo turno e então renova', () => {
+test('Manobras também entram no limite de 3 SA da janela', () => {
+  let estado = gastarSAEmManobra(economiaAcoesInicial(4));
+  estado = comprarRecursoPorEsforco(estado, 'movimento');
+  estado = gastarSAEmManobra(estado);
+  assert.equal(saNaJanelaEsforco(estado), 3);
+  assert.throws(() => gastarSAEmManobra(estado), /limite de 3 SA/);
+});
+
+test('início do turno não renova a janela; somente o fim do próximo turno a encerra', () => {
   let estado = comprarRecursoPorEsforco(economiaAcoesInicial(6), 'acao');
   estado = encerrarTurnoAcoes(estado);
-  assert.equal(saNaJanelaEsforco(estado), 2);
-  estado = comprarRecursoPorEsforco(estado, 'movimento');
-  assert.equal(saNaJanelaEsforco(estado), 3);
-  estado = encerrarTurnoAcoes(estado);
+  assert.equal(saNaJanelaEsforco(estado), 0);
+  estado = gastarSAEmManobra(estado);
+  estado = iniciarTurnoAcoes(estado);
   assert.equal(saNaJanelaEsforco(estado), 1);
+  estado = comprarRecursoPorEsforco(estado, 'movimento');
+  assert.equal(saNaJanelaEsforco(estado), 2);
+  estado = encerrarTurnoAcoes(estado);
+  assert.equal(saNaJanelaEsforco(estado), 0);
 });
