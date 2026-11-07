@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 import ts from 'typescript';
 // Compila os modulos reais juntos, sem duplicar regras no adaptador de teste.
-const files=['origens','habilidades','pericias','equipamento','textoPersonagem','comprasIniciais','conferenciaCriacao'];
+const files=['origens','habilidades','pericias','equipamento','textoPersonagem','armaOperario','comprasIniciais','conferenciaCriacao'];
 const source=(await Promise.all(files.map(f=>readFile(new URL('../src/'+f+'.ts',import.meta.url),'utf8')))).map(s=>s.replace(/^import .*;\r?$/gm,'')).join('\n');
 const {outputText}=ts.transpileModule(source,{compilerOptions:{module:ts.ModuleKind.ESNext,target:ts.ScriptTarget.ES2022}});
 const {revisarCriacao,classePersonagem}=await import('data:text/javascript;base64,'+Buffer.from(outputText).toString('base64'));
@@ -51,6 +51,13 @@ test('flexao depende apenas da declaracao explicita da personagem e preserva Cla
   assert.equal(classePersonagem('Autodidata','Feminino'),'Autodidata');
   assert.equal(classePersonagem(null,'Feminino'),'Classe pendente');
   assert.equal(ficha.classe,'Operador');
+});
+
+test('revisao exige a arma escolhida pela Origem Operário',()=>{
+ const operario={...ficha,origem:'Operário',pericia_origem_treinada:'Fortitude',arma_operario:null};
+ assert.equal(linha(operario,'Arma da Origem').estado,'pendente');
+ assert.equal(linha({...operario,arma_operario:'Arma inventada'},'Arma da Origem').estado,'revisar');
+ assert.equal(linha({...operario,arma_operario:'Cutelo'},'Arma da Origem').estado,'conferido');
 });
 
 test('revisao combina bonus de Origem nos maximos e usa genero apenas na apresentacao',()=>{
