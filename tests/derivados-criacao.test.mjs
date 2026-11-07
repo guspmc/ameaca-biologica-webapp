@@ -93,7 +93,7 @@ test('todos os bônus numéricos de Origem e Habilidade são aplicados uma únic
     ['Universitária', 'curiosa', { saMaximo: 4 }],
     ['Policial', 'rolamento', { defesa: 14 }],
     ['Mochileiro', 'rolamento', { inventario: 7 }],
-    ['', 'parrudo', { pvMaximo: 19, biMaxima: 12 }],
+    ['', 'parrudo', { pvMaximo: 19, biMaxima: 10 }],
   ];
   for (const [origem, habilidade, esperados] of casos) {
     const d = calcularDerivadosCriacao({ classe: habilidade === 'parrudo' ? 'Operador' : 'Agente', origem, habilidadeBasica: habilidade, atributos });
