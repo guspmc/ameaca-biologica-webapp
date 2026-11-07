@@ -4,7 +4,7 @@ import FichaLocal from './FichaLocal';
 import { criarFilaSerializada } from './filaSerializada';
 import { criarBackup, lerArquivoBackup, nomeDeCopiaUnico, serializarBackup } from './backupFicha';
 import { adicionarPersonagens, excluirPersonagem, listarPersonagens, obterPersonagem, salvarPersonagem, salvarPatchPersonagem, substituirPersonagens, type PersonagemLocal } from './persistenciaFicha';
-import { estadoEconomiaAcoesValido } from './economiaAcoes';
+import { estadoEconomiaAcoesValido, sincronizarSAAtual } from './economiaAcoes';
 
 function agora() { return new Date().toISOString(); }
 function novoId() { return globalThis.crypto?.randomUUID?.() ?? `personagem-${Date.now()}-${Math.random().toString(16).slice(2)}`; }
@@ -86,7 +86,7 @@ export default function FichaOfflineApp() {
       // Economia de Ações, evitando saldos divergentes entre as duas seções.
       if (typeof patchEfetivo.saAtual === 'number' && !('economiaAcoes' in patchEfetivo)
         && estadoEconomiaAcoesValido(base.dados.economiaAcoes)) {
-        patchEfetivo.economiaAcoes = { ...base.dados.economiaAcoes, saAtual: patchEfetivo.saAtual };
+        patchEfetivo.economiaAcoes = sincronizarSAAtual(base.dados.economiaAcoes, patchEfetivo.saAtual);
       }
       setStatus('Salvando no dispositivo…'); setErro('');
       try {
