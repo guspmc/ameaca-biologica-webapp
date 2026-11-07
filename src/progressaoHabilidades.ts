@@ -35,7 +35,7 @@ const superiores: HabilidadeProgressao[] = [
 ];
 
 const avassaladoras: HabilidadeProgressao[] = [
-  { id: 'voce-aparou-um-missil', nome: 'VOCÊ APAROU UM MÍSSIL!?', classe: 'Agente', ramo: 'Rapina', grau: 'avassaladora', referencia: 'J 30' },
+  { id: 'voce-aparou-um-missil', nome: 'VOCÊ APAROU UM MÍSSIL!?', classe: 'Agente', ramo: 'Classe', grau: 'avassaladora', referencia: 'J 30' },
   { id: 'code-veronica', nome: 'CODE VERONICA', classe: 'Autodidata', ramo: 'Classe', grau: 'avassaladora', referencia: 'J 34' },
   { id: 'socador-de-pedras', nome: 'SOCADOR DE PEDRAS', classe: 'Operador', ramo: 'Classe', grau: 'avassaladora', referencia: 'J 38' },
 ];
