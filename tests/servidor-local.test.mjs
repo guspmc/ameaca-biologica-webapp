@@ -671,3 +671,37 @@ test('preserva a Mesa e o vínculo do Mestre após reiniciar o servidor SQLite',
   assert.equal(registroFicha.data.testePersistencia, 'depois');
   assert.equal(registroFicha.data.identidade.historia, 'Registro atualizado antes da recarga.');
 });
+
+test('Mesa registra método de criação e valida opções no servidor', async t => {
+  const instancia = await criarInstancia(t);
+  const credenciais = { username: 'mestre-metodo', password: 'senha-local-comprida-2026' };
+  assert.equal((await fetch(instancia.url + '/api/auth/register', {
+    method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(credenciais),
+  })).status, 201);
+  const login = await fetch(instancia.url + '/api/auth/login', {
+    method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(credenciais),
+  });
+  assert.equal(login.status, 200);
+  const token = (await login.json()).token;
+  const headers = { authorization: 'Bearer ' + token, 'content-type': 'application/json' };
+
+  const invalida = await fetch(instancia.url + '/api/mesas', {
+    method: 'POST', headers, body: JSON.stringify({ name: 'Mesa inválida', creationMethod: 'inventado' }),
+  });
+  assert.equal(invalida.status, 422);
+
+  const criada = await fetch(instancia.url + '/api/mesas', {
+    method: 'POST', headers, body: JSON.stringify({ name: 'Mesa da Casa', creationMethod: 'regra_da_casa' }),
+  });
+  assert.equal(criada.status, 201);
+  const mesa = (await criada.json()).mesa;
+  assert.equal(mesa.creationMethod, 'regra_da_casa');
+
+  const lista = await fetch(instancia.url + '/api/mesas', { headers: { authorization: 'Bearer ' + token } });
+  assert.equal(lista.status, 200);
+  assert.equal((await lista.json()).mesas[0].creationMethod, 'regra_da_casa');
+
+  const detalhe = await fetch(instancia.url + '/api/mesas/' + mesa.id, { headers: { authorization: 'Bearer ' + token } });
+  assert.equal(detalhe.status, 200);
+  assert.equal((await detalhe.json()).mesa.creationMethod, 'regra_da_casa');
+});
