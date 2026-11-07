@@ -21,6 +21,7 @@ import UsosDescansoCompletoLocal from './UsosDescansoCompletoLocal';
 import ReanimacaoFichaLocal from './ReanimacaoFichaLocal';
 import PainelAcoesLocal from './PainelAcoesLocal';
 import CondicoesFichaLocal from './CondicoesFichaLocal';
+import PlanejadorHabilidadesCriacaoLocal from './PlanejadorHabilidadesCriacaoLocal';
 import { recursosIniciais } from './recursosFicha';
 import { calcularDerivadosCriacao } from './derivadosCriacao';
 import type { FichaRevisao } from './conferenciaCriacao';
@@ -38,6 +39,7 @@ type DadosFichaLocal = {
   periciaOrigemExtra?: unknown;
   habilidadeBasica?: unknown;
   habilidadesAdquiridas?: unknown;
+  planejamentoCriacao?: unknown;
   equipamentoInicial?: unknown;
   distribuicaoPericias?: unknown;
   comprasIniciais?: unknown;
@@ -400,6 +402,13 @@ export default function FichaLocal({ nome, mesa, contextoId, dados, aoFechar, ao
               <p>{habilidade ? habilidade.efeito : 'Ainda não selecionada. Nenhuma habilidade foi presumida para o personagem.'}</p>
             </div>
           </details>
+          <PlanejadorHabilidadesCriacaoLocal
+            classe={classe}
+            inicial={ficha.planejamentoCriacao as { nivelAlvo: number; habilidades: { nivel: number; habilidadeId: string }[] } | null | undefined}
+            aoSalvar={planejamento => aoSalvarRecursos({ planejamentoCriacao: planejamento })}
+            aoAlterarPendencia={pendente => registrarPendencia('Planejamento de criação', pendente)}
+            autoSalvar={autoSalvar}
+          />
           <details className="ficha-local-acordeao">
             <summary>Identidade e histórico <span>{ficha.identidade && typeof ficha.identidade === 'object' && Object.keys(ficha.identidade).length > 0 ? 'Dados registrados' : 'Dados pendentes'}</span></summary>
             <div className="ficha-local-acordeao-corpo">
