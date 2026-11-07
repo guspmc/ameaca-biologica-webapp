@@ -111,3 +111,13 @@ test('Contra-Ataque não responde a Ataque à distância sem exceção específi
   const autorizado = prepararContraAtaque({ economia: economiaAcoesInicial(3), defesaBemSucedida: true, ataqueCorpoACorpo: false, excecaoContraAtaqueADistancia: true, mesmaReacaoAutorizada: false });
   assert.equal(autorizado.economia.saAtual, 2);
 });
+
+
+test('gatilhos e autorizações de Reação rejeitam booleanos ou tipos inválidos', () => {
+  const base = { resultadoAtaque: 12, dadoNaturalAtaque: 12, ataqueCorpoACorpo: true, ataqueAcertou: true, ataqueAparavel: true, gatilhoEsquivaAutorizado: false };
+  assert.throws(() => avaliarJanelaReacao({ ...base, ataqueAcertou: 'sim' }), /válidos/);
+  assert.throws(() => avaliarJanelaReacao({ ...base, gatilhoEsquivaAutorizado: 1 }), /válidos/);
+  assert.throws(() => resolverTesteDefensivo({ tipo: 'aparar', valorLuta: -1, resultadoAtaque: 12, dado1: 12 }), /Perícia defensiva/);
+  assert.throws(() => resolverTesteDefensivo({ tipo: 'bloquear', valorLuta: 2, resultadoAtaque: 12, dado1: 12 }), /desconhecida/);
+  assert.throws(() => prepararContraAtaque({ economia: economiaAcoesInicial(2), defesaBemSucedida: true, ataqueCorpoACorpo: true, mesmaReacaoAutorizada: 'sim' }), /autorizações.*inválidos/);
+});
