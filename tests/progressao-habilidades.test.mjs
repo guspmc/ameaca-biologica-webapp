@@ -67,6 +67,8 @@ test('dados de progressão malformados são recusados sem interromper a conferê
   assert.equal(validarProgressaoHabilidades('Agente', 1, null).valida, false);
   assert.equal(validarProgressaoHabilidades('Agente', 1, [null]).valida, false);
   assert.equal(validarProgressaoHabilidades('Agente', 1, [{ nivel: 1 }]).valida, false);
+  assert.equal(validarProgressaoHabilidades('Agente', 1, [{ nivel: 1, habilidadeId: 'anatomia-de-combate', admin: true }]).valida, false);
+  assert.equal(validarProgressaoHabilidades('Agente', 1, [{ nivel: 1, habilidadeId: 'anatomia-de-combate' }, { nivel: 1, habilidadeId: 'nao-vai-escapar' }]).valida, false);
 });
 
 test('ganhos de Atributo ocorrem somente nos níveis previstos e respeitam teto 5', () => {
