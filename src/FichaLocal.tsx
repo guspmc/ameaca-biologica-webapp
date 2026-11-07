@@ -447,7 +447,7 @@ export default function FichaLocal({ nome, mesa, contextoId, dados, aoFechar, ao
           <p className="ficha-local-legenda">A BI começa em 0 e não progride sozinha. Alterações de BI são registradas expressamente no painel de Recursos; este resumo apenas calcula os modificadores da fase e não os aplica automaticamente a movimento, ataques ou dano, nem inicia Reanimação.</p>
 
           <h3 className="ficha-local-subtitulo">Combate ativo</h3>
-          <PainelAcoesLocal key={JSON.stringify([ficha.economiaAcoes ?? null, recursosAtuais.saAtual])} dados={dados} saAtual={recursosAtuais.saAtual} aoSalvar={aoSalvarRecursos} />
+          <PainelAcoesLocal key={JSON.stringify([ficha.economiaAcoes ?? null, recursosAtuais.saAtual])} dados={dados} saAtual={recursosAtuais.saAtual} origemDados={origemDados} aoSalvar={aoSalvarRecursos} />
           <div className="ficha-local-grade">
             <div><small>INICIATIVA</small><strong>A integrar</strong><p>O controle principal dos turnos e da Iniciativa permanece com o Mestre; a ficha oferece apenas acompanhamento opcional das ações do jogador.</p></div>
             <div><small>CONDIÇÕES E EFEITOS</small><strong>A integrar</strong><p>Esta ficha ainda não registra nem aplica Condições ou efeitos temporários.</p></div>
@@ -470,7 +470,7 @@ export default function FichaLocal({ nome, mesa, contextoId, dados, aoFechar, ao
             {inventarioPlanejado ? inventarioPlanejado.itens.map(item => <div key={item.chaveCriacao}><strong>{item.nome} × {item.quantidade}</strong><small>{item.local === 'caracteristico' ? 'Característico · vinculado à Classe' : 'Inventário · ' + item.espacos + ' Espaço(s)'} · {item.estado.tipo.replace('_',' ')}</small></div>) : <p>Não foi possível montar a prévia do inventário. Confira Classe, Origem, kit e compras do rascunho.</p>}
           </div>
           <p className="ficha-local-legenda">A capacidade considera 4 + FOR{origem === 'Mochileiro' ? ' + 1 de Mochileiro' : ''} = {capacidade} Espaços. O conjunto selecionado ocupa {inventarioPlanejado?.ocupados ?? espacosKit} de {capacidade} Espaços. Os itens aparecem em estado inicial guardado/não equipado; operações de Inventário ainda não estão integradas.</p>
-        <FuncionamentoFichaLocal autoSalvar={autoSalvar}
+        <FuncionamentoFichaLocal origemDados={origemDados} autoSalvar={autoSalvar}
           key={JSON.stringify(ficha.configuracaoFuncionamento ?? null)}
           inicial={ficha.configuracaoFuncionamento as ConfiguracaoFuncionamento | undefined}
           aoSalvar={aoSalvarFuncionamento}
