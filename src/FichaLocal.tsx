@@ -452,7 +452,7 @@ export default function FichaLocal({ nome, mesa, contextoId, dados, aoFechar, ao
             <div><small>INICIATIVA</small><strong>A integrar</strong><p>O controle principal dos turnos e da Iniciativa permanece com o Mestre; a ficha oferece apenas acompanhamento opcional das ações do jogador.</p></div>
             <div><small>ATAQUES E DANO</small><strong>A integrar</strong><p>Resolução de Testes, Defesa de alvos, Dano e consumo de munição não estão implementados nesta seção.</p></div>
           </div>
-          <CondicoesFichaLocal dados={dados} pvAtual={recursosAtuais.pvAtual} pvMaximo={pv} origemDados={origemDados} bloqueado={secoesPendentes.size > 0 || reanimacaoEmCurso} aoSalvar={aoSalvarRecursos} />
+          <CondicoesFichaLocal dados={dados} pvAtual={recursosAtuais.pvAtual} pvMaximo={pv} />
           <p className="ficha-local-aviso">O painel registra usos de Ação, Movimento, Ação Bônus, Reação, Interação Gratuita, Esforço e gastos de Manobra; ele não executa rolagens, não presume gatilhos e não aplica efeitos. PV, SA e BI continuam administrados nos painéis próprios. Iniciativa da Mesa, resolução de Ataques, Defesa de alvos, Dano e consumo de munição permanecem pendentes. As Condições registradas são informativas e dependem da aplicação das regras pela Mesa.</p>
         </section>
 

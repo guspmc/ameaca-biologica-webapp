@@ -38,3 +38,10 @@ test('Vulnerável é derivada do limite de um quinto dos PV sem arredondamento',
   assert.equal(api.vulneravelPorPV(1,1), true);
   assert.throws(() => api.vulneravelPorPV(-1,10), /PV inválidos/);
 });
+
+test('a Ficha do Jogador consulta Condições sem administrar registros do Mestre', async () => {
+  const ui = await readFile(new URL('../src/CondicoesFichaLocal.tsx', import.meta.url), 'utf8');
+  assert.match(ui, /Consulta das Condições recebidas/);
+  assert.match(ui, /registro e a administração dos efeitos são feitos pelo Mestre/);
+  assert.doesNotMatch(ui, /Registrar Condição|Remover registro|aoSalvar|setItens/);
+});
