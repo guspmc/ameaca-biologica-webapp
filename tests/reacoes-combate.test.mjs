@@ -121,3 +121,23 @@ test('gatilhos e autorizações de Reação rejeitam booleanos ou tipos inválid
   assert.throws(() => resolverTesteDefensivo({ tipo: 'bloquear', valorLuta: 2, resultadoAtaque: 12, dado1: 12 }), /desconhecida/);
   assert.throws(() => prepararContraAtaque({ economia: economiaAcoesInicial(2), defesaBemSucedida: true, ataqueCorpoACorpo: true, mesmaReacaoAutorizada: 'sim' }), /autorização.*inválidos/);
 });
+
+
+test('Reação normal disponível pode ser usada fora do próprio turno sem gastar SA', async () => {
+  const { registrarReacaoDefensiva } = await import('../src/reacoesCombate.ts');
+  const janela = avaliarJanelaReacao({ resultadoAtaque: 12, dadoNaturalAtaque: 12, ataqueCorpoACorpo: true, ataqueAcertou: true, ataqueAparavel: true, gatilhoEsquivaAutorizado: false });
+  const economia = encerrarTurnoAcoes(economiaAcoesInicial(3));
+  const resultado = registrarReacaoDefensiva({ economia, manobra: 'aparar', janela });
+  assert.equal(resultado.economia.normaisUsados.reacao, true);
+  assert.equal(resultado.economia.saAtual, 3);
+  assert.equal(resultado.reacaoAdicionalComprada, false);
+});
+
+test('Contra-Ataque fora do próprio turno usa Reação normal disponível antes de comprar outra', () => {
+  const economia = encerrarTurnoAcoes(economiaAcoesInicial(3));
+  const resultado = prepararContraAtaque({ economia, defesaBemSucedida: true, ataqueCorpoACorpo: true, mesmaReacaoAutorizada: false });
+  assert.equal(resultado.economia.normaisUsados.reacao, true);
+  assert.equal(resultado.economia.saAtual, 2);
+  assert.equal(resultado.reacaoAdicionalComprada, false);
+  assert.equal(resultado.custoSA, 1);
+});
