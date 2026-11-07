@@ -6,6 +6,7 @@ test('recursos normais são únicos por turno e renovam no início do próximo t
   let estado = economiaAcoesInicial(5);
   for (const recurso of ['acao', 'movimento', 'acaoBonus', 'reacao']) estado = consumirRecursoNormal(estado, recurso);
   assert.throws(() => consumirRecursoNormal(estado, 'acao'), /já foi utilizado/);
+  estado = encerrarTurnoAcoes(estado);
   estado = iniciarTurnoAcoes(estado);
   assert.deepEqual(estado.normaisUsados, { acao: false, movimento: false, acaoBonus: false, reacao: false });
   assert.equal(estado.turnoEmAndamento, true);
