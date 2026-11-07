@@ -75,9 +75,11 @@ test('criação superior recusa ganhos ausentes, duplicados ou em níveis que n�
 test('criação superior respeita os limites de Atributo, Perícia e Habilidade', () => {
   const atributoExcedido = entrada();
   atributoExcedido.atributosIniciais = { forca: 3, agilidade: 2, vigor: 1, astucia: 1 };
+  // Os quatro ganhos podem ser concentrados no mesmo Atributo; o limite
+  // absoluto de 5 só deve reprovar quando a progressão efetivamente o exceder.
   atributoExcedido.ganhosAtributo = [
-    { nivel: 3, atributo: 'forca' }, { nivel: 5, atributo: 'agilidade' },
-    { nivel: 7, atributo: 'vigor' }, { nivel: 9, atributo: 'astucia' },
+    { nivel: 3, atributo: 'forca' }, { nivel: 5, atributo: 'forca' },
+    { nivel: 7, atributo: 'forca' }, { nivel: 9, atributo: 'forca' },
   ];
   assert.equal(api.avaliarProgressaoCriacao(atributoExcedido).valida, false);
   const periciaExcedida = entrada();
