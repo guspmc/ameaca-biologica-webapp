@@ -8,15 +8,16 @@ type Props = {
   aoSalvar: (configuracao: ConfiguracaoFuncionamentoCompleta) => Promise<boolean>;
   aoAlterarPendencia: (pendente: boolean) => void;
   autoSalvar?: boolean;
+  origemDados?: 'local' | 'servidor';
 };
 
-export default function FuncionamentoFichaLocal({ inicial, aoSalvar, aoAlterarPendencia, autoSalvar = false }: Props) {
+export default function FuncionamentoFichaLocal({ inicial, aoSalvar, aoAlterarPendencia, autoSalvar = false, origemDados = 'local' }: Props) {
   const [config, setConfig] = useState(() => normalizarConfiguracaoFuncionamento(inicial));
   const [sujo, setSujo] = useState(false);
   const valor = normalizarConfiguracaoFuncionamento(config);
   const salvamento = useSalvamentoEditorLocal({
     autoSalvar, valor, chave: JSON.stringify(config), sujo, setSujo, aoSalvar, aoAlterarPendencia,
-    mensagemSucesso: 'Preferências salvas e confirmadas pelo servidor.',
+    mensagemSucesso: origemDados === 'servidor' ? 'Preferências confirmadas pelo servidor.' : 'Preferências salvas neste dispositivo.',
   });
   const ocupado = salvamento.ocupado;
   const efetivas = automacoesEfetivas(config);
@@ -82,7 +83,7 @@ export default function FuncionamentoFichaLocal({ inicial, aoSalvar, aoAlterarPe
     </div>
     <p className="ficha-local-legenda">As escolhas específicas do Misto são preservadas ao alternar para Automático ou Manual. A mudança de modo afeta somente operações futuras quando os respectivos módulos estiverem implementados.</p>
     {autoSalvar
-      ? <AutoSaveStatusLocal estado={salvamento.autosave.estado} erro={salvamento.autosave.erro} mensagemSucesso="Preferências salvas e confirmadas pelo servidor." aoTentarNovamente={salvamento.autosave.tentarNovamente} />
+      ? <AutoSaveStatusLocal estado={salvamento.autosave.estado} erro={salvamento.autosave.erro} mensagemSucesso={origemDados === 'servidor' ? 'Preferências confirmadas pelo servidor.' : 'Preferências salvas neste dispositivo.'} aoTentarNovamente={salvamento.autosave.tentarNovamente} />
       : <>
           {salvamento.erroManual && <p className="offline-erro" role="alert">{salvamento.erroManual}</p>}
           {salvamento.sucessoManual && <p className="offline-status" role="status">{salvamento.sucessoManual}</p>}
