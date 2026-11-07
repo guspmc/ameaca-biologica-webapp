@@ -213,13 +213,19 @@ export default function FichaLocal({ nome, mesa, contextoId, dados, aoFechar, ao
   const dadosOrigem = ORIGENS.find(item => item.nome === origem);
   const habilidadeSelecionada = typeof ficha.habilidadeBasica === 'string' ? ficha.habilidadeBasica : ''; 
   const habilidade = HABILIDADES_BASICAS.find(item => item.id === habilidadeSelecionada && item.classe === classe);
-  const derivados = dadosClasse ? calcularDerivadosCriacao({
-    classe, origem, habilidadeBasica: habilidade?.id ?? '',
-    atributos: {
-      forca: numero(atributos.forca), agilidade: numero(atributos.agilidade),
-      vigor: numero(atributos.vigor), astucia: numero(atributos.astucia),
-    },
-  }) : null;
+  const atributosDaFicha = {
+    forca: numero(atributos.forca), agilidade: numero(atributos.agilidade),
+    vigor: numero(atributos.vigor), astucia: numero(atributos.astucia),
+  };
+  const atributosCalculaveis = Object.values(atributosDaFicha)
+    .every(valor => Number.isInteger(valor) && valor >= 0 && valor <= 5);
+  const origemCalculavel = !origem || !!dadosOrigem;
+  const derivados = dadosClasse && atributosCalculaveis && origemCalculavel
+    ? calcularDerivadosCriacao({
+        classe, origem, habilidadeBasica: habilidade?.id ?? '',
+        atributos: atributosDaFicha,
+      })
+    : null;
   const pv = derivados?.pvMaximo ?? 0;
   const sa = derivados?.saMaximo ?? 0;
   const bi = derivados?.biMaxima ?? 0;
