@@ -87,3 +87,9 @@ test('validador recusa estado persistido malformado ou acima do limite da janela
   assert.equal(estadoEconomiaAcoesValido({ ...estado, saGastaNaJanela: 4 }), false);
   assert.equal(estadoEconomiaAcoesValido({ ...estado, turnoEmAndamento: 'sim' }), false);
 });
+
+test('Manobra genérica não pode gastar SA fora do turno sem autorização explícita', () => {
+  const estado = encerrarTurnoAcoes(economiaAcoesInicial(3));
+  assert.throws(() => gastarSAEmManobra(estado), /não foi autorizada fora/);
+  assert.equal(gastarSAEmManobra(estado, 1, true).saAtual, 2);
+});
