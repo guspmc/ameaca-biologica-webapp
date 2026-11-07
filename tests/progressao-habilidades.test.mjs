@@ -67,8 +67,17 @@ test('dados de progressão malformados são recusados sem interromper a conferê
   assert.equal(validarProgressaoHabilidades('Agente', 1, null).valida, false);
   assert.equal(validarProgressaoHabilidades('Agente', 1, [null]).valida, false);
   assert.equal(validarProgressaoHabilidades('Agente', 1, [{ nivel: 1 }]).valida, false);
-  assert.equal(validarProgressaoHabilidades('Agente', 1, [{ nivel: 1, habilidadeId: 'anatomia-de-combate', admin: true }]).valida, false);
-  assert.equal(validarProgressaoHabilidades('Agente', 1, [{ nivel: 1, habilidadeId: 'anatomia-de-combate' }, { nivel: 1, habilidadeId: 'nao-vai-escapar' }]).valida, false);
+  const escolhaComCampoExtra = validarProgressaoHabilidades('Agente', 1, [
+    { nivel: 1, habilidadeId: 'anatomia-de-combate', admin: true },
+  ]);
+  assert.equal(escolhaComCampoExtra.valida, false);
+  assert.ok(escolhaComCampoExtra.pendencias.length > 0);
+  const duplicada = validarProgressaoHabilidades('Agente', 1, [
+    { nivel: 1, habilidadeId: 'anatomia-de-combate' },
+    { nivel: 1, habilidadeId: 'nao-vai-escapar' },
+  ]);
+  assert.equal(duplicada.valida, false);
+  assert.ok(duplicada.pendencias.some(p => p.motivo.includes('duplicada')));
 });
 
 test('ganhos de Atributo ocorrem somente nos níveis previstos e respeitam teto 5', () => {
