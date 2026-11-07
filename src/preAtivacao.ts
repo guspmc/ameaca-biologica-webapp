@@ -64,6 +64,7 @@ export function avaliarPreAtivacao(f:FichaPreAtivacao,c:ContextoPreAtivacao):Ava
   for(const linha of revisarCriacao(f))if(linha.estado!=='conferido')
    add('criacao',linha.nome+': '+linha.detalhe,linha.secao);
  }catch{
+  add('criacao','A conferência das escolhas e dos valores derivados falhou.');
   add('dados_criacao','Os dados salvos da criação têm formato inválido.');
  }
  try{planejarInventarioCriacao(f);}catch{
