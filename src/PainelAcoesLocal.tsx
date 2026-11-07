@@ -63,7 +63,7 @@ export default function PainelAcoesLocal({ dados, saAtual, aoSalvar }: Props) {
           <div className="ficha-local-grade">
             <div><small>SURTO DE ADRENALINA</small><strong>{estado.saAtual} SA</strong><p>Disponível para Esforço e Manobras.</p></div>
             <div><small>JANELA DE 3 SA</small><strong>{janela}/3 SA</strong><p>Gasto do fim do último turno ao fim deste turno.</p></div>
-            <div><small>TURNO DA PERSONAGEM</small><strong>{estado.turnoEmAndamento ? 'Em andamento' : 'Encerrado'}</strong><p>O painel não controla a Iniciativa da Mesa.</p></div>
+            <div><small>TURNO DA PERSONAGEM</small><strong>{estado.turnoEmAndamento ? 'Em andamento' : 'Encerrado'}</strong><p>O painel apenas renova seus próprios marcadores; não controla a Iniciativa nem os turnos do Encontro.</p></div>
             <div><small>INTERAÇÃO GRATUITA</small><strong>{estado.interacaoGratuitaUsada ? 'Utilizada' : 'Disponível'}</strong><p>Recurso paralelo, não comprado por Esforço.</p></div>
           </div>
 
@@ -96,8 +96,8 @@ export default function PainelAcoesLocal({ dados, saAtual, aoSalvar }: Props) {
           <h4>Controle do turno</h4>
           <div className="recursos-controles">
             {estado.turnoEmAndamento
-              ? <button type="button" disabled={salvando} onClick={() => void aplicar(encerrarTurnoAcoes)}>Encerrar meu turno</button>
-              : <button type="button" disabled={salvando} onClick={() => void aplicar(iniciarTurnoAcoes)}>Iniciar meu próximo turno</button>}
+              ? <button type="button" disabled={salvando} onClick={() => void aplicar(encerrarTurnoAcoes)}>Registrar fim do meu turno</button>
+              : <button type="button" disabled={salvando} onClick={() => void aplicar(iniciarTurnoAcoes)}>Registrar início do meu turno</button>}
           </div>
           {erro && <p className="offline-erro" role="alert">{erro}</p>}
           {confirmacao && <p className="offline-status" role="status">{confirmacao}</p>}
