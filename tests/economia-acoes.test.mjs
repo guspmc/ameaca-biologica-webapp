@@ -56,7 +56,7 @@ test('início do turno não renova a janela; somente o fim do próximo turno a e
   let estado = comprarRecursoPorEsforco(economiaAcoesInicial(6), 'acao');
   estado = encerrarTurnoAcoes(estado);
   assert.equal(saNaJanelaEsforco(estado), 0);
-  estado = gastarSAEmManobra(estado);
+  estado = gastarSAEmManobra(estado, 1, true);
   estado = iniciarTurnoAcoes(estado);
   assert.equal(estado.turnoEmAndamento, true);
   assert.equal(saNaJanelaEsforco(estado), 1);
