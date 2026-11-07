@@ -252,3 +252,45 @@ export function avaliarDisponibilidadeProgressao(estado: EstadoProgressao): {
   };
   return { disponivel: true, proximoNivel, motivo: 'Progressão disponível para aplicação neste Descanso Completo.' };
 }
+
+
+/** Aplica um ganho já conquistado de Atributo, sem alterar a ficha recebida. */
+export function aplicarGanhoAtributoProgressao(
+  nivel: number,
+  atributo: string,
+  atributos: Record<string, number>,
+): Record<string, number> {
+  const validacao = validarGanhoAtributoProgressao(nivel, atributo, atributos?.[atributo]);
+  const nomes = ['forca', 'agilidade', 'vigor', 'astucia'];
+  if (!validacao.valido || !atributos || typeof atributos !== 'object' || Array.isArray(atributos)
+    || Object.getPrototypeOf(atributos) !== Object.prototype
+    || Object.keys(atributos).sort().join('|') !== [...nomes].sort().join('|')
+    || Object.values(atributos).some(valor => !Number.isSafeInteger(valor) || valor < 0 || valor > 5)) {
+    throw new Error(validacao.motivo ?? 'Atributos inválidos para progressão.');
+  }
+  return { ...atributos, [atributo]: atributos[atributo] + 1 };
+}
+
+/** Aplica um Ponto de Perícia de nível 4 ou 8, respeitando Classe, Origem e teto Mestre. */
+export function aplicarGanhoPericiaProgressao(
+  classe: string,
+  nivel: number,
+  pericia: string,
+  distribuicao: Record<string, number>,
+  periciaOrigemTreinada: string | null = null,
+): Record<string, number> {
+  if (!distribuicao || typeof distribuicao !== 'object' || Array.isArray(distribuicao)
+    || Object.getPrototypeOf(distribuicao) !== Object.prototype
+    || Object.entries(distribuicao).some(([nome, pontos]) =>
+      !Object.values(PERICIAS_CLASSE).flat().includes(nome)
+      || !Number.isSafeInteger(pontos) || pontos < 0 || pontos > 2)) {
+    throw new Error('Distribuição de Perícias inválida para progressão.');
+  }
+  if (periciaOrigemTreinada !== null && typeof periciaOrigemTreinada !== 'string') {
+    throw new Error('Treinamento de Origem inválido para progressão.');
+  }
+  const grauAtual = (distribuicao[pericia] ?? 0) + (pericia === periciaOrigemTreinada ? 1 : 0);
+  const validacao = validarGanhoPericiaProgressao(classe, nivel, pericia, grauAtual);
+  if (!validacao.valido) throw new Error(validacao.motivo ?? 'Ganho de Perícia inválido.');
+  return { ...distribuicao, [pericia]: (distribuicao[pericia] ?? 0) + 1 };
+}

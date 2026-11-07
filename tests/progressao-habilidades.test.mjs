@@ -190,3 +190,32 @@ test('validador de disponibilidade recusa estado malformado e nível máximo', (
   assert.equal(avaliarDisponibilidadeProgressao({ nivelAtual: 11 }).disponivel, false);
   assert.equal(avaliarDisponibilidadeProgressao({ nivelAtual: 10, metodo: 'missoes', autorizacaoMestre: true, missoesCompletadas: 42, descansoCompletoEmSalaDescanso: true }).proximoNivel, null);
 });
+
+
+test('aplicação de ganhos de Atributo percorre os marcos e respeita o máximo 5 sem mutar a base', async () => {
+  const source = await readFile(new URL('../src/progressaoHabilidades.ts', import.meta.url), 'utf8')
+    .replace(/^import .*;\\r?\\n/gm, '');
+  const full = pericias + '\\n' + habilidades + '\\n' + source;
+  const { outputText } = ts.transpileModule(full, { compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2022 } });
+  const api = await import('data:text/javascript;base64,' + Buffer.from(outputText).toString('base64'));
+  const base = { forca: 1, agilidade: 1, vigor: 1, astucia: 1 };
+  const ganho3 = api.aplicarGanhoAtributoProgressao(3, 'forca', base);
+  assert.deepEqual(ganho3, { forca: 2, agilidade: 1, vigor: 1, astucia: 1 });
+  assert.deepEqual(base, { forca: 1, agilidade: 1, vigor: 1, astucia: 1 });
+  assert.throws(() => api.aplicarGanhoAtributoProgressao(4, 'forca', base), /nível não concede/);
+  assert.throws(() => api.aplicarGanhoAtributoProgressao(5, 'forca', { ...base, forca: 5 }), /entre 0 e 4/);
+});
+
+test('aplicação de Ponto de Perícia respeita níveis 4 e 8, Classe, Origem e teto Mestre', async () => {
+  const source = await readFile(new URL('../src/progressaoHabilidades.ts', import.meta.url), 'utf8')
+    .replace(/^import .*;\\r?\\n/gm, '');
+  const full = pericias + '\\n' + habilidades + '\\n' + source;
+  const { outputText } = ts.transpileModule(full, { compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2022 } });
+  const api = await import('data:text/javascript;base64,' + Buffer.from(outputText).toString('base64'));
+  const base = { Luta: 0, Pontaria: 0 };
+  assert.deepEqual(api.aplicarGanhoPericiaProgressao('Agente', 4, 'Luta', base), { Luta: 1, Pontaria: 0 });
+  assert.deepEqual(api.aplicarGanhoPericiaProgressao('Agente', 4, 'Luta', { Luta: 0 }, 'Luta'), { Luta: 1 });
+  assert.throws(() => api.aplicarGanhoPericiaProgressao('Agente', 5, 'Luta', base), /não concede/);
+  assert.throws(() => api.aplicarGanhoPericiaProgressao('Agente', 4, 'Medicina', base), /Perícias da Classe/);
+  assert.throws(() => api.aplicarGanhoPericiaProgressao('Agente', 4, 'Luta', { Luta: 1 }, 'Luta'), /abaixo do grau Mestre/);
+});
