@@ -10,10 +10,11 @@ type Props = {
   saMaximo: number;
   modoDados: ModoDados;
   bloqueado: boolean;
+  origemDados?: 'local' | 'servidor';
   aoSalvar: (patch: RecursosAtuais) => Promise<boolean>;
 };
 
-export default function DescansoFichaLocal({ dados, classe, pvMaximo, saMaximo, modoDados, bloqueado, aoSalvar }: Props) {
+export default function DescansoFichaLocal({ dados, classe, pvMaximo, saMaximo, modoDados, bloqueado, origemDados = 'local', aoSalvar }: Props) {
   const [local, setLocal] = useState<LocalDescanso | ''>('');
   const [resultado, setResultado] = useState('');
   const [ocupado, setOcupado] = useState(false);
@@ -33,9 +34,9 @@ export default function DescansoFichaLocal({ dados, classe, pvMaximo, saMaximo, 
         : concluirDescansoParcial(atuais, Number(resultado), dadoVida!, pvMaximo, saMaximo);
       setOcupado(true); setErro(''); setMensagem('');
       if (!await aoSalvar(patch)) throw new Error('O armazenamento não confirmou a conclusão do Descanso.');
-      setMensagem(tipo === 'completo'
-        ? 'Descanso Completo confirmado: PV e SA restaurados; PV Temporários encerrados. BI preservada.'
-        : 'Descanso Parcial confirmado: resultado físico aplicado aos PV Atuais. SA e BI preservadas.');
+      setMensagem((origemDados === 'servidor' ? 'Servidor confirmou. ' : 'Salvo neste dispositivo. ') + (tipo === 'completo'
+        ? 'Descanso Completo: PV e SA restaurados; PV Temporários encerrados. BI preservada.'
+        : 'Descanso Parcial: resultado físico aplicado aos PV Atuais. SA e BI preservadas.'));
     } catch (e) {
       setErro(e instanceof Error ? e.message : 'Não foi possível concluir o Descanso.');
     } finally { setOcupado(false); }
