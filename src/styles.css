@@ -1080,3 +1080,25 @@ footer { margin-top:45px; border-top:1px solid #dce2df; padding-top:19px; color:
 @media(max-width:735px){
  .ficha-local-nav{left:17px;right:17px;bottom:15px;width:auto;max-width:none}
 }
+
+
+/* Tela própria do Painel do Mestre, fora do fluxo do hub de conexão. */
+.painel-mestre-shell.servidor-local-controle-mesa{
+  position:fixed;inset:0;z-index:1200;width:100vw;height:100dvh;min-height:0;
+  overflow:auto;overscroll-behavior:contain;background:var(--pm-bg);
+}
+.painel-mestre-head-actions{display:flex;align-items:center;gap:10px;margin-left:auto}
+.painel-mestre-voltar{border:1px solid #d6dadd;border-radius:8px;background:#fff;color:var(--pm-ink);padding:8px 11px;font-size:11px;font-weight:800;white-space:nowrap}
+@media(max-width:600px){
+ .painel-mestre-head-actions{align-items:flex-end;flex-direction:column;gap:6px}
+ .painel-mestre-voltar{font-size:10px;padding:7px 9px}
+}
+/* Em paisagem, a Ficha usa a tela inteira: sem moldura que imponha altura mínima. */
+@media(orientation:landscape) and (max-height:560px){
+ .ficha-local-fundo{display:flex;align-items:stretch;justify-content:stretch;width:100vw;height:100dvh;min-height:0;padding:0;overflow:hidden}
+ .ficha-local{width:100vw;max-width:none;height:100dvh;max-height:none;min-height:0;border:0;border-radius:0;box-shadow:none}
+ .ficha-local:before{display:none}
+ .ficha-local-corpo{min-height:0;padding:8px 18px calc(92px + env(safe-area-inset-bottom));}
+ .ficha-local-topo{padding:0 18px}
+ .ficha-local-nav{left:12px;right:12px;bottom:max(7px,env(safe-area-inset-bottom));width:auto;max-width:none}
+}
