@@ -228,7 +228,7 @@ export default function FichaLocal({ nome, mesa, contextoId, dados, aoFechar, ao
   const alertasCompatibilidade = [
     ...(habilidadeSelecionada && !habilidade ? ['Habilidade Básica incompatível com a Classe atual'] : []),
     ...(kitSelecionado && !kit ? ['Equipamento Inicial incompatível com a Classe atual'] : []),
-    ...(origem === 'Operário' && armaOperario && !ARMAS_OPERARIO.includes(armaOperario as never) ? ['Arma escolhida incompatível com a Origem Operário'] : []),
+    ...(origem === 'Operário' && !ARMAS_OPERARIO.includes(armaOperario as never) ? [armaOperario ? 'Arma escolhida incompatível com a Origem Operário' : 'Escolha a arma concedida pela Origem Operário'] : []),
   ];
   const itensKit = itensDoKit(classe, kitSelecionado);
   const espacosKit = espacosOcupados(itensKit);
@@ -246,6 +246,7 @@ export default function FichaLocal({ nome, mesa, contextoId, dados, aoFechar, ao
     vigor: numero(atributos.vigor),
     astucia: numero(atributos.astucia),
     origem: origem || null,
+    arma_operario: typeof ficha.armaOperario === 'string' ? ficha.armaOperario : null,
     pericia_origem_treinada: treinada || null,
     pericia_origem_extra: typeof ficha.periciaOrigemExtra === 'string' ? ficha.periciaOrigemExtra : null,
     pontos_pericia_classe: distribuicao,
