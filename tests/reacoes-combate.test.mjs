@@ -1,0 +1,62 @@
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { avaliarJanelaReacao, resolverTesteDefensivo, prepararContraAtaque } from '../src/reacoesCombate.ts';
+import { economiaAcoesInicial, consumirRecursoNormal, encerrarTurnoAcoes } from '../src/economiaAcoes.ts';
+
+test('20 natural fecha a janela defensiva, independentemente de margem ampliada', () => {
+  const janela = avaliarJanelaReacao({ resultadoAtaque: 19, dadoNaturalAtaque: 20, ataqueCorpoACorpo: true, ataqueAcertou: true, ataqueAparavel: true, gatilhoEsquivaAutorizado: true });
+  assert.equal(janela.aberta, false);
+  assert.equal(janela.podeAparar, false);
+  assert.equal(janela.podeEsquivar, false);
+});
+
+test('19 natural não fecha janela; precisa alcançar Defesa e conserva reação', () => {
+  const janela = avaliarJanelaReacao({ resultadoAtaque: 19, dadoNaturalAtaque: 19, ataqueCorpoACorpo: true, ataqueAcertou: true, ataqueAparavel: true, gatilhoEsquivaAutorizado: false });
+  assert.equal(janela.aberta, true);
+  assert.equal(janela.podeAparar, true);
+});
+
+test('Aparar só é universal contra Ataque corpo a corpo bem-sucedido e aparável', () => {
+  const base = { resultadoAtaque: 14, dadoNaturalAtaque: 14, ataqueCorpoACorpo: true, ataqueAcertou: true, ataqueAparavel: true, gatilhoEsquivaAutorizado: false };
+  assert.equal(avaliarJanelaReacao(base).podeAparar, true);
+  assert.equal(avaliarJanelaReacao({ ...base, ataqueCorpoACorpo: false }).podeAparar, false);
+  assert.equal(avaliarJanelaReacao({ ...base, ataqueAcertou: false }).podeAparar, false);
+  assert.equal(avaliarJanelaReacao({ ...base, ataqueAparavel: false }).podeAparar, false);
+});
+
+test('Esquiva exige gatilho autorizado por Habilidade ou regra', () => {
+  const janela = avaliarJanelaReacao({ resultadoAtaque: 14, dadoNaturalAtaque: 14, ataqueCorpoACorpo: false, ataqueAcertou: false, ataqueAparavel: false, gatilhoEsquivaAutorizado: true });
+  assert.equal(janela.podeEsquivar, true);
+  assert.equal(janela.podeAparar, false);
+});
+
+test('Aparar usa Luta e Esquivar usa Reflexos contra resultado do Ataque', () => {
+  assert.equal(resolverTesteDefensivo({ tipo: 'aparar', valorLuta: 5, resultadoAtaque: 14, dado1: 9 }).estado, 'sucesso');
+  assert.equal(resolverTesteDefensivo({ tipo: 'esquivar', valorReflexos: 4, resultadoAtaque: 14, dado1: 9 }).estado, 'falha');
+  assert.equal(resolverTesteDefensivo({ tipo: 'aparar', valorLuta: 5, resultadoAtaque: 14, dado1: 20 }).estado, 'critico-sucesso');
+});
+
+test('Contra-Ataque exige defesa bem-sucedida e gasta 1 SA em Manobra', () => {
+  assert.throws(() => prepararContraAtaque({ economia: economiaAcoesInicial(3), defesaBemSucedida: false, mesmaReacaoAutorizada: false }), /bem-sucedido/);
+  const resultado = prepararContraAtaque({ economia: economiaAcoesInicial(3), defesaBemSucedida: true, mesmaReacaoAutorizada: true });
+  assert.equal(resultado.economia.saAtual, 2);
+  assert.equal(resultado.economia.saGastaNaJanela, 1);
+  assert.equal(resultado.reacaoAdicionalComprada, false);
+});
+
+test('Contra-Ataque normal exige Reação; se já usada, compra Reação adicional por Esforço', () => {
+  let economia = consumirRecursoNormal(economiaAcoesInicial(3), 'reacao');
+  const resultado = prepararContraAtaque({ economia, defesaBemSucedida: true, mesmaReacaoAutorizada: false });
+  assert.equal(resultado.economia.saAtual, 1);
+  assert.equal(resultado.economia.saGastaNaJanela, 2);
+  assert.equal(resultado.reacaoAdicionalComprada, true);
+  assert.equal(resultado.custoSA, 2);
+});
+
+test('Contra-Ataque Instintivo pode usar a mesma Reação, conforme Habilidade', () => {
+  let economia = consumirRecursoNormal(economiaAcoesInicial(2), 'reacao');
+  economia = encerrarTurnoAcoes(economia);
+  const resultado = prepararContraAtaque({ economia, defesaBemSucedida: true, mesmaReacaoAutorizada: true });
+  assert.equal(resultado.economia.saAtual, 1);
+  assert.equal(resultado.economia.normaisUsados.reacao, true);
+});
