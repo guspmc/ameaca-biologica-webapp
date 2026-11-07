@@ -25,7 +25,7 @@ export default function RecursosFichaLocal({ dados, pvMaximo, saMaximo, biMaximo
   const fase = biMaximo <= 0 ? 'Indisponível até concluir a Classe' : recursos.biAtual >= biMaximo ? 'Colapso Viral' : 'Fase ' + (Math.floor(recursos.biAtual * 5 / biMaximo) + 1);
   const salvamento = useSalvamentoEditorLocal({
     autoSalvar, valor: recursos, chave: JSON.stringify(recursos), sujo, setSujo, aoSalvar, aoAlterarPendencia,
-    mensagemSucesso: 'Recursos salvos e confirmados pelo servidor.',
+    mensagemSucesso: 'Recursos salvos neste dispositivo.',
     validar: atual => recursosValidos(atual, pvMaximo, saMaximo)
       ? null
       : 'Revise os valores: PV e SA Atuais não podem exceder seus máximos.',
@@ -88,7 +88,7 @@ export default function RecursosFichaLocal({ dados, pvMaximo, saMaximo, biMaximo
     <p className="ficha-local-legenda">BI começa em 0, não aumenta sozinha e só diminui por fonte expressa. Alcançar ou ultrapassar BI Máxima sinaliza Colapso Viral; esta tela não inicia Reanimação ou transformação.</p>
     {erroOperacao && <p className="offline-erro" role="alert">{erroOperacao}</p>}
     {autoSalvar
-      ? <AutoSaveStatusLocal estado={salvamento.autosave.estado} erro={salvamento.autosave.erro} mensagemSucesso="Recursos salvos e confirmados pelo servidor." aoTentarNovamente={salvamento.autosave.tentarNovamente} />
+      ? <AutoSaveStatusLocal estado={salvamento.autosave.estado} erro={salvamento.autosave.erro} mensagemSucesso="Recursos salvos neste dispositivo." aoTentarNovamente={salvamento.autosave.tentarNovamente} />
       : <>
           {salvamento.erroManual && <p className="offline-erro" role="alert">{salvamento.erroManual}</p>}
           {salvamento.sucessoManual && <p className="offline-status" role="status">{salvamento.sucessoManual}</p>}
