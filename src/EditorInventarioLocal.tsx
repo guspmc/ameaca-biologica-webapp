@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { opcoesEquipamento } from './equipamento';
 import PreviaCompras from './PreviaCompras';
 import AutoSaveStatusLocal from './AutoSaveStatusLocal';
@@ -22,6 +22,14 @@ export default function EditorInventarioLocal({ classe, capacidade, kitInicial, 
   const [plano, setPlano] = useState(comprasIniciais);
   const [revisao, setRevisao] = useState(revisaoCompras);
   const [sujo, setSujo] = useState(false);
+  const chaveInicial = JSON.stringify([kitInicial, comprasIniciais, revisaoCompras]);
+  useEffect(() => {
+    if (sujo) return;
+    setKit(kitInicial);
+    setPlano(comprasIniciais);
+    setRevisao(revisaoCompras);
+    setPrevisaoPendente(false);
+  }, [chaveInicial, sujo]);
   const [previsaoPendente, setPrevisaoPendente] = useState(false);
   const opcoes = opcoesEquipamento(classe);
   const valor: Dados = {

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import AutoSaveStatusLocal from './AutoSaveStatusLocal';
 import { useSalvamentoEditorLocal } from './useSalvamentoEditorLocal';
 
@@ -31,6 +31,12 @@ export default function IdentidadeLocal({ nome: nomeInicial, identidade: identid
     Object.fromEntries(CAMPOS.map(campo => [campo.id, typeof identidadeInicial[campo.id] === 'string' ? identidadeInicial[campo.id] : '']))
   );
   const [sujo, setSujo] = useState(false);
+  const chaveInicial = JSON.stringify([nomeInicial, identidadeInicial]);
+  useEffect(() => {
+    if (sujo) return;
+    setNome(nomeInicial);
+    setDados(Object.fromEntries(CAMPOS.map(campo => [campo.id, typeof identidadeInicial[campo.id] === 'string' ? identidadeInicial[campo.id] : ''])));
+  }, [chaveInicial, sujo]);
   const identidade = { ...identidadeInicial, ...Object.fromEntries(CAMPOS.map(campo => [campo.id, (dados[campo.id] ?? '').trim()])) };
   const valor = { nome: nome.trim(), identidade };
   const chave = JSON.stringify({ nome, dados });

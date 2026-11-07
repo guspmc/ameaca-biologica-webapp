@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ajustarBI, ajustarSA, aplicarDanoPV, curarPV, definirPVTemporarios, recursosIniciais, recursosValidos, type RecursosAtuais } from './recursosFicha';
 import AutoSaveStatusLocal from './AutoSaveStatusLocal';
 import { useSalvamentoEditorLocal } from './useSalvamentoEditorLocal';
@@ -16,9 +16,16 @@ type Props = {
 };
 
 export default function RecursosFichaLocal({ dados, pvMaximo, saMaximo, biMaximo, bloquearPV = false, aoSalvar, aoAlterarPendencia, autoSalvar = false, origemDados = 'local' }: Props) {
-  const [recursos, setRecursos] = useState(() => recursosIniciais(dados, pvMaximo, saMaximo));
+  const recursosExternos = recursosIniciais(dados, pvMaximo, saMaximo);
+  const chaveInicial = JSON.stringify(recursosExternos);
+  const [recursos, setRecursos] = useState(recursosExternos);
   const [anterior, setAnterior] = useState<RecursosAtuais | null>(null);
   const [sujo, setSujo] = useState(false);
+  useEffect(() => {
+    if (sujo) return;
+    setRecursos(recursosExternos);
+    setAnterior(null);
+  }, [chaveInicial, sujo]);
   const [erroOperacao, setErroOperacao] = useState('');
   const [dano, setDano] = useState('1');
   const [temporarios, setTemporarios] = useState('0');

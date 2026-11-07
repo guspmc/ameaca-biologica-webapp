@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   comprarRecursoPorEsforco, consumirAcaoCompleta, consumirInteracaoGratuita,
   consumirRecursoNormal, economiaAcoesInicial, encerrarTurnoAcoes,
@@ -28,12 +28,19 @@ function carregarEstado(dados: Record<string, unknown>, saAtual: number): { esta
 }
 
 export default function PainelAcoesLocal({ dados, saAtual, aoSalvar, origemDados = 'local' }: Props) {
-  const [inicial] = useState(() => carregarEstado(dados, saAtual));
-  const [estado, setEstado] = useState(inicial.estado);
+  const estadoInicial = carregarEstado(dados, saAtual);
+  const chaveInicial = JSON.stringify([dados.economiaAcoes ?? null, saAtual]);
+  const [inicial, setInicial] = useState(estadoInicial);
+  const [estado, setEstado] = useState(estadoInicial.estado);
   const [salvando, setSalvando] = useState(false);
   const [erro, setErro] = useState('');
   const [confirmacao, setConfirmacao] = useState('');
   const bloqueioOperacao = useRef(false);
+  useEffect(() => {
+    if (salvando) return;
+    setInicial(estadoInicial);
+    setEstado(estadoInicial.estado);
+  }, [chaveInicial, salvando]);
 
   async function aplicar(operacao: (atual: EstadoEconomiaAcoes) => EstadoEconomiaAcoes) {
     if (!inicial.valido || salvando || bloqueioOperacao.current) return;

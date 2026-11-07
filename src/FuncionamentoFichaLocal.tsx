@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { AUTOMACOES, automacoesEfetivas, normalizarConfiguracaoFuncionamento, type ConfiguracaoFuncionamento, type ConfiguracaoFuncionamentoCompleta, type ModoFuncionamento, type ModoDados, type VisibilidadeRolagem } from './funcionamentoFicha';
 import AutoSaveStatusLocal from './AutoSaveStatusLocal';
 import { useSalvamentoEditorLocal } from './useSalvamentoEditorLocal';
@@ -14,6 +14,10 @@ type Props = {
 export default function FuncionamentoFichaLocal({ inicial, aoSalvar, aoAlterarPendencia, autoSalvar = false, origemDados = 'local' }: Props) {
   const [config, setConfig] = useState(() => normalizarConfiguracaoFuncionamento(inicial));
   const [sujo, setSujo] = useState(false);
+  const chaveInicial = JSON.stringify(inicial ?? null);
+  useEffect(() => {
+    if (!sujo) setConfig(normalizarConfiguracaoFuncionamento(inicial));
+  }, [chaveInicial, sujo]);
   const valor = normalizarConfiguracaoFuncionamento(config);
   const salvamento = useSalvamentoEditorLocal({
     autoSalvar, valor, chave: JSON.stringify(config), sujo, setSujo, aoSalvar, aoAlterarPendencia,

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ORIGENS } from './origens';
 import { ARMAS_OPERARIO } from './armaOperario';
 import { HABILIDADES_BASICAS } from './habilidades';
@@ -11,6 +11,10 @@ type Props = { iniciais: Dados; aoSalvar: (dados: Dados) => Promise<boolean>; ao
 export default function EditorCaracteristicasLocal({ iniciais, aoSalvar, aoAlterarPendencia, mensagemSucesso, autoSalvar = false }: Props) {
   const [dados, setDados] = useState(iniciais);
   const [sujo, setSujo] = useState(false);
+  const chaveInicial = JSON.stringify(iniciais);
+  useEffect(() => {
+    if (!sujo) setDados(iniciais);
+  }, [chaveInicial, sujo]);
   const habilidades = HABILIDADES_BASICAS.filter(item => item.classe === dados.classe);
   const salvamento = useSalvamentoEditorLocal({
     autoSalvar, valor: dados, chave: JSON.stringify(dados), sujo, setSujo, aoSalvar, aoAlterarPendencia,

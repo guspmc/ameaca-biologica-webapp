@@ -29,7 +29,8 @@ test('preferências de funcionamento sinalizam pendência e só confirmam após 
   assert.match(fonte, /autoSalvar/);
   const hook = await ler('useSalvamentoEditorLocal.ts');
   assert.match(hook, /aoAlterarPendencia\(false\)/);
-  assert.match(fonte, /Preferências salvas e confirmadas/);
+  assert.match(fonte, /Preferências confirmadas pelo servidor\./);
+  assert.match(fonte, /Preferências salvas neste dispositivo\./);
   assert.match(fonte, /value=\{config\.modoDados\}/);
   assert.match(fonte, /value=\{config\.visibilidadeRolagem\}/);
   assert.match(fonte, /value="fisicos"/);
@@ -137,7 +138,12 @@ test('lista bloqueia abertura, exportacao e selecao de backup enquanto uma opera
 });
 
 
-test('recarregar a ficha remonta o editor de Identificação com os dados externos atualizados', async () => {
+test('recarregar a ficha sincroniza Identificação sem desmontar o editor', async () => {
   const fonte = await ler('FichaLocal.tsx');
-  assert.match(fonte, /<IdentidadeLocal autoSalvar=\{autoSalvar\} key=\{JSON\.stringify\(\[nome, ficha\.identidade \?\? \{\}\]\)\}/);
+  const identidade = await ler('IdentidadeLocal.tsx');
+  const tag = fonte.match(/<IdentidadeLocal\b[\s\S]*?\/>/)?.[0] ?? '';
+  assert.ok(tag);
+  assert.doesNotMatch(tag, /\bkey=/);
+  assert.match(identidade, /useEffect/);
+  assert.match(identidade, /if \(sujo\) return/);
 });

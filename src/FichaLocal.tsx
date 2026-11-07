@@ -329,7 +329,6 @@ export default function FichaLocal({ nome, mesa, contextoId, dados, aoFechar, ao
         </div>
 
         <RecursosFichaLocal origemDados={origemDados} autoSalvar={autoSalvar}
-          key={JSON.stringify([ficha.pvAtual ?? null, ficha.pvTemporarios ?? null, ficha.saAtual ?? null, ficha.biAtual ?? null])}
           dados={dados}
           pvMaximo={pv}
           saMaximo={sa}
@@ -367,9 +366,9 @@ export default function FichaLocal({ nome, mesa, contextoId, dados, aoFechar, ao
           {alertasCompatibilidade.length > 0 && <p className="ficha-local-aviso" role="alert">Revisão da criação necessária: {alertasCompatibilidade.join("; ")}. As escolhas foram preservadas; corrija os itens incompatíveis antes de confirmar a criação.</p>}
           <details id="ficha-local-editor-caracteristicas" className="ficha-local-editor-detalhe" open data-ficha-editor>
             <summary><span>Editar características e Habilidade Básica</span><small>Classe · Origem · Habilidade Básica</small></summary>
-            <EditorCaracteristicasLocal autoSalvar={autoSalvar} key={JSON.stringify([classe, origem, ficha.armaOperario, ficha.habilidadeBasica])} iniciais={{ classe, origem, armaOperario: typeof ficha.armaOperario === 'string' ? ficha.armaOperario : '', habilidadeBasica: typeof ficha.habilidadeBasica === 'string' ? ficha.habilidadeBasica : '' }} aoSalvar={aoSalvarCaracteristicas} aoAlterarPendencia={pendente => registrarPendencia('Características', pendente)} mensagemSucesso={origemDados === 'servidor' ? 'Características confirmadas pelo servidor.' : undefined} />
+            <EditorCaracteristicasLocal autoSalvar={autoSalvar} iniciais={{ classe, origem, armaOperario: typeof ficha.armaOperario === 'string' ? ficha.armaOperario : '', habilidadeBasica: typeof ficha.habilidadeBasica === 'string' ? ficha.habilidadeBasica : '' }} aoSalvar={aoSalvarCaracteristicas} aoAlterarPendencia={pendente => registrarPendencia('Características', pendente)} mensagemSucesso={origemDados === 'servidor' ? 'Características confirmadas pelo servidor.' : undefined} />
           </details>
-          {aoSalvarIdentidade && <IdentidadeLocal autoSalvar={autoSalvar} key={JSON.stringify([nome, ficha.identidade ?? {}])} nome={nome} identidade={(ficha.identidade as Record<string, string>) ?? {}} aoSalvar={aoSalvarIdentidade} aoAlterarPendencia={pendente => registrarPendencia('Identificação', pendente)} mensagemSucesso={origemDados === 'servidor' ? 'Identificação confirmada pelo servidor.' : undefined} />}
+          {aoSalvarIdentidade && <IdentidadeLocal autoSalvar={autoSalvar} nome={nome} identidade={(ficha.identidade as Record<string, string>) ?? {}} aoSalvar={aoSalvarIdentidade} aoAlterarPendencia={pendente => registrarPendencia('Identificação', pendente)} mensagemSucesso={origemDados === 'servidor' ? 'Identificação confirmada pelo servidor.' : undefined} />}
           <div className="ficha-local-fatos-rapidos">
             <div><small>ORIGEM</small><strong>{termo(origem || 'Pendente')}</strong><span>{dadosOrigem?.beneficio ?? 'Benefício ainda não definido.'}</span></div>
             <div><small>CLASSE</small><strong>{classePersonagem(classe || null, genero)}</strong><span>{ramo.length ? 'Ramos disponíveis: ' + ramo.join(' · ') : 'Ramos ainda não definidos.'}</span></div>
@@ -399,7 +398,7 @@ export default function FichaLocal({ nome, mesa, contextoId, dados, aoFechar, ao
           <div className="ficha-local-titulo-secao"><h2><span>02</span> Atributos e Perícias</h2><button type="button" className="ficha-local-editar-secao" onClick={() => abrirEditor('pericias')}>Editar seção ↗</button></div>
           <details id="ficha-local-editor-pericias" className="ficha-local-editor-detalhe" data-ficha-editor>
             <summary><span>Editar Atributos e distribuição de Perícias</span><small>Valores · Treinamento · Pontos de Perícia</small></summary>
-            <EditorAtributosPericiasLocal autoSalvar={autoSalvar} key={JSON.stringify([classe, origem, atributos, treinada, extra, distribuicao])} classe={classe} origem={origem} atributosIniciais={atributos} treinadaInicial={treinada} extraInicial={extra} distribuicaoInicial={distribuicao} aoSalvar={aoSalvarAtributosPericias} aoAlterarPendencia={pendente => registrarPendencia('Atributos e Perícias', pendente)} mensagemSucesso={origemDados === 'servidor' ? 'Atributos e Perícias confirmados pelo servidor.' : undefined} />
+            <EditorAtributosPericiasLocal autoSalvar={autoSalvar} classe={classe} origem={origem} atributosIniciais={atributos} treinadaInicial={treinada} extraInicial={extra} distribuicaoInicial={distribuicao} aoSalvar={aoSalvarAtributosPericias} aoAlterarPendencia={pendente => registrarPendencia('Atributos e Perícias', pendente)} mensagemSucesso={origemDados === 'servidor' ? 'Atributos e Perícias confirmados pelo servidor.' : undefined} />
           </details>
           <div className="ficha-local-atributos">
             {ATRIBUTOS.map(item => <div key={item.chave}><small>{item.sigla}</small><strong>{numero(atributos[item.chave])}</strong><span>{item.nome}</span></div>)}
@@ -447,7 +446,7 @@ export default function FichaLocal({ nome, mesa, contextoId, dados, aoFechar, ao
           <p className="ficha-local-legenda">A BI começa em 0 e não progride sozinha. Alterações de BI são registradas expressamente no painel de Recursos; este resumo apenas calcula os modificadores da fase e não os aplica automaticamente a movimento, ataques ou dano, nem inicia Reanimação.</p>
 
           <h3 className="ficha-local-subtitulo">Combate ativo</h3>
-          <PainelAcoesLocal key={JSON.stringify([ficha.economiaAcoes ?? null, recursosAtuais.saAtual])} dados={dados} saAtual={recursosAtuais.saAtual} origemDados={origemDados} aoSalvar={aoSalvarRecursos} />
+          <PainelAcoesLocal dados={dados} saAtual={recursosAtuais.saAtual} origemDados={origemDados} aoSalvar={aoSalvarRecursos} />
           <div className="ficha-local-grade">
             <div><small>INICIATIVA</small><strong>A integrar</strong><p>O controle principal dos turnos e da Iniciativa permanece com o Mestre; a ficha oferece apenas acompanhamento opcional das ações do jogador.</p></div>
             <div><small>CONDIÇÕES E EFEITOS</small><strong>A integrar</strong><p>Esta ficha ainda não registra nem aplica Condições ou efeitos temporários.</p></div>
@@ -460,7 +459,7 @@ export default function FichaLocal({ nome, mesa, contextoId, dados, aoFechar, ao
           <div className="ficha-local-titulo-secao"><h2><span>04</span> Inventário</h2><button type="button" className="ficha-local-editar-secao" onClick={() => abrirEditor('inventario')}>Editar seção ↗</button></div>
           <details id="ficha-local-editor-inventario" className="ficha-local-editor-detalhe" data-ficha-editor open>
             <summary><span>Editar Equipamento Inicial e compras</span><small>Equipamento · Catálogo · Capacidade</small></summary>
-            <EditorInventarioLocal autoSalvar={autoSalvar} key={JSON.stringify([classe, kitSelecionado, ficha.comprasIniciais, ficha.revisaoCompras, capacidade])} classe={classe} capacidade={capacidade} kitInicial={kitSelecionado} comprasIniciais={(ficha.comprasIniciais as Record<string, number>) ?? {}} revisaoCompras={numero(ficha.revisaoCompras)} aoSalvar={aoSalvarInventario} aoAlterarPendencia={pendente => registrarPendencia('Inventário', pendente)} mensagemSucesso={origemDados === 'servidor' ? 'Planejamento do inventário confirmado pelo servidor.' : undefined} />
+            <EditorInventarioLocal autoSalvar={autoSalvar} classe={classe} capacidade={capacidade} kitInicial={kitSelecionado} comprasIniciais={(ficha.comprasIniciais as Record<string, number>) ?? {}} revisaoCompras={numero(ficha.revisaoCompras)} aoSalvar={aoSalvarInventario} aoAlterarPendencia={pendente => registrarPendencia('Inventário', pendente)} mensagemSucesso={origemDados === 'servidor' ? 'Planejamento do inventário confirmado pelo servidor.' : undefined} />
           </details>
           <div className="ficha-local-inventario-topo"><span>CAPACIDADE BASE</span><strong>{capacidade} Espaços</strong></div>
           <div className="ficha-local-itens">
@@ -471,7 +470,6 @@ export default function FichaLocal({ nome, mesa, contextoId, dados, aoFechar, ao
           </div>
           <p className="ficha-local-legenda">A capacidade considera 4 + FOR{origem === 'Mochileiro' ? ' + 1 de Mochileiro' : ''} = {capacidade} Espaços. O conjunto selecionado ocupa {inventarioPlanejado?.ocupados ?? espacosKit} de {capacidade} Espaços. Os itens aparecem em estado inicial guardado/não equipado; operações de Inventário ainda não estão integradas.</p>
         <FuncionamentoFichaLocal origemDados={origemDados} autoSalvar={autoSalvar}
-          key={JSON.stringify(ficha.configuracaoFuncionamento ?? null)}
           inicial={ficha.configuracaoFuncionamento as ConfiguracaoFuncionamento | undefined}
           aoSalvar={aoSalvarFuncionamento}
           aoAlterarPendencia={pendente => registrarPendencia('Funcionamento', pendente)}

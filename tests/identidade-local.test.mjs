@@ -24,7 +24,10 @@ test('o editor narrativo mantém os campos opcionais e envia nome e identidade n
   assert.match(editor, /useSalvamentoEditorLocal/);
   assert.match(editor, /aoSalvar,/);
   assert.match(ficha, /<IdentidadeLocal/);
-  assert.match(ficha, /<IdentidadeLocal autoSalvar=\{autoSalvar\} key=\{JSON\.stringify\(\[nome, ficha\.identidade \?\? \{\}\]\)\}/);
+  const tag = ficha.match(/<IdentidadeLocal\b[\s\S]*?\/>/)?.[0] ?? '';
+  assert.ok(tag);
+  assert.doesNotMatch(tag, /\bkey=/);
+  assert.match(ui, /useEffect/);
   assert.match(app, /aoSalvarIdentidade=\{\(\{ nome, identidade \}\) => salvarDados\(\{ identidade \}, nome\)\}/);
   assert.match(storage, /nome: nomeAtualizado\?\.trim\(\) \|\| atual\.nome/);
 });

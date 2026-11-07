@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import type { AtributosIniciais } from './atributosCriacao';
 import { pontosRestantesAtributos } from './atributosCriacao';
 import { NOMES_PERICIAS, periciasPermitidasNaCriacao, pontosGastosPericias } from './periciasCriacao';
@@ -26,6 +26,14 @@ export default function EditorAtributosPericias(props: Props) {
   const [extra, setExtra] = useState(props.extraInicial);
   const [distribuicao, setDistribuicao] = useState(props.distribuicaoInicial);
   const [sujo, setSujo] = useState(false);
+  const chaveInicial = JSON.stringify([props.classe, props.origem, props.atributosIniciais, props.treinadaInicial, props.extraInicial, props.distribuicaoInicial]);
+  useEffect(() => {
+    if (sujo) return;
+    setAtributos(props.atributosIniciais);
+    setTreinada(props.treinadaInicial);
+    setExtra(props.extraInicial);
+    setDistribuicao(props.distribuicaoInicial);
+  }, [chaveInicial, sujo]);
   const payload: Dados = {
     atributos,
     periciaOrigemTreinada: treinada,
