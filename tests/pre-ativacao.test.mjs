@@ -2,7 +2,7 @@ import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 import ts from 'typescript';
-const files=['origens','habilidades','pericias','equipamento','textoPersonagem','comprasIniciais','conferenciaCriacao','funcionamentoFicha','inventarioCriacao','preAtivacao'];
+const files=['origens','habilidades','pericias','classesFicha','equipamento','textoPersonagem','armaOperario','comprasIniciais','derivadosCriacao','conferenciaCriacao','funcionamentoFicha','inventarioCriacao','preAtivacao'];
 const source=(await Promise.all(files.map(f=>readFile(new URL('../src/'+f+'.ts',import.meta.url),'utf8')))).map(s=>s.replace(/^import .*;\r?$/gm,'')).join('\n');
 const {outputText}=ts.transpileModule(source,{compilerOptions:{module:ts.ModuleKind.ESNext,target:ts.ScriptTarget.ES2022}});
 const {avaliarPreAtivacao:avaliar,configuracaoInicial}=await import('data:text/javascript;base64,'+Buffer.from(outputText).toString('base64'));
