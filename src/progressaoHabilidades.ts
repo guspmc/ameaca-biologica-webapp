@@ -56,6 +56,9 @@ export const HABILIDADES_PROGRESSAO: HabilidadeProgressao[] = [
 export type EscolhaHabilidadeProgressao = { nivel: number; habilidadeId: string };
 export type PendenciaProgressao = { nivel: number; grau: GrauHabilidade; motivo: string };
 
+const CLASSES_PROGRESSAO = ['Agente', 'Autodidata', 'Operador'] as const;
+const nivelValido = (nivel: number) => Number.isInteger(nivel) && nivel >= 1 && nivel <= 10;
+
 const GRAUS_POR_NIVEL: Record<number, GrauHabilidade> = {
   1: 'basica', 2: 'basica', 4: 'avancada', 6: 'avancada', 8: 'superior', 10: 'avassaladora',
 };
@@ -78,6 +81,9 @@ export function validarProgressaoHabilidades(
   nivel: number,
   escolhas: EscolhaHabilidadeProgressao[],
 ): { valida: boolean; pendencias: PendenciaProgressao[] } {
+  if (!CLASSES_PROGRESSAO.includes(classe as typeof CLASSES_PROGRESSAO[number]) || !nivelValido(nivel)) {
+    return { valida: false, pendencias: [{ nivel: nivelValido(nivel) ? nivel : 1, grau: 'basica', motivo: 'Classe ou nível de progressão inválido.' }] };
+  }
   const ganhos = ganhosProgressaoAte(nivel);
   const pendencias: PendenciaProgressao[] = [];
   const esperados = ganhos.habilidades;
@@ -92,6 +98,7 @@ export function validarProgressaoHabilidades(
 
   for (const escolha of escolhas) {
     if (!escolha || typeof escolha !== 'object' || Array.isArray(escolha)
+      || (Object.getPrototypeOf(escolha) !== Object.prototype && Object.getPrototypeOf(escolha) !== null)
       || Object.keys(escolha).sort().join('|') !== 'habilidadeId|nivel'
       || !Number.isInteger(escolha.nivel) || !esperados.some(g => g.nivel === escolha.nivel)
       || typeof escolha.habilidadeId !== 'string' || porNivel.has(escolha.nivel)) {
@@ -147,6 +154,7 @@ export function validarGanhoAtributoProgressao(
   atributo: string,
   valorAtual: number,
 ): ResultadoGanhoProgressao {
+  if (!nivelValido(nivel)) return { valido: false, motivo: 'Nível de progressão inválido.' };
   const ganhos = ganhosProgressaoAte(nivel);
   if (!ganhos.atributos.includes(nivel)) return { valido: false, motivo: 'Este nível não concede aumento de Atributo.' };
   if (!['forca', 'agilidade', 'vigor', 'astucia'].includes(atributo)) return { valido: false, motivo: 'Atributo desconhecido.' };
@@ -163,6 +171,8 @@ export function validarGanhoPericiaProgressao(
   pericia: string,
   grauAtual: number,
 ): ResultadoGanhoProgressao {
+  if (!nivelValido(nivel)) return { valido: false, motivo: 'Nível de progressão inválido.' };
+  if (!CLASSES_PROGRESSAO.includes(classe as typeof CLASSES_PROGRESSAO[number])) return { valido: false, motivo: 'Classe inválida.' };
   const ganhos = ganhosProgressaoAte(nivel);
   if (!ganhos.pontosPericia.includes(nivel)) return { valido: false, motivo: 'Este nível não concede Ponto de Perícia.' };
   if (!(PERICIAS_CLASSE[classe] ?? []).includes(pericia)) return { valido: false, motivo: 'A progressão só permite Perícias da Classe.' };
