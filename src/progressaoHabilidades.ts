@@ -81,10 +81,17 @@ export function validarProgressaoHabilidades(
   const pendencias: PendenciaProgressao[] = [];
   const esperados = ganhos.habilidades;
   const porNivel = new Map<number, string>();
-  let formatoValido = Array.isArray(escolhas);
+  if (!Array.isArray(escolhas)) {
+    return {
+      valida: false,
+      pendencias: esperados.map(g => ({ nivel: g.nivel, grau: g.grau, motivo: 'Registro de escolhas inválido.' })),
+    };
+  }
+  let formatoValido = true;
 
   for (const escolha of escolhas) {
-    if (!Number.isInteger(escolha.nivel) || !esperados.some(g => g.nivel === escolha.nivel)
+    if (!escolha || typeof escolha !== 'object'
+      || !Number.isInteger(escolha.nivel) || !esperados.some(g => g.nivel === escolha.nivel)
       || typeof escolha.habilidadeId !== 'string' || porNivel.has(escolha.nivel)) {
       formatoValido = false;
       continue;
