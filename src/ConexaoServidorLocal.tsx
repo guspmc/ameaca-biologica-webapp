@@ -1028,7 +1028,7 @@ export default function ConexaoServidorLocal() {
             </div>
             {carregandoDadosIniciais ? <p className="servidor-local-vazio" role="status">Carregando suas Mesas, participantes e permissões...</p> : mesas.length ? <ul className="servidor-local-lista-mesas">
               {mesas.map(mesa => <li key={mesa.id}>
-                <div><strong>{mesa.name}</strong><small>Criada em {new Intl.DateTimeFormat('pt-BR', { dateStyle: 'short' }).format(new Date(mesa.createdAt))}</small></div>
+                <div><strong>{mesa.name} · Nível {mesa.maxLevel}</strong><small>Criada em {new Intl.DateTimeFormat('pt-BR', { dateStyle: 'short' }).format(new Date(mesa.createdAt))}</small></div>
                 <span className={mesa.role === 'mestre' ? 'papel-mestre' : 'papel-jogador'}>{mesa.role === 'mestre' ? 'MESTRE' : 'JOGADOR'}</span>
                 {mesa.role === 'mestre' && <button className="botao-claro" type="button" onClick={() => setPainelMestreAberto(mesa.id)}>Abrir Painel do Mestre</button>}
               </li>)}
