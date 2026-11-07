@@ -7,14 +7,14 @@ test('recursos normais são únicos por turno e renovam no início do próximo t
   for (const recurso of ['acao', 'movimento', 'acaoBonus', 'reacao']) estado = consumirRecursoNormal(estado, recurso);
   assert.throws(() => consumirRecursoNormal(estado, 'acao'), /já foi utilizado/);
   estado = iniciarTurnoAcoes(estado);
-  assert.deepEqual(estado.usados, { acao: 0, movimento: 0, acaoBonus: 0, reacao: 0 });
+  assert.deepEqual(estado.normaisUsados, { acao: false, movimento: false, acaoBonus: false, reacao: false });
 });
 
-test('Ação Completa consome Ação e Movimento em conjunto', () => {
+test('Ação Completa consome Ação e Movimento normais em conjunto', () => {
   const estado = consumirAcaoCompleta(economiaAcoesInicial(3));
-  assert.equal(estado.usados.acao, 1);
-  assert.equal(estado.usados.movimento, 1);
-  assert.throws(() => consumirAcaoCompleta(estado), /Ação e Movimento disponíveis/);
+  assert.equal(estado.normaisUsados.acao, true);
+  assert.equal(estado.normaisUsados.movimento, true);
+  assert.throws(() => consumirAcaoCompleta(estado), /Ação e Movimento normais disponíveis/);
 });
 
 test('Interação Gratuita é paralela e não pode ser comprada por Esforço', () => {
@@ -33,6 +33,13 @@ test('custos de Esforço são 1 SA para Movimento, Ação Bônus e Reação e 2 
   assert.equal(saNaJanelaEsforco(estado), 3);
   assert.throws(() => comprarRecursoPorEsforco(estado, 'acao'), /limite de 3 SA/);
   assert.equal(comprarRecursoPorEsforco(economiaAcoesInicial(2), 'acao').saAtual, 0);
+});
+
+test('comprar um recurso por Esforço não consome seu uso normal', () => {
+  let estado = comprarRecursoPorEsforco(economiaAcoesInicial(4), 'acao');
+  estado = consumirRecursoNormal(estado, 'acao');
+  assert.equal(estado.comprasEsforco.acao, 1);
+  assert.equal(estado.normaisUsados.acao, true);
 });
 
 test('Manobras também entram no limite de 3 SA da janela', () => {
