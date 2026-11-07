@@ -39,7 +39,7 @@ function validarEstado(estado: EstadoEconomiaAcoes): void {
     || !estado.normaisUsados || Object.keys(estado.normaisUsados).sort().join('|') !== chavesRecursos.sort().join('|')
     || !estado.comprasEsforco || Object.keys(estado.comprasEsforco).sort().join('|') !== chavesRecursos.sort().join('|')
     || !Number.isSafeInteger(estado.saAtual) || estado.saAtual < 0
-    || !Number.isSafeInteger(estado.saGastaNaJanela) || estado.saGastaNaJanela < 0
+    || !Number.isSafeInteger(estado.saGastaNaJanela) || estado.saGastaNaJanela < 0 || estado.saGastaNaJanela > LIMITE_SA_JANELA_ESFORCO
     || !estado.normaisUsados || RECURSOS.some(r => typeof estado.normaisUsados[r] !== 'boolean')
     || !estado.comprasEsforco || RECURSOS.some(r => !Number.isSafeInteger(estado.comprasEsforco[r]) || estado.comprasEsforco[r] < 0)
     || typeof estado.interacaoGratuitaUsada !== 'boolean' || typeof estado.turnoEmAndamento !== 'boolean') throw new Error('Estado da economia de ações inválido.');
