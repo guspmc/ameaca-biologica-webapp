@@ -90,6 +90,18 @@ export default function FichaOfflineApp() {
       }
       setStatus('Salvando no dispositivo…'); setErro('');
       try {
+        if ('economiaAcoes' in patchEfetivo) {
+          if (!estadoEconomiaAcoesValido(patchEfetivo.economiaAcoes)
+            || patchEfetivo.economiaAcoes.saAtual !== patchEfetivo.saAtual) {
+            throw new Error('O saldo de SA e a Economia de Ações não correspondem. Reabra a ficha antes de tentar novamente.');
+          }
+          const saldoAnterior = estadoEconomiaAcoesValido(base.dados.economiaAcoes)
+            ? base.dados.economiaAcoes.saAtual : base.dados.saAtual;
+          if (typeof saldoAnterior === 'number' && patchEfetivo.economiaAcoes.saAtual > saldoAnterior
+            && estadoEconomiaAcoesValido(base.dados.economiaAcoes)) {
+            throw new Error('A Economia de Ações foi alterada por outra seção. Reabra a ficha para atualizar o saldo antes de registrar uma ação.');
+          }
+        }
         const atualizado = await salvarPatchPersonagem(base.id, patchEfetivo, base.dados, nomeAtualizado, base.nome, base.geracao);
         for (const campo of Object.keys(patchEfetivo)) camposPendentesRef.current.delete(campo);
         const chavesCaracteristicas = ['classe', 'origem', 'armaOperario', 'habilidadeBasica'];
