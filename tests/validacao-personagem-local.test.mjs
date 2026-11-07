@@ -224,3 +224,48 @@ test('valida usos limitados a Descanso Completo sem aceitar estados desconhecido
     usosDescansoCompleto: { 'origem:academico': false },
   })), false);
 });
+
+\ntest('valida planejamento parcial e completo de Habilidades para criação em Nível superior', () => {
+  const planoParcial = {
+    versaoModelo: 1, estadoFicha: 'rascunho', classe: 'Agente',
+    planejamentoCriacao: {
+      nivelAlvo: 4,
+      habilidades: [
+        { nivel: 1, habilidadeId: 'anatomia-de-combate' },
+        { nivel: 2, habilidadeId: 'nao-vai-escapar' },
+      ],
+    },
+  };
+  assert.equal(validarPersonagemLocal(base(planoParcial)), true);
+  const planoCompleto = {
+    ...planoParcial,
+    planejamentoCriacao: {
+      nivelAlvo: 4,
+      habilidades: [
+        { nivel: 1, habilidadeId: 'anatomia-de-combate' },
+        { nivel: 2, habilidadeId: 'nao-vai-escapar' },
+        { nivel: 4, habilidadeId: 'finalizacao-a-distancia' },
+      ],
+    },
+  };
+  assert.equal(validarPersonagemLocal(base(planoCompleto)), true);
+  assert.equal(validarPersonagemLocal(base({
+    ...planoCompleto,
+    planejamentoCriacao: { ...planoCompleto.planejamentoCriacao, habilidades: [
+      { nivel: 1, habilidadeId: 'anatomia-de-combate' },
+      { nivel: 2, habilidadeId: 'nao-vai-escapar' },
+      { nivel: 4, habilidadeId: 'retaliacao' },
+    ] },
+  })), false);
+  assert.equal(validarPersonagemLocal(base({
+    ...planoCompleto,
+    planejamentoCriacao: { ...planoCompleto.planejamentoCriacao, habilidades: [
+      ...planoCompleto.planejamentoCriacao.habilidades,
+      { nivel: 4, habilidadeId: 'finalizacao-a-distancia' },
+    ] },
+  })), false);
+  assert.equal(validarPersonagemLocal(base({
+    ...planoCompleto,
+    planejamentoCriacao: { ...planoCompleto.planejamentoCriacao, nivelAlvo: 11 },
+  })), false);
+});
