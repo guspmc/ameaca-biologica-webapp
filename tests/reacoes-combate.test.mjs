@@ -142,7 +142,7 @@ test('Contra-Ataque fora do próprio turno usa Reação normal disponível antes
   assert.equal(resultado.custoSA, 1);
 });
 
-test('registro de Reação e Contra-Ataque rejeita economia malformada sem TypeError acidental', () => {
+test('registro de Reação e Contra-Ataque rejeita economia malformada sem TypeError acidental', async () => {
   const janela = avaliarJanelaReacao({
     resultadoAtaque: 12, dadoNaturalAtaque: 12, ataqueCorpoACorpo: true,
     ataqueAcertou: true, ataqueAparavel: true, gatilhoEsquivaAutorizado: false,
@@ -152,8 +152,6 @@ test('registro de Reação e Contra-Ataque rejeita economia malformada sem TypeE
     economia: economiaInvalida, defesaBemSucedida: true,
     ataqueCorpoACorpo: true, mesmaReacaoAutorizada: false,
   }), /economia de ações inválido/);
-  assert.throws(() => {
-    const { registrarReacaoDefensiva } = require('../src/reacoesCombate.ts');
-    registrarReacaoDefensiva({ economia: economiaInvalida, manobra: 'aparar', janela });
-  }, /economia de ações inválido/);
+  const { registrarReacaoDefensiva } = await import('../src/reacoesCombate.ts');
+  assert.throws(() => registrarReacaoDefensiva({ economia: economiaInvalida, manobra: 'aparar', janela }), /economia de ações inválido/);
 });
