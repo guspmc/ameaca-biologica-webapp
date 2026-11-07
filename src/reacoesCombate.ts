@@ -76,7 +76,7 @@ export function prepararContraAtaque(args: {
   let economia = args.economia;
   let reacaoAdicionalComprada = false;
   if (!args.mesmaReacaoAutorizada) {
-    if (economia.turnoEmAndamento && !economia.normaisUsados.reacao) {
+    if (!economia.normaisUsados.reacao) {
       economia = consumirRecursoNormal(economia, 'reacao');
     } else {
       economia = comprarRecursoPorEsforco(economia, 'reacao');
@@ -125,7 +125,7 @@ export function registrarReacaoDefensiva(args: {
   if (args.manobra === 'esquivar' && !args.janela.podeEsquivar) throw new Error('Esquivar não está liberado por Habilidade ou regra para este gatilho.');
   let economia = args.economia;
   let reacaoAdicionalComprada = false;
-  if (economia.turnoEmAndamento && !economia.normaisUsados.reacao) {
+  if (!economia.normaisUsados.reacao) {
     economia = consumirRecursoNormal(economia, 'reacao');
   } else {
     economia = comprarRecursoPorEsforco(economia, 'reacao');
