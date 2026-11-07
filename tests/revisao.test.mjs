@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 import ts from 'typescript';
 // Compila os modulos reais juntos, sem duplicar regras no adaptador de teste.
-const files=['origens','habilidades','pericias','equipamento','textoPersonagem','armaOperario','comprasIniciais','conferenciaCriacao'];
+const files=['origens','habilidades','pericias','classesFicha','equipamento','textoPersonagem','armaOperario','comprasIniciais','derivadosCriacao','conferenciaCriacao'];
 const source=(await Promise.all(files.map(f=>readFile(new URL('../src/'+f+'.ts',import.meta.url),'utf8')))).map(s=>s.replace(/^import .*;\r?$/gm,'')).join('\n');
 const {outputText}=ts.transpileModule(source,{compilerOptions:{module:ts.ModuleKind.ESNext,target:ts.ScriptTarget.ES2022}});
 const {revisarCriacao,classePersonagem}=await import('data:text/javascript;base64,'+Buffer.from(outputText).toString('base64'));
