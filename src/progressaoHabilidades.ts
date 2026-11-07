@@ -91,7 +91,8 @@ export function validarProgressaoHabilidades(
   let formatoValido = true;
 
   for (const escolha of escolhas) {
-    if (!escolha || typeof escolha !== 'object'
+    if (!escolha || typeof escolha !== 'object' || Array.isArray(escolha)
+      || Object.keys(escolha).sort().join('|') !== 'habilidadeId|nivel'
       || !Number.isInteger(escolha.nivel) || !esperados.some(g => g.nivel === escolha.nivel)
       || typeof escolha.habilidadeId !== 'string' || porNivel.has(escolha.nivel)) {
       formatoValido = false;
