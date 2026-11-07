@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { validarPersonagemLocal } from '../src/validacaoPersonagemLocal.ts';
 import { configuracaoInicial } from '../src/funcionamentoFicha.ts';
+import { economiaAcoesInicial } from '../src/economiaAcoes.ts';
 
 const base = (dados = { versaoModelo: 1, estadoFicha: 'rascunho' }) => ({
   id: 'claire', geracao: 'geracao-claire', nome: 'Claire Redfield',
@@ -147,4 +148,17 @@ test('valida o estado persistível de Reanimação sem misturar causas ou contad
   assert.equal(validarPersonagemLocal(base({ versaoModelo: 1, estadoFicha: 'rascunho', reanimacao: { ...r, estado: 'em_andamento', sucessos: 3, tentativas: 3 } })), false);
   assert.equal(validarPersonagemLocal(base({ versaoModelo: 1, estadoFicha: 'rascunho', reanimacao: { ...r, causa: 'colapso_bi', estado: 'aguardando_proximo_turno' } })), false);
   assert.equal(validarPersonagemLocal(base({ versaoModelo: 1, estadoFicha: 'rascunho', reanimacao: null })), true);
+});
+
+
+test('valida a economia de ações persistida e mantém o saldo de SA sincronizado', () => {
+  const economia = economiaAcoesInicial(4);
+  const dados = { versaoModelo: 1, estadoFicha: 'rascunho', saAtual: 4, economiaAcoes: economia };
+  assert.equal(validarPersonagemLocal(base(dados)), true);
+  assert.equal(validarPersonagemLocal(base({ ...dados, saAtual: 3 })), false);
+  assert.equal(validarPersonagemLocal(base({ ...dados, economiaAcoes: { ...economia, saAtual: -1 } })), false);
+  assert.equal(validarPersonagemLocal(base({ ...dados, economiaAcoes: { ...economia, saGastaNaJanela: 4 } })), false);
+  assert.equal(validarPersonagemLocal(base({ ...dados, economiaAcoes: { ...economia, normaisUsados: { ...economia.normaisUsados, recursoExtra: true } } })), false);
+  assert.equal(validarPersonagemLocal(base({ ...dados, economiaAcoes: { ...economia, campoExtra: true } })), false);
+  assert.equal(validarPersonagemLocal(base({ versaoModelo: 1, estadoFicha: 'rascunho', economiaAcoes: economia })), false);
 });
