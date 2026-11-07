@@ -19,6 +19,7 @@ import RecursosFichaLocal from './RecursosFichaLocal';
 import DescansoFichaLocal from './DescansoFichaLocal';
 import ReanimacaoFichaLocal from './ReanimacaoFichaLocal';
 import { recursosIniciais } from './recursosFicha';
+import { calcularDerivadosCriacao } from './derivadosCriacao';
 import type { FichaRevisao } from './conferenciaCriacao';
 import { normalizarConfiguracaoFuncionamento, type ConfiguracaoFuncionamento } from './funcionamentoFicha';
 import { calcularFaseBioInfeccao } from './bioInfeccao';
@@ -212,14 +213,21 @@ export default function FichaLocal({ nome, mesa, contextoId, dados, aoFechar, ao
   const dadosOrigem = ORIGENS.find(item => item.nome === origem);
   const habilidadeSelecionada = typeof ficha.habilidadeBasica === 'string' ? ficha.habilidadeBasica : ''; 
   const habilidade = HABILIDADES_BASICAS.find(item => item.id === habilidadeSelecionada && item.classe === classe);
-  const pv = (classe === 'Agente' ? 10 : classe === 'Autodidata' ? 8 : classe === 'Operador' ? 12 : 0) + numero(atributos.vigor) + (habilidade?.id === 'parrudo' ? 5 : 0);
-  const sa = numero(atributos.agilidade) + numero(atributos.astucia) + (origem === 'Universitária' ? 1 : 0);
-  const bi = (classe === 'Agente' ? 8 : classe === 'Autodidata' ? 10 : classe === 'Operador' ? 6 : 0) + numero(atributos.astucia) + (origem === 'Cobaia' ? 2 : 0) + (habilidade?.id === 'parrudo' ? 3 : 0);
+  const derivados = dadosClasse ? calcularDerivadosCriacao({
+    classe, origem, habilidadeBasica: habilidade?.id ?? '',
+    atributos: {
+      forca: numero(atributos.forca), agilidade: numero(atributos.agilidade),
+      vigor: numero(atributos.vigor), astucia: numero(atributos.astucia),
+    },
+  }) : null;
+  const pv = derivados?.pvMaximo ?? 0;
+  const sa = derivados?.saMaximo ?? 0;
+  const bi = derivados?.biMaxima ?? 0;
   const recursosAtuais = recursosIniciais(ficha as Record<string, unknown>, pv, sa);
   const biAtual = recursosAtuais.biAtual;
   const faseBi = calcularFaseBioInfeccao(biAtual, bi);
-  const defesa = 10 + numero(atributos.agilidade) + (origem === 'Policial' ? 2 : 0);
-  const capacidade = capacidadeInventario(numero(atributos.forca), origem);
+  const defesa = derivados?.defesa ?? 10 + numero(atributos.agilidade);
+  const capacidade = derivados?.inventario ?? capacidadeInventario(numero(atributos.forca), origem);
   const listaPericias = [...new Set([...(PERICIAS_CLASSE[classe] ?? []), ...(dadosOrigem?.pericias ?? []), ...(treinada ? [treinada] : []), ...(extra ? [extra] : []), ...Object.keys(distribuicao)])].sort();
   const itensClasse = caracteristicos(classe);
   const kitSelecionado = typeof ficha.equipamentoInicial === 'string' ? ficha.equipamentoInicial : '';
