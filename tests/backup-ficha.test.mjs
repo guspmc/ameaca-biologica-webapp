@@ -112,7 +112,8 @@ test('backup e restauração preservam Habilidades adquiridas e usos limitados a
   assert.deepEqual(restaurado.personagens[0].dados.usosDescansoCompleto, original.dados.usosDescansoCompleto);
 });
 
-\ntest('backup preserva o planejamento parcial de criação em Nível superior', () => {
+
+test('backup preserva o planejamento parcial de criação em Nível superior', () => {
   const original = ficha();
   original.dados = {
     versaoModelo: 1,
