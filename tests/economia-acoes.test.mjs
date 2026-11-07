@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { economiaAcoesInicial, consumirRecursoNormal, consumirAcaoCompleta, consumirInteracaoGratuita, comprarRecursoPorEsforco, gastarSAEmManobra, iniciarTurnoAcoes, encerrarTurnoAcoes, saNaJanelaEsforco } from '../src/economiaAcoes.ts';
+import { economiaAcoesInicial, consumirRecursoNormal, consumirAcaoCompleta, consumirInteracaoGratuita, comprarRecursoPorEsforco, gastarSAEmManobra, iniciarTurnoAcoes, encerrarTurnoAcoes, saNaJanelaEsforco, sincronizarSAAtual } from '../src/economiaAcoes.ts';
 
 test('recursos normais são únicos por turno e renovam no início do próximo turno', () => {
   let estado = economiaAcoesInicial(5);
@@ -92,4 +92,14 @@ test('Manobra genérica não pode gastar SA fora do turno sem autorização expl
   const estado = encerrarTurnoAcoes(economiaAcoesInicial(3));
   assert.throws(() => gastarSAEmManobra(estado), /não foi autorizada fora/);
   assert.equal(gastarSAEmManobra(estado, 1, true).saAtual, 2);
+});
+
+
+test('sincronizar SA preserva os marcadores e rejeita saldo inválido', () => {
+  const estado = comprarRecursoPorEsforco(economiaAcoesInicial(4), 'movimento');
+  const sincronizado = sincronizarSAAtual(estado, 6);
+  assert.equal(sincronizado.saAtual, 6);
+  assert.equal(sincronizado.saGastaNaJanela, 1);
+  assert.equal(sincronizado.comprasEsforco.movimento, 1);
+  assert.throws(() => sincronizarSAAtual(estado, -1), /inteiro não negativo/);
 });
