@@ -1,4 +1,5 @@
 import { HABILIDADES_BASICAS } from './habilidades.ts';
+import { PERICIAS_CLASSE } from './pericias.ts';
 
 export type GrauHabilidade = 'basica' | 'avancada' | 'superior' | 'avassaladora';
 export type HabilidadeProgressao = {
@@ -134,4 +135,38 @@ export function validarProgressaoHabilidades(
   }
 
   return { valida: formatoValido && pendencias.length === 0, pendencias };
+}
+
+
+export type ResultadoGanhoProgressao = { valido: boolean; motivo?: string };
+
+/** Valida o aumento de Atributo concedido nos níveis 3, 5, 7 e 9. */
+export function validarGanhoAtributoProgressao(
+  nivel: number,
+  atributo: string,
+  valorAtual: number,
+): ResultadoGanhoProgressao {
+  const ganhos = ganhosProgressaoAte(nivel);
+  if (!ganhos.atributos.includes(nivel)) return { valido: false, motivo: 'Este nível não concede aumento de Atributo.' };
+  if (!['forca', 'agilidade', 'vigor', 'astucia'].includes(atributo)) return { valido: false, motivo: 'Atributo desconhecido.' };
+  if (!Number.isInteger(valorAtual) || valorAtual < 0 || valorAtual >= 5) {
+    return { valido: false, motivo: 'O Atributo precisa estar entre 0 e 4 antes do aumento.' };
+  }
+  return { valido: true };
+}
+
+/** Valida o ponto de Perícia dos níveis 4 e 8, restrito às Perícias da Classe. */
+export function validarGanhoPericiaProgressao(
+  classe: string,
+  nivel: number,
+  pericia: string,
+  grauAtual: number,
+): ResultadoGanhoProgressao {
+  const ganhos = ganhosProgressaoAte(nivel);
+  if (!ganhos.pontosPericia.includes(nivel)) return { valido: false, motivo: 'Este nível não concede Ponto de Perícia.' };
+  if (!(PERICIAS_CLASSE[classe] ?? []).includes(pericia)) return { valido: false, motivo: 'A progressão só permite Perícias da Classe.' };
+  if (!Number.isInteger(grauAtual) || grauAtual < 0 || grauAtual >= 2) {
+    return { valido: false, motivo: 'A Perícia precisa estar abaixo do grau Mestre.' };
+  }
+  return { valido: true };
 }
