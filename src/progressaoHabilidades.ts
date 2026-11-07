@@ -103,6 +103,15 @@ export function validarProgressaoHabilidades(
       || !Number.isInteger(escolha.nivel) || !esperados.some(g => g.nivel === escolha.nivel)
       || typeof escolha.habilidadeId !== 'string' || porNivel.has(escolha.nivel)) {
       formatoValido = false;
+      const nivelInformado = escolha && typeof escolha === 'object' && Number.isInteger(escolha.nivel)
+        ? escolha.nivel as number
+        : 1;
+      const ganhoInformado = esperados.find(g => g.nivel === nivelInformado);
+      pendencias.push({
+        nivel: ganhoInformado?.nivel ?? 1,
+        grau: ganhoInformado?.grau ?? 'basica',
+        motivo: 'Registro contém escolha duplicada, nível inesperado ou dados malformados.',
+      });
       continue;
     }
     porNivel.set(escolha.nivel, escolha.habilidadeId);
