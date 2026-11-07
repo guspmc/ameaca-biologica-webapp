@@ -32,7 +32,7 @@ export function calcularDerivadosCriacao(entrada: EntradaDerivadosCriacao) {
   const habilidade = HABILIDADES_BASICAS.find(h =>
     h.id === entrada.habilidadeBasica && h.classe === entrada.classe
   );
-  if (!habilidade) throw new Error('Habilidade Básica incompatível com a Classe.');
+  if (entrada.habilidadeBasica && !habilidade) throw new Error('Habilidade Básica incompatível com a Classe.');
 
   const { forca, agilidade, vigor, astucia } = entrada.atributos;
   for (const [nome, valor] of Object.entries(entrada.atributos)) {
