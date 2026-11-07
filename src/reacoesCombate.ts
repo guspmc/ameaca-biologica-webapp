@@ -59,9 +59,12 @@ export function resolverTesteDefensivo(args: {
 export function prepararContraAtaque(args: {
   economia: EstadoEconomiaAcoes;
   defesaBemSucedida: boolean;
+  ataqueCorpoACorpo: boolean;
+  excecaoContraAtaqueADistancia?: boolean;
   mesmaReacaoAutorizada: boolean;
 }): { economia: EstadoEconomiaAcoes; reacaoAdicionalComprada: boolean; custoSA: number } {
   if (!args.defesaBemSucedida) throw new Error('Contra-Ataque exige Aparar ou Esquivar bem-sucedido.');
+  if (!args.ataqueCorpoACorpo && !args.excecaoContraAtaqueADistancia) throw new Error('Contra-Ataque responde apenas a Ataques Corpo a Corpo, salvo Habilidade ou regra específica.');
   let economia = args.economia;
   let reacaoAdicionalComprada = false;
   if (!args.mesmaReacaoAutorizada) {
