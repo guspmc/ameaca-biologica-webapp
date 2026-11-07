@@ -102,3 +102,37 @@ test('escolhas de Habilidade precisam ser objetos simples, sem protótipo person
   });
   assert.equal(validarProgressaoHabilidades('Agente', 1, [escolha]).valida, false);
 });
+
+test('sequência completa até o nível 10 respeita ramos e Habilidade Avassaladora de cada Classe', () => {
+  const sequencias = [
+    ['Agente', [
+      { nivel: 1, habilidadeId: 'anatomia-de-combate' },
+      { nivel: 2, habilidadeId: 'nao-vai-escapar' },
+      { nivel: 4, habilidadeId: 'finalizacao-a-distancia' },
+      { nivel: 6, habilidadeId: 'na-minha-mira' },
+      { nivel: 8, habilidadeId: 'luta-livre' },
+      { nivel: 10, habilidadeId: 'voce-aparou-um-missil' },
+    ]],
+    ['Autodidata', [
+      { nivel: 1, habilidadeId: 'ambidestria' },
+      { nivel: 2, habilidadeId: 'curiosa' },
+      { nivel: 4, habilidadeId: 'armeira-autodidata' },
+      { nivel: 6, habilidadeId: 'tentativa-e-erro' },
+      { nivel: 8, habilidadeId: 'arsenal-improvavel' },
+      { nivel: 10, habilidadeId: 'code-veronica' },
+    ]],
+    ['Operador', [
+      { nivel: 1, habilidadeId: 'golpe-sujo' },
+      { nivel: 2, habilidadeId: 'armeiro' },
+      { nivel: 4, habilidadeId: 'casca-grossa' },
+      { nivel: 6, habilidadeId: 'armamento-especial' },
+      { nivel: 8, habilidadeId: 'briga-de-gente-grande' },
+      { nivel: 10, habilidadeId: 'socador-de-pedras' },
+    ]],
+  ];
+  for (const [classe, escolhas] of sequencias) {
+    const resultado = validarProgressaoHabilidades(classe, 10, escolhas);
+    assert.equal(resultado.valida, true, classe + ': ' + JSON.stringify(resultado.pendencias));
+    assert.deepEqual(resultado.pendencias, []);
+  }
+});
