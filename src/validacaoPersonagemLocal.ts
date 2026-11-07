@@ -9,6 +9,7 @@ import { simularCompras } from './comprasIniciais.ts';
 import { configuracaoFuncionamentoValida } from './funcionamentoFicha.ts';
 import { reanimacaoValida } from './reanimacaoFicha.ts';
 import { estadoEconomiaAcoesValido } from './economiaAcoes.ts';
+import { listaCondicoesValida } from './condicoesFicha.ts';
 
 export type PersonagemValidavel = {
   id: string;
@@ -93,6 +94,7 @@ function validarDadosFicha(valor: unknown): valor is Record<string, unknown> {
   }
   if ('configuracaoFuncionamento' in valor && !configuracaoFuncionamentoValida(valor.configuracaoFuncionamento)) return false;
   if ('reanimacao' in valor && valor.reanimacao !== null && !reanimacaoValida(valor.reanimacao)) return false;
+  if ('condicoes' in valor && !listaCondicoesValida(valor.condicoes)) return false;
   if ('economiaAcoes' in valor) {
     if (!estadoEconomiaAcoesValido(valor.economiaAcoes)) return false;
     // SA é exibida e administrada também no painel de Recursos; os dois registros
