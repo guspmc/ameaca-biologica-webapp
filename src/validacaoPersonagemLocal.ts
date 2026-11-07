@@ -8,6 +8,7 @@ import { planejarInventarioCriacao } from './inventarioCriacao.ts';
 import { simularCompras } from './comprasIniciais.ts';
 import { configuracaoFuncionamentoValida } from './funcionamentoFicha.ts';
 import { reanimacaoValida } from './reanimacaoFicha.ts';
+import { estadoEconomiaAcoesValido } from './economiaAcoes.ts';
 
 export type PersonagemValidavel = {
   id: string;
@@ -92,6 +93,12 @@ function validarDadosFicha(valor: unknown): valor is Record<string, unknown> {
   }
   if ('configuracaoFuncionamento' in valor && !configuracaoFuncionamentoValida(valor.configuracaoFuncionamento)) return false;
   if ('reanimacao' in valor && valor.reanimacao !== null && !reanimacaoValida(valor.reanimacao)) return false;
+  if ('economiaAcoes' in valor) {
+    if (!estadoEconomiaAcoesValido(valor.economiaAcoes)) return false;
+    // SA é exibida e administrada também no painel de Recursos; os dois registros
+    // precisam permanecer idênticos para impedir uma ficha com saldos divergentes.
+    if (!Number.isSafeInteger(valor.saAtual) || (valor.economiaAcoes as { saAtual: number }).saAtual !== valor.saAtual) return false;
+  }
 
   if ('classe' in valor
     && (typeof valor.classe !== 'string' || !['Agente', 'Autodidata', 'Operador'].includes(valor.classe))) return false;
