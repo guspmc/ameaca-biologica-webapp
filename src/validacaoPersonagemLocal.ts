@@ -10,7 +10,7 @@ import { configuracaoFuncionamentoValida } from './funcionamentoFicha.ts';
 import { reanimacaoValida } from './reanimacaoFicha.ts';
 import { estadoEconomiaAcoesValido } from './economiaAcoes.ts';
 import { listaCondicoesValida } from './condicoesFicha.ts';
-import { validarProgressaoHabilidades } from './progressaoHabilidades.ts';
+import { HABILIDADES_PROGRESSAO, ganhosProgressaoAte, validarProgressaoHabilidades } from './progressaoHabilidades.ts';
 import { usosDescansoCompletoValido } from './usosDescansoCompleto.ts';
 
 export type PersonagemValidavel = {
@@ -92,6 +92,29 @@ function validarDadosFicha(valor: unknown): valor is Record<string, unknown> {
   if ('estadoFicha' in valor && valor.estadoFicha !== 'rascunho') return false;
   if ('biAtual' in valor && (!Number.isSafeInteger(valor.biAtual) || (valor.biAtual as number) < 0)) return false;
   if ('nivel' in valor && (!Number.isSafeInteger(valor.nivel) || (valor.nivel as number) < 1 || (valor.nivel as number) > 10)) return false;
+  if ('planejamentoCriacao' in valor) {
+    const plano = valor.planejamentoCriacao;
+    if (!objeto(plano) || Object.keys(plano).sort().join('|') !== 'habilidades|nivelAlvo'
+      || !Number.isSafeInteger(plano.nivelAlvo) || (plano.nivelAlvo as number) < 1 || (plano.nivelAlvo as number) > 10
+      || !Array.isArray(plano.habilidades) || typeof valor.classe !== 'string') return false;
+    const ganhosPlanejados = ganhosProgressaoAte(plano.nivelAlvo as number).habilidades;
+    const niveisPermitidos = new Map(ganhosPlanejados.map(item => [item.nivel, item.grau]));
+    const niveisEscolhidos = new Set<number>();
+    const idsEscolhidos = new Set<string>();
+    for (const escolha of plano.habilidades) {
+      if (!objeto(escolha) || Object.keys(escolha).sort().join('|') !== 'habilidadeId|nivel'
+        || !Number.isSafeInteger(escolha.nivel) || typeof escolha.habilidadeId !== 'string'
+        || !niveisPermitidos.has(escolha.nivel as number)
+        || niveisEscolhidos.has(escolha.nivel as number) || idsEscolhidos.has(escolha.habilidadeId)) return false;
+      const catalogada = HABILIDADES_PROGRESSAO.find(item => item.id === escolha.habilidadeId);
+      if (!catalogada || catalogada.classe !== valor.classe
+        || catalogada.grau !== niveisPermitidos.get(escolha.nivel as number)) return false;
+      niveisEscolhidos.add(escolha.nivel as number);
+      idsEscolhidos.add(escolha.habilidadeId);
+    }
+    if (plano.habilidades.length === ganhosPlanejados.length
+      && !validarProgressaoHabilidades(valor.classe, plano.nivelAlvo as number, plano.habilidades as never).valida) return false;
+  }
   if ('habilidadesAdquiridas' in valor) {
     if (!Array.isArray(valor.habilidadesAdquiridas) || typeof valor.classe !== 'string'
       || !Number.isSafeInteger(valor.nivel)) return false;
