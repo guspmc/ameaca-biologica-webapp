@@ -88,8 +88,8 @@ export default function PainelAcoesLocal({ dados, saAtual, aoSalvar }: Props) {
 
           <h4>Manobras com gasto de SA</h4>
           <div className="recursos-controles">
-            <button type="button" disabled={salvando || estado.saAtual < 1 || janela >= 3} onClick={() => void aplicar(atual => gastarSAEmManobra(atual, 1))}>Registrar Manobra · 1 SA</button>
-            <button type="button" disabled={salvando || estado.saAtual < 3 || janela > 0} onClick={() => void aplicar(atual => gastarSAEmManobra(atual, 3))}>Registrar Manobra · 3 SA</button>
+            <button type="button" disabled={salvando || !estado.turnoEmAndamento || estado.saAtual < 1 || janela >= 3} onClick={() => void aplicar(atual => gastarSAEmManobra(atual, 1))}>Registrar Manobra · 1 SA</button>
+            <button type="button" disabled={salvando || !estado.turnoEmAndamento || estado.saAtual < 3 || janela > 0} onClick={() => void aplicar(atual => gastarSAEmManobra(atual, 3))}>Registrar Manobra · 3 SA</button>
           </div>
           <p className="ficha-local-legenda">Use o registro de Manobra somente após uma regra autorizar o gasto. Contra-Ataque, por exemplo, exige defesa bem-sucedida e 1 SA + Reação. O painel não faz rolagens nem presume gatilhos.</p>
 
