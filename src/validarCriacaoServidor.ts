@@ -60,6 +60,7 @@ export function validarCriacaoNoServidor(nome: string, dadosRecebidos: unknown) 
     pericia_origem_extra: textoOuNulo(dados.periciaOrigemExtra),
     pontos_pericia_classe: distribuicao as Record<string, number>,
     habilidade_basica: habilidade,
+    arma_operario: textoOuNulo(dados.armaOperario),
     equipamento_inicial: kit,
     compras_iniciais: compras as Record<string, number>,
     revisao_compras: numeroOuZero(dados.revisaoCompras),
