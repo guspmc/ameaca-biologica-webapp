@@ -5,6 +5,7 @@ import {HABILIDADES_BASICAS} from './habilidades.ts';
 import {PONTOS_CLASSE,PERICIAS_CLASSE} from './pericias.ts';
 import {capacidadeInventario,equipamentoInicial,espacosOcupados,opcoesEquipamento} from './equipamento.ts';
 import {armaOperarioValida} from './armaOperario.ts';
+import {calcularDerivadosCriacao} from './derivadosCriacao.ts';
 export type FichaRevisao={identidade?:{genero?:string};nome:string;classe:string|null;nivel:number;forca:number;agilidade:number;vigor:number;astucia:number;origem:string|null;pericia_origem_treinada:string|null;pericia_origem_extra:string|null;pontos_pericia_classe:Record<string,number>;habilidade_basica:string|null;arma_operario?:string|null;equipamento_inicial:string|null;compras_iniciais?:Record<string,number>;revisao_compras?:number;pv_maximo:number|null;sa_maximo:number|null;bi_maximo:number|null;defesa:number|null};
 export type Conferencia={nome:string;estado:'conferido'|'pendente'|'revisar';detalhe:string;secao:string};
 export function revisarCriacao(f:FichaRevisao):Conferencia[]{
@@ -52,10 +53,11 @@ export function revisarCriacao(f:FichaRevisao):Conferencia[]{
   }
   add('Equipamento inicial',kit?(ocupados!==null&&ocupados<=capacidade?'conferido':'revisar'):f.equipamento_inicial?'revisar':'pendente',kit?`${kit.id} · ${kit.nome} · ${ocupados??'?'}/${capacidade} Espaços. Característicos: 0 Espaços.`:'Escolha o conjunto inicial.','itens');
   if(classeValida&&f.nivel===1&&attrsValidos){
-    const pv=({Agente:10,Autodidata:8,Operador:12}[f.classe as 'Agente'|'Autodidata'|'Operador'])+f.vigor+(hab?.id==='parrudo'?5:0);
-    const sa=f.agilidade+f.astucia+(f.origem==='Universitária'?1:0);
-    const bi=({Agente:8,Autodidata:10,Operador:6}[f.classe as 'Agente'|'Autodidata'|'Operador'])+f.astucia+(f.origem==='Cobaia'?2:0)+(hab?.id==='parrudo'?3:0);
-    const def=10+f.agilidade+(f.origem==='Policial'?2:0);
+    const derivados=calcularDerivadosCriacao({
+      classe:f.classe!, origem:f.origem??'', habilidadeBasica:hab?.id??'',
+      atributos:{forca:f.forca,agilidade:f.agilidade,vigor:f.vigor,astucia:f.astucia},nivel:f.nivel,
+    });
+    const pv=derivados.pvMaximo, sa=derivados.saMaximo, bi=derivados.biMaxima, def=derivados.defesa;
     for(const [nome,salvo,esperado,formula] of [
       ['PV máximos',f.pv_maximo,pv,`Base da Classe + VIG ${f.vigor}${hab?.id==='parrudo'?' + '+termo('Parrudo')+' 5':''}`],
       ['SA máximo',f.sa_maximo,sa,`AGI ${f.agilidade} + AST ${f.astucia}${f.origem==='Universitária'?' + '+termo('Universitária')+' 1':''}`],
