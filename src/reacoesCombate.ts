@@ -1,5 +1,5 @@
 import { calcularTesteManual, type ResultadoTeste, type VantagemTeste } from './testes.ts';
-import { comprarRecursoPorEsforco, consumirRecursoNormal, gastarSAEmManobra, type EstadoEconomiaAcoes } from './economiaAcoes.ts';
+import { comprarRecursoPorEsforco, consumirRecursoNormal, gastarSAEmManobra, estadoEconomiaAcoesValido, type EstadoEconomiaAcoes } from './economiaAcoes.ts';
 
 export type GatilhoReacao = {
   resultadoAtaque: number;
@@ -73,6 +73,7 @@ export function prepararContraAtaque(args: {
   }
   if (!args.defesaBemSucedida) throw new Error('Contra-Ataque exige Aparar ou Esquivar bem-sucedido.');
   if (!args.ataqueCorpoACorpo && !args.excecaoContraAtaqueADistancia) throw new Error('Contra-Ataque responde apenas a Ataques Corpo a Corpo, salvo Habilidade ou regra específica.');
+  if (!estadoEconomiaAcoesValido(args.economia)) throw new Error('Estado da economia de ações inválido para Contra-Ataque.');
   let economia = args.economia;
   let reacaoAdicionalComprada = false;
   if (!args.mesmaReacaoAutorizada) {
@@ -116,6 +117,7 @@ export function registrarReacaoDefensiva(args: {
   janela: JanelaReacao;
 }): { economia: EstadoEconomiaAcoes; reacaoAdicionalComprada: boolean } {
   if (args.manobra !== 'aparar' && args.manobra !== 'esquivar') throw new Error('Manobra defensiva desconhecida.');
+  if (!estadoEconomiaAcoesValido(args.economia)) throw new Error('Estado da economia de ações inválido para Reação defensiva.');
   if (!args.janela || typeof args.janela.aberta !== 'boolean'
     || typeof args.janela.podeAparar !== 'boolean' || typeof args.janela.podeEsquivar !== 'boolean') {
     throw new Error('Janela de Reação inválida.');
