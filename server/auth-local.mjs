@@ -578,7 +578,7 @@ export async function tratarRotaMesas(req, res, url, db, notificarMesa = () => {
     }
     if (metodo === 'GET' && detalhe) {
       const mesa = db.prepare(`
-        SELECT m.id, m.nome AS name, p.papel AS role, m.metodo_criacao AS creationMethod, m.criada_em AS createdAt
+        SELECT m.id, m.nome AS name, p.papel AS role, m.metodo_criacao AS creationMethod, m.nivel_maximo AS maxLevel, m.criada_em AS createdAt
         FROM mesas m
         JOIN participantes_mesa p ON p.mesa_id = m.id
         WHERE m.id = ? AND p.conta_id = ?
