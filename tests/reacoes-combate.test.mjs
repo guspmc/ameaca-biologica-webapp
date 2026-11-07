@@ -119,5 +119,5 @@ test('gatilhos e autorizações de Reação rejeitam booleanos ou tipos inválid
   assert.throws(() => avaliarJanelaReacao({ ...base, gatilhoEsquivaAutorizado: 1 }), /válidos/);
   assert.throws(() => resolverTesteDefensivo({ tipo: 'aparar', valorLuta: -1, resultadoAtaque: 12, dado1: 12 }), /Perícia defensiva/);
   assert.throws(() => resolverTesteDefensivo({ tipo: 'bloquear', valorLuta: 2, resultadoAtaque: 12, dado1: 12 }), /desconhecida/);
-  assert.throws(() => prepararContraAtaque({ economia: economiaAcoesInicial(2), defesaBemSucedida: true, ataqueCorpoACorpo: true, mesmaReacaoAutorizada: 'sim' }), /autorizações.*inválidos/);
+  assert.throws(() => prepararContraAtaque({ economia: economiaAcoesInicial(2), defesaBemSucedida: true, ataqueCorpoACorpo: true, mesmaReacaoAutorizada: 'sim' }), /autorização.*inválidos/);
 });
