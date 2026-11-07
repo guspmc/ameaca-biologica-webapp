@@ -6,6 +6,7 @@ export type EstadoEconomiaAcoes = {
   normaisUsados: Record<RecursoAcao, boolean>;
   comprasEsforco: Record<RecursoAcao, number>;
   interacaoGratuitaUsada: boolean;
+  turnoEmAndamento: boolean;
 };
 
 export const CUSTO_ESFORCO: Record<CompraEsforco, number> = { movimento: 1, acaoBonus: 1, reacao: 1, acao: 2 };
@@ -18,7 +19,7 @@ export function economiaAcoesInicial(saAtual: number): EstadoEconomiaAcoes {
     saAtual, saGastaNaJanela: 0,
     normaisUsados: { acao: false, movimento: false, acaoBonus: false, reacao: false },
     comprasEsforco: { acao: 0, movimento: 0, acaoBonus: 0, reacao: 0 },
-    interacaoGratuitaUsada: false,
+    interacaoGratuitaUsada: false, turnoEmAndamento: true,
   };
 }
 
@@ -29,7 +30,7 @@ function validarEstado(estado: EstadoEconomiaAcoes): void {
     || !Number.isSafeInteger(estado.saGastaNaJanela) || estado.saGastaNaJanela < 0
     || !estado.normaisUsados || RECURSOS.some(r => typeof estado.normaisUsados[r] !== 'boolean')
     || !estado.comprasEsforco || RECURSOS.some(r => !Number.isSafeInteger(estado.comprasEsforco[r]) || estado.comprasEsforco[r] < 0)
-    || typeof estado.interacaoGratuitaUsada !== 'boolean') throw new Error('Estado da economia de ações inválido.');
+    || typeof estado.interacaoGratuitaUsada !== 'boolean' || typeof estado.turnoEmAndamento !== 'boolean') throw new Error('Estado da economia de ações inválido.');
 }
 
 export function consumirRecursoNormal(estado: EstadoEconomiaAcoes, recurso: RecursoAcao): EstadoEconomiaAcoes {
@@ -82,12 +83,13 @@ export function iniciarTurnoAcoes(estado: EstadoEconomiaAcoes): EstadoEconomiaAc
     ...estado,
     normaisUsados: { acao: false, movimento: false, acaoBonus: false, reacao: false },
     comprasEsforco: { acao: 0, movimento: 0, acaoBonus: 0, reacao: 0 },
-    interacaoGratuitaUsada: false,
+    interacaoGratuitaUsada: false, turnoEmAndamento: true,
   };
 }
 
 /** A janela de SA vai do fim de um turno ao fim do próximo turno da personagem. */
 export function encerrarTurnoAcoes(estado: EstadoEconomiaAcoes): EstadoEconomiaAcoes {
   validarEstado(estado);
-  return { ...estado, saGastaNaJanela: 0 };
+  if (!estado.turnoEmAndamento) throw new Error('Não há turno próprio em andamento para encerrar.');
+  return { ...estado, saGastaNaJanela: 0, turnoEmAndamento: false };
 }
