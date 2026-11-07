@@ -187,7 +187,7 @@ test('gatilho de Reação, Teste defensivo e item de Aparar rejeitam estruturas 
   assert.throws(() => avaliarJanelaReacao({ ...gatilho, inesperado: true }), /Gatilho de Reação inválido/);
   assert.throws(() => resolverTesteDefensivo({
     tipo: 'aparar', valorLuta: 3, resultadoAtaque: 0, dado1: 10,
-  }), /Resultado do Ataque inválido/);
+  }), /Resultado do Ataque.*dado natural/);
   assert.throws(() => resolverTesteDefensivo({
     tipo: 'aparar', valorLuta: 3, resultadoAtaque: 12, dado1: 10, vantagem: 'qualquer',
   }), /Vantagem\/Desvantagem inválido/);
