@@ -96,7 +96,7 @@ export default function FichaOfflineApp() {
           if (!estadoEconomiaAcoesValido(patchEfetivo.economiaAcoes)
             || patchEfetivo.economiaAcoes.saAtual !== patchEfetivo.saAtual
             || !Number.isSafeInteger(saldoBaseEsperado)
-            || saldoBaseEsperado !== base.dados.saAtual
+            || (base.dados.saAtual !== undefined && saldoBaseEsperado !== base.dados.saAtual)
             || (estadoEconomiaAcoesValido(base.dados.economiaAcoes)
               && base.dados.economiaAcoes.saAtual !== saldoBaseEsperado)) {
             throw new Error('A Economia de Ações ou o saldo de SA mudou desde a última leitura. Reabra a ficha antes de registrar esta ação.');
