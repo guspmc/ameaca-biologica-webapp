@@ -85,5 +85,5 @@ test('backup preserva a Economia de Ações e seu espelho de SA após restauraç
   const recuperado = lerArquivoBackup(serializarBackup(criarBackup([original])));
   assert.equal(recuperado.personagens[0].dados.saAtual, 3);
   assert.deepEqual(recuperado.personagens[0].dados.economiaAcoes, economia);
-  assert.notEqual(recuperado.personagens[0].geracao, original.geracao);
+  assert.equal(recuperado.personagens[0].geracao, original.geracao);
 });
