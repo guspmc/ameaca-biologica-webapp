@@ -21,7 +21,7 @@ export function periciasPermitidasNaCriacao(
     : dadosOrigem.pericias.find(item => item !== periciaTreinada);
   const permitidas = new Set([
     ...(PERICIAS_CLASSE[classe] ?? []),
-    ...(extra ? [extra] : []),
+    ...(origem === 'Amnésico' ? [periciaTreinada, ...(periciaExtraAmnesico ? [periciaExtraAmnesico] : [])] : extra ? [extra] : []),
   ]);
   return [...permitidas].sort((a,b) => NOMES_PERICIAS.indexOf(a as typeof NOMES_PERICIAS[number]) - NOMES_PERICIAS.indexOf(b as typeof NOMES_PERICIAS[number]));
 }
