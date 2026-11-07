@@ -8,6 +8,7 @@ test('recursos normais são únicos por turno e renovam no início do próximo t
   assert.throws(() => consumirRecursoNormal(estado, 'acao'), /já foi utilizado/);
   estado = iniciarTurnoAcoes(estado);
   assert.deepEqual(estado.normaisUsados, { acao: false, movimento: false, acaoBonus: false, reacao: false });
+  assert.equal(estado.turnoEmAndamento, true);
 });
 
 test('Ação Completa consome Ação e Movimento normais em conjunto', () => {
@@ -56,9 +57,11 @@ test('início do turno não renova a janela; somente o fim do próximo turno a e
   assert.equal(saNaJanelaEsforco(estado), 0);
   estado = gastarSAEmManobra(estado);
   estado = iniciarTurnoAcoes(estado);
+  assert.equal(estado.turnoEmAndamento, true);
   assert.equal(saNaJanelaEsforco(estado), 1);
   estado = comprarRecursoPorEsforco(estado, 'movimento');
   assert.equal(saNaJanelaEsforco(estado), 2);
   estado = encerrarTurnoAcoes(estado);
   assert.equal(saNaJanelaEsforco(estado), 0);
+  assert.equal(estado.turnoEmAndamento, false);
 });
