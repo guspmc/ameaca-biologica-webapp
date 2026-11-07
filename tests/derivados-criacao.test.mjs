@@ -64,5 +64,5 @@ test('recusa Classe, Habilidade, Atributos e Nível inválidos', () => {
   assert.throws(() => calcularDerivadosCriacao({ classe: 'Classe falsa', origem: '', habilidadeBasica: '', atributos }), /Classe inválida/);
   assert.throws(() => calcularDerivadosCriacao({ classe: 'Agente', origem: '', habilidadeBasica: 'parrudo', atributos }), /incompatível/);
   assert.throws(() => calcularDerivadosCriacao({ classe: 'Agente', origem: '', habilidadeBasica: 'rolamento', atributos: { ...atributos, forca: 6 } }), /Atributo inválido/);
-  assert.throws(() => calcularDerivadosCriacao({ classe: 'Agente', origem: '', habilidadeBasica: 'rolamento', atributos, nivel: 11 }), /Nível deve/);
+  assert.throws(() => calcularDerivadosCriacao({ classe: 'Agente', origem: 'Origem falsa', habilidadeBasica: 'rolamento', atributos }), /Origem inválida/);\n  assert.throws(() => calcularDerivadosCriacao({ classe: 'Agente', origem: '', habilidadeBasica: 'rolamento', atributos, nivel: 11 }), /Nível deve/);
 });
