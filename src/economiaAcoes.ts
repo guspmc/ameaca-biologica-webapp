@@ -2,34 +2,24 @@ export type RecursoAcao = 'acao' | 'movimento' | 'acaoBonus' | 'reacao';
 export type CompraEsforco = RecursoAcao;
 export type EstadoEconomiaAcoes = {
   saAtual: number;
-  saGastaNoTurno: number;
-  saGastaNoUltimoTurno: number;
+  saGastaNaJanela: number;
   usados: Record<RecursoAcao, number>;
   interacaoGratuitaUsada: boolean;
 };
 
-export const CUSTO_ESFORCO: Record<CompraEsforco, number> = {
-  movimento: 1, acaoBonus: 1, reacao: 1, acao: 2,
-};
+export const CUSTO_ESFORCO: Record<CompraEsforco, number> = { movimento: 1, acaoBonus: 1, reacao: 1, acao: 2 };
 export const LIMITE_SA_JANELA_ESFORCO = 3;
 
 export function economiaAcoesInicial(saAtual: number): EstadoEconomiaAcoes {
   if (!Number.isSafeInteger(saAtual) || saAtual < 0) throw new Error('SA atual deve ser um inteiro não negativo.');
-  return {
-    saAtual, saGastaNoTurno: 0, saGastaNoUltimoTurno: 0,
-    usados: { acao: 0, movimento: 0, acaoBonus: 0, reacao: 0 },
-    interacaoGratuitaUsada: false,
-  };
+  return { saAtual, saGastaNaJanela: 0, usados: { acao: 0, movimento: 0, acaoBonus: 0, reacao: 0 }, interacaoGratuitaUsada: false };
 }
 
-export function saNaJanelaEsforco(estado: EstadoEconomiaAcoes): number {
-  return estado.saGastaNoTurno + estado.saGastaNoUltimoTurno;
-}
+export function saNaJanelaEsforco(estado: EstadoEconomiaAcoes): number { return estado.saGastaNaJanela; }
 
 function validarEstado(estado: EstadoEconomiaAcoes): void {
   if (!estado || !Number.isSafeInteger(estado.saAtual) || estado.saAtual < 0
-    || !Number.isSafeInteger(estado.saGastaNoTurno) || estado.saGastaNoTurno < 0
-    || !Number.isSafeInteger(estado.saGastaNoUltimoTurno) || estado.saGastaNoUltimoTurno < 0
+    || !Number.isSafeInteger(estado.saGastaNaJanela) || estado.saGastaNaJanela < 0
     || !estado.usados || (['acao', 'movimento', 'acaoBonus', 'reacao'] as const)
       .some(recurso => !Number.isSafeInteger(estado.usados[recurso]) || estado.usados[recurso] < 0)
     || typeof estado.interacaoGratuitaUsada !== 'boolean') throw new Error('Estado da economia de ações inválido.');
@@ -55,26 +45,37 @@ export function consumirInteracaoGratuita(estado: EstadoEconomiaAcoes): EstadoEc
   return { ...estado, interacaoGratuitaUsada: true };
 }
 
+function registrarGastoSA(estado: EstadoEconomiaAcoes, custo: number): EstadoEconomiaAcoes {
+  if (!Number.isSafeInteger(custo) || custo <= 0) throw new Error('O custo em SA deve ser um inteiro positivo.');
+  if (estado.saAtual < custo) throw new Error('SA insuficiente.');
+  if (estado.saGastaNaJanela + custo > LIMITE_SA_JANELA_ESFORCO) {
+    throw new Error('O limite de 3 SA de Esforço e Manobras nesta janela seria ultrapassado.');
+  }
+  return { ...estado, saAtual: estado.saAtual - custo, saGastaNaJanela: estado.saGastaNaJanela + custo };
+}
+
 /** Compra explícita; não gasta SA automaticamente quando um recurso normal acaba. */
 export function comprarRecursoPorEsforco(estado: EstadoEconomiaAcoes, recurso: CompraEsforco): EstadoEconomiaAcoes {
   validarEstado(estado);
   if (!Object.prototype.hasOwnProperty.call(CUSTO_ESFORCO, recurso)) throw new Error('Recurso não pode ser comprado por Esforço.');
-  const custo = CUSTO_ESFORCO[recurso];
-  if (estado.saAtual < custo) throw new Error('SA insuficiente para comprar este recurso.');
-  if (saNaJanelaEsforco(estado) + custo > LIMITE_SA_JANELA_ESFORCO) {
-    throw new Error('O limite de 3 SA de Esforço e Manobras nesta janela seria ultrapassado.');
-  }
-  return {
-    ...estado, saAtual: estado.saAtual - custo, saGastaNoTurno: estado.saGastaNoTurno + custo,
-    usados: { ...estado.usados, [recurso]: estado.usados[recurso] + 1 },
-  };
+  const gasto = registrarGastoSA(estado, CUSTO_ESFORCO[recurso]);
+  return { ...gasto, usados: { ...gasto.usados, [recurso]: gasto.usados[recurso] + 1 } };
+}
+
+/** Registra SA gasto em Manobra, como Contra-Ataque, sem comprar outro recurso de ação. */
+export function gastarSAEmManobra(estado: EstadoEconomiaAcoes, custo = 1): EstadoEconomiaAcoes {
+  validarEstado(estado);
+  return registrarGastoSA(estado, custo);
+}
+
+/** Início do turno próprio renova recursos normais; não renova a janela de Esforço. */
+export function iniciarTurnoAcoes(estado: EstadoEconomiaAcoes): EstadoEconomiaAcoes {
+  validarEstado(estado);
+  return { ...estado, usados: { acao: 0, movimento: 0, acaoBonus: 0, reacao: 0 }, interacaoGratuitaUsada: false };
 }
 
 /** A janela de SA vai do fim de um turno ao fim do próximo turno da personagem. */
 export function encerrarTurnoAcoes(estado: EstadoEconomiaAcoes): EstadoEconomiaAcoes {
   validarEstado(estado);
-  return {
-    ...estado, saGastaNoUltimoTurno: estado.saGastaNoTurno, saGastaNoTurno: 0,
-    usados: { acao: 0, movimento: 0, acaoBonus: 0, reacao: 0 }, interacaoGratuitaUsada: false,
-  };
+  return { ...estado, saGastaNaJanela: 0 };
 }
