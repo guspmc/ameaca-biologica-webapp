@@ -12,9 +12,10 @@ type Props = {
   aoSalvar: (patch: RecursosAtuais) => Promise<boolean>;
   aoAlterarPendencia: (pendente: boolean) => void;
   autoSalvar?: boolean;
+  origemDados?: 'local' | 'servidor';
 };
 
-export default function RecursosFichaLocal({ dados, pvMaximo, saMaximo, biMaximo, bloquearPV = false, aoSalvar, aoAlterarPendencia, autoSalvar = false }: Props) {
+export default function RecursosFichaLocal({ dados, pvMaximo, saMaximo, biMaximo, bloquearPV = false, aoSalvar, aoAlterarPendencia, autoSalvar = false, origemDados = 'local' }: Props) {
   const [recursos, setRecursos] = useState(() => recursosIniciais(dados, pvMaximo, saMaximo));
   const [anterior, setAnterior] = useState<RecursosAtuais | null>(null);
   const [sujo, setSujo] = useState(false);
@@ -51,7 +52,7 @@ export default function RecursosFichaLocal({ dados, pvMaximo, saMaximo, biMaximo
   return <details className="ficha-local-editor recursos-ficha" aria-label="Recursos da personagem">
     <summary>Administrar recursos e Integridade Física</summary>
     <h3>Recursos e Integridade Física</h3>
-    <p>Valores atuais são separados dos máximos derivados. Ajustes aqui são enviados automaticamente ao servidor; não registram descanso, rolagem, ação ou efeito automático.</p>
+    <p>Valores atuais são separados dos máximos derivados. {origemDados === 'servidor' ? 'Ajustes são enviados ao servidor após a confirmação.' : 'Ajustes são gravados neste dispositivo após a confirmação.'} Não registram descanso, rolagem, ação ou efeito automático.</p>
     <div className="ficha-local-grade">
       <div><small>PONTOS DE VIDA</small><strong>{recursos.pvAtual}/{pvMaximo}</strong><p>Temporários: {recursos.pvTemporarios}</p></div>
       <div><small>SURTO DE ADRENALINA</small><strong>{recursos.saAtual}/{saMaximo}</strong><p>Gasto de SA é sempre uma escolha expressa.</p></div>
