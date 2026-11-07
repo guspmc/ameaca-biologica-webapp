@@ -422,7 +422,7 @@ export default function FichaLocal({ nome, mesa, contextoId, dados, aoFechar, ao
 
         <section id="ficha-local-combate" className="ficha-local-secao">
           <div className="ficha-local-titulo-secao"><h2><span>03</span> Combate</h2><span className="ficha-local-selo">PREPARAÇÃO</span></div>
-          <p className="ficha-local-legenda">Resumo operacional da personagem. O painel opcional registra recursos de ação e gastos de SA confirmados pelo servidor; não controla a Iniciativa da Mesa nem resolve rolagens ou efeitos.</p>
+          <p className="ficha-local-legenda">Resumo operacional da personagem. {origemDados === 'servidor' ? 'O painel opcional registra recursos de ação e gastos de SA confirmados pelo servidor' : 'O painel opcional registra recursos de ação e gastos de SA salvos neste dispositivo'}; não controla a Iniciativa da Mesa nem resolve rolagens ou efeitos.</p>
 
           <h3 className="ficha-local-subtitulo">Defesa e deslocamento</h3>
           <div className="ficha-local-grade">
