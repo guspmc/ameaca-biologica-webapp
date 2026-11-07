@@ -67,3 +67,45 @@ test('recusa Classe, Habilidade, Atributos e Nível inválidos', () => {
   assert.throws(() => calcularDerivadosCriacao({ classe: 'Agente', origem: 'Origem falsa', habilidadeBasica: 'rolamento', atributos }), /Origem inválida/);
   assert.throws(() => calcularDerivadosCriacao({ classe: 'Agente', origem: '', habilidadeBasica: 'rolamento', atributos, nivel: 11 }), /Nível deve/);
 });
+
+
+test('PV escala por nível; os demais derivados mudam apenas pelos componentes previstos', () => {
+  for (const [classe, habilidade, basePV, baseBI] of [
+    ['Agente', 'rolamento', 10, 8],
+    ['Autodidata', 'curiosa', 8, 10],
+    ['Operador', 'armeiro', 12, 6],
+  ]) {
+    for (let nivel = 1; nivel <= 10; nivel++) {
+      const d = calcularDerivadosCriacao({ classe, origem: '', habilidadeBasica: habilidade, atributos, nivel });
+      assert.equal(d.pvMaximo, (basePV + atributos.vigor) * nivel);
+      assert.equal(d.saMaximo, atributos.agilidade + atributos.astucia);
+      assert.equal(d.biMaxima, baseBI + atributos.astucia);
+      assert.equal(d.defesa, 10 + atributos.agilidade);
+      assert.equal(d.inventario, 4 + atributos.forca);
+      assert.equal(d.movimento, 9);
+    }
+  }
+});
+
+test('todos os bônus numéricos de Origem e Habilidade são aplicados uma única vez', () => {
+  const casos = [
+    ['Cobaia', 'rolamento', { biMaxima: 11 }],
+    ['Universitária', 'curiosa', { saMaximo: 4 }],
+    ['Policial', 'rolamento', { defesa: 14 }],
+    ['Mochileiro', 'rolamento', { inventario: 7 }],
+    ['', 'parrudo', { pvMaximo: 19, biMaxima: 12 }],
+  ];
+  for (const [origem, habilidade, esperados] of casos) {
+    const d = calcularDerivadosCriacao({ classe: habilidade === 'parrudo' ? 'Operador' : 'Agente', origem, habilidadeBasica: habilidade, atributos });
+    for (const [campo, valor] of Object.entries(esperados)) assert.equal(d[campo], valor, campo + ' · ' + origem + ' · ' + habilidade);
+  }
+});
+
+test('capacidade de Inventário acompanha FOR de 0 a 5 e o bônus de Mochileiro', () => {
+  for (let forca = 0; forca <= 5; forca++) {
+    const normal = calcularDerivadosCriacao({ classe: 'Agente', origem: '', habilidadeBasica: 'rolamento', atributos: { ...atributos, forca } });
+    const mochileiro = calcularDerivadosCriacao({ classe: 'Agente', origem: 'Mochileiro', habilidadeBasica: 'rolamento', atributos: { ...atributos, forca } });
+    assert.equal(normal.inventario, 4 + forca);
+    assert.equal(mochileiro.inventario, 5 + forca);
+  }
+});
