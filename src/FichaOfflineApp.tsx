@@ -4,6 +4,7 @@ import FichaLocal from './FichaLocal';
 import { criarFilaSerializada } from './filaSerializada';
 import { criarBackup, lerArquivoBackup, nomeDeCopiaUnico, serializarBackup } from './backupFicha';
 import { adicionarPersonagens, excluirPersonagem, listarPersonagens, obterPersonagem, salvarPersonagem, salvarPatchPersonagem, substituirPersonagens, type PersonagemLocal } from './persistenciaFicha';
+import { estadoEconomiaAcoesValido } from './economiaAcoes';
 
 function agora() { return new Date().toISOString(); }
 function novoId() { return globalThis.crypto?.randomUUID?.() ?? `personagem-${Date.now()}-${Math.random().toString(16).slice(2)}`; }
@@ -80,10 +81,17 @@ export default function FichaOfflineApp() {
     const operacao = filaGravacao.current.enfileirar(async () => {
       const base = selecionadoRef.current;
       if (!base) return false;
+      const patchEfetivo = { ...patch };
+      // Ajustes de SA pelo painel de Recursos também atualizam o espelho da
+      // Economia de Ações, evitando saldos divergentes entre as duas seções.
+      if (typeof patchEfetivo.saAtual === 'number' && !('economiaAcoes' in patchEfetivo)
+        && estadoEconomiaAcoesValido(base.dados.economiaAcoes)) {
+        patchEfetivo.economiaAcoes = { ...base.dados.economiaAcoes, saAtual: patchEfetivo.saAtual };
+      }
       setStatus('Salvando no dispositivo…'); setErro('');
       try {
-        const atualizado = await salvarPatchPersonagem(base.id, patch, base.dados, nomeAtualizado, base.nome, base.geracao);
-        for (const campo of Object.keys(patch)) camposPendentesRef.current.delete(campo);
+        const atualizado = await salvarPatchPersonagem(base.id, patchEfetivo, base.dados, nomeAtualizado, base.nome, base.geracao);
+        for (const campo of Object.keys(patchEfetivo)) camposPendentesRef.current.delete(campo);
         const chavesCaracteristicas = ['classe', 'origem', 'armaOperario', 'habilidadeBasica'];
         if (chavesCaracteristicas.some(campo => campo in patch)) secoesNaoSalvasRef.current.delete('Características');
         if (['atributos', 'periciaOrigemTreinada', 'periciaOrigemExtra', 'distribuicaoPericias'].some(campo => campo in patch)) secoesNaoSalvasRef.current.delete('Atributos e Perícias');
@@ -99,7 +107,7 @@ export default function FichaOfflineApp() {
         setStatus('Salvo neste dispositivo.');
         return true;
       } catch (e) {
-        for (const campo of Object.keys(patch)) camposPendentesRef.current.add(campo);
+        for (const campo of Object.keys(patchEfetivo)) camposPendentesRef.current.add(campo);
         setErro(e instanceof Error ? e.message : 'Falha ao salvar.');
         setStatus('Não foi possível confirmar o salvamento.');
         return false;
