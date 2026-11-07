@@ -20,10 +20,11 @@ type Props = {
   biMaximo: number;
   modoDados: ModoDados;
   bloqueado: boolean;
+  origemDados?: 'local' | 'servidor';
   aoSalvar: (patch: Record<string, unknown>) => Promise<boolean>;
 };
 
-export default function ReanimacaoFichaLocal({ dados, recursos, origem, pvMaximo, biMaximo, modoDados, bloqueado, aoSalvar }: Props) {
+export default function ReanimacaoFichaLocal({ dados, recursos, origem, pvMaximo, biMaximo, modoDados, bloqueado, origemDados = 'local', aoSalvar }: Props) {
   const inicial = dados.reanimacao === null || dados.reanimacao === undefined
     ? null
     : reanimacaoValida(dados.reanimacao) ? dados.reanimacao : null;
@@ -57,7 +58,7 @@ export default function ReanimacaoFichaLocal({ dados, recursos, origem, pvMaximo
       }
       setReanimacao(proxima);
       setPrimeiroDado(''); setSegundoDado('');
-      setMensagem('Estado de Reanimação salvo e confirmado.');
+      setMensagem(origemDados === 'servidor' ? 'Estado de Reanimação confirmado pelo servidor.' : 'Estado de Reanimação salvo neste dispositivo.');
     } catch (e) {
       setErro(e instanceof Error ? e.message : 'Não foi possível salvar a Reanimação.');
       throw e;
