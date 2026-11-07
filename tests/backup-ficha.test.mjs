@@ -74,3 +74,16 @@ test('exportação atual exige geração e rejeita dados que o JSON perderia', (
   comValorNaoSerializavel.dados.valorFuturo = undefined;
   assert.throws(() => criarBackup([comValorNaoSerializavel]), /fichas inválidas/);
 });
+
+
+test('backup preserva a Economia de Ações e seu espelho de SA após restauração', async () => {
+  const { economiaAcoesInicial, comprarRecursoPorEsforco } = await import('../src/economiaAcoes.ts');
+  let economia = comprarRecursoPorEsforco(economiaAcoesInicial(4), 'movimento');
+  const original = ficha();
+  original.dados.saAtual = economia.saAtual;
+  original.dados.economiaAcoes = economia;
+  const recuperado = lerArquivoBackup(serializarBackup(criarBackup([original])));
+  assert.equal(recuperado.personagens[0].dados.saAtual, 3);
+  assert.deepEqual(recuperado.personagens[0].dados.economiaAcoes, economia);
+  assert.notEqual(recuperado.personagens[0].geracao, original.geracao);
+});
