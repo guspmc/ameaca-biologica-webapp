@@ -82,6 +82,8 @@ export default function FichaOfflineApp() {
       const base = selecionadoRef.current;
       if (!base) return false;
       const patchEfetivo = { ...patch };
+      const saldoBaseEsperado = patchEfetivo.economiaAcoesSaldoBase;
+      delete patchEfetivo.economiaAcoesSaldoBase;
       // Ajustes de SA pelo painel de Recursos também atualizam o espelho da
       // Economia de Ações, evitando saldos divergentes entre as duas seções.
       if (typeof patchEfetivo.saAtual === 'number' && !('economiaAcoes' in patchEfetivo)
@@ -92,14 +94,12 @@ export default function FichaOfflineApp() {
       try {
         if ('economiaAcoes' in patchEfetivo) {
           if (!estadoEconomiaAcoesValido(patchEfetivo.economiaAcoes)
-            || patchEfetivo.economiaAcoes.saAtual !== patchEfetivo.saAtual) {
-            throw new Error('O saldo de SA e a Economia de Ações não correspondem. Reabra a ficha antes de tentar novamente.');
-          }
-          const saldoAnterior = estadoEconomiaAcoesValido(base.dados.economiaAcoes)
-            ? base.dados.economiaAcoes.saAtual : base.dados.saAtual;
-          if (typeof saldoAnterior === 'number' && patchEfetivo.economiaAcoes.saAtual > saldoAnterior
-            && estadoEconomiaAcoesValido(base.dados.economiaAcoes)) {
-            throw new Error('A Economia de Ações foi alterada por outra seção. Reabra a ficha para atualizar o saldo antes de registrar uma ação.');
+            || patchEfetivo.economiaAcoes.saAtual !== patchEfetivo.saAtual
+            || !Number.isSafeInteger(saldoBaseEsperado)
+            || saldoBaseEsperado !== base.dados.saAtual
+            || (estadoEconomiaAcoesValido(base.dados.economiaAcoes)
+              && base.dados.economiaAcoes.saAtual !== saldoBaseEsperado)) {
+            throw new Error('A Economia de Ações ou o saldo de SA mudou desde a última leitura. Reabra a ficha antes de registrar esta ação.');
           }
         }
         const atualizado = await salvarPatchPersonagem(base.id, patchEfetivo, base.dados, nomeAtualizado, base.nome, base.geracao);
