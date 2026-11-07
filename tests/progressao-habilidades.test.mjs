@@ -148,7 +148,7 @@ test('sequência completa até o nível 10 respeita ramos e Habilidade Avassalad
 
 
 test('progressão objetiva usa os marcos cumulativos de Missões Completadas', () => {
-  const base = { nivelAtual: 1, metodo: 'missoes', descansoCompletoEmSalaDescanso: true };
+  const base = { nivelAtual: 1, metodo: 'missoes', autorizacaoMestre: true, descansoCompletoEmSalaDescanso: true };
   assert.equal(avaliarDisponibilidadeProgressao({ ...base, missoesCompletadas: 0 }).disponivel, false);
   assert.equal(avaliarDisponibilidadeProgressao({ ...base, missoesCompletadas: 1 }).proximoNivel, 2);
   assert.equal(avaliarDisponibilidadeProgressao({ ...base, missoesCompletadas: 1 }).disponivel, true);
@@ -158,19 +158,26 @@ test('progressão objetiva usa os marcos cumulativos de Missões Completadas', (
 });
 
 test('progressão por Marco Narrativo depende de concessão expressa do Narrador', () => {
-  const base = { nivelAtual: 4, metodo: 'marco_narrativo', missoesCompletadas: 99, descansoCompletoEmSalaDescanso: true };
+  const base = { nivelAtual: 4, metodo: 'marco_narrativo', autorizacaoMestre: true, missoesCompletadas: 99, descansoCompletoEmSalaDescanso: true };
   assert.equal(avaliarDisponibilidadeProgressao({ ...base, marcoNarrativoConcedido: false }).disponivel, false);
   assert.equal(avaliarDisponibilidadeProgressao({ ...base, marcoNarrativoConcedido: true }).disponivel, true);
 });
 
+test('sem autorização individual do Mestre a progressão não fica disponível', () => {
+  const base = { nivelAtual: 1, metodo: 'missoes', autorizacaoMestre: false, missoesCompletadas: 1, descansoCompletoEmSalaDescanso: true };
+  assert.equal(avaliarDisponibilidadeProgressao(base).disponivel, false);
+  assert.match(avaliarDisponibilidadeProgressao(base).motivo, /autorização de evolução/);
+  assert.equal(avaliarDisponibilidadeProgressao({ ...base, autorizacaoMestre: true }).disponivel, true);
+});
+
 test('subida só é aplicada em Descanso Completo na Sala de Descanso', () => {
-  const base = { nivelAtual: 1, metodo: 'missoes', missoesCompletadas: 1, descansoCompletoEmSalaDescanso: false };
+  const base = { nivelAtual: 1, metodo: 'missoes', autorizacaoMestre: true, missoesCompletadas: 1, descansoCompletoEmSalaDescanso: false };
   assert.equal(avaliarDisponibilidadeProgressao(base).disponivel, false);
   assert.match(avaliarDisponibilidadeProgressao(base).motivo, /Sala de Descanso/);
 });
 
 test('perda de Nível por Morte exige novo avanço posterior à Morte', () => {
-  const base = { nivelAtual: 2, metodo: 'missoes', missoesCompletadas: 3, missoesCompletadasNaUltimaMorte: 3, descansoCompletoEmSalaDescanso: true };
+  const base = { nivelAtual: 2, metodo: 'missoes', autorizacaoMestre: true, missoesCompletadas: 3, missoesCompletadasNaUltimaMorte: 3, descansoCompletoEmSalaDescanso: true };
   assert.equal(avaliarDisponibilidadeProgressao(base).disponivel, false);
   assert.equal(avaliarDisponibilidadeProgressao({ ...base, missoesCompletadas: 4 }).disponivel, true);
   const narrativa = { ...base, metodo: 'marco_narrativo', marcoNarrativoConcedido: true };
@@ -181,5 +188,5 @@ test('perda de Nível por Morte exige novo avanço posterior à Morte', () => {
 test('validador de disponibilidade recusa estado malformado e nível máximo', () => {
   assert.equal(avaliarDisponibilidadeProgressao(null).disponivel, false);
   assert.equal(avaliarDisponibilidadeProgressao({ nivelAtual: 11 }).disponivel, false);
-  assert.equal(avaliarDisponibilidadeProgressao({ nivelAtual: 10, metodo: 'missoes', missoesCompletadas: 42, descansoCompletoEmSalaDescanso: true }).proximoNivel, null);
+  assert.equal(avaliarDisponibilidadeProgressao({ nivelAtual: 10, metodo: 'missoes', autorizacaoMestre: true, missoesCompletadas: 42, descansoCompletoEmSalaDescanso: true }).proximoNivel, null);
 });
