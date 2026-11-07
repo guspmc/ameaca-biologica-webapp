@@ -145,6 +145,13 @@ test('persistência grava escolhas de Habilidade e usos; patch de Descanso Compl
         { nivel: 2, habilidadeId: 'curiosa' },
       ],
       usosDescansoCompleto: {},
+      planejamentoCriacao: {
+        nivelAlvo: 2,
+        habilidades: [
+          { nivel: 1, habilidadeId: 'anatomia-de-combate' },
+          { nivel: 2, habilidadeId: 'nao-vai-escapar' },
+        ],
+      },
     },
   };
   registros.set(personagem.id, structuredClone(personagem));
@@ -158,6 +165,7 @@ test('persistência grava escolhas de Habilidade e usos; patch de Descanso Compl
   );
   assert.deepEqual(registros.get(personagem.id).dados.habilidadesAdquiridas, personagem.dados.habilidadesAdquiridas);
   assert.deepEqual(registros.get(personagem.id).dados.usosDescansoCompleto, marcado.dados.usosDescansoCompleto);
+  assert.deepEqual(registros.get(personagem.id).dados.planejamentoCriacao, personagem.dados.planejamentoCriacao);
 
   const renovado = await db.salvarPatchPersonagem(
     personagem.id,
