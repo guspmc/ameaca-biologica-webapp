@@ -155,3 +155,28 @@ Nenhuma alteração em `main`, merge, publicação, Supabase remoto ou banco de 
 - **PENDENTE CRÍTICO:** não foi reproduzido o reload real no navegador Windows nem no celular; não se pode afirmar que a sessão persistente esteja corrigida. A causa do retorno à tela de endereço e o relato de Mesa ausente após novo login continuam sem confirmação humana posterior às correções.
 - **BANCO:** `server/index.mjs` resolve o diretório padrão `.ameaca-local` a partir da localização do arquivo do servidor, e o script oficial informa esse caminho e mantém as duas janelas abertas. O teste de reinício usa explicitamente o mesmo `dataDir`; ainda não comprova que dois processos iniciados manualmente pelo usuário apontem sempre para o mesmo banco.
 - **LIMITES PRESERVADOS:** nenhum deploy, merge, alteração em `main`, modificação no Supabase remoto ou uso de dados reais. Testes de navegador/rede/dispositivo permanecem pendentes.
+
+## Continuidade — layout independente, Origem Operário e auditoria da ativação LAN
+**Atualização:** 07/11/2026 · branch `feat/offline-first-ficha`
+
+### Painel e ficha responsiva
+- **IMPLEMENTADO:** Painel do Mestre abre em tela própria, selecionado pela Mesa, e oferece retorno ao hub sem encerrar a sessão.
+- **IMPLEMENTADO:** em telas baixas na orientação paisagem, a ficha ocupa a viewport sem a moldura com altura mínima; a navegação inferior permanece fixa.
+- **CI CONFIRMADA:** workflows dos commits `d53f2b3` e `d130284` concluíram com sucesso (build e testes).
+
+### Origem Operário
+- **IMPLEMENTADO:** a revisão do jogador exige uma arma da lista permitida para a Origem Operário.
+- **CORREÇÃO NO SERVIDOR:** `validarCriacaoServidor.ts` agora encaminha `armaOperario` à revisão compartilhada; sem isso, uma escolha válida seria tratada como ausente no servidor.
+- **TESTES:** cobertura de ausência, arma permitida e arma incompatível na revisão; teste de integração do validador compartilhado.
+- **CI CONFIRMADA:** commit `31dfe94` — 516 testes aprovados, zero falhas; build e verificações de tipos aprovados. O workflow adicional do commit `c925b90` ainda estava em execução no momento deste registro.
+
+### Ativação e resumo operacional — bloqueio arquitetural identificado
+- **IMPLEMENTADO:** validação de criação de nível 1 no servidor LAN para os dados atualmente cobertos por `validarCriacaoNoServidor`.
+- **PENDENTE:** o banco LAN persiste personagens somente como rascunhos; não há estado de personagem ativa, operação de finalização/ativação nem inventário materializado no servidor local.
+- **PENDENTE:** o resumo operacional do Mestre já possui componentes/controlador e uma proposta SQL de referência, mas o serviço disponível nessa proposta usa RPC Supabase. Não integrar nem reativar Supabase: a versão LAN precisa de serviço HTTP e autorização própria no servidor local.
+- **DECISÃO DE IMPLEMENTAÇÃO:** não exibir rascunhos no resumo nem simular ativação no cliente. Implementar primeiro o ciclo LAN de finalização, com revisão otimista, idempotência, teto de 10 personagens ativas e materialização transacional do inventário; depois conectar o resumo somente leitura do Mestre.
+- **REGRAS DE REFERÊNCIA:** Planejamento v2.1, seções 3.3–3.5, 4 e 5.1–5.5. A finalização deve revalidar método, nível permitido, capacidade ativa e dados no servidor; os rascunhos continuam privados e não ocupam vagas.
+- **LIMITAÇÃO ATUAL:** a criação e a revisão de ficha cobrem nível 1. Criação em níveis superiores, Regra da Casa e benefícios de progressão ainda não estão integrados ao fluxo LAN. Não declarar criação completa.
+
+### Limites preservados
+Nenhuma alteração em `main`, merge, publicação, Supabase remoto ou banco de produção. Nenhum teste humano de navegador/dispositivo foi realizado nesta atualização.
