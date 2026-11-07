@@ -46,6 +46,7 @@ type DadosFichaLocal = {
   pvTemporarios?: unknown;
   saAtual?: unknown;
   reanimacao?: unknown;
+  economiaAcoes?: unknown;
 };
 
 type Props = {
@@ -421,7 +422,7 @@ export default function FichaLocal({ nome, mesa, contextoId, dados, aoFechar, ao
 
         <section id="ficha-local-combate" className="ficha-local-secao">
           <div className="ficha-local-titulo-secao"><h2><span>03</span> Combate</h2><span className="ficha-local-selo">PREPARAÇÃO</span></div>
-          <p className="ficha-local-legenda">Resumo operacional da personagem. Os valores abaixo são informativos: esta seção ainda não inicia nem resolve um combate.</p>
+          <p className="ficha-local-legenda">Resumo operacional da personagem. O painel opcional registra recursos de ação e gastos de SA confirmados pelo servidor; não controla a Iniciativa da Mesa nem resolve rolagens ou efeitos.</p>
 
           <h3 className="ficha-local-subtitulo">Defesa e deslocamento</h3>
           <div className="ficha-local-grade">
@@ -452,7 +453,7 @@ export default function FichaLocal({ nome, mesa, contextoId, dados, aoFechar, ao
             <div><small>CONDIÇÕES E EFEITOS</small><strong>A integrar</strong><p>Esta ficha ainda não registra nem aplica Condições ou efeitos temporários.</p></div>
             <div><small>ATAQUES E DANO</small><strong>A integrar</strong><p>Resolução de Testes, Defesa de alvos, Dano e consumo de munição não estão implementados nesta seção.</p></div>
           </div>
-          <p className="ficha-local-aviso">Esta seção não simula rolagens, ações ou efeitos de combate. PV, SA e BI podem ser ajustados expressamente no painel de Recursos; Descanso e Reanimação possuem painéis próprios. O controle de turnos, Condições, ataques, Defesa de alvos, dano e consumo de munição permanece pendente.</p>
+          <p className="ficha-local-aviso">O painel registra usos de Ação, Movimento, Ação Bônus, Reação, Interação Gratuita, Esforço e gastos de Manobra; ele não executa rolagens, não presume gatilhos e não aplica efeitos. PV, SA e BI continuam administrados nos painéis próprios. Iniciativa da Mesa, Condições, resolução de Ataques, Defesa de alvos, Dano e consumo de munição permanecem pendentes.</p>
         </section>
 
         <section id="ficha-local-inventario" className="ficha-local-secao">
