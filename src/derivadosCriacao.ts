@@ -45,7 +45,7 @@ export function calcularDerivadosCriacao(entrada: EntradaDerivadosCriacao) {
 
   const pvClasse = entrada.classe === 'Agente' ? 10 : entrada.classe === 'Autodidata' ? 8 : 12;
   const pvParrudo = habilidade?.id === 'parrudo' ? 5 : 0;
-  const biParrudo = habilidade.id === 'parrudo' ? 3 : 0;
+  const biParrudo = habilidade?.id === 'parrudo' ? 3 : 0;
   const biCobaia = entrada.origem === 'Cobaia' ? 2 : 0;
   const saUniversitaria = entrada.origem === 'Universitária' ? 1 : 0;
   const defesaPolicial = entrada.origem === 'Policial' ? 2 : 0;
