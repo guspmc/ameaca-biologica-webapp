@@ -1102,3 +1102,37 @@ footer { margin-top:45px; border-top:1px solid #dce2df; padding-top:19px; color:
  .ficha-local-topo{padding:0 18px}
  .ficha-local-nav{left:12px;right:12px;bottom:max(7px,env(safe-area-inset-bottom));width:auto;max-width:none}
 }
+
+
+/* Rolagem independente do conteúdo do Terminal: evita que o painel fique preso
+   quando aberto como sobreposição dentro do hub de conexão. */
+.painel-mestre-shell.servidor-local-controle-mesa{
+  overflow:hidden;
+}
+.painel-mestre-shell.servidor-local-controle-mesa .painel-mestre-app{
+  height:100%;min-height:0;
+  grid-template-rows:minmax(0,1fr);
+}
+.painel-mestre-shell.servidor-local-controle-mesa .painel-mestre-workspace{
+  display:flex;flex-direction:column;height:100%;min-height:0;overflow:hidden;
+}
+.painel-mestre-shell.servidor-local-controle-mesa .painel-mestre-masthead{
+  flex:none;
+}
+.painel-mestre-shell.servidor-local-controle-mesa .painel-mestre-main{
+  flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;
+  scrollbar-width:thin;scrollbar-color:#aeb7bb transparent;
+}
+@media(min-width:760px){
+  .painel-mestre-shell.servidor-local-controle-mesa .painel-mestre-app{
+    grid-template-columns:235px minmax(0,1fr);
+  }
+  .painel-mestre-shell.servidor-local-controle-mesa .painel-mestre-sidebar{
+    height:100%;min-height:0;overflow-y:auto;
+  }
+}
+@media(min-width:1050px){
+  .painel-mestre-shell.servidor-local-controle-mesa .painel-mestre-app{
+    grid-template-columns:255px minmax(0,1fr);
+  }
+}
