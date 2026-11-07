@@ -72,7 +72,7 @@ export function prepararContraAtaque(args: {
       reacaoAdicionalComprada = true;
     }
   }
-  economia = gastarSAEmManobra(economia, 1);
+  economia = gastarSAEmManobra(economia, 1, true);
   return { economia, reacaoAdicionalComprada, custoSA: 1 + (reacaoAdicionalComprada ? 1 : 0) };
 }
 
