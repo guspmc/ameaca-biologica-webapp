@@ -4,11 +4,12 @@ import { readFile } from 'node:fs/promises';
 import ts from 'typescript';
 
 const habilidades = await readFile(new URL('../src/habilidades.ts', import.meta.url), 'utf8');
+const pericias = await readFile(new URL('../src/pericias.ts', import.meta.url), 'utf8');
 const progressao = (await readFile(new URL('../src/progressaoHabilidades.ts', import.meta.url), 'utf8'))
   .replace(/^import .*;\r?\n/m, '');
-const source = habilidades + '\n' + progressao;
+const source = pericias + '\n' + habilidades + '\n' + progressao;
 const { outputText } = ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2022 } });
-const { ganhosProgressaoAte, validarProgressaoHabilidades, HABILIDADES_PROGRESSAO } =
+const { ganhosProgressaoAte, validarProgressaoHabilidades, validarGanhoAtributoProgressao, validarGanhoPericiaProgressao, HABILIDADES_PROGRESSAO } =
   await import('data:text/javascript;base64,' + Buffer.from(outputText).toString('base64'));
 
 test('catálogo contém habilidades de todos os graus e classes conforme o Arquivo do Jogador', () => {
@@ -66,4 +67,19 @@ test('dados de progressão malformados são recusados sem interromper a conferê
   assert.equal(validarProgressaoHabilidades('Agente', 1, null).valida, false);
   assert.equal(validarProgressaoHabilidades('Agente', 1, [null]).valida, false);
   assert.equal(validarProgressaoHabilidades('Agente', 1, [{ nivel: 1 }]).valida, false);
+});
+
+test('ganhos de Atributo ocorrem somente nos níveis previstos e respeitam teto 5', () => {
+  assert.equal(validarGanhoAtributoProgressao(3, 'forca', 4).valido, true);
+  assert.equal(validarGanhoAtributoProgressao(5, 'astucia', 5).valido, false);
+  assert.equal(validarGanhoAtributoProgressao(4, 'forca', 2).valido, false);
+  assert.equal(validarGanhoAtributoProgressao(7, 'atributo-falso', 2).valido, false);
+});
+
+test('ganhos de Perícia ocorrem nos níveis 4 e 8 e só aceitam Perícias da Classe abaixo de Mestre', () => {
+  assert.equal(validarGanhoPericiaProgressao('Agente', 4, 'Luta', 1).valido, true);
+  assert.equal(validarGanhoPericiaProgressao('Agente', 8, 'Pontaria', 0).valido, true);
+  assert.equal(validarGanhoPericiaProgressao('Agente', 4, 'Medicina', 0).valido, false);
+  assert.equal(validarGanhoPericiaProgressao('Operador', 4, 'Fortitude', 2).valido, false);
+  assert.equal(validarGanhoPericiaProgressao('Operador', 5, 'Luta', 0).valido, false);
 });
