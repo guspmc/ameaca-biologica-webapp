@@ -9,15 +9,16 @@ export function dadoVidaClasse(classe: string): 8 | 10 | 12 {
   throw new Error('Classe não definida para Descanso Parcial.');
 }
 
-/** Nível 1 no escopo atual: recebe uma face física do Dado de Vida da Classe. */
-export function concluirDescansoParcial(r: RecursosAtuais, resultadoDadoVida: number, dadoVida: number, pvMaximo: number, saMaximo: number): RecursosAtuais {
+/** Soma os Dados de Vida rolados expressamente: um por Nível da personagem. */
+export function concluirDescansoParcial(r: RecursosAtuais, resultadosDadoVida: number | number[], dadoVida: number, pvMaximo: number, saMaximo: number, nivel = 1): RecursosAtuais {
+  const resultados = Array.isArray(resultadosDadoVida) ? resultadosDadoVida : [resultadosDadoVida];
   if (!recursosValidos(r, pvMaximo, saMaximo) || !Number.isSafeInteger(dadoVida) || ![8,10,12].includes(dadoVida)
-    || !Number.isSafeInteger(resultadoDadoVida) || resultadoDadoVida < 1 || resultadoDadoVida > dadoVida) {
-    throw new Error('Resultado físico ou recursos inválidos para Descanso Parcial.');
+    || !Number.isSafeInteger(nivel) || nivel < 1 || nivel > 10 || resultados.length !== nivel
+    || resultados.some(face => !Number.isSafeInteger(face) || face < 1 || face > dadoVida)) {
+    throw new Error('Resultados físicos ou recursos inválidos para Descanso Parcial.');
   }
-  return curarPV(r, resultadoDadoVida, pvMaximo);
+  return curarPV(r, resultados.reduce((total, face) => total + face, 0), pvMaximo);
 }
-
 /** Descanso Completo restaura PV/SA, encerra PV Temporários e preserva BI e demais consequências. */
 export function concluirDescansoCompleto(r: RecursosAtuais, pvMaximo: number, saMaximo: number): RecursosAtuais {
   if (!Number.isSafeInteger(pvMaximo) || pvMaximo < 0 || !Number.isSafeInteger(saMaximo) || saMaximo < 0
