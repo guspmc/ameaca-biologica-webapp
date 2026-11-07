@@ -26,7 +26,12 @@ export function economiaAcoesInicial(saAtual: number): EstadoEconomiaAcoes {
 export function saNaJanelaEsforco(estado: EstadoEconomiaAcoes): number { return estado.saGastaNaJanela; }
 
 function validarEstado(estado: EstadoEconomiaAcoes): void {
-  if (!estado || !Number.isSafeInteger(estado.saAtual) || estado.saAtual < 0
+  const chavesEstado = ['saAtual', 'saGastaNaJanela', 'normaisUsados', 'comprasEsforco', 'interacaoGratuitaUsada', 'turnoEmAndamento'];
+  const chavesRecursos = ['acao', 'movimento', 'acaoBonus', 'reacao'];
+  if (!estado || Object.keys(estado).sort().join('|') !== chavesEstado.sort().join('|')
+    || !estado.normaisUsados || Object.keys(estado.normaisUsados).sort().join('|') !== chavesRecursos.sort().join('|')
+    || !estado.comprasEsforco || Object.keys(estado.comprasEsforco).sort().join('|') !== chavesRecursos.sort().join('|')
+    || !Number.isSafeInteger(estado.saAtual) || estado.saAtual < 0
     || !Number.isSafeInteger(estado.saGastaNaJanela) || estado.saGastaNaJanela < 0
     || !estado.normaisUsados || RECURSOS.some(r => typeof estado.normaisUsados[r] !== 'boolean')
     || !estado.comprasEsforco || RECURSOS.some(r => !Number.isSafeInteger(estado.comprasEsforco[r]) || estado.comprasEsforco[r] < 0)
