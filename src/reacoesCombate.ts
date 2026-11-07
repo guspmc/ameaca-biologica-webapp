@@ -110,6 +110,21 @@ export function registrarUsoAparar(args: {
     : { ...item };
 }
 
+function janelaReacaoValida(valor: unknown): valor is JanelaReacao {
+  if (!valor || typeof valor !== 'object' || Array.isArray(valor)) return false;
+  const janela = valor as Record<string, unknown>;
+  const chaves = Object.keys(janela).sort();
+  if (chaves.join('|') !== ['aberta', 'fechadaPor20Natural', 'motivo', 'podeAparar', 'podeEsquivar'].sort().join('|')
+    || typeof janela.aberta !== 'boolean'
+    || typeof janela.fechadaPor20Natural !== 'boolean'
+    || typeof janela.podeAparar !== 'boolean'
+    || typeof janela.podeEsquivar !== 'boolean'
+    || typeof janela.motivo !== 'string'
+    || janela.fechadaPor20Natural === janela.aberta
+    || (janela.fechadaPor20Natural && (janela.podeAparar || janela.podeEsquivar))) return false;
+  return true;
+}
+
 /** Consome uma Reação defensiva; se a normal já foi usada, compra outra por Esforço. */
 export function registrarReacaoDefensiva(args: {
   economia: EstadoEconomiaAcoes;
@@ -118,8 +133,7 @@ export function registrarReacaoDefensiva(args: {
 }): { economia: EstadoEconomiaAcoes; reacaoAdicionalComprada: boolean } {
   if (args.manobra !== 'aparar' && args.manobra !== 'esquivar') throw new Error('Manobra defensiva desconhecida.');
   if (!estadoEconomiaAcoesValido(args.economia)) throw new Error('Estado da economia de ações inválido para Reação defensiva.');
-  if (!args.janela || typeof args.janela.aberta !== 'boolean'
-    || typeof args.janela.podeAparar !== 'boolean' || typeof args.janela.podeEsquivar !== 'boolean') {
+  if (!janelaReacaoValida(args.janela)) {
     throw new Error('Janela de Reação inválida.');
   }
   if (!args.janela.aberta) throw new Error('A janela de Reações defensivas está fechada.');
