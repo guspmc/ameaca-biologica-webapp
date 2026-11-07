@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import type { MesaLocal, ParticipanteMesaLocal } from './servidorLocal';
 import QRCodeLocal from './QRCodeLocal';
 
@@ -31,10 +31,11 @@ type Props = {
   aoDecidirSolicitacao: (mesa: MesaLocal, solicitacaoId: string, decisao: 'aprovar' | 'recusar') => void;
   aoCarregarParticipantes: (mesa: MesaLocal) => void;
   aoRemoverParticipante: (mesa: MesaLocal, accountId: string) => void;
+  aoAlterarNivelMesa: (mesa: MesaLocal, nivel: number) => void;
 };
 
 /** Painel administrativo restrito ao contexto da Mesa em que a conta é Mestre. */
-export default function PainelMestreLocal({ mesa, aoVoltar, enderecosLan = [], convite, solicitacoes, participantes, consultando, aoGerarConvite, aoRevogarConvite, aoCarregarSolicitacoes, aoCopiarConvite, aoDecidirSolicitacao, aoCarregarParticipantes, aoRemoverParticipante }: Props) {
+export default function PainelMestreLocal({ mesa, aoVoltar, enderecosLan = [], convite, solicitacoes, participantes, consultando, aoGerarConvite, aoRevogarConvite, aoCarregarSolicitacoes, aoCopiarConvite, aoDecidirSolicitacao, aoCarregarParticipantes, aoRemoverParticipante, aoAlterarNivelMesa }: Props) {
   const chaveSubAbaEncontros = 'ameaca-biologica:painel-mestre:encontros:v1:' + mesa.id;
   const chaveSubAbaArquivos = 'ameaca-biologica:painel-mestre:arquivos:v1:' + mesa.id;
   const [subAbaEncontros, setSubAbaEncontros] = useState<SubAbaEncontros>(() => {
@@ -50,6 +51,8 @@ export default function PainelMestreLocal({ mesa, aoVoltar, enderecosLan = [], c
     } catch { return 'documentos'; }
   });
   const [rascunhoLocal, setRascunhoLocal] = useState('');
+  const [nivelMesaEditado, setNivelMesaEditado] = useState(String(mesa.maxLevel ?? 1));
+  useEffect(() => setNivelMesaEditado(String(mesa.maxLevel ?? 1)), [mesa.id, mesa.maxLevel]);
   function selecionarSubAbaEncontros(proxima: SubAbaEncontros) {
     setSubAbaEncontros(proxima);
     try { if (typeof window !== 'undefined') window.sessionStorage.setItem(chaveSubAbaEncontros, proxima); } catch { /* A navegação funciona sem persistência local. */ }
@@ -108,6 +111,17 @@ export default function PainelMestreLocal({ mesa, aoVoltar, enderecosLan = [], c
           <span className="painel-mestre-selo-demo">CONTROLE DO MESTRE</span>
         </div>
         <p className="painel-mestre-orientacao">Convites, solicitações e participantes são administrados nesta Mesa. Aprovações e remoções são confirmadas pelo servidor.</p>
+        <section className="painel-mestre-mesa-acoes" aria-label="Configurações da Mesa">
+          <div><small>PROGRESSÃO DA CAMPANHA</small><strong>Nível da Mesa</strong><span>Novas fichas podem começar em qualquer nível até este limite. Reduzi-lo não rebaixa personagens existentes.</span></div>
+          <div className="servidor-local-botoes">
+            <label>Nível máximo
+              <select aria-label="Nível máximo da Mesa" value={nivelMesaEditado} onChange={evento => setNivelMesaEditado(evento.target.value)}>
+                {Array.from({ length: 10 }, (_, indice) => <option key={indice + 1} value={String(indice + 1)}>Nível {indice + 1}</option>)}
+              </select>
+            </label>
+            <button className="botao-claro" type="button" disabled={consultando || Number(nivelMesaEditado) === (mesa.maxLevel ?? 1)} onClick={() => aoAlterarNivelMesa(mesa, Number(nivelMesaEditado))}>Salvar nível</button>
+          </div>
+        </section>
         <div className="painel-mestre-indicadores painel-mestre-mesa-stats" aria-label="Indicadores atuais da Mesa">
         <span>JOGADORES <b>{totalJogadores === undefined ? '—' : totalJogadores}</b></span>
         <span>VAGAS RESTANTES <b>{vagasDisponiveis === undefined ? '—' : vagasDisponiveis}</b></span>

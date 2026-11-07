@@ -498,6 +498,24 @@ export default function ConexaoServidorLocal() {
     } finally { if (sessaoContinuaSendoAtual(geracaoSessao.current, geracaoSolicitada)) setConsultando(false); }
   }
 
+  async function alterarNivelMesa(mesa: MesaLocal, nivel: number) {
+    if (!sessao || mesa.role !== 'mestre') return;
+    const geracaoSolicitada = geracaoSessao.current;
+    setErro(''); setAviso(''); setConsultando(true);
+    try {
+      const cliente = criarClienteServidorLocal({ baseUrl: endereco.trim(), token: sessao.token });
+      const resposta = await cliente.atualizarNivelMesa(mesa.id, nivel);
+      if (!sessaoContinuaSendoAtual(geracaoSessao.current, geracaoSolicitada)) return;
+      setMesas(atuais => atuais.map(item => item.id === mesa.id ? resposta.mesa : item));
+      setAviso('Nível da Mesa atualizado e confirmado pelo servidor.');
+    } catch (problema) {
+      if (!sessaoContinuaSendoAtual(geracaoSessao.current, geracaoSolicitada)) return;
+      if (problema instanceof ErroServidorLocal && problema.status === 401) {
+        encerrarSessao('A sessão expirou ou foi encerrada no servidor. Entre novamente.');
+      } else setErro(problema instanceof Error ? problema.message : 'Não foi possível atualizar o Nível da Mesa.');
+    } finally { if (sessaoContinuaSendoAtual(geracaoSessao.current, geracaoSolicitada)) setConsultando(false); }
+  }
+
   async function atualizarMesas() {
     if (!sessao) return;
     const geracaoSolicitada = geracaoSessao.current;
@@ -1049,6 +1067,7 @@ export default function ConexaoServidorLocal() {
               aoDecidirSolicitacao={(item, pedidoId, decisao) => void decidirSolicitacao(item, pedidoId, decisao)}
               aoCarregarParticipantes={item => void carregarParticipantes(item)}
               aoRemoverParticipante={(item, accountId) => void removerParticipante(item, accountId)}
+              aoAlterarNivelMesa={(item, nivel) => void alterarNivelMesa(item, nivel)}
             />)}
             <form className="formulario servidor-local-form-mesa" onSubmit={ingressarPorConvite}>
               <label>Código de convite recebido<input value={codigoConvite} maxLength={100} autoCapitalize="characters" spellCheck={false} onChange={evento => {

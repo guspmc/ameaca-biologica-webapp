@@ -14,6 +14,7 @@ export type MesaLocal = {
   name: string;
   role: 'mestre' | 'jogador';
   creationMethod: 'padrao' | 'regra_da_casa';
+  maxLevel: number;
   createdAt: string;
 };
 
@@ -244,6 +245,11 @@ export function criarClienteServidorLocal({ baseUrl, token, fetcher = fetch }: O
         corpo: { name, creationMethod },
         autenticada: true,
       });
+    },
+
+    atualizarNivelMesa(id: string, maxLevel: number): Promise<{ mesa: MesaLocal }> {
+      if (!/^[a-f0-9]{32}$/.test(id)) throw new Error('Identificador de Mesa inválido.');
+      return requisicao('/api/mesas/' + id, { metodo: 'PATCH', corpo: { maxLevel }, autenticada: true });
     },
 
     consultarMesa(id: string): Promise<{ mesa: MesaLocal }> {

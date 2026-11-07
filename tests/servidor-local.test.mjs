@@ -696,12 +696,31 @@ test('Mesa registra método de criação e valida opções no servidor', async t
   assert.equal(criada.status, 201);
   const mesa = (await criada.json()).mesa;
   assert.equal(mesa.creationMethod, 'regra_da_casa');
+  assert.equal(mesa.maxLevel, 1);
+
+  const nivelInvalido = await fetch(instancia.url + '/api/mesas/' + mesa.id, {
+    method: 'PATCH', headers, body: JSON.stringify({ maxLevel: 11 }),
+  });
+  assert.equal(nivelInvalido.status, 422);
+  const nivelFracionario = await fetch(instancia.url + '/api/mesas/' + mesa.id, {
+    method: 'PATCH', headers, body: JSON.stringify({ maxLevel: 3.5 }),
+  });
+  assert.equal(nivelFracionario.status, 422);
+  const nivelAtualizado = await fetch(instancia.url + '/api/mesas/' + mesa.id, {
+    method: 'PATCH', headers, body: JSON.stringify({ maxLevel: 7 }),
+  });
+  assert.equal(nivelAtualizado.status, 200);
+  assert.equal((await nivelAtualizado.json()).mesa.maxLevel, 7);
 
   const lista = await fetch(instancia.url + '/api/mesas', { headers: { authorization: 'Bearer ' + token } });
   assert.equal(lista.status, 200);
-  assert.equal((await lista.json()).mesas[0].creationMethod, 'regra_da_casa');
+  const mesasListadas = (await lista.json()).mesas;
+  assert.equal(mesasListadas[0].creationMethod, 'regra_da_casa');
+  assert.equal(mesasListadas[0].maxLevel, 7);
 
   const detalhe = await fetch(instancia.url + '/api/mesas/' + mesa.id, { headers: { authorization: 'Bearer ' + token } });
   assert.equal(detalhe.status, 200);
-  assert.equal((await detalhe.json()).mesa.creationMethod, 'regra_da_casa');
+  const mesaDetalhada = (await detalhe.json()).mesa;
+  assert.equal(mesaDetalhada.creationMethod, 'regra_da_casa');
+  assert.equal(mesaDetalhada.maxLevel, 7);
 });

@@ -273,6 +273,18 @@ export function prepararAutenticacaoLocal(db) {
     } catch (erro) { db.exec('ROLLBACK'); throw erro; }
   }
 
+  if (versaoAtual < 10) {
+    db.exec('BEGIN IMMEDIATE');
+    try {
+      const colunasMesas = db.prepare('PRAGMA table_info(mesas)').all();
+      if (!colunasMesas.some(coluna => coluna.name === 'nivel_maximo')) {
+        db.exec('ALTER TABLE mesas ADD COLUMN nivel_maximo INTEGER NOT NULL DEFAULT 1 CHECK (nivel_maximo BETWEEN 1 AND 10)');
+      }
+      db.prepare('INSERT INTO schema_migrations (version, applied_at) VALUES (?, ?)').run(10, new Date().toISOString());
+      db.exec('COMMIT');
+    } catch (erro) { db.exec('ROLLBACK'); throw erro; }
+  }
+
 }
 
 export function consumirTicketWebSocketLocal(db, ticket) {
@@ -503,7 +515,7 @@ export async function tratarRotaMesas(req, res, url, db, notificarMesa = () => {
   try {
     if (metodo === 'GET' && rota === '/api/mesas') {
       const mesas = db.prepare(`
-        SELECT m.id, m.nome AS name, p.papel AS role, m.metodo_criacao AS creationMethod, m.criada_em AS createdAt
+        SELECT m.id, m.nome AS name, p.papel AS role, m.metodo_criacao AS creationMethod, m.nivel_maximo AS maxLevel, m.criada_em AS createdAt
         FROM participantes_mesa p
         JOIN mesas m ON m.id = p.mesa_id
         WHERE p.conta_id = ?
@@ -545,6 +557,25 @@ export async function tratarRotaMesas(req, res, url, db, notificarMesa = () => {
     }
 
     const detalhe = /^\/api\/mesas\/([a-f0-9]{32})$/.exec(rota);
+    if (metodo === 'PATCH' && detalhe) {
+      const corpo = await corpoJson(req);
+      const nivel = corpo.maxLevel;
+      if (!Number.isInteger(nivel) || nivel < 1 || nivel > 10) {
+        json(res, 422, { error: 'O Nível da Mesa deve ser um número inteiro entre 1 e 10.' });
+        return true;
+      }
+      db.exec('BEGIN IMMEDIATE');
+      try {
+        const mestre = db.prepare("SELECT 1 FROM participantes_mesa WHERE mesa_id = ? AND conta_id = ? AND papel = 'mestre'").get(detalhe[1], conta.id);
+        if (!mestre) { db.exec('ROLLBACK'); json(res, 404, { error: 'Mesa não encontrada.' }); return true; }
+        db.prepare('UPDATE mesas SET nivel_maximo = ? WHERE id = ?').run(nivel, detalhe[1]);
+        db.exec('COMMIT');
+      } catch (erro) { db.exec('ROLLBACK'); throw erro; }
+      const mesa = db.prepare('SELECT id, nome AS name, metodo_criacao AS creationMethod, nivel_maximo AS maxLevel, criada_em AS createdAt FROM mesas WHERE id = ?').get(detalhe[1]);
+      json(res, 200, { mesa: { ...mesa, role: 'mestre' } });
+      notificarMesa(detalhe[1], 'mesa.settings.changed');
+      return true;
+    }
     if (metodo === 'GET' && detalhe) {
       const mesa = db.prepare(`
         SELECT m.id, m.nome AS name, p.papel AS role, m.metodo_criacao AS creationMethod, m.criada_em AS createdAt
