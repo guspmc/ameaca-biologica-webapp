@@ -177,7 +177,7 @@ export default function FichaLocal({ nome, mesa, contextoId, dados, aoFechar, ao
       const secoes = [...pendenciasInternas.current].join(', ');
       if (autoSalvar) {
         setFecharAposSalvar(true);
-        setAvisoFechamento('Aguardando confirmação do servidor: ' + secoes + '. A ficha fechará automaticamente quando todas as alterações forem salvas.');
+        setAvisoFechamento((origemDados === 'servidor' ? 'Aguardando confirmação do servidor: ' : 'Aguardando confirmação do armazenamento local: ') + secoes + '. A ficha fechará automaticamente quando todas as alterações forem salvas.');
       } else {
         setAvisoFechamento('Há alterações pendentes em: ' + secoes + '. Salve-as antes de fechar a ficha.');
       }
@@ -328,7 +328,7 @@ export default function FichaLocal({ nome, mesa, contextoId, dados, aoFechar, ao
           <div><span className="ficha-local-recurso-icone"><IconeFicha tipo="defesa" /></span><small>DEFESA</small><strong>{defesa}</strong><span>Sem equipamento</span></div>
         </div>
 
-        <RecursosFichaLocal autoSalvar={autoSalvar}
+        <RecursosFichaLocal origemDados={origemDados} autoSalvar={autoSalvar}
           key={JSON.stringify([ficha.pvAtual ?? null, ficha.pvTemporarios ?? null, ficha.saAtual ?? null, ficha.biAtual ?? null])}
           dados={dados}
           pvMaximo={pv}
