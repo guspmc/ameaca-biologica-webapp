@@ -344,10 +344,6 @@ export async function tratarRotaAutenticacao(req, res, url, db, encerrarSessaoWe
 
       const salt = randomBytes(16);
       const senhaHash = await scrypt(senha, salt, 64);
-      if (!['padrao', 'regra_da_casa'].includes(metodoCriacao)) {
-        json(res, 422, { error: 'Escolha um método de criação válido.' });
-        return true;
-      }
       const id = randomBytes(16).toString('hex');
       try {
         // A coluna "email" é mantida internamente para preservar o banco legado;
@@ -521,6 +517,11 @@ export async function tratarRotaMesas(req, res, url, db, notificarMesa = () => {
         return true;
       }
 
+      if (!['padrao', 'regra_da_casa'].includes(metodoCriacao)) {
+        json(res, 422, { error: 'Escolha um método de criação válido.' });
+        return true;
+      }
+
       const id = randomBytes(16).toString('hex');
       const agora = new Date().toISOString();
       db.exec('BEGIN IMMEDIATE');
@@ -541,7 +542,7 @@ export async function tratarRotaMesas(req, res, url, db, notificarMesa = () => {
     const detalhe = /^\/api\/mesas\/([a-f0-9]{32})$/.exec(rota);
     if (metodo === 'GET' && detalhe) {
       const mesa = db.prepare(`
-        SELECT m.id, m.nome AS name, p.papel AS role, m.criada_em AS createdAt
+        SELECT m.id, m.nome AS name, p.papel AS role, m.metodo_criacao AS creationMethod, m.criada_em AS createdAt
         FROM mesas m
         JOIN participantes_mesa p ON p.mesa_id = m.id
         WHERE m.id = ? AND p.conta_id = ?
