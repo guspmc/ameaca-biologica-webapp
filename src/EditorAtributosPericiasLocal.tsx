@@ -86,7 +86,7 @@ export default function EditorAtributosPericias(props: Props) {
     {visiveis.map(nome=>{const gasto=distribuicao[nome]??0;const grau=gasto+(nome===treinada?1:0);const compativel=validas.has(nome);return <div className="linha-pericia-lab" key={nome}><span><strong>{nome}</strong><small>{!compativel?'Incompatível · revisar':grau===0?'Não Treinada':grau===1?'Treinada':'Mestre'}</small></span><div className="controle-stat"><button type="button" onClick={()=>mudarPericia(nome,-1)} disabled={ocupado||gasto===0} aria-label={gasto===0?'Sem pontos para remover em '+nome:'Reduzir grau de '+nome}>−</button><b>{gasto}</b><button type="button" onClick={()=>mudarPericia(nome,1)} disabled={ocupado||!compativel||gasto >= (nome===treinada?1:2)||gastos>=limite}>+</button></div></div>})}
     {Object.keys(distribuicao).some(nome=>!validas.has(nome)) && <p role="alert">Há Perícias salvas que não são compatíveis com as escolhas atuais. Os pontos foram preservados; ajuste as escolhas para concluir a sincronização.</p>}
     {props.autoSalvar
-      ? <AutoSaveStatusLocal estado={salvamento.autosave.estado} erro={salvamento.autosave.erro} mensagemSucesso={props.mensagemSucesso ?? 'Atributos e Perícias salvos e confirmados pelo servidor.'} aoTentarNovamente={salvamento.autosave.tentarNovamente} />
+      ? <AutoSaveStatusLocal estado={salvamento.autosave.estado} erro={salvamento.autosave.erro} mensagemSucesso={props.mensagemSucesso ?? 'Atributos e Perícias salvos neste dispositivo.'} aoTentarNovamente={salvamento.autosave.tentarNovamente} />
       : <>
           {salvamento.erroManual && <p className="offline-erro" role="alert">{salvamento.erroManual}</p>}
           {salvamento.sucessoManual && <p className="offline-status" role="status">{salvamento.sucessoManual}</p>}

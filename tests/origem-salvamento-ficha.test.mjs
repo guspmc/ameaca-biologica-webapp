@@ -51,7 +51,7 @@ test('editores da Ficha usam confirmação local por padrão e só mencionam ser
   for (const [arquivo, mensagem] of arquivos) {
     const fonte = await readFile(new URL('../src/' + arquivo, import.meta.url), 'utf8');
     assert.match(fonte, new RegExp(mensagem.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
-    assert.doesNotMatch(fonte, /salvos e confirmados pelo servidor|salva e confirmada pelo servidor|salvo e confirmado pelo servidor/);
+    assert.doesNotMatch(fonte, /confirmad[oa]s? pelo servidor/);
   }
   const ficha = await readFile(new URL('../src/FichaLocal.tsx', import.meta.url), 'utf8');
   assert.match(ficha, /origemDados === 'servidor' \? 'Características confirmadas pelo servidor\.'/);

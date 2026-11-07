@@ -81,7 +81,7 @@ export default function EditorInventarioLocal({ classe, capacidade, kitInicial, 
     }} />}
     {kit !== 'C' && <p>O conjunto A ou B usa os itens previstos no livro. Ao confirmar a escolha, o plano de compras personalizado anterior será removido do rascunho.</p>}
     {autoSalvar
-      ? <AutoSaveStatusLocal estado={salvamento.autosave.estado} erro={salvamento.autosave.erro} mensagemSucesso={mensagemSucesso ?? 'Planejamento do inventário salvo e confirmado pelo servidor.'} aoTentarNovamente={salvamento.autosave.tentarNovamente} />
+      ? <AutoSaveStatusLocal estado={salvamento.autosave.estado} erro={salvamento.autosave.erro} mensagemSucesso={mensagemSucesso ?? 'Planejamento do inventário salvo neste dispositivo.'} aoTentarNovamente={salvamento.autosave.tentarNovamente} />
       : <>
           {salvamento.erroManual && <p className="offline-erro" role="alert">{salvamento.erroManual}</p>}
           {salvamento.sucessoManual && <p className="offline-status" role="status">{salvamento.sucessoManual}</p>}
