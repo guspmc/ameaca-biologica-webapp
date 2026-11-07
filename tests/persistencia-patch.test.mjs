@@ -127,3 +127,44 @@ test('patch que produziria dados inválidos é abortado sem alterar o registro',
   );
   assert.deepEqual(registros.get('claire').dados, ficha.dados);
 });
+
+
+test('persistência grava escolhas de Habilidade e usos; patch de Descanso Completo os renova', async () => {
+  const registros = instalarBancoCompartilhado();
+  const personagem = {
+    ...structuredClone(ficha),
+    dados: {
+      versaoModelo: 1,
+      estadoFicha: 'rascunho',
+      classe: 'Autodidata',
+      origem: 'Acadêmico',
+      nivel: 2,
+      habilidadeBasica: 'ambidestria',
+      habilidadesAdquiridas: [
+        { nivel: 1, habilidadeId: 'ambidestria' },
+        { nivel: 2, habilidadeId: 'curiosa' },
+      ],
+      usosDescansoCompleto: {},
+    },
+  };
+  registros.set(personagem.id, structuredClone(personagem));
+  const db = await import('../src/persistenciaFicha.ts?habilidades-e-usos');
+
+  const marcado = await db.salvarPatchPersonagem(
+    personagem.id,
+    { usosDescansoCompleto: { 'habilidade:curiosa': true, 'origem:academico': true } },
+    personagem.dados,
+    undefined, undefined, personagem.geracao,
+  );
+  assert.deepEqual(registros.get(personagem.id).dados.habilidadesAdquiridas, personagem.dados.habilidadesAdquiridas);
+  assert.deepEqual(registros.get(personagem.id).dados.usosDescansoCompleto, marcado.dados.usosDescansoCompleto);
+
+  const renovado = await db.salvarPatchPersonagem(
+    personagem.id,
+    { usosDescansoCompleto: {} },
+    marcado.dados,
+    undefined, undefined, personagem.geracao,
+  );
+  assert.deepEqual(registros.get(personagem.id).dados.usosDescansoCompleto, {});
+  assert.deepEqual(renovado.dados.habilidadesAdquiridas, personagem.dados.habilidadesAdquiridas);
+});

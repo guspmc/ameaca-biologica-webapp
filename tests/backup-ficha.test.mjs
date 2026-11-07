@@ -87,3 +87,27 @@ test('backup preserva a Economia de Ações e seu espelho de SA após restauraç
   assert.deepEqual(recuperado.personagens[0].dados.economiaAcoes, economia);
   assert.equal(recuperado.personagens[0].geracao, original.geracao);
 });
+
+
+test('backup e restauração preservam Habilidades adquiridas e usos limitados a Descanso Completo', () => {
+  const original = ficha();
+  original.dados = {
+    versaoModelo: 1,
+    estadoFicha: 'rascunho',
+    classe: 'Autodidata',
+    origem: 'Acadêmico',
+    nivel: 2,
+    habilidadeBasica: 'ambidestria',
+    habilidadesAdquiridas: [
+      { nivel: 1, habilidadeId: 'ambidestria' },
+      { nivel: 2, habilidadeId: 'curiosa' },
+    ],
+    usosDescansoCompleto: {
+      'habilidade:curiosa': true,
+      'origem:academico': true,
+    },
+  };
+  const restaurado = lerArquivoBackup(serializarBackup(criarBackup([original])));
+  assert.deepEqual(restaurado.personagens[0].dados.habilidadesAdquiridas, original.dados.habilidadesAdquiridas);
+  assert.deepEqual(restaurado.personagens[0].dados.usosDescansoCompleto, original.dados.usosDescansoCompleto);
+});
