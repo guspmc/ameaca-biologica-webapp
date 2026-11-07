@@ -22,6 +22,15 @@ test('catálogo contém as condições do Arquivo do Jogador e exclui estados de
   assert.equal(CATALOGO_CONDICOES.some(item => ['vulneravel','colapso-viral','infectado-especial','cabeca-carmesim'].includes(item.id)), false);
 });
 
+test('Vulnerável é derivada quando PV atuais são iguais ou inferiores a um quinto do máximo', () => {
+  assert.equal(api.estaVulneravel(2, 10), true);
+  assert.equal(api.estaVulneravel(1, 10), true);
+  assert.equal(api.estaVulneravel(3, 10), false);
+  assert.equal(api.estaVulneravel(0, 10), true);
+  assert.throws(() => api.estaVulneravel(11, 10), /PV inválidos/);
+  assert.throws(() => api.estaVulneravel(0, 0), /PV inválidos/);
+});
+
 test('cria estado vazio e adiciona uma instância com fonte, alvo, regra e marco de duração', () => {
   const vazio = criarEstadoCondicoes();
   assert.equal(estadoCondicoesValido(vazio), true);

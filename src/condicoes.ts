@@ -89,6 +89,15 @@ export function estadoCondicoesValido(v: unknown): v is EstadoCondicoes {
   return true;
 }
 
+/** Vulnerável é derivada dos PV atuais: não é uma instância aplicada manualmente. */
+export function estaVulneravel(pvAtual: number, pvMaximo: number): boolean {
+  if (!Number.isSafeInteger(pvAtual) || pvAtual < 0
+    || !Number.isSafeInteger(pvMaximo) || pvMaximo <= 0 || pvAtual > pvMaximo) {
+    throw new Error('PV inválidos para avaliar Vulnerável.');
+  }
+  return pvAtual * 5 <= pvMaximo;
+}
+
 export function criarEstadoCondicoes(): EstadoCondicoes {
   return { ativas: [], historico: [] };
 }

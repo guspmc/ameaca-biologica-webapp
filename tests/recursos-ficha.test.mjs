@@ -73,3 +73,9 @@ test('a interface liga recursos ao salvamento do rascunho e explica os limites',
   assert.doesNotMatch(ui, /Descartar alterações não salvas/);
   assert.match(ui, /Desfazer último ajuste/);
 });
+
+test('Vulnerável é exibida como condição derivada dos PV, sem edição manual', async () => {
+  const fonte = await readFile(new URL('../src/RecursosFichaLocal.tsx', import.meta.url), 'utf8');
+  assert.match(fonte, /estaVulneravel\(recursos\.pvAtual, pvMaximo\)/);
+  assert.match(fonte, /Vulnerável · PV atuais iguais ou inferiores a 1\/5 dos PV máximos/);
+});
