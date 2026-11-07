@@ -86,6 +86,7 @@ test('validador recusa estado persistido malformado ou acima do limite da janela
   assert.equal(estadoEconomiaAcoesValido(estado), true);
   assert.equal(estadoEconomiaAcoesValido({ ...estado, saGastaNaJanela: 4 }), false);
   assert.equal(estadoEconomiaAcoesValido({ ...estado, turnoEmAndamento: 'sim' }), false);
+  assert.equal(estadoEconomiaAcoesValido({ ...estado, comprasEsforco: { ...estado.comprasEsforco, acao: 1 } }), false);
 });
 
 test('Manobra genérica não pode gastar SA fora do turno sem autorização explícita', () => {
