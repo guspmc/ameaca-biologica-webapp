@@ -1084,7 +1084,7 @@ footer { margin-top:45px; border-top:1px solid #dce2df; padding-top:19px; color:
 
 /* Tela própria do Painel do Mestre, fora do fluxo do hub de conexão. */
 .painel-mestre-shell.servidor-local-controle-mesa{
-  position:fixed;inset:0;z-index:1200;width:100vw;height:100dvh;min-height:0;
+  position:fixed;inset:0;z-index:1200;width:100vw;height:100dvh;min-height:0;margin:0;
   overflow:auto;overscroll-behavior:contain;background:var(--pm-bg);
 }
 .painel-mestre-head-actions{display:flex;align-items:center;gap:10px;margin-left:auto}
