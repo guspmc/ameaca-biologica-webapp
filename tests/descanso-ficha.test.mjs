@@ -47,5 +47,5 @@ test('painel respeita método Virtual e salva somente após ação expressa', as
   assert.match(ui, /Nenhum resultado será presumido/);
   assert.match(ui, /Concluir Descanso Completo/);
   assert.match(ficha, /<DescansoFichaLocal/);
-  assert.match(ficha, /key=\{JSON\.stringify\(\[classe, pv, sa/);
+  const painelDescanso = ficha.match(/<DescansoFichaLocal\\b[\\s\\S]*?\\/>/)?.[0] ?? '';\n  assert.ok(painelDescanso, 'o painel de Descanso deve permanecer montado na Ficha');\n  assert.doesNotMatch(painelDescanso, /\\bkey=/, 'o painel não deve ser remontado após o salvamento, preservando a confirmação visual');\n  assert.match(painelDescanso, /origemDados=\\{origemDados\\}/);
 });
