@@ -37,7 +37,7 @@ test('revisao respeita lista ampliada, grau gratuito e capacidade; Personalizado
   assert.equal(linha({...f,pontos_pericia_classe:{Investigação:2,Luta:1}},'Pontos de Perícia').estado,'revisar');
   const amnesico={...f,origem:'Amnésico',pericia_origem_treinada:'Vontade',pericia_origem_extra:'Medicina'};
   assert.equal(linha(amnesico,'Origem e Treinamento').estado,'conferido');
-  assert.equal(linha({...amnesico,pontos_pericia_classe:{Vontade:1,Medicina:1}},'Pontos de Perícia').estado,'conferido');
+  assert.equal(linha({...amnesico,pontos_pericia_classe:{Vontade:1,Medicina:1,Atletismo:1}},'Pontos de Perícia').estado,'conferido');
   assert.equal(linha({...amnesico,pericia_origem_extra:'Vontade'},'Origem e Treinamento').estado,'revisar');
   const fraco={...ficha,forca:0,agilidade:3,vigor:3,astucia:1,equipamento_inicial:'A',origem:'Mochileiro',pericia_origem_treinada:'Atletismo'};
   assert.equal(linha(fraco,'Equipamento inicial').estado,'conferido');
