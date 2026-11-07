@@ -698,6 +698,23 @@ test('Mesa registra método de criação e valida opções no servidor', async t
   assert.equal(mesa.creationMethod, 'regra_da_casa');
   assert.equal(mesa.maxLevel, 1);
 
+  const credenciaisJogador = { username: 'jogador-metodo', password: 'senha-local-comprida-2026' };
+  assert.equal((await fetch(instancia.url + '/api/auth/register', {
+    method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(credenciaisJogador),
+  })).status, 201);
+  const loginJogador = await fetch(instancia.url + '/api/auth/login', {
+    method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(credenciaisJogador),
+  });
+  const tokenJogador = (await loginJogador.json()).token;
+  instancia.app.db.prepare("INSERT INTO participantes_mesa (mesa_id, conta_id, papel, entrou_em) VALUES (?, (SELECT id FROM contas_locais WHERE email = ?), 'jogador', ?)")
+    .run(mesa.id, 'jogador-metodo', new Date().toISOString());
+  const tentativaJogador = await fetch(instancia.url + '/api/mesas/' + mesa.id, {
+    method: 'PATCH',
+    headers: { authorization: 'Bearer ' + tokenJogador, 'content-type': 'application/json' },
+    body: JSON.stringify({ maxLevel: 8 }),
+  });
+  assert.equal(tentativaJogador.status, 404);
+
   const nivelInvalido = await fetch(instancia.url + '/api/mesas/' + mesa.id, {
     method: 'PATCH', headers, body: JSON.stringify({ maxLevel: 11 }),
   });

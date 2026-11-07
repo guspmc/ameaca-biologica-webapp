@@ -552,7 +552,7 @@ export async function tratarRotaMesas(req, res, url, db, notificarMesa = () => {
         db.exec('ROLLBACK');
         throw erro;
       }
-      json(res, 201, { mesa: { id, name: nome, role: 'mestre', creationMethod: metodoCriacao, createdAt: agora } });
+      json(res, 201, { mesa: { id, name: nome, role: 'mestre', creationMethod: metodoCriacao, maxLevel: 1, createdAt: agora } });
       return true;
     }
 
