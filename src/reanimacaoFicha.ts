@@ -30,6 +30,9 @@ const inteiroNaoNegativo = (v: unknown): v is number =>
 
 export function reanimacaoValida(valor: unknown): valor is Reanimacao {
   if (!valor || typeof valor !== 'object' || Array.isArray(valor)) return false;
+  if (Object.getPrototypeOf(valor) !== Object.prototype && Object.getPrototypeOf(valor) !== null) return false;
+  const chaves = ['causa', 'estado', 'sucessos', 'falhas', 'tentativas', 'curaAcumulada', 'vantagemProximoTeste'];
+  if (Object.keys(valor).sort().join('|') !== [...chaves].sort().join('|')) return false;
   const r = valor as Reanimacao;
   return ['pv_zero', 'colapso_bi'].includes(r.causa)
     && ['aguardando_proximo_turno', 'em_andamento', 'desacordada_ate_reducao_bi', 'morte_a_registrar', 'transformacao_no_proximo_turno', 'concluida'].includes(r.estado)

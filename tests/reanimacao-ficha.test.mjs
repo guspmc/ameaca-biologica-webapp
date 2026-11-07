@@ -112,3 +112,11 @@ test('causa, faixa de resultados, vantagem e estados terminais são validados', 
   assert.throws(() => api.acumularCuraDuranteReanimacao(r, -1), /Cura/);
   assert.throws(() => api.concederAjudaMedicina(api.iniciarReanimacao('colapso_bi'), true), /Ajuda/);
 });
+
+test('estado de Reanimação recusa campos extras e protótipos personalizados', () => {
+  const r = api.iniciarReanimacao('pv_zero');
+  assert.equal(api.reanimacaoValida(r), true);
+  assert.equal(api.reanimacaoValida({ ...r, admin: true }), false);
+  const prototipo = Object.assign(Object.create({ admin: true }), r);
+  assert.equal(api.reanimacaoValida(prototipo), false);
+});
