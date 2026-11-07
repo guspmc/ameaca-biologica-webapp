@@ -75,8 +75,9 @@ export function comprarRecursoPorEsforco(estado: EstadoEconomiaAcoes, recurso: C
 }
 
 /** Registra SA gasto em Manobra, como Contra-Ataque, sem comprar outro recurso de ação. */
-export function gastarSAEmManobra(estado: EstadoEconomiaAcoes, custo = 1): EstadoEconomiaAcoes {
+export function gastarSAEmManobra(estado: EstadoEconomiaAcoes, custo = 1, autorizadaForaDoTurno = false): EstadoEconomiaAcoes {
   validarEstado(estado);
+  if (!estado.turnoEmAndamento && !autorizadaForaDoTurno) throw new Error('Esta Manobra não foi autorizada fora do próprio turno.');
   return registrarGastoSA(estado, custo);
 }
 
