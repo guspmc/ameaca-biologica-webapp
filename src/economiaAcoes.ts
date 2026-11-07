@@ -43,6 +43,10 @@ function validarEstado(estado: EstadoEconomiaAcoes): void {
     || !estado.normaisUsados || RECURSOS.some(r => typeof estado.normaisUsados[r] !== 'boolean')
     || !estado.comprasEsforco || RECURSOS.some(r => !Number.isSafeInteger(estado.comprasEsforco[r]) || estado.comprasEsforco[r] < 0)
     || typeof estado.interacaoGratuitaUsada !== 'boolean' || typeof estado.turnoEmAndamento !== 'boolean') throw new Error('Estado da economia de ações inválido.');
+  const custoCompras = RECURSOS.reduce((total, recurso) => total + estado.comprasEsforco[recurso] * CUSTO_ESFORCO[recurso], 0);
+  if (!Number.isSafeInteger(custoCompras) || custoCompras > estado.saGastaNaJanela) {
+    throw new Error('As compras por Esforço não correspondem ao total de SA gasto na janela.');
+  }
 }
 
 export function consumirRecursoNormal(estado: EstadoEconomiaAcoes, recurso: RecursoAcao): EstadoEconomiaAcoes {
