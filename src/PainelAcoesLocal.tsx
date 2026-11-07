@@ -10,6 +10,7 @@ type Props = {
   dados: Record<string, unknown>;
   saAtual: number;
   aoSalvar: (patch: Record<string, unknown>) => Promise<boolean>;
+  origemDados?: 'local' | 'servidor';
 };
 
 const RECURSOS: { id: RecursoAcao; nome: string; custo: string }[] = [
@@ -26,7 +27,7 @@ function carregarEstado(dados: Record<string, unknown>, saAtual: number): { esta
   return { estado: { ...salvo, saAtual }, valido: true };
 }
 
-export default function PainelAcoesLocal({ dados, saAtual, aoSalvar }: Props) {
+export default function PainelAcoesLocal({ dados, saAtual, aoSalvar, origemDados = 'local' }: Props) {
   const [inicial] = useState(() => carregarEstado(dados, saAtual));
   const [estado, setEstado] = useState(inicial.estado);
   const [salvando, setSalvando] = useState(false);
@@ -43,9 +44,9 @@ export default function PainelAcoesLocal({ dados, saAtual, aoSalvar }: Props) {
       setErro('');
       setConfirmacao('');
       const salvo = await aoSalvar({ saAtual: proximo.saAtual, economiaAcoes: proximo, economiaAcoesSaldoBase: estado.saAtual });
-      if (!salvo) throw new Error('O armazenamento local não confirmou a atualização. Nenhum gasto foi registrado na ficha.');
+      if (!salvo) throw new Error('O salvamento não foi confirmado. Nenhum gasto foi registrado na ficha.');
       setEstado(proximo);
-      setConfirmacao('Economia de ações salva neste dispositivo.');
+      setConfirmacao(origemDados === 'servidor' ? 'Economia de ações confirmada pelo servidor.' : 'Economia de ações salva neste dispositivo.');
     } catch (problema) {
       setErro(problema instanceof Error ? problema.message : 'Não foi possível registrar a ação.');
     } finally {
@@ -101,7 +102,7 @@ export default function PainelAcoesLocal({ dados, saAtual, aoSalvar }: Props) {
           </div>
           {erro && <p className="offline-erro" role="alert">{erro}</p>}
           {confirmacao && <p className="offline-status" role="status">{confirmacao}</p>}
-          {salvando && <p className="ficha-local-legenda" role="status">Salvando no dispositivo…</p>}
+          {salvando && <p className="ficha-local-legenda" role="status">Salvando alterações…</p>}
         </>}
   </details>;
 }
