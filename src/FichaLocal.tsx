@@ -352,7 +352,6 @@ export default function FichaLocal({ nome, mesa, contextoId, dados, aoFechar, ao
 
         <ReanimacaoFichaLocal
           origemDados={origemDados}
-          key={JSON.stringify([ficha.reanimacao ?? null, ficha.pvAtual ?? null, ficha.biAtual ?? null, classe, origem])}
           dados={dados}
           recursos={recursosAtuais}
           origem={origem}
