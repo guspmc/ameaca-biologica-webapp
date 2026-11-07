@@ -61,18 +61,18 @@ export function avaliarProgressaoCriacao(entrada: EntradaProgressaoCriacao): Res
   if (!objetoSimples(entrada) || !Number.isSafeInteger(entrada.nivel) || entrada.nivel < 1 || entrada.nivel > 10) {
     return { valida: false, pendencias: ['Nível ou registro de criação inválido.'], atributosFinais: null, distribuicaoPericiasFinal: null };
   }
-  if (!atributosIniciaisValidos(entrada.atributosIniciais as never)
-    || !objetoSimples(entrada.atributosIniciais)
-    || Object.keys(entrada.atributosIniciais).sort().join('|') !== 'agilidade|astucia|forca|vigor') {
-    pendencias.push('A distribuição inicial de Atributos está inválida.');
-  }
-  if (typeof entrada.classe !== 'string' || typeof entrada.origem !== 'string'
-    || typeof entrada.periciaOrigemTreinada !== 'string'
-    || (entrada.periciaOrigemExtra !== null && typeof entrada.periciaOrigemExtra !== 'string')
-    || !distribuicaoPericiasValida(entrada.classe, entrada.origem, entrada.periciaOrigemTreinada,
-      entrada.distribuicaoPericiasInicial, entrada.periciaOrigemExtra ?? undefined)) {
-    pendencias.push('A distribuição inicial de Perícias, Classe ou Origem está inválida.');
-  }
+  const atributosBaseValidos = objetoSimples(entrada.atributosIniciais)
+    && Object.keys(entrada.atributosIniciais).sort().join('|') === 'agilidade|astucia|forca|vigor'
+    && atributosIniciaisValidos(entrada.atributosIniciais as never);
+  if (!atributosBaseValidos) pendencias.push('A distribuição inicial de Atributos está inválida.');
+
+  const periciasBaseValidas = objetoSimples(entrada.distribuicaoPericiasInicial)
+    && typeof entrada.classe === 'string' && typeof entrada.origem === 'string'
+    && typeof entrada.periciaOrigemTreinada === 'string'
+    && (entrada.periciaOrigemExtra === null || typeof entrada.periciaOrigemExtra === 'string')
+    && distribuicaoPericiasValida(entrada.classe, entrada.origem, entrada.periciaOrigemTreinada,
+      entrada.distribuicaoPericiasInicial as Record<string, number>, entrada.periciaOrigemExtra ?? undefined);
+  if (!periciasBaseValidas) pendencias.push('A distribuição inicial de Perícias, Classe ou Origem está inválida.');
 
   const ganhos = ganhosProgressaoAte(entrada.nivel);
   const validacaoHabilidades = validarProgressaoHabilidades(entrada.classe, entrada.nivel, entrada.habilidades);

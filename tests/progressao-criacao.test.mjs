@@ -87,3 +87,13 @@ test('criação superior respeita os limites de Atributo, Perícia e Habilidade'
   habilidadeSemPreRequisito.habilidades[2].habilidadeId = 'retaliacao';
   assert.equal(api.avaliarProgressaoCriacao(habilidadeSemPreRequisito).valida, false);
 });
+
+test('validador de criação em nível superior recusa estruturas-base malformadas sem lançar exceção', () => {
+  const semAtributos = entrada();
+  semAtributos.atributosIniciais = null;
+  assert.equal(api.avaliarProgressaoCriacao(semAtributos).valida, false);
+  const semPericias = entrada();
+  semPericias.distribuicaoPericiasInicial = null;
+  assert.equal(api.avaliarProgressaoCriacao(semPericias).valida, false);
+  assert.equal(api.avaliarProgressaoCriacao(null).valida, false);
+});
