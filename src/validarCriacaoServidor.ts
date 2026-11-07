@@ -1,5 +1,7 @@
 import { revisarCriacao, type FichaRevisao } from './conferenciaCriacao.ts';
 import { planejarInventarioCriacao } from './inventarioCriacao.ts';
+import { calcularDerivadosCriacao } from './derivadosCriacao.ts';
+import { ORIGENS } from './origens.ts';
 
 type Objeto = Record<string, unknown>;
 
@@ -39,12 +41,23 @@ export function validarCriacaoNoServidor(nome: string, dadosRecebidos: unknown) 
   const vigor = atributosAusentes ? 1 : numeroOuZero(atributos.vigor);
   const astucia = atributosAusentes ? 1 : numeroOuZero(atributos.astucia);
 
-  const pvBase = classe === 'Agente' ? 10 : classe === 'Autodidata' ? 8 : classe === 'Operador' ? 12 : 0;
-  const biBase = classe === 'Agente' ? 8 : classe === 'Autodidata' ? 10 : classe === 'Operador' ? 6 : 0;
-  const pv = pvBase + vigor + (habilidade === 'parrudo' ? 5 : 0);
-  const sa = agilidade + astucia + (origem === 'Universitária' ? 1 : 0);
-  const bi = biBase + astucia + (origem === 'Cobaia' ? 2 : 0) + (habilidade === 'parrudo' ? 3 : 0);
-  const defesa = 10 + agilidade + (origem === 'Policial' ? 2 : 0);
+  const origemParaCalculo = origem && ORIGENS.some(item => item.nome === origem) ? origem : '';
+  const habilidadeParaCalculo = habilidade && classe
+    ? habilidade
+    : '';
+  const derivados = classe
+    ? calcularDerivadosCriacao({
+        classe,
+        origem: origemParaCalculo,
+        habilidadeBasica: habilidadeParaCalculo,
+        atributos: { forca, agilidade, vigor, astucia },
+        nivel: 1,
+      })
+    : null;
+  const pv = derivados?.pvMaximo ?? 0;
+  const sa = derivados?.saMaximo ?? 0;
+  const bi = derivados?.biMaxima ?? 0;
+  const defesa = derivados?.defesa ?? 0;
 
   const ficha: FichaRevisao = {
     identidade: typeof identidade.genero === 'string' ? { genero: identidade.genero } : {},
