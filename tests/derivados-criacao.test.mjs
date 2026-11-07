@@ -1,19 +1,38 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { readFile } from 'node:fs/promises';
+import { readFileSync } from 'node:fs';
+import { dirname, resolve } from 'node:path';
+import Module from 'node:module';
 import ts from 'typescript';
 
-const source = await readFile(new URL('../src/derivadosCriacao.ts', import.meta.url), 'utf8');
-const { outputText } = ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 } });
-const exports = {};
-new Function('exports', 'require', outputText)(exports, (specifier) => {
-  if (specifier === './classesFicha.ts') return require('../src/classesFicha.ts');
-  if (specifier === './equipamento.ts') return require('../src/equipamento.ts');
-  if (specifier === './habilidades.ts') return require('../src/habilidades.ts');
-  throw new Error('Import inesperado: ' + specifier);
-});
-const { calcularDerivadosCriacao } = exports;
-
+const raiz = resolve(dirname(new URL(import.meta.url).pathname), '..');
+const cache = new Map();
+function carregarTs(caminho) {
+  const arquivo = resolve(raiz, caminho);
+  if (cache.has(arquivo)) return cache.get(arquivo).exports;
+  const modulo = new Module(arquivo);
+  cache.set(arquivo, modulo);
+  modulo.filename = arquivo;
+  modulo.paths = Module._nodeModulePaths(dirname(arquivo));
+  const exigirOriginal = modulo.require.bind(modulo);
+  modulo.require = (id) => {
+    if (id.startsWith('.')) {
+      const candidato = resolve(dirname(arquivo), id);
+      if (candidato.endsWith('.ts')) return carregarTs(candidato);
+      if (readFileSync) {
+        try { return carregarTs(candidato + '.ts'); } catch {}
+      }
+    }
+    return exigirOriginal(id);
+  };
+  const codigo = readFileSync(arquivo, 'utf8');
+  const compilado = ts.transpileModule(codigo, {
+    compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 },
+  }).outputText;
+  modulo._compile(compilado, arquivo);
+  return modulo.exports;
+}
+const { calcularDerivadosCriacao } = carregarTs('src/derivadosCriacao.ts');
 const atributos = { forca: 2, agilidade: 2, vigor: 2, astucia: 1 };
 
 test('fórmulas-base de Agente, Autodidata e Operador preservam seus valores oficiais', () => {
