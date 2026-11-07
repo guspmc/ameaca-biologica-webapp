@@ -45,7 +45,9 @@ export function validarCriacaoNoServidor(nome: string, dadosRecebidos: unknown) 
   const habilidadeParaCalculo = habilidade && classe
     ? habilidade
     : '';
-  const derivados = classe
+  const atributosCalculaveis = [forca, agilidade, vigor, astucia]
+    .every(valor => Number.isInteger(valor) && valor >= 0 && valor <= 5);
+  const derivados = classe && atributosCalculaveis
     ? calcularDerivadosCriacao({
         classe,
         origem: origemParaCalculo,
