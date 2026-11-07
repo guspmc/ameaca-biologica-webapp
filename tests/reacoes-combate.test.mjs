@@ -78,3 +78,30 @@ test('Indestrutível não perde Durabilidade e Durabilidade 0 impede Aparar', as
   assert.deepEqual(registrarUsoAparar({ item, automacaoAtiva: true }), item);
   assert.throws(() => registrarUsoAparar({ item: { durabilidadeAtual: 0, indestrutivel: false }, automacaoAtiva: true }), /não pode Aparar/);
 });
+
+test('Reação defensiva usa a Reação normal disponível', async () => {
+  const { registrarReacaoDefensiva } = await import('../src/reacoesCombate.ts');
+  const janela = avaliarJanelaReacao({ resultadoAtaque: 12, dadoNaturalAtaque: 12, ataqueCorpoACorpo: true, ataqueAcertou: true, ataqueAparavel: true, gatilhoEsquivaAutorizado: false });
+  const resultado = registrarReacaoDefensiva({ economia: economiaAcoesInicial(3), manobra: 'aparar', janela });
+  assert.equal(resultado.economia.normaisUsados.reacao, true);
+  assert.equal(resultado.economia.saAtual, 3);
+  assert.equal(resultado.reacaoAdicionalComprada, false);
+});
+
+test('Reação defensiva compra outra Reação por Esforço quando a normal já foi usada', async () => {
+  const { registrarReacaoDefensiva } = await import('../src/reacoesCombate.ts');
+  const janela = avaliarJanelaReacao({ resultadoAtaque: 12, dadoNaturalAtaque: 12, ataqueCorpoACorpo: true, ataqueAcertou: true, ataqueAparavel: true, gatilhoEsquivaAutorizado: false });
+  const economia = consumirRecursoNormal(economiaAcoesInicial(3), 'reacao');
+  const resultado = registrarReacaoDefensiva({ economia, manobra: 'aparar', janela });
+  assert.equal(resultado.economia.saAtual, 2);
+  assert.equal(resultado.economia.comprasEsforco.reacao, 1);
+  assert.equal(resultado.reacaoAdicionalComprada, true);
+});
+
+test('Reação defensiva não pode ser registrada com janela fechada ou manobra indisponível', async () => {
+  const { registrarReacaoDefensiva } = await import('../src/reacoesCombate.ts');
+  const fechada = avaliarJanelaReacao({ resultadoAtaque: 20, dadoNaturalAtaque: 20, ataqueCorpoACorpo: true, ataqueAcertou: true, ataqueAparavel: true, gatilhoEsquivaAutorizado: true });
+  assert.throws(() => registrarReacaoDefensiva({ economia: economiaAcoesInicial(3), manobra: 'aparar', janela: fechada }), /janela.*fechada/);
+  const semAparar = avaliarJanelaReacao({ resultadoAtaque: 12, dadoNaturalAtaque: 12, ataqueCorpoACorpo: false, ataqueAcertou: true, ataqueAparavel: false, gatilhoEsquivaAutorizado: false });
+  assert.throws(() => registrarReacaoDefensiva({ economia: economiaAcoesInicial(3), manobra: 'aparar', janela: semAparar }), /não está disponível/);
+});
