@@ -35,7 +35,8 @@ test('remover uma fonte não remove outra instância da mesma Condição', () =>
 test('Vulnerável é derivada do limite de um quinto dos PV sem arredondamento', () => {
   assert.equal(api.vulneravelPorPV(20,100), true);
   assert.equal(api.vulneravelPorPV(21,100), false);
-  assert.equal(api.vulneravelPorPV(1,1), true);
+  assert.equal(api.vulneravelPorPV(1,1), false);
+  assert.equal(api.vulneravelPorPV(0,1), true);
   assert.throws(() => api.vulneravelPorPV(-1,10), /PV inválidos/);
 });
 
