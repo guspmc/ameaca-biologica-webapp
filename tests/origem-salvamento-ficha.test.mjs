@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 
-const ler = (arquivo: string) => readFile(new URL('../src/' + arquivo, import.meta.url), 'utf8');
+const ler = arquivo => readFile(new URL('../src/' + arquivo, import.meta.url), 'utf8');
 
 test('status genérico de autosave não presume servidor no fluxo local', async () => {
   const ui = await ler('AutoSaveStatusLocal.tsx');
