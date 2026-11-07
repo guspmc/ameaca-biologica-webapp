@@ -20,7 +20,9 @@ export type JanelaReacao = {
 
 /** Registra a janela após conhecer o resultado do Ataque e antes de Dano, BI ou Condições. */
 export function avaliarJanelaReacao(gatilho: GatilhoReacao): JanelaReacao {
-  if (!Number.isSafeInteger(gatilho.resultadoAtaque) || gatilho.resultadoAtaque < 1
+  if (typeof gatilho.ataqueCorpoACorpo !== 'boolean' || typeof gatilho.ataqueAcertou !== 'boolean'
+    || typeof gatilho.ataqueAparavel !== 'boolean' || typeof gatilho.gatilhoEsquivaAutorizado !== 'boolean'
+    || !Number.isSafeInteger(gatilho.resultadoAtaque) || gatilho.resultadoAtaque < 1
     || !Number.isSafeInteger(gatilho.dadoNaturalAtaque) || gatilho.dadoNaturalAtaque < 1 || gatilho.dadoNaturalAtaque > 20) {
     throw new Error('Resultado do Ataque e dado natural precisam ser válidos.');
   }
@@ -47,8 +49,9 @@ export function resolverTesteDefensivo(args: {
   dado2?: number | null;
   vantagem?: VantagemTeste;
 }): ResultadoTeste {
+  if (args.tipo !== 'aparar' && args.tipo !== 'esquivar') throw new Error('Manobra defensiva desconhecida.');
   const valorBase = args.tipo === 'aparar' ? args.valorLuta : args.valorReflexos;
-  if (!Number.isSafeInteger(valorBase)) throw new Error('O valor da Perícia defensiva não foi informado corretamente.');
+  if (!Number.isSafeInteger(valorBase) || (valorBase as number) < 0) throw new Error('O valor da Perícia defensiva não foi informado corretamente.');
   return calcularTesteManual({
     valorBase: valorBase as number, dt: args.resultadoAtaque,
     dado1: args.dado1, dado2: args.dado2, vantagem: args.vantagem,
@@ -63,6 +66,11 @@ export function prepararContraAtaque(args: {
   excecaoContraAtaqueADistancia?: boolean;
   mesmaReacaoAutorizada: boolean;
 }): { economia: EstadoEconomiaAcoes; reacaoAdicionalComprada: boolean; custoSA: number } {
+  if (typeof args.defesaBemSucedida !== 'boolean' || typeof args.ataqueCorpoACorpo !== 'boolean'
+    || typeof args.mesmaReacaoAutorizada !== 'boolean'
+    || (args.excecaoContraAtaqueADistancia !== undefined && typeof args.excecaoContraAtaqueADistancia !== 'boolean')) {
+    throw new Error('Dados de autorização do Contra-Ataque inválidos.');
+  }
   if (!args.defesaBemSucedida) throw new Error('Contra-Ataque exige Aparar ou Esquivar bem-sucedido.');
   if (!args.ataqueCorpoACorpo && !args.excecaoContraAtaqueADistancia) throw new Error('Contra-Ataque responde apenas a Ataques Corpo a Corpo, salvo Habilidade ou regra específica.');
   let economia = args.economia;
@@ -90,7 +98,7 @@ export function registrarUsoAparar(args: {
   automacaoAtiva: boolean;
 }): EstadoDurabilidadeAparar {
   const { item, automacaoAtiva } = args;
-  if (typeof item.indestrutivel !== 'boolean') throw new Error('Estado Indestrutível inválido.');
+  if (!item || typeof item !== 'object' || typeof item.indestrutivel !== 'boolean' || typeof automacaoAtiva !== 'boolean') throw new Error('Estado de Aparar inválido.');
   if (item.indestrutivel) return { ...item };
   if (!Number.isSafeInteger(item.durabilidadeAtual) || (item.durabilidadeAtual as number) < 0) {
     throw new Error('Durabilidade atual inválida ou não informada.');
@@ -107,6 +115,11 @@ export function registrarReacaoDefensiva(args: {
   manobra: 'aparar' | 'esquivar';
   janela: JanelaReacao;
 }): { economia: EstadoEconomiaAcoes; reacaoAdicionalComprada: boolean } {
+  if (args.manobra !== 'aparar' && args.manobra !== 'esquivar') throw new Error('Manobra defensiva desconhecida.');
+  if (!args.janela || typeof args.janela.aberta !== 'boolean'
+    || typeof args.janela.podeAparar !== 'boolean' || typeof args.janela.podeEsquivar !== 'boolean') {
+    throw new Error('Janela de Reação inválida.');
+  }
   if (!args.janela.aberta) throw new Error('A janela de Reações defensivas está fechada.');
   if (args.manobra === 'aparar' && !args.janela.podeAparar) throw new Error('Aparar não está disponível para este Ataque.');
   if (args.manobra === 'esquivar' && !args.janela.podeEsquivar) throw new Error('Esquivar não está liberado por Habilidade ou regra para este gatilho.');
