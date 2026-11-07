@@ -42,7 +42,7 @@ export function useAutoSaveLocal<T>({
       try {
         const confirmado = await referencias.current.aoSalvar(atual);
         if (versao.current !== versaoAtual) return;
-        if (!confirmado) throw new Error('O servidor não confirmou o salvamento.');
+        if (!confirmado) throw new Error('O armazenamento local não confirmou o salvamento.');
         setEstado('salvo');
         setErro('');
         referencias.current.aoConfirmar();
