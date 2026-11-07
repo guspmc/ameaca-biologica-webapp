@@ -36,6 +36,7 @@ function validarEstado(estado: EstadoEconomiaAcoes): void {
 export function consumirRecursoNormal(estado: EstadoEconomiaAcoes, recurso: RecursoAcao): EstadoEconomiaAcoes {
   validarEstado(estado);
   if (!RECURSOS.includes(recurso)) throw new Error('Recurso de ação desconhecido.');
+  if (!estado.turnoEmAndamento && recurso !== 'reacao') throw new Error('Somente Reação pode ser registrada fora do próprio turno.');
   if (estado.normaisUsados[recurso]) throw new Error('Este recurso normal já foi utilizado neste turno.');
   return { ...estado, normaisUsados: { ...estado.normaisUsados, [recurso]: true } };
 }
@@ -43,12 +44,14 @@ export function consumirRecursoNormal(estado: EstadoEconomiaAcoes, recurso: Recu
 /** Ação Completa normalmente compromete Ação e Movimento juntos. */
 export function consumirAcaoCompleta(estado: EstadoEconomiaAcoes): EstadoEconomiaAcoes {
   validarEstado(estado);
+  if (!estado.turnoEmAndamento) throw new Error('A Ação Completa só pode ser usada no próprio turno.');
   if (estado.normaisUsados.acao || estado.normaisUsados.movimento) throw new Error('A Ação Completa exige Ação e Movimento normais disponíveis.');
   return { ...estado, normaisUsados: { ...estado.normaisUsados, acao: true, movimento: true } };
 }
 
 export function consumirInteracaoGratuita(estado: EstadoEconomiaAcoes): EstadoEconomiaAcoes {
   validarEstado(estado);
+  if (!estado.turnoEmAndamento) throw new Error('A Interação Gratuita só pode ser usada no próprio turno.');
   if (estado.interacaoGratuitaUsada) throw new Error('A Interação Gratuita já foi utilizada neste turno.');
   return { ...estado, interacaoGratuitaUsada: true };
 }
@@ -66,6 +69,7 @@ function registrarGastoSA(estado: EstadoEconomiaAcoes, custo: number): EstadoEco
 export function comprarRecursoPorEsforco(estado: EstadoEconomiaAcoes, recurso: CompraEsforco): EstadoEconomiaAcoes {
   validarEstado(estado);
   if (!Object.prototype.hasOwnProperty.call(CUSTO_ESFORCO, recurso)) throw new Error('Recurso não pode ser comprado por Esforço.');
+  if (!estado.turnoEmAndamento && recurso !== 'reacao') throw new Error('Fora do próprio turno, somente uma Reação autorizada pode ser comprada por Esforço.');
   const gasto = registrarGastoSA(estado, CUSTO_ESFORCO[recurso]);
   return { ...gasto, comprasEsforco: { ...gasto.comprasEsforco, [recurso]: gasto.comprasEsforco[recurso] + 1 } };
 }
@@ -79,6 +83,7 @@ export function gastarSAEmManobra(estado: EstadoEconomiaAcoes, custo = 1): Estad
 /** Início do turno próprio renova recursos normais e compras disponíveis; não renova a janela de SA. */
 export function iniciarTurnoAcoes(estado: EstadoEconomiaAcoes): EstadoEconomiaAcoes {
   validarEstado(estado);
+  if (estado.turnoEmAndamento) throw new Error('O turno próprio já está em andamento.');
   return {
     ...estado,
     normaisUsados: { acao: false, movimento: false, acaoBonus: false, reacao: false },
