@@ -75,6 +75,8 @@ test('fora do próprio turno, somente Reação pode ser registrada ou comprada p
   assert.equal(estado.normaisUsados.reacao, true);
   estado = comprarRecursoPorEsforco(estado, 'reacao');
   assert.equal(estado.comprasEsforco.reacao, 1);
+  estado = iniciarTurnoAcoes(estado);
+  assert.equal(estado.turnoEmAndamento, true);
   assert.throws(() => iniciarTurnoAcoes(estado), /já está em andamento/);
 });
 
