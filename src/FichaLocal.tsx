@@ -19,6 +19,7 @@ import RecursosFichaLocal from './RecursosFichaLocal';
 import DescansoFichaLocal from './DescansoFichaLocal';
 import ReanimacaoFichaLocal from './ReanimacaoFichaLocal';
 import PainelAcoesLocal from './PainelAcoesLocal';
+import CondicoesFichaLocal from './CondicoesFichaLocal';
 import { recursosIniciais } from './recursosFicha';
 import { calcularDerivadosCriacao } from './derivadosCriacao';
 import type { FichaRevisao } from './conferenciaCriacao';
@@ -449,10 +450,10 @@ export default function FichaLocal({ nome, mesa, contextoId, dados, aoFechar, ao
           <PainelAcoesLocal dados={dados} saAtual={recursosAtuais.saAtual} origemDados={origemDados} aoSalvar={aoSalvarRecursos} />
           <div className="ficha-local-grade">
             <div><small>INICIATIVA</small><strong>A integrar</strong><p>O controle principal dos turnos e da Iniciativa permanece com o Mestre; a ficha oferece apenas acompanhamento opcional das ações do jogador.</p></div>
-            <div><small>CONDIÇÕES E EFEITOS</small><strong>A integrar</strong><p>Esta ficha ainda não registra nem aplica Condições ou efeitos temporários.</p></div>
             <div><small>ATAQUES E DANO</small><strong>A integrar</strong><p>Resolução de Testes, Defesa de alvos, Dano e consumo de munição não estão implementados nesta seção.</p></div>
           </div>
-          <p className="ficha-local-aviso">O painel registra usos de Ação, Movimento, Ação Bônus, Reação, Interação Gratuita, Esforço e gastos de Manobra; ele não executa rolagens, não presume gatilhos e não aplica efeitos. PV, SA e BI continuam administrados nos painéis próprios. Iniciativa da Mesa, Condições, resolução de Ataques, Defesa de alvos, Dano e consumo de munição permanecem pendentes.</p>
+          <CondicoesFichaLocal dados={dados} pvAtual={recursosAtuais.pvAtual} pvMaximo={pv} origemDados={origemDados} bloqueado={secoesPendentes.size > 0 || reanimacaoEmCurso} aoSalvar={aoSalvarRecursos} />
+          <p className="ficha-local-aviso">O painel registra usos de Ação, Movimento, Ação Bônus, Reação, Interação Gratuita, Esforço e gastos de Manobra; ele não executa rolagens, não presume gatilhos e não aplica efeitos. PV, SA e BI continuam administrados nos painéis próprios. Iniciativa da Mesa, resolução de Ataques, Defesa de alvos, Dano e consumo de munição permanecem pendentes. As Condições registradas são informativas e dependem da aplicação das regras pela Mesa.</p>
         </section>
 
         <section id="ficha-local-inventario" className="ficha-local-secao">
