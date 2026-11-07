@@ -142,6 +142,25 @@ test('Contra-Ataque fora do próprio turno usa Reação normal disponível antes
   assert.equal(resultado.custoSA, 1);
 });
 
+test('Reação defensiva rejeita janela forjada, contraditória ou com campos extras', async () => {
+  const { registrarReacaoDefensiva } = await import('../src/reacoesCombate.ts');
+  const economia = economiaAcoesInicial(3);
+  const valida = avaliarJanelaReacao({
+    resultadoAtaque: 12, dadoNaturalAtaque: 12, ataqueCorpoACorpo: true,
+    ataqueAcertou: true, ataqueAparavel: true, gatilhoEsquivaAutorizado: false,
+  });
+  assert.throws(() => registrarReacaoDefensiva({
+    economia, manobra: 'aparar', janela: { aberta: true, podeAparar: true, podeEsquivar: false },
+  }), /Janela de Reação inválida/);
+  assert.throws(() => registrarReacaoDefensiva({
+    economia, manobra: 'aparar', janela: { ...valida, fechadaPor20Natural: true },
+  }), /Janela de Reação inválida/);
+  assert.throws(() => registrarReacaoDefensiva({
+    economia, manobra: 'aparar', janela: { ...valida, campoExtra: true },
+  }), /Janela de Reação inválida/);
+  assert.equal(registrarReacaoDefensiva({ economia, manobra: 'aparar', janela: valida }).economia.normaisUsados.reacao, true);
+});
+
 test('registro de Reação e Contra-Ataque rejeita economia malformada sem TypeError acidental', async () => {
   const janela = avaliarJanelaReacao({
     resultadoAtaque: 12, dadoNaturalAtaque: 12, ataqueCorpoACorpo: true,
