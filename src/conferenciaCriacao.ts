@@ -4,7 +4,8 @@ import {ORIGENS} from './origens.ts';
 import {HABILIDADES_BASICAS} from './habilidades.ts';
 import {PONTOS_CLASSE,PERICIAS_CLASSE} from './pericias.ts';
 import {capacidadeInventario,equipamentoInicial,espacosOcupados,opcoesEquipamento} from './equipamento.ts';
-export type FichaRevisao={identidade?:{genero?:string};nome:string;classe:string|null;nivel:number;forca:number;agilidade:number;vigor:number;astucia:number;origem:string|null;pericia_origem_treinada:string|null;pericia_origem_extra:string|null;pontos_pericia_classe:Record<string,number>;habilidade_basica:string|null;equipamento_inicial:string|null;compras_iniciais?:Record<string,number>;revisao_compras?:number;pv_maximo:number|null;sa_maximo:number|null;bi_maximo:number|null;defesa:number|null};
+import {armaOperarioValida} from './armaOperario.ts';
+export type FichaRevisao={identidade?:{genero?:string};nome:string;classe:string|null;nivel:number;forca:number;agilidade:number;vigor:number;astucia:number;origem:string|null;pericia_origem_treinada:string|null;pericia_origem_extra:string|null;pontos_pericia_classe:Record<string,number>;habilidade_basica:string|null;arma_operario?:string|null;equipamento_inicial:string|null;compras_iniciais?:Record<string,number>;revisao_compras?:number;pv_maximo:number|null;sa_maximo:number|null;bi_maximo:number|null;defesa:number|null};
 export type Conferencia={nome:string;estado:'conferido'|'pendente'|'revisar';detalhe:string;secao:string};
 export function revisarCriacao(f:FichaRevisao):Conferencia[]{
   const linhas:Conferencia[]=[];
@@ -22,6 +23,7 @@ export function revisarCriacao(f:FichaRevisao):Conferencia[]{
   const extra=f.origem==='Amnésico'?f.pericia_origem_extra:origem?.pericias.find(p=>p!==treinada);
   const origemValida=!!origem&&!!treinada&&(f.origem==='Amnésico'?todas.includes(treinada)&&!!extra&&todas.includes(extra)&&extra!==treinada:origem.pericias.includes(treinada)&&!f.pericia_origem_extra);
   add('Origem e Treinamento',origemValida?'conferido':f.origem?'revisar':'pendente',`${termo(f.origem??'Escolha a Origem')} · Treinamento gratuito: ${treinada??'pendente'}${extra?' · outra opção: '+extra:''}`);
+  if(f.origem==='Operário') add('Arma da Origem',armaOperarioValida(f.arma_operario)?'conferido':f.arma_operario?'revisar':'pendente',armaOperarioValida(f.arma_operario)?`Arma escolhida: ${f.arma_operario}.`:'Escolha uma Arma Corpo a Corpo semelhante a uma ferramenta, conforme a Origem Operário.');
   const pontos=f.pontos_pericia_classe??{};
   const usados=Object.values(pontos).reduce((a,b)=>a+b,0);
   const limite=PONTOS_CLASSE[f.classe??'']??0;
