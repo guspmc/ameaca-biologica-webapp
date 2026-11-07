@@ -10,7 +10,7 @@ const paths = [
 let source = '';
 for (const path of paths) {
   source += (await readFile(new URL('../src/' + path, import.meta.url), 'utf8'))
-    .replace(/^import .*;\r?\n/gm, '') + '\n';
+    .replace(/^import\s+[\s\S]*?\sfrom\s+['"][^'"]+['"];?\s*$/gm, '') + '\n';
 }
 const { outputText } = ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2022 } });
 const api = await import('data:text/javascript;base64,' + Buffer.from(outputText).toString('base64'));
