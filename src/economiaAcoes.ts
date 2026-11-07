@@ -25,6 +25,13 @@ export function economiaAcoesInicial(saAtual: number): EstadoEconomiaAcoes {
 
 export function saNaJanelaEsforco(estado: EstadoEconomiaAcoes): number { return estado.saGastaNaJanela; }
 
+/** Mantém o saldo espelhado quando PV/SA/BI são ajustados fora do painel de ações. */
+export function sincronizarSAAtual(estado: EstadoEconomiaAcoes, saAtual: number): EstadoEconomiaAcoes {
+  validarEstado(estado);
+  if (!Number.isSafeInteger(saAtual) || saAtual < 0) throw new Error('SA atual deve ser um inteiro não negativo.');
+  return { ...estado, saAtual };
+}
+
 function validarEstado(estado: EstadoEconomiaAcoes): void {
   const chavesEstado = ['saAtual', 'saGastaNaJanela', 'normaisUsados', 'comprasEsforco', 'interacaoGratuitaUsada', 'turnoEmAndamento'];
   const chavesRecursos = ['acao', 'movimento', 'acaoBonus', 'reacao'];
