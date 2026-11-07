@@ -18,6 +18,7 @@ import CalculadoraTesteLocal from './CalculadoraTesteLocal';
 import RecursosFichaLocal from './RecursosFichaLocal';
 import DescansoFichaLocal from './DescansoFichaLocal';
 import ReanimacaoFichaLocal from './ReanimacaoFichaLocal';
+import PainelAcoesLocal from './PainelAcoesLocal';
 import { recursosIniciais } from './recursosFicha';
 import { calcularDerivadosCriacao } from './derivadosCriacao';
 import type { FichaRevisao } from './conferenciaCriacao';
@@ -445,8 +446,9 @@ export default function FichaLocal({ nome, mesa, contextoId, dados, aoFechar, ao
           <p className="ficha-local-legenda">A BI começa em 0 e não progride sozinha. Alterações de BI são registradas expressamente no painel de Recursos; este resumo apenas calcula os modificadores da fase e não os aplica automaticamente a movimento, ataques ou dano, nem inicia Reanimação.</p>
 
           <h3 className="ficha-local-subtitulo">Combate ativo</h3>
+          <PainelAcoesLocal key={JSON.stringify([ficha.economiaAcoes ?? null, recursosAtuais.saAtual])} dados={dados} saAtual={recursosAtuais.saAtual} aoSalvar={aoSalvarRecursos} />
           <div className="ficha-local-grade">
-            <div><small>INICIATIVA E AÇÕES</small><strong>A integrar</strong><p>O acompanhamento de turnos, ações, reações e movimentação em combate ainda não está implementado.</p></div>
+            <div><small>INICIATIVA</small><strong>A integrar</strong><p>O controle principal dos turnos e da Iniciativa permanece com o Mestre; a ficha oferece apenas acompanhamento opcional das ações do jogador.</p></div>
             <div><small>CONDIÇÕES E EFEITOS</small><strong>A integrar</strong><p>Esta ficha ainda não registra nem aplica Condições ou efeitos temporários.</p></div>
             <div><small>ATAQUES E DANO</small><strong>A integrar</strong><p>Resolução de Testes, Defesa de alvos, Dano e consumo de munição não estão implementados nesta seção.</p></div>
           </div>
