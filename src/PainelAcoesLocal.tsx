@@ -53,7 +53,7 @@ export default function PainelAcoesLocal({ dados, saAtual, aoSalvar }: Props) {
 
   const janela = saNaJanelaEsforco(estado);
   return <details className="ficha-local-editor painel-acoes-local">
-    <summary>Economia de Ações · acompanhamento opcional</summary>
+    <summary>Economia de Ações · {saNaJanelaEsforco(estado)}/3 SA · {estado.turnoEmAndamento ? 'Meu turno ativo' : 'Meu turno encerrado'}</summary>
     {!inicial.valido
       ? <p className="offline-erro" role="alert">O registro salvo da economia de ações está inválido. Ele foi preservado e o painel foi bloqueado para evitar sobrescrever dados.</p>
       : <>
