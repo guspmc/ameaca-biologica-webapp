@@ -112,7 +112,7 @@ export default function PainelMestreLocal({ mesa, aoVoltar, enderecosLan = [], c
         </div>
         <p className="painel-mestre-orientacao">Convites, solicitações e participantes são administrados nesta Mesa. Aprovações e remoções são confirmadas pelo servidor.</p>
         <section className="painel-mestre-mesa-acoes" aria-label="Configurações da Mesa">
-          <div><small>PROGRESSÃO DA CAMPANHA</small><strong>Nível da Mesa</strong><span>Novas fichas podem começar em qualquer nível até este limite. Reduzi-lo não rebaixa personagens existentes.</span></div>
+          <div><small>PROGRESSÃO DA CAMPANHA</small><strong>Nível da Mesa</strong><span>Define o teto da Mesa para criação e progressão. A criação de fichas acima do nível 1 será habilitada em uma etapa posterior; reduzir o teto não rebaixa personagens existentes.</span></div>
           <div className="servidor-local-botoes">
             <label>Nível máximo
               <select aria-label="Nível máximo da Mesa" value={nivelMesaEditado} onChange={evento => setNivelMesaEditado(evento.target.value)}>
