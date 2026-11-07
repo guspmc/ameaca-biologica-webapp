@@ -48,7 +48,7 @@ export default function EditorAtributosPericias(props: Props) {
     setSujo,
     aoSalvar: props.aoSalvar,
     aoAlterarPendencia: props.aoAlterarPendencia,
-    mensagemSucesso: props.mensagemSucesso ?? 'Atributos e Perícias salvos e confirmados pelo servidor.',
+    mensagemSucesso: props.mensagemSucesso ?? 'Atributos e Perícias salvos neste dispositivo.',
   });
   const ocupado = salvamento.ocupado;
   const permitidas = periciasPermitidasNaCriacao(props.classe, props.origem, treinada, extra);

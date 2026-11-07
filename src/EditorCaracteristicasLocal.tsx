@@ -18,7 +18,7 @@ export default function EditorCaracteristicasLocal({ iniciais, aoSalvar, aoAlter
   const habilidades = HABILIDADES_BASICAS.filter(item => item.classe === dados.classe);
   const salvamento = useSalvamentoEditorLocal({
     autoSalvar, valor: dados, chave: JSON.stringify(dados), sujo, setSujo, aoSalvar, aoAlterarPendencia,
-    mensagemSucesso: mensagemSucesso ?? 'Características salvas e confirmadas pelo servidor.',
+    mensagemSucesso: mensagemSucesso ?? 'Características salvas neste dispositivo.',
   });
   const ocupado = salvamento.ocupado;
 

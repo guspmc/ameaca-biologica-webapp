@@ -25,7 +25,7 @@ type Props = {
   autoSalvar?: boolean;
 };
 
-export default function IdentidadeLocal({ nome: nomeInicial, identidade: identidadeInicial, aoSalvar, aoAlterarPendencia, mensagemSucesso = 'Identificação salva e confirmada pelo servidor.', autoSalvar = false }: Props) {
+export default function IdentidadeLocal({ nome: nomeInicial, identidade: identidadeInicial, aoSalvar, aoAlterarPendencia, mensagemSucesso = 'Identificação salva neste dispositivo.', autoSalvar = false }: Props) {
   const [nome, setNome] = useState(nomeInicial);
   const [dados, setDados] = useState<Record<string, string>>(() =>
     Object.fromEntries(CAMPOS.map(campo => [campo.id, typeof identidadeInicial[campo.id] === 'string' ? identidadeInicial[campo.id] : '']))

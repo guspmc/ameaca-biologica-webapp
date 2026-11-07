@@ -39,7 +39,7 @@ export default function EditorInventarioLocal({ classe, capacidade, kitInicial, 
   };
   const salvamento = useSalvamentoEditorLocal({
     autoSalvar, valor, chave: JSON.stringify({ kit, plano, revisao }), sujo, setSujo, aoSalvar, aoAlterarPendencia,
-    mensagemSucesso: mensagemSucesso ?? 'Planejamento do inventário salvo e confirmado pelo servidor.',
+    mensagemSucesso: mensagemSucesso ?? 'Planejamento do inventário salvo neste dispositivo.',
   });
   const ocupado = salvamento.ocupado;
 
@@ -79,7 +79,7 @@ export default function EditorInventarioLocal({ classe, capacidade, kitInicial, 
       setPrevisaoPendente(pendente);
       if (!autoSalvar && pendente) aoAlterarPendencia(true);
     }} />}
-    {kit !== 'C' && <p>O conjunto A ou B usa os itens previstos no livro. Ao confirmar a escolha no servidor, o plano de compras personalizado anterior será removido do rascunho.</p>}
+    {kit !== 'C' && <p>O conjunto A ou B usa os itens previstos no livro. Ao confirmar a escolha, o plano de compras personalizado anterior será removido do rascunho.</p>}
     {autoSalvar
       ? <AutoSaveStatusLocal estado={salvamento.autosave.estado} erro={salvamento.autosave.erro} mensagemSucesso={mensagemSucesso ?? 'Planejamento do inventário salvo e confirmado pelo servidor.'} aoTentarNovamente={salvamento.autosave.tentarNovamente} />
       : <>

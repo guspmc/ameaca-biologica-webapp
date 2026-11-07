@@ -39,3 +39,21 @@ test('Economia de Ações informa corretamente confirmação local ou do servido
   assert.match(ui, /Economia de ações salva neste dispositivo\./);
   assert.match(ui, /O salvamento não foi confirmado/);
 });
+
+
+test('editores da Ficha usam confirmação local por padrão e só mencionam servidor quando a origem é explícita', async () => {
+  const arquivos = [
+    ['EditorCaracteristicasLocal.tsx', 'Características salvas neste dispositivo.'],
+    ['EditorAtributosPericiasLocal.tsx', 'Atributos e Perícias salvos neste dispositivo.'],
+    ['IdentidadeLocal.tsx', 'Identificação salva neste dispositivo.'],
+    ['EditorInventarioLocal.tsx', 'Planejamento do inventário salvo neste dispositivo.'],
+  ];
+  for (const [arquivo, mensagem] of arquivos) {
+    const fonte = await readFile(new URL('../src/' + arquivo, import.meta.url), 'utf8');
+    assert.match(fonte, new RegExp(mensagem.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
+    assert.doesNotMatch(fonte, /salvos e confirmados pelo servidor|salva e confirmada pelo servidor|salvo e confirmado pelo servidor/);
+  }
+  const ficha = await readFile(new URL('../src/FichaLocal.tsx', import.meta.url), 'utf8');
+  assert.match(ficha, /origemDados === 'servidor' \? 'Características confirmadas pelo servidor\.'/);
+  assert.match(ficha, /origemDados === 'servidor' \? 'Identificação confirmada pelo servidor\.'/);
+});
