@@ -154,7 +154,7 @@ export function criarClienteServidorLocal({ baseUrl, token, fetcher = fetch }: O
   const base = normalizarBaseUrl(baseUrl);
 
   async function requisicao<T>(caminho: string, opcoes: {
-    metodo?: 'GET' | 'POST' | 'PUT' | 'DELETE';
+    metodo?: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
     corpo?: unknown;
     autenticada?: boolean;
   } = {}): Promise<T> {
