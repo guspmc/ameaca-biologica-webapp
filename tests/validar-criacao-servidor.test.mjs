@@ -80,3 +80,21 @@ test('validador compartilhado exige e reconhece a arma da Origem Operário', () 
   assert.equal(armaInvalida.valido, false);
   assert.ok(armaInvalida.pendencias.some(item => item.nome === 'Arma da Origem'));
 });
+
+
+test('validador ignora derivados enviados pelo cliente e recalcula PV, SA, BI e Defesa', () => {
+  const dados = {
+    ...fichaValida(),
+    pvMaximo: 999,
+    saMaximo: 999,
+    biMaximo: 999,
+    defesa: 999,
+  };
+  const resultado = validarCriacaoNoServidor('Claire Redfield', dados);
+  assert.equal(resultado.valido, true);
+  const detalhe = nome => resultado.conferencia.find(item => item.nome === nome)?.detalhe ?? '';
+  assert.match(detalhe('PV máximos'), / = 12\\. Salvo: 12\\./);
+  assert.match(detalhe('SA máximo'), / = 3\\. Salvo: 3\\./);
+  assert.match(detalhe('BI máxima'), / = 9\\. Salvo: 9\\./);
+  assert.match(detalhe('Defesa básica'), / = 12\\. Salvo: 12\\./);
+});
