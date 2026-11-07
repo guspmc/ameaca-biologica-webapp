@@ -171,3 +171,11 @@ test('valida a economia de ações persistida e mantém o saldo de SA sincroniza
   assert.equal(validarPersonagemLocal(base({ ...dados, economiaAcoes: { ...economia, campoExtra: true } })), false);
   assert.equal(validarPersonagemLocal(base({ versaoModelo: 1, estadoFicha: 'rascunho', economiaAcoes: economia })), false);
 });
+
+test('valida Nível persistido para suportar Dados de Vida por Nível no Descanso Parcial', () => {
+  assert.equal(validarPersonagemLocal(base({ versaoModelo: 1, estadoFicha: 'rascunho', nivel: 1 })), true);
+  assert.equal(validarPersonagemLocal(base({ versaoModelo: 1, estadoFicha: 'rascunho', nivel: 10 })), true);
+  assert.equal(validarPersonagemLocal(base({ versaoModelo: 1, estadoFicha: 'rascunho', nivel: 0 })), false);
+  assert.equal(validarPersonagemLocal(base({ versaoModelo: 1, estadoFicha: 'rascunho', nivel: 11 })), false);
+  assert.equal(validarPersonagemLocal(base({ versaoModelo: 1, estadoFicha: 'rascunho', nivel: 1.5 })), false);
+});
