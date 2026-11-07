@@ -160,7 +160,7 @@ test('registra a migração de autenticação uma única vez', async t => {
   registrarServidor(reiniciado);
   assert.deepEqual(
     reiniciado.db.prepare('SELECT version FROM schema_migrations ORDER BY version').all().map(row => row.version),
-    [1, 2, 3, 4, 5, 6, 7, 8],
+    [1, 2, 3, 4, 5, 6, 7, 8, 9],
   );
 });
 
@@ -211,7 +211,7 @@ test('migração 7 recupera o registro se a tabela de personagens já existir', 
 
   assert.deepEqual(
     reiniciado.db.prepare('SELECT version FROM schema_migrations ORDER BY version').all().map(row => row.version),
-    [1, 2, 3, 4, 5, 6, 7, 8],
+    [1, 2, 3, 4, 5, 6, 7, 8, 9],
   );
   const personagemMigrado = reiniciado.db.prepare('SELECT nome, revisao FROM personagens_locais WHERE id = ?').get('personagem-migracao-7');
   assert.equal(personagemMigrado.nome, 'Claire');
