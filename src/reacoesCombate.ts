@@ -24,8 +24,11 @@ export function avaliarJanelaReacao(gatilho: GatilhoReacao): JanelaReacao {
     throw new Error('Gatilho de Reação inválido.');
   }
   const chavesGatilho = ['resultadoAtaque', 'dadoNaturalAtaque', 'ataqueCorpoACorpo', 'ataqueAcertou', 'ataqueAparavel', 'gatilhoEsquivaAutorizado'];
-  if (Object.keys(gatilho).sort().join('|') !== chavesGatilho.sort().join('|')
-    || typeof gatilho.ataqueCorpoACorpo !== 'boolean' || typeof gatilho.ataqueAcertou !== 'boolean'
+  if (Object.getPrototypeOf(gatilho) !== Object.prototype
+    || Object.keys(gatilho).sort().join('|') !== [...chavesGatilho].sort().join('|')) {
+    throw new Error('Gatilho de Reação inválido.');
+  }
+  if (typeof gatilho.ataqueCorpoACorpo !== 'boolean' || typeof gatilho.ataqueAcertou !== 'boolean'
     || typeof gatilho.ataqueAparavel !== 'boolean' || typeof gatilho.gatilhoEsquivaAutorizado !== 'boolean'
     || !Number.isSafeInteger(gatilho.resultadoAtaque) || gatilho.resultadoAtaque < 1
     || !Number.isSafeInteger(gatilho.dadoNaturalAtaque) || gatilho.dadoNaturalAtaque < 1 || gatilho.dadoNaturalAtaque > 20) {
@@ -76,6 +79,7 @@ export function prepararContraAtaque(args: {
   excecaoContraAtaqueADistancia?: boolean;
   mesmaReacaoAutorizada: boolean;
 }): { economia: EstadoEconomiaAcoes; reacaoAdicionalComprada: boolean; custoSA: number } {
+  if (!args || typeof args !== 'object' || Array.isArray(args)) throw new Error('Dados de autorização do Contra-Ataque inválidos.');
   if (typeof args.defesaBemSucedida !== 'boolean' || typeof args.ataqueCorpoACorpo !== 'boolean'
     || typeof args.mesmaReacaoAutorizada !== 'boolean'
     || (args.excecaoContraAtaqueADistancia !== undefined && typeof args.excecaoContraAtaqueADistancia !== 'boolean')) {
@@ -145,6 +149,7 @@ export function registrarReacaoDefensiva(args: {
   manobra: 'aparar' | 'esquivar';
   janela: JanelaReacao;
 }): { economia: EstadoEconomiaAcoes; reacaoAdicionalComprada: boolean } {
+  if (!args || typeof args !== 'object' || Array.isArray(args)) throw new Error('Dados da Reação defensiva inválidos.');
   if (args.manobra !== 'aparar' && args.manobra !== 'esquivar') throw new Error('Manobra defensiva desconhecida.');
   if (!estadoEconomiaAcoesValido(args.economia)) throw new Error('Estado da economia de ações inválido para Reação defensiva.');
   if (!janelaReacaoValida(args.janela)) {
