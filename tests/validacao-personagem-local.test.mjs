@@ -225,7 +225,8 @@ test('valida usos limitados a Descanso Completo sem aceitar estados desconhecido
   })), false);
 });
 
-\ntest('valida planejamento parcial e completo de Habilidades para criação em Nível superior', () => {
+
+test('valida planejamento parcial e completo de Habilidades para criação em Nível superior', () => {
   const planoParcial = {
     versaoModelo: 1, estadoFicha: 'rascunho', classe: 'Agente',
     planejamentoCriacao: {
