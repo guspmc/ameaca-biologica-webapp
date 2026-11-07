@@ -97,3 +97,23 @@ export function registrarUsoAparar(args: {
     ? { ...item, durabilidadeAtual: (item.durabilidadeAtual as number) - 1 }
     : { ...item };
 }
+
+/** Consome uma Reação defensiva; se a normal já foi usada, compra outra por Esforço. */
+export function registrarReacaoDefensiva(args: {
+  economia: EstadoEconomiaAcoes;
+  manobra: 'aparar' | 'esquivar';
+  janela: JanelaReacao;
+}): { economia: EstadoEconomiaAcoes; reacaoAdicionalComprada: boolean } {
+  if (!args.janela.aberta) throw new Error('A janela de Reações defensivas está fechada.');
+  if (args.manobra === 'aparar' && !args.janela.podeAparar) throw new Error('Aparar não está disponível para este Ataque.');
+  if (args.manobra === 'esquivar' && !args.janela.podeEsquivar) throw new Error('Esquivar não está liberado por Habilidade ou regra para este gatilho.');
+  let economia = args.economia;
+  let reacaoAdicionalComprada = false;
+  if (economia.turnoEmAndamento && !economia.normaisUsados.reacao) {
+    economia = consumirRecursoNormal(economia, 'reacao');
+  } else {
+    economia = comprarRecursoPorEsforco(economia, 'reacao');
+    reacaoAdicionalComprada = true;
+  }
+  return { economia, reacaoAdicionalComprada };
+}
