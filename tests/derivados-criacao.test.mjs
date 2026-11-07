@@ -89,14 +89,14 @@ test('PV escala por nível; os demais derivados mudam apenas pelos componentes p
 
 test('todos os bônus numéricos de Origem e Habilidade são aplicados uma única vez', () => {
   const casos = [
-    ['Cobaia', 'rolamento', { biMaxima: 11 }],
-    ['Universitária', 'curiosa', { saMaximo: 4 }],
-    ['Policial', 'rolamento', { defesa: 14 }],
-    ['Mochileiro', 'rolamento', { inventario: 7 }],
-    ['', 'parrudo', { pvMaximo: 19, biMaxima: 10 }],
+    ['Cobaia', 'rolamento', 'Agente', { biMaxima: 11 }],
+    ['Universitária', 'curiosa', 'Autodidata', { saMaximo: 4 }],
+    ['Policial', 'rolamento', 'Agente', { defesa: 14 }],
+    ['Mochileiro', 'rolamento', 'Agente', { inventario: 7 }],
+    ['', 'parrudo', 'Operador', { pvMaximo: 19, biMaxima: 10 }],
   ];
-  for (const [origem, habilidade, esperados] of casos) {
-    const d = calcularDerivadosCriacao({ classe: habilidade === 'parrudo' ? 'Operador' : 'Agente', origem, habilidadeBasica: habilidade, atributos });
+  for (const [origem, habilidade, classe, esperados] of casos) {
+    const d = calcularDerivadosCriacao({ classe, origem, habilidadeBasica: habilidade, atributos });
     for (const [campo, valor] of Object.entries(esperados)) assert.equal(d[campo], valor, campo + ' · ' + origem + ' · ' + habilidade);
   }
 });
