@@ -1,6 +1,7 @@
 import { dadosDaClasse } from './classesFicha.ts';
 import { capacidadeInventario } from './equipamento.ts';
 import { HABILIDADES_BASICAS } from './habilidades.ts';
+import { ORIGENS } from './origens.ts';
 
 export type AtributosDerivados = {
   forca: number;
@@ -29,6 +30,7 @@ export function calcularDerivadosCriacao(entrada: EntradaDerivadosCriacao) {
   }
   const classe = dadosDaClasse(entrada.classe);
   if (!classe) throw new Error('Classe inválida para calcular a ficha.');
+  if (entrada.origem && !ORIGENS.some(o => o.nome === entrada.origem)) throw new Error('Origem inválida para calcular a ficha.');
   const habilidade = HABILIDADES_BASICAS.find(h =>
     h.id === entrada.habilidadeBasica && h.classe === entrada.classe
   );
