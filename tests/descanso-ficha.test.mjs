@@ -20,7 +20,7 @@ test('Descanso Parcial usa resultado informado, cura PV e preserva SA, BI e Temp
   const r = { pvAtual: 3, pvTemporarios: 2, saAtual: 1, biAtual: 4 };
   assert.deepEqual(api.concluirDescansoParcial(r, 6, 10, 12, 4), { pvAtual: 9, pvTemporarios: 2, saAtual: 1, biAtual: 4 });
   assert.deepEqual(api.concluirDescansoParcial(r, 10, 10, 6, 4), { pvAtual: 6, pvTemporarios: 2, saAtual: 1, biAtual: 4 });
-  assert.throws(() => api.concluirDescansoParcial(r, 11, 10, 12, 4), /Resultado físico/);
+  assert.throws(() => api.concluirDescansoParcial(r, 11, 10, 12, 4), /Resultados físicos/);
 });
 
 test('Descanso Parcial soma um Dado de Vida por Nível e rejeita quantidade incompleta', () => {
