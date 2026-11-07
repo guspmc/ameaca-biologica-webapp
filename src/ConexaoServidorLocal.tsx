@@ -47,6 +47,7 @@ export default function ConexaoServidorLocal() {
   const [aviso, setAviso] = useState('');
   const [consultando, setConsultando] = useState(false);
   const [fichaAberta, setFichaAberta] = useState<{ mesa: MesaLocal; personagem: PersonagemRascunhoLocal } | null>(null);
+  const [painelMestreAberto, setPainelMestreAberto] = useState<string | null>(null);
   const [salvandoFicha, setSalvandoFicha] = useState(false);
   const filaSalvamentoFicha = useRef(criarFilaSerializada());
   const restaurandoFicha = useRef(false);
@@ -1009,6 +1010,7 @@ export default function ConexaoServidorLocal() {
               {mesas.map(mesa => <li key={mesa.id}>
                 <div><strong>{mesa.name}</strong><small>Criada em {new Intl.DateTimeFormat('pt-BR', { dateStyle: 'short' }).format(new Date(mesa.createdAt))}</small></div>
                 <span className={mesa.role === 'mestre' ? 'papel-mestre' : 'papel-jogador'}>{mesa.role === 'mestre' ? 'MESTRE' : 'JOGADOR'}</span>
+                {mesa.role === 'mestre' && <button className="botao-claro" type="button" onClick={() => setPainelMestreAberto(mesa.id)}>Abrir Painel do Mestre</button>}
               </li>)}
             </ul> : <p className="servidor-local-vazio">Nenhuma Mesa vinculada a esta conta ainda.</p>}
             {mesas.filter(mesa => mesa.role === 'jogador').map(mesa => <section className="servidor-local-controle-mesa" key={mesa.id}>
@@ -1029,9 +1031,10 @@ export default function ConexaoServidorLocal() {
               </li>)}</ul> : <p className="servidor-local-vazio">Nenhum rascunho nesta Mesa.</p> : <p className="servidor-local-vazio">Consulte os rascunhos para carregar a lista do servidor.</p>}
             </section>)}
             {mesas.filter(mesa => mesa.role === 'jogador').map(mesa => <ArquivosJogadorLocal key={mesa.id} mesaId={mesa.id} mesaNome={mesa.name} />)}
-            {mesas.filter(mesa => mesa.role === 'mestre').map(mesa => <PainelMestreLocal
+            {mesas.filter(mesa => mesa.role === 'mestre' && mesa.id === painelMestreAberto).map(mesa => <PainelMestreLocal
               key={mesa.id}
               mesa={mesa}
+              aoVoltar={() => setPainelMestreAberto(null)}
               enderecosLan={saude?.lanAddresses ?? []}
               convite={convitesGerados[mesa.id]}
               solicitacoes={solicitacoes[mesa.id]}
