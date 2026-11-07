@@ -18,6 +18,7 @@ function IconePainel({ tipo }: { tipo: 'umbrella' | 'mesa' | 'encontros' | 'arqu
 
 type Props = {
   mesa: MesaLocal;
+  aoVoltar: () => void;
   enderecosLan?: string[];
   convite?: string;
   solicitacoes?: SolicitacaoPendente[];
@@ -33,7 +34,7 @@ type Props = {
 };
 
 /** Painel administrativo restrito ao contexto da Mesa em que a conta é Mestre. */
-export default function PainelMestreLocal({ mesa, enderecosLan = [], convite, solicitacoes, participantes, consultando, aoGerarConvite, aoRevogarConvite, aoCarregarSolicitacoes, aoCopiarConvite, aoDecidirSolicitacao, aoCarregarParticipantes, aoRemoverParticipante }: Props) {
+export default function PainelMestreLocal({ mesa, aoVoltar, enderecosLan = [], convite, solicitacoes, participantes, consultando, aoGerarConvite, aoRevogarConvite, aoCarregarSolicitacoes, aoCopiarConvite, aoDecidirSolicitacao, aoCarregarParticipantes, aoRemoverParticipante }: Props) {
   const chaveSubAbaEncontros = 'ameaca-biologica:painel-mestre:encontros:v1:' + mesa.id;
   const chaveSubAbaArquivos = 'ameaca-biologica:painel-mestre:arquivos:v1:' + mesa.id;
   const [subAbaEncontros, setSubAbaEncontros] = useState<SubAbaEncontros>(() => {
@@ -95,7 +96,7 @@ export default function PainelMestreLocal({ mesa, enderecosLan = [], convite, so
           <div className="painel-mestre-head-main">
             <span className="painel-mestre-umbrella"><IconePainel tipo="umbrella" /></span>
             <div className="painel-mestre-head-copy"><small>AMEAÇA BIOLÓGICA · RPG</small><strong>{mesa.name}</strong><span>Mesa do Mestre · Acesso confidencial</span></div>
-            <span className="painel-mestre-acesso">ACESSO MESTRE</span>
+            <div className="painel-mestre-head-actions"><span className="painel-mestre-acesso">ACESSO MESTRE</span><button type="button" className="painel-mestre-voltar" onClick={aoVoltar}>← Voltar às Mesas</button></div>
           </div>
         </header>
         <main className="painel-mestre-main">
