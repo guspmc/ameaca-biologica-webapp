@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   acumularCuraDuranteReanimacao,
   concederAjudaMedicina,
@@ -29,6 +29,7 @@ export default function ReanimacaoFichaLocal({ dados, recursos, origem, pvMaximo
     ? null
     : reanimacaoValida(dados.reanimacao) ? dados.reanimacao : null;
   const [reanimacao, setReanimacao] = useState<Reanimacao | null>(inicial);
+  useEffect(() => { setReanimacao(inicial); }, [inicial]);
   const [primeiroDado, setPrimeiroDado] = useState('');
   const [segundoDado, setSegundoDado] = useState('');
   const [cura, setCura] = useState('1');
