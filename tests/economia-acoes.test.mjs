@@ -66,3 +66,22 @@ test('início do turno não renova a janela; somente o fim do próximo turno a e
   assert.equal(saNaJanelaEsforco(estado), 0);
   assert.equal(estado.turnoEmAndamento, false);
 });
+
+test('fora do próprio turno, somente Reação pode ser registrada ou comprada por Esforço', () => {
+  let estado = encerrarTurnoAcoes(economiaAcoesInicial(4));
+  assert.throws(() => consumirRecursoNormal(estado, 'acao'), /Somente Reação/);
+  assert.throws(() => comprarRecursoPorEsforco(estado, 'movimento'), /somente uma Reação/);
+  estado = consumirRecursoNormal(estado, 'reacao');
+  assert.equal(estado.normaisUsados.reacao, true);
+  estado = comprarRecursoPorEsforco(estado, 'reacao');
+  assert.equal(estado.comprasEsforco.reacao, 1);
+  assert.throws(() => iniciarTurnoAcoes(estado), /já está em andamento/);
+});
+
+test('validador recusa estado persistido malformado ou acima do limite da janela', async () => {
+  const { estadoEconomiaAcoesValido } = await import('../src/economiaAcoes.ts');
+  const estado = economiaAcoesInicial(3);
+  assert.equal(estadoEconomiaAcoesValido(estado), true);
+  assert.equal(estadoEconomiaAcoesValido({ ...estado, saGastaNaJanela: 4 }), false);
+  assert.equal(estadoEconomiaAcoesValido({ ...estado, turnoEmAndamento: 'sim' }), false);
+});
