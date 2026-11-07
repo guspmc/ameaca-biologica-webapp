@@ -57,6 +57,8 @@ test('painel respeita método Virtual e salva somente após ação expressa', as
   assert.match(ui, /modoDados === 'virtuais'/);
   assert.match(ui, /Nenhum resultado será presumido/);
   assert.match(ui, /Concluir Descanso Completo/);
+  assert.match(ui, /renovarUsosDescansoCompleto\(\)/);
+  assert.match(ui, /usos limitados renovados/);
   const painelDescanso = ficha.match(/<DescansoFichaLocal\b[\s\S]*?\/>/)?.[0] ?? '';
   assert.ok(painelDescanso, 'o painel de Descanso deve permanecer montado na Ficha');
   assert.doesNotMatch(painelDescanso, /\bkey=/, 'o painel não deve ser remontado após o salvamento, preservando a confirmação visual');

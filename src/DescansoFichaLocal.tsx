@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { concluirDescansoCompleto, concluirDescansoParcial, dadoVidaClasse, localPermiteDescanso, type LocalDescanso } from './descansoFicha';
-import { recursosIniciais, type RecursosAtuais } from './recursosFicha';
+import { recursosIniciais } from './recursosFicha';
+import { renovarUsosDescansoCompleto } from './usosDescansoCompleto';
 import type { ModoDados } from './funcionamentoFicha';
 
 type Props = {
@@ -12,7 +13,7 @@ type Props = {
   modoDados: ModoDados;
   bloqueado: boolean;
   origemDados?: 'local' | 'servidor';
-  aoSalvar: (patch: RecursosAtuais) => Promise<boolean>;
+  aoSalvar: (patch: Record<string, unknown>) => Promise<boolean>;
 };
 
 export default function DescansoFichaLocal({ dados, classe, pvMaximo, saMaximo, nivel, modoDados, bloqueado, origemDados = 'local', aoSalvar }: Props) {
@@ -34,13 +35,13 @@ export default function DescansoFichaLocal({ dados, classe, pvMaximo, saMaximo, 
     if (ocupado) return;
     try {
       const atuais = recursosIniciais(dados, pvMaximo, saMaximo);
-      const patch = tipo === 'completo'
-        ? concluirDescansoCompleto(atuais, pvMaximo, saMaximo)
+      const patch: Record<string, unknown> = tipo === 'completo'
+        ? { ...concluirDescansoCompleto(atuais, pvMaximo, saMaximo), usosDescansoCompleto: renovarUsosDescansoCompleto() }
         : concluirDescansoParcial(atuais, resultados.map(Number), dadoVida!, pvMaximo, saMaximo, nivel);
       setOcupado(true); setErro(''); setMensagem('');
       if (!await aoSalvar(patch)) throw new Error('O armazenamento não confirmou a conclusão do Descanso.');
       setMensagem((origemDados === 'servidor' ? 'Servidor confirmou. ' : 'Salvo neste dispositivo. ') + (tipo === 'completo'
-        ? 'Descanso Completo: PV e SA restaurados; PV Temporários encerrados. BI preservada.'
+        ? 'Descanso Completo: PV e SA restaurados; PV Temporários encerrados; usos limitados renovados. BI preservada.'
         : 'Descanso Parcial: resultado físico aplicado aos PV Atuais. SA e BI preservadas.'));
     } catch (e) {
       setErro(e instanceof Error ? e.message : 'Não foi possível concluir o Descanso.');
@@ -68,7 +69,7 @@ export default function DescansoFichaLocal({ dados, classe, pvMaximo, saMaximo, 
     </div>}
     <button type="button" className="acao" disabled={ocupado || !parcialDisponivel} onClick={() => void concluir('parcial')}>Concluir Descanso Parcial <span>→</span></button>
     <h4>Descanso Completo · 1 hora</h4>
-    <p>Somente Sala de Descanso. Restaura PV e SA aos máximos e encerra PV Temporários. Não reduz BI nem remove automaticamente Intoxicação ou outras consequências. Neste incremento, o aplicativo ainda não atualiza usos de Habilidades, Condições ou progressões temporais.</p>
+    <p>Somente Sala de Descanso. Restaura PV e SA aos máximos e encerra PV Temporários. Não reduz BI nem remove automaticamente Intoxicação ou outras consequências. Usos de Habilidades e benefícios limitados a 1/Descanso Completo são renovados após a confirmação do salvamento. Condições e progressões temporais continuam sem atualização automática.</p>
     <button type="button" className="acao" disabled={ocupado || !completoDisponivel} onClick={() => void concluir('completo')}>Concluir Descanso Completo <span>→</span></button>
     {erro && <p className="offline-erro" role="alert">{erro}</p>}
     {mensagem && <p className="offline-status" role="status">{mensagem}</p>}

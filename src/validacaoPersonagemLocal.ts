@@ -10,6 +10,8 @@ import { configuracaoFuncionamentoValida } from './funcionamentoFicha.ts';
 import { reanimacaoValida } from './reanimacaoFicha.ts';
 import { estadoEconomiaAcoesValido } from './economiaAcoes.ts';
 import { listaCondicoesValida } from './condicoesFicha.ts';
+import { validarProgressaoHabilidades } from './progressaoHabilidades.ts';
+import { usosDescansoCompletoValido } from './usosDescansoCompleto.ts';
 
 export type PersonagemValidavel = {
   id: string;
@@ -90,6 +92,16 @@ function validarDadosFicha(valor: unknown): valor is Record<string, unknown> {
   if ('estadoFicha' in valor && valor.estadoFicha !== 'rascunho') return false;
   if ('biAtual' in valor && (!Number.isSafeInteger(valor.biAtual) || (valor.biAtual as number) < 0)) return false;
   if ('nivel' in valor && (!Number.isSafeInteger(valor.nivel) || (valor.nivel as number) < 1 || (valor.nivel as number) > 10)) return false;
+  if ('habilidadesAdquiridas' in valor) {
+    if (!Array.isArray(valor.habilidadesAdquiridas) || typeof valor.classe !== 'string'
+      || !Number.isSafeInteger(valor.nivel)) return false;
+    const progressao = validarProgressaoHabilidades(valor.classe, valor.nivel as number, valor.habilidadesAdquiridas as never);
+    if (!progressao.valida) return false;
+    const habilidadeNivel1 = (valor.habilidadesAdquiridas as { nivel: number; habilidadeId: string }[])
+      .find(escolha => escolha.nivel === 1)?.habilidadeId;
+    if (typeof valor.habilidadeBasica === 'string' && habilidadeNivel1 !== valor.habilidadeBasica) return false;
+  }
+  if ('usosDescansoCompleto' in valor && !usosDescansoCompletoValido(valor.usosDescansoCompleto)) return false;
   for (const campo of ['pvAtual', 'pvTemporarios', 'saAtual'] as const) {
     if (campo in valor && (!Number.isSafeInteger(valor[campo]) || (valor[campo] as number) < 0)) return false;
   }

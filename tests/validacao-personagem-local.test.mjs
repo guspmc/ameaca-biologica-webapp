@@ -179,3 +179,48 @@ test('valida Nível persistido para suportar Dados de Vida por Nível no Descans
   assert.equal(validarPersonagemLocal(base({ versaoModelo: 1, estadoFicha: 'rascunho', nivel: 11 })), false);
   assert.equal(validarPersonagemLocal(base({ versaoModelo: 1, estadoFicha: 'rascunho', nivel: 1.5 })), false);
 });
+
+
+test('valida escolhas de Habilidades adquiridas sequencialmente por Nível', () => {
+  const baseHabilidades = {
+    versaoModelo: 1, estadoFicha: 'rascunho', classe: 'Autodidata', nivel: 1,
+    habilidadeBasica: 'ambidestria',
+    habilidadesAdquiridas: [{ nivel: 1, habilidadeId: 'ambidestria' }],
+  };
+  assert.equal(validarPersonagemLocal(base(baseHabilidades)), true);
+  assert.equal(validarPersonagemLocal(base({
+    ...baseHabilidades, nivel: 2,
+    habilidadesAdquiridas: [
+      { nivel: 1, habilidadeId: 'ambidestria' },
+      { nivel: 2, habilidadeId: 'curiosa' },
+    ],
+  })), true);
+  assert.equal(validarPersonagemLocal(base({
+    ...baseHabilidades, nivel: 2,
+    habilidadesAdquiridas: [{ nivel: 1, habilidadeId: 'ambidestria' }],
+  })), false);
+  assert.equal(validarPersonagemLocal(base({
+    ...baseHabilidades,
+    habilidadesAdquiridas: [{ nivel: 1, habilidadeId: 'curiosa' }],
+  })), false);
+  assert.equal(validarPersonagemLocal(base({
+    ...baseHabilidades,
+    habilidadesAdquiridas: [{ nivel: 1, habilidadeId: 'ambidestria', extra: true }],
+  })), false);
+});
+
+test('valida usos limitados a Descanso Completo sem aceitar estados desconhecidos', () => {
+  assert.equal(validarPersonagemLocal(base({
+    versaoModelo: 1, estadoFicha: 'rascunho', origem: 'Acadêmico',
+    habilidadeBasica: 'curiosa', classe: 'Autodidata',
+    usosDescansoCompleto: { 'habilidade:curiosa': true, 'origem:academico': true },
+  })), true);
+  assert.equal(validarPersonagemLocal(base({
+    versaoModelo: 1, estadoFicha: 'rascunho',
+    usosDescansoCompleto: { 'origem:inventada': true },
+  })), false);
+  assert.equal(validarPersonagemLocal(base({
+    versaoModelo: 1, estadoFicha: 'rascunho',
+    usosDescansoCompleto: { 'origem:academico': false },
+  })), false);
+});

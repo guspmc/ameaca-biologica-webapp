@@ -17,6 +17,7 @@ import RevisaoCriacaoLocal from './RevisaoCriacaoLocal';
 import CalculadoraTesteLocal from './CalculadoraTesteLocal';
 import RecursosFichaLocal from './RecursosFichaLocal';
 import DescansoFichaLocal from './DescansoFichaLocal';
+import UsosDescansoCompletoLocal from './UsosDescansoCompletoLocal';
 import ReanimacaoFichaLocal from './ReanimacaoFichaLocal';
 import PainelAcoesLocal from './PainelAcoesLocal';
 import CondicoesFichaLocal from './CondicoesFichaLocal';
@@ -36,6 +37,7 @@ type DadosFichaLocal = {
   periciaOrigemTreinada?: unknown;
   periciaOrigemExtra?: unknown;
   habilidadeBasica?: unknown;
+  habilidadesAdquiridas?: unknown;
   equipamentoInicial?: unknown;
   distribuicaoPericias?: unknown;
   comprasIniciais?: unknown;
@@ -217,6 +219,14 @@ export default function FichaLocal({ nome, mesa, contextoId, dados, aoFechar, ao
   const dadosOrigem = ORIGENS.find(item => item.nome === origem);
   const habilidadeSelecionada = typeof ficha.habilidadeBasica === 'string' ? ficha.habilidadeBasica : ''; 
   const habilidade = HABILIDADES_BASICAS.find(item => item.id === habilidadeSelecionada && item.classe === classe);
+  const habilidadesProgressaoIds = Array.isArray(ficha.habilidadesAdquiridas)
+    ? ficha.habilidadesAdquiridas.flatMap(escolha => {
+        if (!escolha || typeof escolha !== 'object' || Array.isArray(escolha)) return [];
+        const id = (escolha as Record<string, unknown>).habilidadeId;
+        return typeof id === 'string' ? [id] : [];
+      })
+    : [];
+  const habilidadesAtivasIds = [...new Set([...(habilidade ? [habilidade.id] : []), ...habilidadesProgressaoIds])];
   const atributosDaFicha = {
     forca: numero(atributos.forca), agilidade: numero(atributos.agilidade),
     vigor: numero(atributos.vigor), astucia: numero(atributos.astucia),
@@ -338,6 +348,13 @@ export default function FichaLocal({ nome, mesa, contextoId, dados, aoFechar, ao
           bloquearPV={recursosAtuais.pvAtual === 0 || reanimacaoPV0EmCurso}
           aoSalvar={aoSalvarRecursos}
           aoAlterarPendencia={pendente => registrarPendencia('Recursos', pendente)}
+        />
+
+        <UsosDescansoCompletoLocal
+          dados={dados}
+          origem={origem}
+          habilidades={habilidadesAtivasIds}
+          aoSalvar={aoSalvarRecursos}
         />
 
         <DescansoFichaLocal
