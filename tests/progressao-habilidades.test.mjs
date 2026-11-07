@@ -6,7 +6,7 @@ import ts from 'typescript';
 const habilidades = await readFile(new URL('../src/habilidades.ts', import.meta.url), 'utf8');
 const pericias = await readFile(new URL('../src/pericias.ts', import.meta.url), 'utf8');
 const progressao = (await readFile(new URL('../src/progressaoHabilidades.ts', import.meta.url), 'utf8'))
-  .replace(/^import .*;\r?\n/m, '');
+  .replace(/^import .*;\r?\n/gm, '');
 const source = pericias + '\n' + habilidades + '\n' + progressao;
 const { outputText } = ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2022 } });
 const { ganhosProgressaoAte, validarProgressaoHabilidades, validarGanhoAtributoProgressao, validarGanhoPericiaProgressao, HABILIDADES_PROGRESSAO } =
