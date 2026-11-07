@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import {
   comprarRecursoPorEsforco, consumirAcaoCompleta, consumirInteracaoGratuita,
   consumirRecursoNormal, economiaAcoesInicial, encerrarTurnoAcoes,
@@ -32,9 +32,11 @@ export default function PainelAcoesLocal({ dados, saAtual, aoSalvar }: Props) {
   const [salvando, setSalvando] = useState(false);
   const [erro, setErro] = useState('');
   const [confirmacao, setConfirmacao] = useState('');
+  const bloqueioOperacao = useRef(false);
 
   async function aplicar(operacao: (atual: EstadoEconomiaAcoes) => EstadoEconomiaAcoes) {
-    if (!inicial.valido || salvando) return;
+    if (!inicial.valido || salvando || bloqueioOperacao.current) return;
+    bloqueioOperacao.current = true;
     try {
       const proximo = operacao(estado);
       setSalvando(true);
@@ -47,6 +49,7 @@ export default function PainelAcoesLocal({ dados, saAtual, aoSalvar }: Props) {
     } catch (problema) {
       setErro(problema instanceof Error ? problema.message : 'Não foi possível registrar a ação.');
     } finally {
+      bloqueioOperacao.current = false;
       setSalvando(false);
     }
   }
