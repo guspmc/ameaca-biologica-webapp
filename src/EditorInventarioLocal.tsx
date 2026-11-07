@@ -22,7 +22,8 @@ export default function EditorInventarioLocal({ classe, capacidade, kitInicial, 
   const [plano, setPlano] = useState(comprasIniciais);
   const [revisao, setRevisao] = useState(revisaoCompras);
   const [sujo, setSujo] = useState(false);
-  const chaveInicial = JSON.stringify([kitInicial, comprasIniciais, revisaoCompras]);
+  const [previsaoPendente, setPrevisaoPendente] = useState(false);
+  const chaveInicial = JSON.stringify([classe, capacidade, kitInicial, comprasIniciais, revisaoCompras]);
   useEffect(() => {
     if (sujo) return;
     setKit(kitInicial);
@@ -30,7 +31,6 @@ export default function EditorInventarioLocal({ classe, capacidade, kitInicial, 
     setRevisao(revisaoCompras);
     setPrevisaoPendente(false);
   }, [chaveInicial, sujo]);
-  const [previsaoPendente, setPrevisaoPendente] = useState(false);
   const opcoes = opcoesEquipamento(classe);
   const valor: Dados = {
     equipamentoInicial: kit,

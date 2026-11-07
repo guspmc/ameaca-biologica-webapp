@@ -18,9 +18,9 @@ test('editores da ficha preservam a montagem e sincronizam props externas após 
   for (const [componente, arquivo] of casos) {
     const tag = ficha.match(new RegExp('<' + componente + '\\b[\\s\\S]*?\\/>'))?.[0] ?? '';
     assert.ok(tag, componente + ': deve estar integrado à ficha');
-    assert.doesNotMatch(tag, /\\bkey=/, componente + ': não deve remontar após salvar');
+    assert.doesNotMatch(tag, /\bkey=/, componente + ': não deve remontar após salvar');
     const fonte = await ler(arquivo);
     assert.match(fonte, /useEffect/, arquivo + ': deve sincronizar dados externos');
-    assert.match(fonte, /sujo/, arquivo + ': deve preservar estado de edição');
+    assert.match(fonte, componente === 'PainelAcoesLocal' ? /salvando/ : /sujo/, arquivo + ': deve preservar estado local durante a operação');
   }
 });

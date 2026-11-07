@@ -34,9 +34,14 @@ test('mudanças de Classe e Origem preservam escolhas dependentes até revisão 
   assert.match(editor, /valor: dados/);
 });
 
-test('a ficha reinicializa o editor ao mudar Classe/Origem e mostra escolhas salvas incompatíveis', async () => {
+test('a ficha sincroniza o editor ao mudar Classe/Origem sem desmontá-lo', async () => {
   const fonte = await ler('FichaLocal.tsx');
-  assert.match(fonte, /key=\{JSON\.stringify\(\[classe, origem, atributos, treinada, extra, distribuicao\]\)\}/);
+  const editor = await ler('EditorAtributosPericiasLocal.tsx');
+  const tag = fonte.match(/<EditorAtributosPericiasLocal\b[\s\S]*?\/>/)?.[0] ?? '';
+  assert.ok(tag);
+  assert.doesNotMatch(tag, /\bkey=/);
+  assert.match(editor, /useEffect/);
+  assert.match(editor, /if \(sujo\) return/);
   assert.match(fonte, /\.\.\.Object\.keys\(distribuicao\)/);
   assert.match(fonte, /Revisão da criação necessária/);
 });
