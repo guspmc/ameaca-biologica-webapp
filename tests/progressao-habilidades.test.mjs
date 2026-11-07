@@ -9,7 +9,7 @@ const progressao = (await readFile(new URL('../src/progressaoHabilidades.ts', im
   .replace(/^import .*;\r?\n/gm, '');
 const source = pericias + '\n' + habilidades + '\n' + progressao;
 const { outputText } = ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2022 } });
-const { ganhosProgressaoAte, validarProgressaoHabilidades, validarGanhoAtributoProgressao, validarGanhoPericiaProgressao, HABILIDADES_PROGRESSAO } =
+const { ganhosProgressaoAte, validarProgressaoHabilidades, validarGanhoAtributoProgressao, validarGanhoPericiaProgressao, HABILIDADES_PROGRESSAO, avaliarDisponibilidadeProgressao } =
   await import('data:text/javascript;base64,' + Buffer.from(outputText).toString('base64'));
 
 test('catálogo contém habilidades de todos os graus e classes conforme o Arquivo do Jogador', () => {
@@ -144,4 +144,42 @@ test('sequência completa até o nível 10 respeita ramos e Habilidade Avassalad
     assert.equal(resultado.valida, true, classe + ': ' + JSON.stringify(resultado.pendencias));
     assert.deepEqual(resultado.pendencias, []);
   }
+});
+
+
+test('progressão objetiva usa os marcos cumulativos de Missões Completadas', () => {
+  const base = { nivelAtual: 1, metodo: 'missoes', descansoCompletoEmSalaDescanso: true };
+  assert.equal(avaliarDisponibilidadeProgressao({ ...base, missoesCompletadas: 0 }).disponivel, false);
+  assert.equal(avaliarDisponibilidadeProgressao({ ...base, missoesCompletadas: 1 }).proximoNivel, 2);
+  assert.equal(avaliarDisponibilidadeProgressao({ ...base, missoesCompletadas: 1 }).disponivel, true);
+  assert.equal(avaliarDisponibilidadeProgressao({ ...base, nivelAtual: 2, missoesCompletadas: 2 }).disponivel, false);
+  assert.equal(avaliarDisponibilidadeProgressao({ ...base, nivelAtual: 2, missoesCompletadas: 3 }).disponivel, true);
+  assert.equal(avaliarDisponibilidadeProgressao({ ...base, nivelAtual: 9, missoesCompletadas: 42 }).proximoNivel, 10);
+});
+
+test('progressão por Marco Narrativo depende de concessão expressa do Narrador', () => {
+  const base = { nivelAtual: 4, metodo: 'marco_narrativo', missoesCompletadas: 99, descansoCompletoEmSalaDescanso: true };
+  assert.equal(avaliarDisponibilidadeProgressao({ ...base, marcoNarrativoConcedido: false }).disponivel, false);
+  assert.equal(avaliarDisponibilidadeProgressao({ ...base, marcoNarrativoConcedido: true }).disponivel, true);
+});
+
+test('subida só é aplicada em Descanso Completo na Sala de Descanso', () => {
+  const base = { nivelAtual: 1, metodo: 'missoes', missoesCompletadas: 1, descansoCompletoEmSalaDescanso: false };
+  assert.equal(avaliarDisponibilidadeProgressao(base).disponivel, false);
+  assert.match(avaliarDisponibilidadeProgressao(base).motivo, /Sala de Descanso/);
+});
+
+test('perda de Nível por Morte exige novo avanço posterior à Morte', () => {
+  const base = { nivelAtual: 2, metodo: 'missoes', missoesCompletadas: 3, missoesCompletadasNaUltimaMorte: 3, descansoCompletoEmSalaDescanso: true };
+  assert.equal(avaliarDisponibilidadeProgressao(base).disponivel, false);
+  assert.equal(avaliarDisponibilidadeProgressao({ ...base, missoesCompletadas: 4 }).disponivel, true);
+  const narrativa = { ...base, metodo: 'marco_narrativo', marcoNarrativoConcedido: true };
+  assert.equal(avaliarDisponibilidadeProgressao(narrativa).disponivel, false);
+  assert.equal(avaliarDisponibilidadeProgressao({ ...narrativa, marcoNarrativoAposUltimaMorte: true }).disponivel, true);
+});
+
+test('validador de disponibilidade recusa estado malformado e nível máximo', () => {
+  assert.equal(avaliarDisponibilidadeProgressao(null).disponivel, false);
+  assert.equal(avaliarDisponibilidadeProgressao({ nivelAtual: 11 }).disponivel, false);
+  assert.equal(avaliarDisponibilidadeProgressao({ nivelAtual: 10, metodo: 'missoes', missoesCompletadas: 42, descansoCompletoEmSalaDescanso: true }).proximoNivel, null);
 });

@@ -190,3 +190,62 @@ export function validarGanhoPericiaProgressao(
   }
   return { valido: true };
 }
+
+
+export type MetodoProgressao = 'marco_narrativo' | 'missoes';
+export type EstadoProgressao = {
+  nivelAtual: number;
+  metodo: MetodoProgressao;
+  missoesCompletadas: number;
+  marcoNarrativoConcedido?: boolean;
+  missoesCompletadasNaUltimaMorte?: number | null;
+  marcoNarrativoAposUltimaMorte?: boolean;
+  descansoCompletoEmSalaDescanso: boolean;
+};
+
+const MISSOES_POR_NIVEL = [0, 1, 3, 6, 10, 15, 21, 28, 35, 42];
+
+/** Avalia o requisito de progressão sem aplicar o Nível à ficha. */
+export function avaliarDisponibilidadeProgressao(estado: EstadoProgressao): {
+  disponivel: boolean; proximoNivel: number | null; motivo: string;
+} {
+  if (!estado || typeof estado !== 'object' || Array.isArray(estado)
+    || !nivelValido(estado.nivelAtual)
+    || !['marco_narrativo', 'missoes'].includes(estado.metodo)
+    || !Number.isSafeInteger(estado.missoesCompletadas) || estado.missoesCompletadas < 0
+    || typeof estado.descansoCompletoEmSalaDescanso !== 'boolean'
+    || (estado.marcoNarrativoConcedido !== undefined && typeof estado.marcoNarrativoConcedido !== 'boolean')
+    || (estado.marcoNarrativoAposUltimaMorte !== undefined && typeof estado.marcoNarrativoAposUltimaMorte !== 'boolean')
+    || (estado.missoesCompletadasNaUltimaMorte !== undefined && estado.missoesCompletadasNaUltimaMorte !== null
+      && (!Number.isSafeInteger(estado.missoesCompletadasNaUltimaMorte) || estado.missoesCompletadasNaUltimaMorte < 0
+        || estado.missoesCompletadasNaUltimaMorte > estado.missoesCompletadas))) {
+    return { disponivel: false, proximoNivel: null, motivo: 'Registro de progressão inválido.' };
+  }
+  if (estado.nivelAtual >= 10) return { disponivel: false, proximoNivel: null, motivo: 'A personagem já alcançou o nível máximo.' };
+  const proximoNivel = estado.nivelAtual + 1;
+  const requisitoCumprido = estado.metodo === 'marco_narrativo'
+    ? estado.marcoNarrativoConcedido === true
+    : estado.missoesCompletadas >= MISSOES_POR_NIVEL[proximoNivel - 1];
+  if (!requisitoCumprido) return {
+    disponivel: false, proximoNivel,
+    motivo: estado.metodo === 'marco_narrativo'
+      ? 'Aguardando concessão de Marco Narrativo pelo Narrador.'
+      : `A personagem precisa alcançar ${MISSOES_POR_NIVEL[proximoNivel - 1]} Missões Completadas.`,
+  };
+  const houveMorteRegistrada = estado.missoesCompletadasNaUltimaMorte !== undefined
+    && estado.missoesCompletadasNaUltimaMorte !== null;
+  if (houveMorteRegistrada) {
+    const avancouAposMorte = estado.metodo === 'missoes'
+      ? estado.missoesCompletadas > estado.missoesCompletadasNaUltimaMorte!
+      : estado.marcoNarrativoAposUltimaMorte === true;
+    if (!avancouAposMorte) return {
+      disponivel: false, proximoNivel,
+      motivo: 'Após perder um Nível por Morte, é necessário concluir uma nova Missão ou alcançar um novo Marco Narrativo.',
+    };
+  }
+  if (!estado.descansoCompletoEmSalaDescanso) return {
+    disponivel: false, proximoNivel,
+    motivo: 'A subida só pode ser aplicada durante Descanso Completo em Sala de Descanso.',
+  };
+  return { disponivel: true, proximoNivel, motivo: 'Progressão disponível para aplicação neste Descanso Completo.' };
+}
