@@ -262,7 +262,12 @@ export function prepararAutenticacaoLocal(db) {
   if (versaoAtual < 9) {
     db.exec('BEGIN IMMEDIATE');
     try {
-      db.exec("ALTER TABLE mesas ADD COLUMN metodo_criacao TEXT NOT NULL DEFAULT 'padrao' CHECK (metodo_criacao IN ('padrao', 'regra_da_casa'))");
+      // Bancos legados podem ter a coluna mesmo sem o registro da migração 9
+      // (por exemplo, após uma recuperação parcial). Não executar ALTER duplicado.
+      const colunasMesas = db.prepare('PRAGMA table_info(mesas)').all();
+      if (!colunasMesas.some(coluna => coluna.name === 'metodo_criacao')) {
+        db.exec("ALTER TABLE mesas ADD COLUMN metodo_criacao TEXT NOT NULL DEFAULT 'padrao' CHECK (metodo_criacao IN ('padrao', 'regra_da_casa'))");
+      }
       db.prepare('INSERT INTO schema_migrations (version, applied_at) VALUES (?, ?)').run(9, new Date().toISOString());
       db.exec('COMMIT');
     } catch (erro) { db.exec('ROLLBACK'); throw erro; }
