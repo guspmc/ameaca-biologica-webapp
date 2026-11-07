@@ -60,3 +60,21 @@ test('Contra-Ataque Instintivo pode usar a mesma Reação, conforme Habilidade',
   assert.equal(resultado.economia.saAtual, 1);
   assert.equal(resultado.economia.normaisUsados.reacao, true);
 });
+
+test('Aparar reduz 1 de Durabilidade quando a automação está habilitada', async () => {
+  const { registrarUsoAparar } = await import('../src/reacoesCombate.ts');
+  assert.deepEqual(registrarUsoAparar({ item: { durabilidadeAtual: 3, indestrutivel: false }, automacaoAtiva: true }), { durabilidadeAtual: 2, indestrutivel: false });
+});
+
+test('Aparar não reduz Durabilidade no modo Manual ou quando Misto está desligado', async () => {
+  const { registrarUsoAparar } = await import('../src/reacoesCombate.ts');
+  const item = { durabilidadeAtual: 3, indestrutivel: false };
+  assert.deepEqual(registrarUsoAparar({ item, automacaoAtiva: false }), item);
+});
+
+test('Indestrutível não perde Durabilidade e Durabilidade 0 impede Aparar', async () => {
+  const { registrarUsoAparar } = await import('../src/reacoesCombate.ts');
+  const item = { durabilidadeAtual: null, indestrutivel: true };
+  assert.deepEqual(registrarUsoAparar({ item, automacaoAtiva: true }), item);
+  assert.throws(() => registrarUsoAparar({ item: { durabilidadeAtual: 0, indestrutivel: false }, automacaoAtiva: true }), /não pode Aparar/);
+});
