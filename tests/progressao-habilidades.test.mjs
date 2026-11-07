@@ -3,7 +3,10 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import ts from 'typescript';
 
-const source = await readFile(new URL('../src/progressaoHabilidades.ts', import.meta.url), 'utf8');
+const habilidades = await readFile(new URL('../src/habilidades.ts', import.meta.url), 'utf8');
+const progressao = (await readFile(new URL('../src/progressaoHabilidades.ts', import.meta.url), 'utf8'))
+  .replace(/^import .*;\\r?\\n/m, '');
+const source = habilidades + '\\n' + progressao;
 const { outputText } = ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2022 } });
 const { ganhosProgressaoAte, validarProgressaoHabilidades, HABILIDADES_PROGRESSAO } =
   await import('data:text/javascript;base64,' + Buffer.from(outputText).toString('base64'));
