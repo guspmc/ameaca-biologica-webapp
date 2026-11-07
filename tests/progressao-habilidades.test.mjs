@@ -58,3 +58,9 @@ test('recusa grau de outra Classe, ausência de pré-requisito e Habilidade repe
     { nivel: 2, habilidadeId: 'anatomia-de-combate' },
   ]).valida, false);
 });
+
+test('dados de progressão malformados são recusados sem interromper a conferência', () => {
+  assert.equal(validarProgressaoHabilidades('Agente', 1, null).valida, false);
+  assert.equal(validarProgressaoHabilidades('Agente', 1, [null]).valida, false);
+  assert.equal(validarProgressaoHabilidades('Agente', 1, [{ nivel: 1 }]).valida, false);
+});
