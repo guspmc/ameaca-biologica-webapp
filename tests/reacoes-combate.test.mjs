@@ -174,3 +174,32 @@ test('registro de Reação e Contra-Ataque rejeita economia malformada sem TypeE
   const { registrarReacaoDefensiva } = await import('../src/reacoesCombate.ts');
   assert.throws(() => registrarReacaoDefensiva({ economia: economiaInvalida, manobra: 'aparar', janela }), /economia de ações inválido/);
 });
+
+
+test('gatilho de Reação, Teste defensivo e item de Aparar rejeitam estruturas malformadas', async () => {
+  const { registrarUsoAparar } = await import('../src/reacoesCombate.ts');
+  assert.throws(() => avaliarJanelaReacao(null), /Gatilho de Reação inválido/);
+  assert.throws(() => avaliarJanelaReacao({}), /Gatilho de Reação inválido/);
+  const gatilho = {
+    resultadoAtaque: 12, dadoNaturalAtaque: 12, ataqueCorpoACorpo: true,
+    ataqueAcertou: true, ataqueAparavel: true, gatilhoEsquivaAutorizado: false,
+  };
+  assert.throws(() => avaliarJanelaReacao({ ...gatilho, inesperado: true }), /Gatilho de Reação inválido/);
+  assert.throws(() => resolverTesteDefensivo({
+    tipo: 'aparar', valorLuta: 3, resultadoAtaque: 0, dado1: 10,
+  }), /Resultado do Ataque inválido/);
+  assert.throws(() => resolverTesteDefensivo({
+    tipo: 'aparar', valorLuta: 3, resultadoAtaque: 12, dado1: 10, vantagem: 'qualquer',
+  }), /Vantagem\/Desvantagem inválido/);
+  assert.throws(() => resolverTesteDefensivo(null), /Dados do Teste defensivo inválidos/);
+  assert.throws(() => registrarUsoAparar({
+    item: { durabilidadeAtual: 3, indestrutivel: false, propriedadeExtra: true },
+    automacaoAtiva: true,
+  }), /Estado de Aparar inválido/);
+  assert.throws(() => registrarUsoAparar({
+    item: null, automacaoAtiva: true,
+  }), /Estado de Aparar inválido/);
+  assert.deepEqual(registrarUsoAparar({
+    item: { durabilidadeAtual: 2, indestrutivel: false }, automacaoAtiva: true,
+  }), { durabilidadeAtual: 1, indestrutivel: false });
+});
