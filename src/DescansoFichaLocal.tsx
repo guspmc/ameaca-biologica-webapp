@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { concluirDescansoCompleto, concluirDescansoParcial, dadoVidaClasse, localPermiteDescanso, type LocalDescanso } from './descansoFicha';
 import { recursosIniciais, type RecursosAtuais } from './recursosFicha';
 import type { ModoDados } from './funcionamentoFicha';
@@ -8,22 +8,27 @@ type Props = {
   classe: string;
   pvMaximo: number;
   saMaximo: number;
+  nivel: number;
   modoDados: ModoDados;
   bloqueado: boolean;
   origemDados?: 'local' | 'servidor';
   aoSalvar: (patch: RecursosAtuais) => Promise<boolean>;
 };
 
-export default function DescansoFichaLocal({ dados, classe, pvMaximo, saMaximo, modoDados, bloqueado, origemDados = 'local', aoSalvar }: Props) {
+export default function DescansoFichaLocal({ dados, classe, pvMaximo, saMaximo, nivel, modoDados, bloqueado, origemDados = 'local', aoSalvar }: Props) {
   const [local, setLocal] = useState<LocalDescanso | ''>('');
-  const [resultado, setResultado] = useState('');
+  const [resultados, setResultados] = useState<string[]>(() => Array.from({ length: Number.isInteger(nivel) && nivel >= 1 && nivel <= 10 ? nivel : 1 }, () => ''));
+  const nivelValido = Number.isInteger(nivel) && nivel >= 1 && nivel <= 10;
+  useEffect(() => { if (nivelValido) setResultados(Array.from({ length: nivel }, () => '')); }, [nivel]);
   const [ocupado, setOcupado] = useState(false);
   const [mensagem, setMensagem] = useState('');
   const [erro, setErro] = useState('');
   const dadoVida = (() => { try { return dadoVidaClasse(classe); } catch { return null; } })();
-  const face = Number(resultado);
-  const resultadoValido = resultado.trim() !== '' && Number.isSafeInteger(face) && face >= 1 && face <= (dadoVida ?? 0);
-  const parcialDisponivel = !bloqueado && modoDados !== 'virtuais' && dadoVida !== null && resultadoValido && localPermiteDescanso('parcial', local);
+  const resultadosValidos = nivelValido && resultados.length === nivel && resultados.every(resultado => {
+    const face = Number(resultado);
+    return resultado.trim() !== '' && Number.isSafeInteger(face) && face >= 1 && face <= (dadoVida ?? 0);
+  });
+  const parcialDisponivel = !bloqueado && modoDados !== 'virtuais' && nivelValido && dadoVida !== null && resultadosValidos && localPermiteDescanso('parcial', local);
   const completoDisponivel = !bloqueado && dadoVida !== null && localPermiteDescanso('completo', local);
   async function concluir(tipo: 'parcial' | 'completo') {
     if (ocupado) return;
@@ -31,7 +36,7 @@ export default function DescansoFichaLocal({ dados, classe, pvMaximo, saMaximo, 
       const atuais = recursosIniciais(dados, pvMaximo, saMaximo);
       const patch = tipo === 'completo'
         ? concluirDescansoCompleto(atuais, pvMaximo, saMaximo)
-        : concluirDescansoParcial(atuais, Number(resultado), dadoVida!, pvMaximo, saMaximo);
+        : concluirDescansoParcial(atuais, resultados.map(Number), dadoVida!, pvMaximo, saMaximo, nivel);
       setOcupado(true); setErro(''); setMensagem('');
       if (!await aoSalvar(patch)) throw new Error('O armazenamento não confirmou a conclusão do Descanso.');
       setMensagem((origemDados === 'servidor' ? 'Servidor confirmou. ' : 'Salvo neste dispositivo. ') + (tipo === 'completo'
@@ -54,10 +59,13 @@ export default function DescansoFichaLocal({ dados, classe, pvMaximo, saMaximo, 
       </select>
     </label>
     <h4>Descanso Parcial · 30 minutos</h4>
-    <p>Sala de Descanso ou Sala Segura. Recupera PV pelo Dado de Vida da Classe; não recupera SA nem pausa Condições.</p>
-    {modoDados === 'virtuais' ? <p>O método de dados está em Virtual, mas a rolagem virtual ainda não está implementada. Nenhum resultado será presumido.</p> : <label>Resultado físico informado · 1d{dadoVida ?? '—'}
-      <input type="number" min="1" max={dadoVida ?? 1} step="1" value={resultado} disabled={ocupado || !dadoVida} onChange={e => setResultado(e.target.value)}/>
-    </label>}
+    <p>Sala de Descanso ou Sala Segura. Role um Dado de Vida por Nível; Autodidata usa d8, Agente d10 e Operador d12. Não recupera SA nem pausa Condições.</p>
+    {!nivelValido && <p className="offline-erro" role="alert">Nível inválido; não é possível calcular o Descanso Parcial.</p>}
+    {modoDados === 'virtuais' ? <p>O método de dados está em Virtual, mas a rolagem virtual ainda não está implementada. Nenhum resultado será presumido.</p> : <div className="ficha-local-grade">
+      {resultados.map((resultado, indice) => <label key={indice}>Dado de Vida {indice + 1} · 1d{dadoVida ?? '—'}
+        <input type="number" min="1" max={dadoVida ?? 1} step="1" value={resultado} disabled={ocupado || !dadoVida || !nivelValido} onChange={e => setResultados(atuais => atuais.map((valor, i) => i === indice ? e.target.value : valor))}/>
+      </label>)}
+    </div>}
     <button type="button" className="acao" disabled={ocupado || !parcialDisponivel} onClick={() => void concluir('parcial')}>Concluir Descanso Parcial <span>→</span></button>
     <h4>Descanso Completo · 1 hora</h4>
     <p>Somente Sala de Descanso. Restaura PV e SA aos máximos e encerra PV Temporários. Não reduz BI nem remove automaticamente Intoxicação ou outras consequências. Neste incremento, o aplicativo ainda não atualiza usos de Habilidades, Condições ou progressões temporais.</p>

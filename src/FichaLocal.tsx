@@ -46,6 +46,7 @@ type DadosFichaLocal = {
   pvAtual?: unknown;
   pvTemporarios?: unknown;
   saAtual?: unknown;
+  nivel?: unknown;
   reanimacao?: unknown;
   economiaAcoes?: unknown;
 };
@@ -345,6 +346,7 @@ export default function FichaLocal({ nome, mesa, contextoId, dados, aoFechar, ao
           classe={classe}
           pvMaximo={pv}
           saMaximo={sa}
+          nivel={typeof ficha.nivel === 'number' ? ficha.nivel : 1}
           modoDados={configuracaoFuncionamento.modoDados}
           aoSalvar={aoSalvarRecursos}
           bloqueado={secoesPendentes.size > 0 || reanimacaoEmCurso}

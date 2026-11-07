@@ -49,7 +49,9 @@ test('painel respeita método Virtual e salva somente após ação expressa', as
   const ui = await readFile(new URL('../src/DescansoFichaLocal.tsx', import.meta.url), 'utf8');
   const ficha = await readFile(new URL('../src/FichaLocal.tsx', import.meta.url), 'utf8');
   assert.match(ui, /useState\(''\)/);
-  assert.match(ui, /resultadoValido/);
+  assert.match(ui, /resultadosValidos/);
+  assert.match(ui, /resultados\.map\(Number\)/);
+  assert.match(ui, /nivel=\{typeof ficha\.nivel === 'number' \? ficha\.nivel : 1\}/);
   assert.match(ui, /!bloqueado &&/);
   assert.match(ficha, /bloqueado=\{secoesPendentes\.size > 0\}/);
   assert.match(ui, /modoDados === 'virtuais'/);

@@ -89,6 +89,7 @@ function validarDadosFicha(valor: unknown): valor is Record<string, unknown> {
   if ('versaoModelo' in valor && valor.versaoModelo !== 1) return false;
   if ('estadoFicha' in valor && valor.estadoFicha !== 'rascunho') return false;
   if ('biAtual' in valor && (!Number.isSafeInteger(valor.biAtual) || (valor.biAtual as number) < 0)) return false;
+  if ('nivel' in valor && (!Number.isSafeInteger(valor.nivel) || (valor.nivel as number) < 1 || (valor.nivel as number) > 10)) return false;
   for (const campo of ['pvAtual', 'pvTemporarios', 'saAtual'] as const) {
     if (campo in valor && (!Number.isSafeInteger(valor[campo]) || (valor[campo] as number) < 0)) return false;
   }
