@@ -307,3 +307,17 @@ test('valida o estado integrado de Combate e impede divergência com o saldo de 
   assert.equal(validarPersonagemLocal(base({ ...dados, estadoTurnoCombate: { ...estado, versao: 99 } })), false);
   assert.equal(validarPersonagemLocal(base({ ...dados, estadoTurnoCombate: { ...estado, ataqueAdicionalAutorizado: 'sim' } })), false);
 });
+
+
+test('backup e persistência aceitam somente formatos compostos históricos reconhecidos para migração', () => {
+  const economia = economiaAcoesInicial(4);
+  const legado = {
+    versao: 1,
+    economia,
+    manobras: { disparadaUsada: false, fugaUsada: false, mirarPreparado: true, combateDuasArmasUsado: false },
+  };
+  const dados = { versaoModelo: 1, estadoFicha: 'rascunho', saAtual: 4, estadoTurnoCombate: legado };
+  assert.equal(validarPersonagemLocal(base(dados)), true);
+  assert.equal(validarPersonagemLocal(base({ ...dados, estadoTurnoCombate: { ...legado, campoExtra: true } })), false);
+  assert.equal(validarPersonagemLocal(base({ ...dados, saAtual: 3 })), false);
+});
