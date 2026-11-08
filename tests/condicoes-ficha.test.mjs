@@ -19,6 +19,9 @@ test('instâncias da mesma Condição preservam fonte e duração separadamente 
 test('validação recusa campos extras, IDs duplicados, fontes vazias e condições desconhecidas', () => {
   const item = { id:'a', condicao:'exposto', fonte:'Falha Crítica', duracao:'1 turno', observacao:'' };
   assert.equal(api.instanciaCondicaoValida(item), true);
+  const semDuracao = { id:'b', condicao:'exposto', fonte:'Habilidade', observacao:'', estado:'ativa', encerradaEm:null };
+  assert.equal(api.instanciaCondicaoValida(semDuracao), true);
+  assert.equal(api.instanciaCondicaoValida({ ...semDuracao, duracao:' ' }), false);
   assert.equal(api.instanciaCondicaoValida({ ...item, admin:true }), false);
   assert.equal(api.instanciaCondicaoValida({ ...item, fonte:' ' }), false);
   assert.equal(api.instanciaCondicaoValida({ ...item, condicao:'inventada' }), false);
@@ -62,5 +65,7 @@ test('a Ficha permite ativar e encerrar Condições com confirmação e salvamen
   assert.match(ui, /Ativar Condição/);
   assert.match(ui, /Encerrar Condição/);
   assert.match(ui, /Histórico/);
-  assert.match(ui, /Ficha Offline, estes registros permanecem locais/);
+  assert.match(ui, /Offline, não há contador de rodadas/);
+  assert.match(ui, /Mestre acompanha a duração em rodadas separadamente na aba Combate/);
+  assert.doesNotMatch(ui, /Duração ou critério de remoção|setDuracao/);
 });
