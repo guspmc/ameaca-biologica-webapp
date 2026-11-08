@@ -273,3 +273,32 @@ test('somente o jogador proprietário pode excluir seu rascunho', async t => {
   assert.equal(lista.status, 200);
   assert.equal((await lista.json()).personagens.length, 0);
 });
+
+
+test('migration 11 prepara ciclo de ativação sem alterar rascunhos legados', async t => {
+  const { app, url } = await criarServidor(t);
+  const mestre = await criarConta(url, 'mestre-migration-ativacao@example.test');
+  const jogador = await criarConta(url, 'jogador-migration-ativacao@example.test');
+  const mesaResposta = await fetch(url + '/api/mesas', { method: 'POST', headers: { ...mestre.headers, 'content-type': 'application/json' }, body: JSON.stringify({ name: 'Mesa migration ativação' }) });
+  assert.equal(mesaResposta.status, 201);
+  const { mesa } = await mesaResposta.json();
+  app.db.prepare('INSERT INTO participantes_mesa (mesa_id, conta_id, papel, entrou_em) VALUES (?, ?, ?, ?)').run(mesa.id, jogador.account.id, 'jogador', new Date().toISOString());
+  const criacao = await fetch(url + '/api/mesas/' + mesa.id + '/personagens', { method: 'POST', headers: { ...jogador.headers, 'content-type': 'application/json' }, body: JSON.stringify({ name: 'Rascunho preservado', data: { classe: 'Agente' } }) });
+  assert.equal(criacao.status, 201);
+  const { personagem } = await criacao.json();
+  assert.equal(app.db.prepare('SELECT MAX(version) AS version FROM schema_migrations').get().version, 11);
+  const colunas = app.db.prepare('PRAGMA table_info(personagens_locais)').all().map(c => c.name);
+  assert.ok(colunas.includes('estado_ficha'));
+  assert.ok(colunas.includes('inventario_json'));
+  const legado = app.db.prepare('SELECT estado_ficha, inventario_json FROM personagens_locais WHERE id = ?').get(personagem.id);
+  assert.deepEqual(legado, { estado_ficha: 'rascunho', inventario_json: null });
+  assert.throws(() => app.db.prepare("UPDATE personagens_locais SET estado_ficha = 'completa' WHERE id = ?").run(personagem.id), /Ativação exige inventário e recibo/);
+  const operacao = '8d8b1a25-8b8f-4e1c-9d1a-5b21d9f2a301';
+  const agora = new Date().toISOString();
+  app.db.prepare('UPDATE personagens_locais SET inventario_json = ? WHERE id = ?').run(JSON.stringify({ personagemId: personagem.id, revisao: 1, capacidade: 5, itens: [] }), personagem.id);
+  app.db.prepare('INSERT INTO ativacoes_personagem_locais (personagem_id, operacao_id, revisao_ficha, revisao_criacao, quantidade_instancias, criada_em) VALUES (?, ?, ?, ?, ?, ?)').run(personagem.id, operacao, 1, 2, 0, agora);
+  app.db.prepare("UPDATE personagens_locais SET estado_ficha = 'completa' WHERE id = ?").run(personagem.id);
+  assert.equal(app.db.prepare('SELECT estado_ficha FROM personagens_locais WHERE id = ?').get(personagem.id).estado_ficha, 'completa');
+  assert.throws(() => app.db.prepare("UPDATE personagens_locais SET estado_ficha = 'rascunho' WHERE id = ?").run(personagem.id), /não pode voltar a rascunho/);
+  assert.throws(() => app.db.prepare('UPDATE personagens_locais SET inventario_json = NULL WHERE id = ?').run(personagem.id), /não pode perder o inventário/);
+});
