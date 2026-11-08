@@ -49,5 +49,6 @@ export function distribuicaoPericiasValida(
     !permitidas.has(nome) || !Number.isInteger(grau) || grau < 0 || grau > 2
   )) return false;
   if ((distribuicao[periciaTreinada] ?? 0) > 1) return false;
+  if (periciaExtraAmnesico && (distribuicao[periciaExtraAmnesico] ?? 0) > 1) return false;
   return pontosGastosPericias(distribuicao) <= limite;
 }
