@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import type { ResultadoConferenciaCriacaoLocal } from './servidorLocal';
+import { ErroServidorLocal, type ResultadoConferenciaCriacaoLocal } from './servidorLocal';
 
 type Props = {
   revision: number;
@@ -36,7 +36,7 @@ export default function AtivacaoPersonagemLocal({ revision, bloqueado = false, a
   }, [revision]);
 
   async function conferir() {
-    if (ocupado || bloqueado || concluido) return;
+    if (ocupado || bloqueado || concluido || operacaoId.current) return;
     setOcupado(true);
     setErro('');
     setConferencia(null);
@@ -67,12 +67,18 @@ export default function AtivacaoPersonagemLocal({ revision, bloqueado = false, a
       if (confirmadoPeloServidor) setConcluido(true);
       else setErro('A ativação ainda não foi confirmada. O mesmo pedido será preservado para uma nova tentativa.');
     } catch (problema) {
-      setErro(problema instanceof Error ? problema.message : 'Não foi possível confirmar a ativação. O pedido será preservado para nova tentativa.');
+      if (problema instanceof ErroServidorLocal && problema.status >= 400 && problema.status < 500) {
+        operacaoId.current = null;
+        setErro(problema.message + ' Faça uma nova conferência antes de tentar novamente.');
+      } else {
+        setErro(problema instanceof Error ? problema.message : 'Não foi possível confirmar a ativação. O mesmo pedido foi preservado para nova tentativa.');
+      }
     } finally {
       setOcupado(false);
     }
   }
 
+  const pedidoPendente = operacaoId.current !== null;
   const apta = !!conferencia
     && conferencia.valido
     && conferencia.pendencias.length === 0
@@ -80,13 +86,14 @@ export default function AtivacaoPersonagemLocal({ revision, bloqueado = false, a
     && conferencia.ativas < 10
     && conferencia.revision === revision;
 
-  return <details className="ficha-local-editor">
+  return <details className="ficha-local-editor-detalhe">
     <summary>Conferência final e ativação</summary>
     <p>A conferência é refeita pelo servidor. A ativação só ocorre após sua confirmação explícita; os recursos atuais não são restaurados. O inventário inicial é preparado uma única vez.</p>
     {bloqueado && <p className="ficha-local-legenda">Conclua os salvamentos pendentes antes de conferir ou ativar.</p>}
-    {!concluido && <button type="button" className="botao-claro" disabled={ocupado || bloqueado} onClick={() => void conferir()}>
+    {!concluido && <button type="button" className="botao-claro" disabled={ocupado || bloqueado || pedidoPendente} onClick={() => void conferir()}>
       {ocupado ? 'Conferindo…' : 'Conferir criação no servidor'}
     </button>}
+    {pedidoPendente && !concluido && <p role="status">A tentativa anterior não recebeu confirmação. Repita a ativação para reutilizar o mesmo identificador e evitar duplicação do inventário.</p>}
     {conferencia && <>
       <div className="ficha-local-grade">
         <div><small>ITENS CONFERIDOS</small><strong>{conferencia.conferencia.length - conferencia.pendencias.length}/{conferencia.conferencia.length}</strong><p>Validação dos dados salvos no servidor.</p></div>
