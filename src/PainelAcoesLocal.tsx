@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { lembretesCondicoesPorTurno } from './condicoesFicha';
 import {
   comprarRecursoPorEsforco, consumirAcaoCompleta, consumirInteracaoGratuita,
   consumirRecursoNormal, economiaAcoesInicial, encerrarTurnoAcoes,
@@ -101,6 +102,15 @@ export default function PainelAcoesLocal({ dados, saAtual, aoSalvar, origemDados
           </div>
           <p className="ficha-local-legenda">Use o registro de Manobra somente após uma regra autorizar o gasto. Contra-Ataque, por exemplo, exige defesa bem-sucedida e 1 SA + Reação. O painel não faz rolagens nem presume gatilhos.</p>
 
+          <h4>Condições que exigem atenção neste turno</h4>
+          {estado.turnoEmAndamento ? (() => {
+            const lembretes = lembretesCondicoesPorTurno(dados.condicoes);
+            return lembretes.inicio.length || lembretes.fim.length ? <div className="ficha-local-editor">
+              {lembretes.inicio.length > 0 && <><strong>Início do turno</strong><ul>{lembretes.inicio.map(item => <li key={item}>{item}</li>)}</ul></>}
+              {lembretes.fim.length > 0 && <><strong>Fim do turno</strong><ul>{lembretes.fim.map(item => <li key={item}>{item}</li>)}</ul></>}
+              <small>Estes são lembretes de consulta. A ficha não faz Testes, não aplica Dano e não encerra Condições automaticamente.</small>
+            </div> : <p>Nenhuma Condição ativa exige uma verificação automática de início/fim de turno neste painel.</p>;
+          })() : <p>Inicie seu turno para exibir os lembretes de Condições com efeitos por turno.</p>}
           <h4>Controle do turno</h4>
           <div className="recursos-controles">
             {estado.turnoEmAndamento
