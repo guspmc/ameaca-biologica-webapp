@@ -86,7 +86,7 @@ export type ResultadoConferenciaCriacaoLocal = {
 
 export type ResultadoAtivacaoPersonagemLocal = {
   personagem: PersonagemRascunhoLocal;
-  recibo: { personagemId: string; operacaoId: string; estado: 'completa'; quantidadeInstancias: number; revisaoCriacao: number };
+  recibo: { personagemId: string; operacaoId: string; revisaoFicha: number; estado: 'completa'; quantidadeInstancias: number; revisaoCriacao: number };
 };
 
 export type DiagnosticoTransporteLocal = {
