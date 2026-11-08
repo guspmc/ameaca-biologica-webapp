@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  estadoTurnoCombateInicial, estadoTurnoCombateValido, carregarEstadoTurnoCombate,
+  estadoTurnoCombateInicial, estadoTurnoCombateValido, carregarEstadoTurnoCombate, estadoTurnoCombateCompostoLegadoReconhecido,
   iniciarTurnoCombate, encerrarTurnoCombate,
   aplicarManobraCombate, aplicarReacaoCombate,
 } from '../src/estadoTurnoCombate.ts';
@@ -140,4 +140,49 @@ test('Ataque adicional não pode ser registrado depois do encerramento do turno'
   estado = aplicarManobraCombate(estado, (economia, manobras) => registrarCombateDuasArmas(economia, manobras, true)).estado;
   estado = encerrarTurnoCombate(estado);
   assert.throws(() => registrarResolucaoAtaqueAdicional(estado), /durante o próprio turno/);
+});
+
+test('migra formatos compostos históricos conhecidos sem descartar economia ou marcadores existentes', () => {
+  const atual = estadoTurnoCombateInicial(5);
+  const antigoSemMarcadores = {
+    versao: 1,
+    economia: atual.economia,
+    manobras: { disparadaUsada: true, fugaUsada: true, mirarPreparado: true, combateDuasArmasUsado: false },
+  };
+  const antigoComMarcadores = {
+    ...antigoSemMarcadores,
+    movimentosAdicionaisConcedidos: 2,
+    ataqueAdicionalAutorizado: true,
+  };
+  const antigoComMarcadoresEAtaque = {
+    ...antigoComMarcadores,
+    manobras: { ...antigoComMarcadores.manobras, ataqueNormalRealizado: true },
+  };
+
+  for (const legado of [antigoSemMarcadores, antigoComMarcadores, antigoComMarcadoresEAtaque]) {
+    assert.equal(estadoTurnoCombateCompostoLegadoReconhecido(legado), true);
+    const carregado = carregarEstadoTurnoCombate(legado, null, 4);
+    assert.equal(carregado.valido, true);
+    assert.equal(carregado.origem, 'composto');
+    assert.equal(carregado.estado.economia.saAtual, 4);
+    assert.equal(carregado.estado.manobras.ataqueNormalRealizado, 'ataqueNormalRealizado' in legado.manobras ? true : false);
+    assert.equal(legado.economia.saAtual, 5);
+  }
+
+  const comMarcadores = carregarEstadoTurnoCombate(antigoComMarcadores, null, 5).estado;
+  assert.equal(comMarcadores.movimentosAdicionaisConcedidos, 2);
+  assert.equal(comMarcadores.ataqueAdicionalAutorizado, true);
+  const semMarcadores = carregarEstadoTurnoCombate(antigoSemMarcadores, null, 5).estado;
+  assert.equal(semMarcadores.movimentosAdicionaisConcedidos, 0);
+  assert.equal(semMarcadores.ataqueAdicionalAutorizado, false);
+});
+
+test('não migra estado composto histórico com estrutura ou tipos desconhecidos', () => {
+  const atual = estadoTurnoCombateInicial(3);
+  const extra = { versao: 1, economia: atual.economia, manobras: { ...atual.manobras }, campoNovo: true };
+  const tipoInvalido = { versao: 1, economia: atual.economia, manobras: { disparadaUsada: false, fugaUsada: false, mirarPreparado: false, combateDuasArmasUsado: false } };
+  tipoInvalido.manobras.disparadaUsada = 'sim';
+  assert.equal(estadoTurnoCombateCompostoLegadoReconhecido(extra), false);
+  assert.equal(estadoTurnoCombateCompostoLegadoReconhecido(tipoInvalido), false);
+  assert.equal(carregarEstadoTurnoCombate(extra, null, 3).valido, false);
 });
