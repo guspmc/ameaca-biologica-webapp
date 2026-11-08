@@ -137,6 +137,8 @@ export function registrarCombateDuasArmas(
   ataqueInicialElegivel: boolean,
 ): ResultadoManobraOperacional {
   validarEstadoManobras(manobras);
+  if (!economia.turnoEmAndamento) throw new Error('Combate com Duas Armas só pode ser registrado no próprio turno.');
+  if (!economia.normaisUsados.acao) throw new Error('Combate com Duas Armas exige que a Ação Atacar já tenha sido utilizada.');
   if (typeof ataqueInicialElegivel !== 'boolean' || !ataqueInicialElegivel) {
     throw new Error('O Ataque inicial não cumpre os requisitos de Combate com Duas Armas.');
   }
