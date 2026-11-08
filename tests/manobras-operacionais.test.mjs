@@ -52,13 +52,18 @@ test('Ajudar e Usar um Objeto consomem Ação sem resolver a tarefa', () => {
   assert.equal(registrarUsarObjeto(economiaAcoesInicial(2), estadoManobrasTurnoInicial()).economia.normaisUsados.acao, true);
 });
 
-test('Combate com Duas Armas consome Ação Bônus uma vez após Ataque elegível', () => {
+test('Combate com Duas Armas exige Ação Atacar prévia, turno ativo e elegibilidade', () => {
   const estado = estadoManobrasTurnoInicial();
-  assert.throws(() => registrarCombateDuasArmas(economiaAcoesInicial(3), estado, false), /não cumpre/);
-  const r = registrarCombateDuasArmas(economiaAcoesInicial(3), estado, true);
+  const economia = economiaAcoesInicial(3);
+  assert.throws(() => registrarCombateDuasArmas(economia, estado, true), /Ação Atacar já tenha sido utilizada/);
+  assert.throws(() => registrarCombateDuasArmas(consumirRecursoNormal(economia, 'acao'), estado, false), /não cumpre/);
+  const ataqueInicial = consumirRecursoNormal(economia, 'acao');
+  const r = registrarCombateDuasArmas(ataqueInicial, estado, true);
   assert.equal(r.economia.normaisUsados.acaoBonus, true);
   assert.equal(r.ataqueAdicionalAutorizado, true);
   assert.throws(() => registrarCombateDuasArmas(r.economia, r.manobras, true), /já foi utilizado/);
+  const turnoEncerrado = { ...ataqueInicial, turnoEmAndamento: false };
+  assert.throws(() => registrarCombateDuasArmas(turnoEncerrado, estado, true), /próprio turno/);
 });
 
 test('Manobras respeitam disponibilidade e a janela de SA', () => {
