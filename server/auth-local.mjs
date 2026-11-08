@@ -305,6 +305,30 @@ export function prepararAutenticacaoLocal(db) {
         );
         CREATE INDEX IF NOT EXISTS idx_personagens_ativas_mesa
           ON personagens_locais(mesa_id, estado_ficha, atualizada_em);
+        CREATE TRIGGER IF NOT EXISTS trg_personagem_ativacao_exige_recibo
+        BEFORE UPDATE OF estado_ficha ON personagens_locais
+        WHEN NEW.estado_ficha = 'completa'
+          AND (
+            NEW.inventario_json IS NULL
+            OR NOT EXISTS (
+              SELECT 1 FROM ativacoes_personagem_locais a WHERE a.personagem_id = NEW.id
+            )
+          )
+        BEGIN
+          SELECT RAISE(ABORT, 'Ativação exige inventário e recibo.');
+        END;
+        CREATE TRIGGER IF NOT EXISTS trg_personagem_ativada_nao_regride
+        BEFORE UPDATE OF estado_ficha ON personagens_locais
+        WHEN OLD.estado_ficha = 'completa' AND NEW.estado_ficha <> 'completa'
+        BEGIN
+          SELECT RAISE(ABORT, 'Personagem ativada não pode voltar a rascunho.');
+        END;
+        CREATE TRIGGER IF NOT EXISTS trg_personagem_ativada_nao_perde_inventario
+        BEFORE UPDATE OF inventario_json ON personagens_locais
+        WHEN OLD.estado_ficha = 'completa' AND NEW.inventario_json IS NULL
+        BEGIN
+          SELECT RAISE(ABORT, 'Personagem ativada não pode perder o inventário.');
+        END;
       `);
       db.prepare('INSERT INTO schema_migrations (version, applied_at) VALUES (?, ?)').run(11, new Date().toISOString());
       db.exec('COMMIT');
