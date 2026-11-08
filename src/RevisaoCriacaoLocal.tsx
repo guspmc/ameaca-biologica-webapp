@@ -28,6 +28,5 @@ export default function RevisaoCriacaoLocal({ ficha, irPara }: Props) {
       </button>}
     </li>)}</ul>
     <p className="ficha-local-legenda">Os máximos são conferidos sem restaurar PV, SA ou BI atuais. Efeitos condicionais continuam dependentes da situação de jogo.</p>
-    <p className="dica">A finalização ainda não está disponível. O inventário ativo, validações finais e integração das automações precisam estar concluídos antes da ativação. A personagem permanece em rascunho.</p>
   </details>;
 }
