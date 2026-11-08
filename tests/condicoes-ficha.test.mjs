@@ -32,6 +32,20 @@ test('remover uma fonte não remove outra instância da mesma Condição', () =>
   ];
   assert.deepEqual(api.removerInstanciaCondicao(lista,'a'), [lista[1]]);
 });
+test('condições encerradas preservam histórico e deixam de produzir efeito ativo', () => {
+  const ativa = { id:'a', condicao:'exposto', fonte:'Falha Crítica', duracao:'1 turno', observacao:'' };
+  const encerrada = { ...ativa, estado:'encerrada', encerradaEm:'2026-11-07T12:00:00.000Z' };
+  assert.equal(api.listaCondicoesValida([ativa]), true); // compatibilidade com fichas antigas
+  assert.equal(api.listaCondicoesValida([encerrada]), true);
+  const lista = api.encerrarInstanciaCondicao([ativa], 'a', '2026-11-07T12:00:00.000Z');
+  assert.equal(lista.length, 1);
+  assert.equal(lista[0].estado, 'encerrada');
+  assert.deepEqual(api.condicoesAtivas(lista), []);
+  assert.deepEqual(api.condicoesComEfeitoUnico(lista), []);
+  assert.equal(api.condicoesAtivas([ativa]).length, 1);
+  assert.throws(() => api.encerrarInstanciaCondicao(lista, 'a'), /Condição ativa/);
+});
+
 test('Vulnerável é derivada do limite de um quinto dos PV sem arredondamento', () => {
   assert.equal(api.vulneravelPorPV(20,100), true);
   assert.equal(api.vulneravelPorPV(21,100), false);
