@@ -30,6 +30,8 @@ test('Perícias permitidas combinam Classe e treinamento gratuito da Origem sem 
   ]);
   assert.ok(periciasPermitidasNaCriacao('Operador','Policial','Pontaria').includes('Pontaria'));
   assert.deepEqual(periciasPermitidasNaCriacao('Classe falsa','Acadêmico','Medicina'),[]);
+  assert.deepEqual(periciasPermitidasNaCriacao('toString','Acadêmico','Investigação'),[]);
+  assert.equal(distribuicaoPericiasValida('constructor','Acadêmico','Investigação',{}),false);
 });
 
 test('Amnésico escolhe duas Perícias distintas e ambas podem receber distribuição',()=>{

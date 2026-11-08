@@ -15,7 +15,7 @@ export function periciasPermitidasNaCriacao(
   periciaExtraAmnesico?: string,
 ): string[] {
   const dadosOrigem = ORIGENS.find(item => item.nome === origem);
-  if (!dadosOrigem || !(classe in PERICIAS_CLASSE)) return [];
+  if (!dadosOrigem || !Object.hasOwn(PERICIAS_CLASSE, classe)) return [];
   const extra = origem === 'Amnésico'
     ? periciaExtraAmnesico
     : dadosOrigem.pericias.find(item => item !== periciaTreinada);
@@ -38,9 +38,9 @@ export function distribuicaoPericiasValida(
   distribuicao: DistribuicaoPericias,
   periciaExtraAmnesico?: string,
 ): boolean {
-  const limite = PONTOS_CLASSE[classe] ?? 0;
+  const limite = Object.hasOwn(PONTOS_CLASSE, classe) ? PONTOS_CLASSE[classe] : 0;
   const origemValida = ORIGENS.find(item => item.nome === origem);
-  if (!origemValida) return false;
+  if (!origemValida || !Object.hasOwn(PERICIAS_CLASSE, classe)) return false;
   const opcoesOrigem = origem === 'Amnésico' ? NOMES_PERICIAS : origemValida.pericias;
   if (!opcoesOrigem.includes(periciaTreinada as never)) return false;
   if (origem === 'Amnésico' && (!periciaExtraAmnesico || periciaExtraAmnesico === periciaTreinada || !NOMES_PERICIAS.includes(periciaExtraAmnesico as never))) return false;
