@@ -1,6 +1,8 @@
 import { randomBytes } from 'node:crypto';
 import { autenticarContaLocal } from './auth-local.mjs';
 import { validarCriacaoNoServidor } from '../src/validarCriacaoServidor.ts';
+import { estadoEconomiaAcoesValido } from '../src/economiaAcoes.ts';
+import { estadoTurnoCombateValido } from '../src/estadoTurnoCombate.ts';
 
 function responder(res, status, body) {
   res.writeHead(status, {
@@ -259,6 +261,24 @@ export async function tratarRotaPersonagensLocal(req, res, url, db, notificarCon
             !Number.isSafeInteger(corpo.expectedRevision) || corpo.expectedRevision < 1) {
           responder(res, 422, { error: 'Informe nome, dados JSON e a revisão atual do rascunho.' });
           return true;
+        }
+        if (Object.prototype.hasOwnProperty.call(corpo.data, 'estadoTurnoCombate')) {
+          const turno = corpo.data.estadoTurnoCombate;
+          if (!estadoTurnoCombateValido(turno)
+            || !Number.isSafeInteger(corpo.data.saAtual)
+            || turno.economia.saAtual !== corpo.data.saAtual) {
+            responder(res, 422, { error: 'O estado integrado do turno de combate é inválido ou está dessincronizado do saldo de SA.' });
+            return true;
+          }
+        }
+        if (Object.prototype.hasOwnProperty.call(corpo.data, 'economiaAcoes')) {
+          const economia = corpo.data.economiaAcoes;
+          if (!estadoEconomiaAcoesValido(economia)
+            || !Number.isSafeInteger(corpo.data.saAtual)
+            || economia.saAtual !== corpo.data.saAtual) {
+            responder(res, 422, { error: 'A Economia de Ações é inválida ou está dessincronizada do saldo de SA.' });
+            return true;
+          }
         }
         if (existente.estadoFicha === 'completa') {
           const dadosAtuais = JSON.parse(existente.dataJson);
