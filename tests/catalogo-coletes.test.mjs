@@ -32,7 +32,7 @@ test('Colete de Placas Kendo registra progressão de 0 a 3 placas sem virar comp
   const inicial=consultarColete('colete-kendo-0');
   assert.equal(inicial.caracteristico,true);
   assert.match(inicial.aquisicao,/Item Característico/);
-  assert.ok(inicial.observacoes.some(texto=>texto.includes('começa com 0 placas')));
+  assert.ok(inicial.observacoes.some(texto=>texto.includes('Começa com 0 placas')));
   assert.ok(inicial.observacoes.some(texto=>texto.includes('máximo de 3')));
 });
 
