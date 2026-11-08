@@ -28,14 +28,22 @@ export function carregarEstadoTurnoCombate(
     return { estado: estadoTurnoCombateInicial(0), valido: false, origem: 'novo' };
   }
   if (composto !== undefined && composto !== null) {
-    if (!estadoTurnoCombateValido(composto)) {
-      return { estado: estadoTurnoCombateInicial(saAtual), valido: false, origem: 'composto' };
+    if (estadoTurnoCombateValido(composto)) {
+      return {
+        estado: { ...composto, economia: sincronizarSAAtual(composto.economia, saAtual) },
+        valido: true,
+        origem: 'composto',
+      };
     }
-    return {
-      estado: { ...composto, economia: sincronizarSAAtual(composto.economia, saAtual) },
-      valido: true,
-      origem: 'composto',
-    };
+    const migrado = migrarEstadoTurnoCombateComposto(composto);
+    if (migrado) {
+      return {
+        estado: { ...migrado, economia: sincronizarSAAtual(migrado.economia, saAtual) },
+        valido: true,
+        origem: 'composto',
+      };
+    }
+    return { estado: estadoTurnoCombateInicial(saAtual), valido: false, origem: 'composto' };
   }
   if (legado !== undefined && legado !== null) {
     if (!estadoEconomiaAcoesValido(legado)) {
@@ -54,6 +62,54 @@ export function carregarEstadoTurnoCombate(
     };
   }
   return { estado: estadoTurnoCombateInicial(saAtual), valido: true, origem: 'novo' };
+}
+
+/** Reconhece apenas formatos compostos históricos conhecidos; não aceita campos desconhecidos. */
+export function estadoTurnoCombateCompostoLegadoReconhecido(valor: unknown): boolean {
+  return migrarEstadoTurnoCombateComposto(valor) !== null;
+}
+
+function migrarEstadoTurnoCombateComposto(valor: unknown): EstadoTurnoCombate | null {
+  if (!valor || typeof valor !== 'object' || Array.isArray(valor)
+    || Object.getPrototypeOf(valor) !== Object.prototype) return null;
+  const estado = valor as Record<string, unknown>;
+  if (estado.versao !== 1 || !estadoEconomiaAcoesValido(estado.economia)) return null;
+
+  const chavesEstado = Object.keys(estado).sort().join('|');
+  const chavesBasicas = ['economia', 'manobras', 'versao'].sort().join('|');
+  const chavesComMarcadores = ['economia', 'manobras', 'versao', 'movimentosAdicionaisConcedidos', 'ataqueAdicionalAutorizado'].sort().join('|');
+  if (chavesEstado !== chavesBasicas && chavesEstado !== chavesComMarcadores) return null;
+
+  if (chavesEstado === chavesComMarcadores
+    && (!Number.isSafeInteger(estado.movimentosAdicionaisConcedidos)
+      || (estado.movimentosAdicionaisConcedidos as number) < 0
+      || typeof estado.ataqueAdicionalAutorizado !== 'boolean')) return null;
+
+  if (!estado.manobras || typeof estado.manobras !== 'object' || Array.isArray(estado.manobras)
+    || Object.getPrototypeOf(estado.manobras) !== Object.prototype) return null;
+  const manobras = estado.manobras as Record<string, unknown>;
+  const chavesManobras = Object.keys(manobras).sort().join('|');
+  const base = ['disparadaUsada', 'fugaUsada', 'mirarPreparado', 'combateDuasArmasUsado'].sort().join('|');
+  const comAtaque = ['disparadaUsada', 'fugaUsada', 'mirarPreparado', 'ataqueNormalRealizado', 'combateDuasArmasUsado'].sort().join('|');
+  if (chavesManobras !== base && chavesManobras !== comAtaque) return null;
+  if (['disparadaUsada', 'fugaUsada', 'mirarPreparado', 'combateDuasArmasUsado']
+    .some(chave => typeof manobras[chave] !== 'boolean')
+    || ('ataqueNormalRealizado' in manobras && typeof manobras.ataqueNormalRealizado !== 'boolean')
+    || (manobras.fugaUsada === true && manobras.disparadaUsada !== true)) return null;
+
+  return {
+    versao: 1,
+    economia: estado.economia,
+    manobras: {
+      disparadaUsada: manobras.disparadaUsada as boolean,
+      fugaUsada: manobras.fugaUsada as boolean,
+      mirarPreparado: manobras.mirarPreparado as boolean,
+      ataqueNormalRealizado: (manobras.ataqueNormalRealizado as boolean | undefined) ?? false,
+      combateDuasArmasUsado: manobras.combateDuasArmasUsado as boolean,
+    },
+    movimentosAdicionaisConcedidos: chavesEstado === chavesComMarcadores ? estado.movimentosAdicionaisConcedidos as number : 0,
+    ataqueAdicionalAutorizado: chavesEstado === chavesComMarcadores ? estado.ataqueAdicionalAutorizado as boolean : false,
+  };
 }
 
 export function estadoTurnoCombateInicial(saAtual: number): EstadoTurnoCombate {
