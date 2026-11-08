@@ -106,7 +106,7 @@ export default function FichaOfflineApp() {
         for (const campo of Object.keys(patchEfetivo)) camposPendentesRef.current.delete(campo);
         const chavesCaracteristicas = ['classe', 'origem', 'armaOperario', 'habilidadeBasica'];
         if (chavesCaracteristicas.some(campo => campo in patch)) secoesNaoSalvasRef.current.delete('Características');
-        if (['atributos', 'periciaOrigemTreinada', 'periciaOrigemExtra', 'distribuicaoPericias'].some(campo => campo in patch)) secoesNaoSalvasRef.current.delete('Atributos e Perícias');
+        if (['atributos', 'periciaOrigemTreinada', 'periciaOrigemExtra', 'periciaTentativaErroTreinada', 'distribuicaoPericias'].some(campo => campo in patch)) secoesNaoSalvasRef.current.delete('Atributos e Perícias');
         if ('identidade' in patch) secoesNaoSalvasRef.current.delete('Identificação');
         if (['comprasIniciais', 'revisaoCompras'].some(campo => campo in patch)
           || ('equipamentoInicial' in patch && !chavesCaracteristicas.some(campo => campo in patch))) {
