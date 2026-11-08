@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 
 const ui = await readFile(new URL('../src/CalculadoraTesteLocal.tsx', import.meta.url), 'utf8');
+const pericias = await readFile(new URL('../src/pericias.ts', import.meta.url), 'utf8');
 
 test('calculadora oferece Ataque Corpo a Corpo com Luta e Ataque à distância com Pontaria', () => {
   assert.match(ui, /ataque-corpo/);
@@ -22,4 +23,9 @@ test('calculadora não rola dados nem aplica Dano automaticamente', () => {
   assert.match(ui, /não rola dados, não registra uma rolagem e não altera a ficha/);
   assert.match(ui, /O cálculo de Dano depende da arma equipada e permanece manual/);
   assert.doesNotMatch(ui, /Math\.random|crypto\.getRandomValues/);
+});
+
+test('Ataques usam os Atributos oficiais associados a Luta e Pontaria', () => {
+  assert.match(pericias, /Luta:\s*'forca'/);
+  assert.match(pericias, /Pontaria:\s*'agilidade'/);
 });
