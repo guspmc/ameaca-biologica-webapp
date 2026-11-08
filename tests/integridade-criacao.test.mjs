@@ -49,10 +49,13 @@ test('a ficha sincroniza o editor ao mudar Classe/Origem sem desmontá-lo', asyn
 test('rascunho preserva escolhas incompletas e a revisão final aponta o que falta', async () => {
   const editor = await ler('EditorCaracteristicasLocal.tsx');
   const revisao = await ler('RevisaoCriacaoLocal.tsx');
+  const ativacao = await ler('AtivacaoPersonagemLocal.tsx');
   assert.match(editor, /useSalvamentoEditorLocal/);
   assert.doesNotMatch(editor, /validar:/);
   assert.match(revisao, /revisarCriacao\(ficha\)/);
-  assert.match(revisao, /finalização ainda não está disponível/i);
+  assert.doesNotMatch(revisao, /finalização ainda não está disponível/i);
+  assert.match(ativacao, /Conferir criação no servidor/);
+  assert.match(ativacao, /conferencia\.pendencias\.length === 0/);
 });
 
 
