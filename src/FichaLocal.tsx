@@ -22,6 +22,7 @@ import DescansoFichaLocal from './DescansoFichaLocal';
 import UsosDescansoCompletoLocal from './UsosDescansoCompletoLocal';
 import ReanimacaoFichaLocal from './ReanimacaoFichaLocal';
 import PainelAcoesLocal from './PainelAcoesLocal';
+import IniciativaFichaLocal from './IniciativaFichaLocal';
 import CondicoesFichaLocal from './CondicoesFichaLocal';
 import PlanejadorHabilidadesCriacaoLocal from './PlanejadorHabilidadesCriacaoLocal';
 import { recursosIniciais } from './recursosFicha';
@@ -507,7 +508,7 @@ export default function FichaLocal({ nome, mesa, contextoId, dados, aoFechar, ao
           <h3 className="ficha-local-subtitulo">Combate ativo</h3>
           <PainelAcoesLocal dados={dados} saAtual={recursosAtuais.saAtual} origemDados={origemDados} aoSalvar={aoSalvarRecursos} />
           <div className="ficha-local-grade">
-            <div><small>INICIATIVA</small><strong>1d20 + AGI ({numero(atributos.agilidade)})</strong><p>Role 1d20 e some AGI. A ordem segue do maior para o menor resultado; em empate, vence a maior AGI e depois o maior resultado natural do d20. A ficha informa o cálculo, sem gerar a rolagem nem controlar a ordem da Mesa.</p></div>
+            <IniciativaFichaLocal agilidade={numero(atributos.agilidade)} />
             <div><small>ATAQUES E DANO</small><strong>A integrar</strong><p>Resolução de Testes, Defesa de alvos, Dano e consumo de munição não estão implementados nesta seção.</p></div>
           </div>
           <p className="ficha-local-aviso">O painel registra usos de Ação, Movimento, Ação Bônus, Reação, Interação Gratuita, Esforço e gastos de Manobra; ele não executa rolagens, não presume gatilhos e não aplica efeitos. PV, SA e BI continuam administrados nos painéis próprios. Iniciativa da Mesa, resolução de Ataques, Defesa de alvos, Dano e consumo de munição permanecem pendentes. As Condições registradas são informativas e dependem da aplicação das regras pela Mesa.</p>
