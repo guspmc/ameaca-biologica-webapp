@@ -4,8 +4,11 @@ export const PERICIAS_CLASSE:Record<string,string[]>={
   Autodidata:['Furtividade','Investigação','Luta','Medicina','Percepção','Pontaria','Reflexos','Sobrevivência','Vontade'],
   Operador:['Atletismo','Fortitude','Investigação','Luta','Percepção','Pontaria'],
 };
-export function grauPericia(nome:string,treinada:string|null,pontos:Record<string,number>):number{
-  return (pontos[nome]??0)+(nome===treinada?1:0);
+export function grauPericia(nome:string,treinada:string|null,pontos:Record<string,number>,periciaOrigemExtra:string|null=null,periciaTentativaErro:string|null=null):number{
+  return Math.min(2,(pontos[nome]??0)+(nome===treinada?1:0)+(nome===periciaOrigemExtra?1:0)+(nome===periciaTentativaErro?1:0));
+}
+export function bonusTentativaErro(nome:string,treinada:string|null,pontos:Record<string,number>,periciaOrigemExtra:string|null=null,periciaTentativaErro:string|null=null):number{
+  return grauPericia(nome,treinada,pontos,periciaOrigemExtra,periciaTentativaErro)===0?1:0;
 }
 export function bonusTreinamento(grau:number):number{return grau===2?3:grau===1?2:0;}
 export function totalPontos(pontos:Record<string,number>):number{
@@ -32,10 +35,12 @@ export function valorBasePericia(
   atributos: Record<'forca' | 'agilidade' | 'vigor' | 'astucia', number>,
   treinada: string | null,
   pontos: Record<string, number>,
+  periciaOrigemExtra: string | null = null,
+  periciaTentativaErro: string | null = null,
 ): number {
   const atributo = ATRIBUTO_PERICIA[nome];
   if (!atributo) throw new Error('Perícia desconhecida: ' + nome);
-  return atributos[atributo] + bonusTreinamento(grauPericia(nome, treinada, pontos));
+  return atributos[atributo] + bonusTreinamento(grauPericia(nome, treinada, pontos, periciaOrigemExtra, periciaTentativaErro));
 }
 
 export function valorPassivoPericia(
@@ -43,6 +48,8 @@ export function valorPassivoPericia(
   atributos: Record<'forca' | 'agilidade' | 'vigor' | 'astucia', number>,
   treinada: string | null,
   pontos: Record<string, number>,
+  periciaOrigemExtra: string | null = null,
+  periciaTentativaErro: string | null = null,
 ): number {
-  return 10 + valorBasePericia(nome, atributos, treinada, pontos);
+  return 10 + valorBasePericia(nome, atributos, treinada, pontos, periciaOrigemExtra, periciaTentativaErro);
 }
