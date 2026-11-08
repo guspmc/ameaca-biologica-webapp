@@ -1,5 +1,3 @@
-import type { InventarioConsulta } from './inventarioConsulta';
-
 export type ContaLocal = {
   id: string;
   username: string;
@@ -319,11 +317,6 @@ export function criarClienteServidorLocal({ baseUrl, token, fetcher = fetch }: O
     consultarPersonagem(id: string): Promise<{ personagem: PersonagemRascunhoLocal }> {
       if (!/^[a-f0-9]{32}$/.test(id)) throw new Error('Identificador de personagem inválido.');
       return requisicao(`/api/personagens/${id}`, { autenticada: true });
-    },
-
-    consultarInventarioPersonagem(id: string): Promise<{ inventario: InventarioConsulta }> {
-      if (!/^[a-f0-9]{32}$/.test(id)) throw new Error('Identificador de personagem inválido.');
-      return requisicao(`/api/personagens/${id}/inventario`, { autenticada: true });
     },
 
     conferirCriacaoPersonagem(id: string): Promise<ResultadoConferenciaCriacaoLocal> {
