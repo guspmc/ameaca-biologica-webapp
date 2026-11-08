@@ -110,6 +110,7 @@ test('sincronização de SA externo preserva gastos e marcadores integrados', ()
 test('Combate com Duas Armas mantém autorização do Ataque adicional no estado composto', async () => {
   const { registrarCombateDuasArmas } = await import('../src/manobrasOperacionais.ts');
   let estado = estadoTurnoCombateInicial(3);
+  estado = aplicarManobraCombate(estado, registrarAtaque).estado;
   estado = aplicarManobraCombate(estado, (economia, manobras) => registrarCombateDuasArmas(economia, manobras, true)).estado;
   assert.equal(estado.ataqueAdicionalAutorizado, true);
   assert.equal(estado.economia.normaisUsados.acaoBonus, true);
@@ -120,6 +121,7 @@ test('registrar resolução do Ataque adicional consome apenas a autorização, 
   const { registrarCombateDuasArmas } = await import('../src/manobrasOperacionais.ts');
   const { registrarResolucaoAtaqueAdicional } = await import('../src/estadoTurnoCombate.ts');
   let estado = estadoTurnoCombateInicial(3);
+  estado = aplicarManobraCombate(estado, registrarAtaque).estado;
   estado = aplicarManobraCombate(estado, (economia, manobras) => registrarCombateDuasArmas(economia, manobras, true)).estado;
   const antes = estado.economia;
   const resolvido = registrarResolucaoAtaqueAdicional(estado);
@@ -127,4 +129,15 @@ test('registrar resolução do Ataque adicional consome apenas a autorização, 
   assert.equal(resolvido.manobras.combateDuasArmasUsado, true);
   assert.deepEqual(resolvido.economia, antes);
   assert.throws(() => registrarResolucaoAtaqueAdicional(resolvido), /Não há Ataque adicional/);
+});
+
+
+test('Ataque adicional não pode ser registrado depois do encerramento do turno', async () => {
+  const { registrarCombateDuasArmas } = await import('../src/manobrasOperacionais.ts');
+  const { registrarResolucaoAtaqueAdicional } = await import('../src/estadoTurnoCombate.ts');
+  let estado = estadoTurnoCombateInicial(3);
+  estado = aplicarManobraCombate(estado, registrarAtaque).estado;
+  estado = aplicarManobraCombate(estado, (economia, manobras) => registrarCombateDuasArmas(economia, manobras, true)).estado;
+  estado = encerrarTurnoCombate(estado);
+  assert.throws(() => registrarResolucaoAtaqueAdicional(estado), /durante o próprio turno/);
 });
