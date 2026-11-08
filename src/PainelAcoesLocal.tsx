@@ -63,6 +63,10 @@ export default function PainelAcoesLocal({ dados, saAtual, aoSalvar, origemDados
       const salvo = await aoSalvar({ saAtual: proximo.economia.saAtual, estadoTurnoCombate: proximo, economiaAcoes: proximo.economia, economiaAcoesSaldoBase: estado.economia.saAtual });
       if (!salvo) throw new Error('O salvamento não foi confirmado. Nenhum gasto foi registrado na ficha.');
       setEstado(proximo);
+      if ((!estado.economia.turnoEmAndamento && proximo.economia.turnoEmAndamento)
+        || (!estado.manobras.combateDuasArmasUsado && proximo.manobras.combateDuasArmasUsado)) {
+        setConfirmouDuasArmas(false);
+      }
       setConfirmacao(origemDados === 'servidor' ? 'Economia de ações confirmada pelo servidor.' : 'Economia de ações salva neste dispositivo.');
     } catch (problema) {
       setErro(problema instanceof Error ? problema.message : 'Não foi possível registrar a ação.');
@@ -135,7 +139,7 @@ export default function PainelAcoesLocal({ dados, saAtual, aoSalvar, origemDados
             <label><input type="checkbox" checked={confirmouDuasArmas} disabled={salvando || !economia.turnoEmAndamento || estado.manobras.combateDuasArmasUsado} onChange={evento => setConfirmouDuasArmas(evento.target.checked)} /> Confirmo que o Ataque inicial e as duas armas cumprem os requisitos descritos.</label>
             <div className="recursos-controles">
               <button type="button" disabled={salvando || !economia.turnoEmAndamento || !economia.normaisUsados.acao || economia.normaisUsados.acaoBonus || estado.manobras.combateDuasArmasUsado || !confirmouDuasArmas} onClick={() => void aplicar(atual => aplicarManobraCombate(atual, (economiaAtual, manobras) => registrarCombateDuasArmas(economiaAtual, manobras, true)).estado)}>Registrar Combate com Duas Armas · Ação Bônus</button>
-              <button type="button" disabled={salvando || !estado.ataqueAdicionalAutorizado} onClick={() => void aplicar(registrarResolucaoAtaqueAdicional)}>Registrar Ataque adicional realizado</button>
+              <button type="button" disabled={salvando || !economia.turnoEmAndamento || !estado.ataqueAdicionalAutorizado} onClick={() => void aplicar(registrarResolucaoAtaqueAdicional)}>Registrar Ataque adicional realizado</button>
             </div>
             <p className="ficha-local-legenda">O aplicativo registra a elegibilidade confirmada pelo jogador e o gasto da Ação Bônus. O Ataque e sua rolagem continuam manuais; registrar sua realização apenas consome a autorização pendente.</p>
           </div>
