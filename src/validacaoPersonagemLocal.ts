@@ -190,6 +190,18 @@ function validarDadosFicha(valor: unknown): valor is Record<string, unknown> {
       if (valor.origem !== 'Amnésico' || valor.periciaOrigemExtra === valor.periciaOrigemTreinada) return false;
     }
   }
+  if ('periciaTentativaErroTreinada' in valor) {
+    const escolha = valor.periciaTentativaErroTreinada;
+    if (escolha !== null && typeof escolha !== 'string') return false;
+    if (typeof escolha === 'string' && escolha !== '') {
+      if (!NOMES_PERICIAS.includes(escolha as never)) return false;
+      const adquirida = Array.isArray(valor.habilidadesAdquiridas)
+        && valor.habilidadesAdquiridas.some(item => !!item && typeof item === 'object' && !Array.isArray(item)
+          && (item as Record<string, unknown>).habilidadeId === 'tentativa-e-erro');
+      if (!adquirida || escolha === valor.periciaOrigemTreinada || escolha === valor.periciaOrigemExtra) return false;
+      if (objeto(valor.distribuicaoPericias) && Number(valor.distribuicaoPericias[escolha] ?? 0) > 0) return false;
+    }
+  }
   if ('distribuicaoPericias' in valor) {
     if (!objeto(valor.distribuicaoPericias)
       || Object.entries(valor.distribuicaoPericias).some(([nome, grau]) =>
