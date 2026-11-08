@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { ATRIBUTO_PERICIA, valorBasePericia } from './pericias';
+import { ATRIBUTO_PERICIA, bonusTentativaErro, valorBasePericia } from './pericias';
 import { bonusCondicionalOrigemTeste } from './efeitosOrigens';
 import { calcularTesteManual, type VantagemTeste } from './testes';
 import type { ModoDados } from './funcionamentoFicha';
@@ -17,12 +17,15 @@ type Props = {
   atributos: AtributosIniciais;
   treinada: string;
   distribuicao: Record<string, number>;
+  periciaOrigemExtra?: string;
+  periciaTentativaErroTreinada?: string;
+  temTentativaEErro?: boolean;
   modoDados: ModoDados;
   origem?: string;
   saDisponivel?: number;
 };
 
-export default function CalculadoraTesteLocal({ atributos, treinada, distribuicao, modoDados, origem = '', saDisponivel = 0 }: Props) {
+export default function CalculadoraTesteLocal({ atributos, treinada, distribuicao, periciaOrigemExtra = '', periciaTentativaErroTreinada = '', temTentativaEErro = false, modoDados, origem = '', saDisponivel = 0 }: Props) {
   const [tipo, setTipo] = useState<'pericia' | 'atributo'>('pericia');
   const [pericia, setPericia] = useState('Percepção');
   const [atributo, setAtributo] = useState<keyof AtributosIniciais>('astucia');
@@ -36,14 +39,15 @@ export default function CalculadoraTesteLocal({ atributos, treinada, distribuica
   const [finalidade, setFinalidade] = useState<'procurar_pista' | 'outra'>('outra');
 
   const valorBase = tipo === 'pericia'
-    ? valorBasePericia(pericia, atributos, treinada || null, distribuicao)
+    ? valorBasePericia(pericia, atributos, treinada || null, distribuicao, periciaOrigemExtra || null, periciaTentativaErroTreinada || null)
     : atributos[atributo];
   const atributoAssociado = tipo === 'pericia' ? ATRIBUTO_PERICIA[pericia] : atributo;
   const bonusOrigem = bonusCondicionalOrigemTeste(origem, {
     tipo, pericia, atributo: atributoAssociado ?? atributo, finalidade,
     saDisponivel, gastoSAConfirmado,
   });
-  const valorTeste = valorBase + bonusOrigem;
+  const bonusTentativa = temTentativaEErro && tipo === 'pericia' ? bonusTentativaErro(pericia, treinada || null, distribuicao, periciaOrigemExtra || null, periciaTentativaErroTreinada || null) : 0;
+  const valorTeste = valorBase + bonusOrigem + bonusTentativa;
   const formula = tipo === 'pericia' ? 'Perícia já inclui o Atributo.' : 'Teste puro de Atributo.';
   const calculado = useMemo(() => {
     if (impossivel) return { resultado: calcularTesteManual({ valorBase: valorTeste, modificador: Number(modificador || 0), dt: null }), erro: '' };
@@ -113,6 +117,8 @@ export default function CalculadoraTesteLocal({ atributos, treinada, distribuica
       <small>{origem === 'Atleta' ? 'Atleta: +5 em Perícias baseadas em FOR ou AGI, exceto Luta e Pontaria.' : 'Investigador: +5 em Investigação ao procurar uma pista.'} O saldo exibido é posterior ao gasto; confirme somente se realmente descontou 1 SA.</small>
     </div>}
     <p><strong>Modificador da Origem: {bonusOrigem >= 0 ? '+' : ''}{bonusOrigem}</strong>{bonusOrigem ? ' · aplicado somente a este Teste' : ''}</p>
+    {temTentativaEErro && <p><strong>Tentativa e Erro: +{bonusTentativa}</strong>{bonusTentativa ? ' · somente por esta Perícia estar Não Treinada' : ' · sem bônus: a Perícia está Treinada'}</p>}
+    {temTentativaEErro && <small>Você pode realizar Testes com Perícias não Treinadas, inclusive aplicações normalmente restritas a Treinamento, salvo requisito adicional expresso.</small>}
     <label>Modificador circunstancial
       <input type="number" step="1" value={modificador} onChange={evento => setModificador(evento.target.value)} />
     </label>
