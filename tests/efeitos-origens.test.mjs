@@ -27,9 +27,9 @@ test('Investigador recebe +5 somente em Investigação para procurar uma pista',
   assert.equal(bonusCondicionalOrigemTeste('Investigador', contexto({ pericia: 'Percepção', finalidade: 'procurar_pista' })), 0);
 });
 
-test('bônus condicionado exige gasto de 1 SA confirmado e saldo disponível', () => {
+test('bônus condicionado exige gasto de 1 SA confirmado e aceita saldo zero após o gasto', () => {
   assert.equal(bonusCondicionalOrigemTeste('Atleta', contexto({ gastoSAConfirmado: false })), 0);
-  assert.equal(bonusCondicionalOrigemTeste('Atleta', contexto({ saDisponivel: 0 })), 0);
+  assert.equal(bonusCondicionalOrigemTeste('Atleta', contexto({ saDisponivel: 0 })), 5);
   assert.equal(bonusCondicionalOrigemTeste('Atleta', contexto({ saDisponivel: -1 })), 0);
   assert.equal(bonusCondicionalOrigemTeste('Atleta', contexto({ saDisponivel: 1.5 })), 0);
 });
