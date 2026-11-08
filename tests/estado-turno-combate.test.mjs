@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  estadoTurnoCombateInicial, estadoTurnoCombateValido,
+  estadoTurnoCombateInicial, estadoTurnoCombateValido, carregarEstadoTurnoCombate,
   iniciarTurnoCombate, encerrarTurnoCombate,
   aplicarManobraCombate, aplicarReacaoCombate,
 } from '../src/estadoTurnoCombate.ts';
@@ -69,4 +69,34 @@ test('não inicia dois turnos próprios nem encerra turno inativo', () => {
   const estado = estadoTurnoCombateInicial(3);
   assert.throws(() => iniciarTurnoCombate(estado), /já está em andamento/);
   assert.throws(() => encerrarTurnoCombate(encerrarTurnoCombate(estado)), /Não há turno próprio/);
+});
+
+
+test('migração legada preserva a Economia e cria marcadores de Manobras sem gravar automaticamente', () => {
+  const legado = estadoTurnoCombateInicial(5).economia;
+  const resultado = carregarEstadoTurnoCombate(null, legado, 4);
+  assert.equal(resultado.valido, true);
+  assert.equal(resultado.origem, 'legado');
+  assert.equal(resultado.estado.economia.saAtual, 4);
+  assert.equal(resultado.estado.economia.turnoEmAndamento, true);
+  assert.equal(resultado.estado.manobras.disparadaUsada, false);
+  assert.equal(legado.saAtual, 5);
+});
+
+test('registro composto inválido bloqueia fallback para legado, sem sobrescrever dados', () => {
+  const legado = estadoTurnoCombateInicial(5).economia;
+  const resultado = carregarEstadoTurnoCombate({ versao: 99 }, legado, 5);
+  assert.equal(resultado.valido, false);
+  assert.equal(resultado.origem, 'composto');
+  assert.equal(legado.saAtual, 5);
+});
+
+test('sincronização de SA externo preserva gastos e marcadores integrados', () => {
+  let estado = estadoTurnoCombateInicial(5);
+  estado = aplicarManobraCombate(estado, registrarDisparada).estado;
+  const carregado = carregarEstadoTurnoCombate(estado, null, 3);
+  assert.equal(carregado.valido, true);
+  assert.equal(carregado.estado.economia.saAtual, 3);
+  assert.equal(carregado.estado.economia.saGastaNaJanela, 0);
+  assert.equal(carregado.estado.manobras.disparadaUsada, true);
 });
