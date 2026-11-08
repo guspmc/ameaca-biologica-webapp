@@ -57,13 +57,13 @@ test('Combate com Duas Armas exige Ação Atacar prévia, turno ativo e elegibil
   const economia = economiaAcoesInicial(3);
   assert.throws(() => registrarCombateDuasArmas(economia, estado, true), /Ação Atacar já tenha sido utilizada/);
   assert.throws(() => registrarCombateDuasArmas(consumirRecursoNormal(economia, 'acao'), estado, false), /não cumpre/);
-  const ataqueInicial = consumirRecursoNormal(economia, 'acao');
-  const r = registrarCombateDuasArmas(ataqueInicial, estado, true);
+  const ataqueInicial = registrarAtaque(economia, estado);
+  const r = registrarCombateDuasArmas(ataqueInicial.economia, ataqueInicial.manobras, true);
   assert.equal(r.economia.normaisUsados.acaoBonus, true);
   assert.equal(r.ataqueAdicionalAutorizado, true);
   assert.throws(() => registrarCombateDuasArmas(r.economia, r.manobras, true), /já foi utilizado/);
-  const turnoEncerrado = { ...ataqueInicial, turnoEmAndamento: false };
-  assert.throws(() => registrarCombateDuasArmas(turnoEncerrado, estado, true), /próprio turno/);
+  const turnoEncerrado = { ...ataqueInicial.economia, turnoEmAndamento: false };
+  assert.throws(() => registrarCombateDuasArmas(turnoEncerrado, ataqueInicial.manobras, true), /próprio turno/);
 });
 
 test('Manobras respeitam disponibilidade e a janela de SA', () => {
