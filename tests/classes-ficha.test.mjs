@@ -23,3 +23,16 @@ test('a consulta de dados de Classe trata valores ausentes sem inventar uma Clas
   assert.match(fonte, /if \(classe === 'Agente' \|\| classe === 'Autodidata' \|\| classe === 'Operador'\)/);
   assert.match(fonte, /return null;/);
 });
+
+test('o seletor diferencia Classe pendente de Agente, evitando seleção visual sem valor', async () => {
+  const editor = await readFile(new URL('../src/EditorCaracteristicasLocal.tsx', import.meta.url), 'utf8');
+  assert.match(editor, /<option value="">Selecione uma Classe<\/option><option value="Agente">Agente<\/option>/);
+});
+
+test('a edição de Atributos apresenta PV, SA e BI recalculados antes do salvamento', async () => {
+  const editor = await readFile(new URL('../src/EditorAtributosPericiasLocal.tsx', import.meta.url), 'utf8');
+  assert.match(editor, /calcularDerivadosCriacao/);
+  assert.match(editor, /PV MÁXIMOS · PRÉVIA/);
+  assert.match(editor, /SA MÁXIMA · PRÉVIA/);
+  assert.match(editor, /BI MÁXIMA · PRÉVIA/);
+});
