@@ -16,6 +16,41 @@ async function criarServidor(t) {
   return { app, url: 'http://127.0.0.1:' + app.address.port };
 }
 
+function dadosCriacaoValida() {
+  return {
+    classe: 'Agente',
+    origem: 'Acadêmico',
+    atributos: { forca: 2, agilidade: 2, vigor: 2, astucia: 1 },
+    periciaOrigemTreinada: 'Investigação',
+    distribuicaoPericias: { Acrobacia: 1, Furtividade: 1, Luta: 1, Percepção: 1 },
+    habilidadeBasica: 'anatomia-de-combate',
+    equipamentoInicial: 'A',
+  };
+}
+
+async function criarMesaComJogador(url, app, mestre, jogador, name = 'Mesa de ativação') {
+  const resposta = await fetch(url + '/api/mesas', {
+    method: 'POST',
+    headers: { ...mestre.headers, 'content-type': 'application/json' },
+    body: JSON.stringify({ name }),
+  });
+  assert.equal(resposta.status, 201);
+  const { mesa } = await resposta.json();
+  app.db.prepare('INSERT INTO participantes_mesa (mesa_id, conta_id, papel, entrou_em) VALUES (?, ?, ?, ?)')
+    .run(mesa.id, jogador.account.id, 'jogador', new Date().toISOString());
+  return mesa;
+}
+
+async function criarRascunhoValido(url, jogador, mesaId, name) {
+  const resposta = await fetch(url + '/api/mesas/' + mesaId + '/personagens', {
+    method: 'POST',
+    headers: { ...jogador.headers, 'content-type': 'application/json' },
+    body: JSON.stringify({ name, data: dadosCriacaoValida() }),
+  });
+  assert.equal(resposta.status, 201);
+  return (await resposta.json()).personagem;
+}
+
 async function criarConta(url, email) {
   const credenciais = { email, password: 'senha-local-comprida-2026' };
   const cadastro = await fetch(url + '/api/auth/register', {
@@ -302,4 +337,143 @@ test('migration 11 prepara ciclo de ativação sem alterar rascunhos legados', a
   assert.equal(app.db.prepare('SELECT estado_ficha FROM personagens_locais WHERE id = ?').get(personagem.id).estado_ficha, 'completa');
   assert.throws(() => app.db.prepare("UPDATE personagens_locais SET estado_ficha = 'rascunho' WHERE id = ?").run(personagem.id), /não pode voltar a rascunho/);
   assert.throws(() => app.db.prepare('UPDATE personagens_locais SET inventario_json = NULL WHERE id = ?').run(personagem.id), /não pode perder o inventário/);
+});
+
+
+test('ativação LAN valida no servidor, materializa inventário uma vez e é idempotente', async t => {
+  const { app, url } = await criarServidor(t);
+  const mestre = await criarConta(url, 'mestre-ativacao-lan@example.test');
+  const jogador = await criarConta(url, 'jogador-ativacao-lan@example.test');
+  const mesa = await criarMesaComJogador(url, app, mestre, jogador);
+  const rascunho = await criarRascunhoValido(url, jogador, mesa.id, 'Claire Redfield');
+
+  const conferencia = await fetch(url + '/api/personagens/' + rascunho.id + '/conferencia', { headers: jogador.headers });
+  assert.equal(conferencia.status, 200);
+  const revisao = await conferencia.json();
+  assert.equal(revisao.valido, true);
+  assert.deepEqual(revisao.pendencias, []);
+  assert.equal(revisao.revision, rascunho.revision);
+  assert.equal(revisao.ativas, 0);
+  assert.equal(revisao.inventario.capacidade, 6);
+
+  const pedido = {
+    expectedRevision: revisao.revision,
+    operationId: '8d8b1a25-8b8f-4e1c-9d1a-5b21d9f2a301',
+  };
+  const ativacao = () => fetch(url + '/api/personagens/' + rascunho.id + '/ativar', {
+    method: 'POST',
+    headers: { ...jogador.headers, 'content-type': 'application/json' },
+    body: JSON.stringify(pedido),
+  });
+  const resposta = await ativacao();
+  assert.equal(resposta.status, 200);
+  const resultado = await resposta.json();
+  assert.equal(resultado.personagem.status, 'completa');
+  assert.equal(resultado.personagem.revision, rascunho.revision + 1);
+  assert.deepEqual(resultado.personagem.data, dadosCriacaoValida());
+  assert.equal(resultado.recibo.personagemId, rascunho.id);
+  assert.equal(resultado.recibo.operacaoId, pedido.operationId);
+  assert.equal(resultado.recibo.estado, 'completa');
+  assert.equal(resultado.recibo.revisaoCriacao, rascunho.revision + 1);
+
+  const registro = app.db.prepare('SELECT estado_ficha, inventario_json FROM personagens_locais WHERE id = ?').get(rascunho.id);
+  const inventario = JSON.parse(registro.inventario_json);
+  assert.equal(registro.estado_ficha, 'completa');
+  assert.equal(inventario.capacidade, 6);
+  assert.equal(inventario.itens.length, resultado.recibo.quantidadeInstancias);
+  assert.equal(app.db.prepare('SELECT COUNT(*) AS total FROM ativacoes_personagem_locais WHERE personagem_id = ?').get(rascunho.id).total, 1);
+
+  const repetida = await ativacao();
+  assert.equal(repetida.status, 200);
+  assert.deepEqual((await repetida.json()).recibo, resultado.recibo);
+  assert.equal(app.db.prepare('SELECT COUNT(*) AS total FROM ativacoes_personagem_locais WHERE personagem_id = ?').get(rascunho.id).total, 1);
+
+  const lista = await fetch(url + '/api/mesas/' + mesa.id + '/personagens', { headers: jogador.headers });
+  assert.equal((await lista.json()).personagens[0].status, 'completa');
+  const excluir = await fetch(url + '/api/personagens/' + rascunho.id, { method: 'DELETE', headers: jogador.headers });
+  assert.equal(excluir.status, 409);
+});
+
+test('ativação recusa ficha incompleta e preserva integralmente o rascunho', async t => {
+  const { app, url } = await criarServidor(t);
+  const mestre = await criarConta(url, 'mestre-ativacao-invalida@example.test');
+  const jogador = await criarConta(url, 'jogador-ativacao-invalida@example.test');
+  const mesa = await criarMesaComJogador(url, app, mestre, jogador);
+  const criacao = await fetch(url + '/api/mesas/' + mesa.id + '/personagens', {
+    method: 'POST',
+    headers: { ...jogador.headers, 'content-type': 'application/json' },
+    body: JSON.stringify({ name: 'Rascunho incompleto', data: { classe: 'Agente' } }),
+  });
+  assert.equal(criacao.status, 201);
+  const { personagem } = await criacao.json();
+
+  const resposta = await fetch(url + '/api/personagens/' + personagem.id + '/ativar', {
+    method: 'POST',
+    headers: { ...jogador.headers, 'content-type': 'application/json' },
+    body: JSON.stringify({ expectedRevision: 1, operationId: '8d8b1a25-8b8f-4e1c-9d1a-5b21d9f2a302' }),
+  });
+  assert.equal(resposta.status, 422);
+  const registro = app.db.prepare('SELECT estado_ficha, inventario_json, revisao FROM personagens_locais WHERE id = ?').get(personagem.id);
+  assert.deepEqual(registro, { estado_ficha: 'rascunho', inventario_json: null, revisao: 1 });
+  assert.equal(app.db.prepare('SELECT COUNT(*) AS total FROM ativacoes_personagem_locais WHERE personagem_id = ?').get(personagem.id).total, 0);
+});
+
+test('ativação exige proprietário jogador e revisão atual da ficha', async t => {
+  const { app, url } = await criarServidor(t);
+  const mestre = await criarConta(url, 'mestre-ativacao-acesso@example.test');
+  const jogador = await criarConta(url, 'jogador-ativacao-acesso@example.test');
+  const terceiro = await criarConta(url, 'terceiro-ativacao-acesso@example.test');
+  const mesa = await criarMesaComJogador(url, app, mestre, jogador);
+  const rascunho = await criarRascunhoValido(url, jogador, mesa.id, 'Personagem de teste');
+  const corpo = { expectedRevision: 1, operationId: '8d8b1a25-8b8f-4e1c-9d1a-5b21d9f2a303' };
+  for (const headers of [mestre.headers, terceiro.headers]) {
+    const negada = await fetch(url + '/api/personagens/' + rascunho.id + '/ativar', {
+      method: 'POST', headers: { ...headers, 'content-type': 'application/json' }, body: JSON.stringify(corpo),
+    });
+    assert.equal(negada.status, 404);
+  }
+  const atualizacao = await fetch(url + '/api/personagens/' + rascunho.id, {
+    method: 'PUT',
+    headers: { ...jogador.headers, 'content-type': 'application/json' },
+    body: JSON.stringify({ name: rascunho.name, data: dadosCriacaoValida(), expectedRevision: 1 }),
+  });
+  assert.equal(atualizacao.status, 200);
+  const obsoleta = await fetch(url + '/api/personagens/' + rascunho.id + '/ativar', {
+    method: 'POST',
+    headers: { ...jogador.headers, 'content-type': 'application/json' },
+    body: JSON.stringify(corpo),
+  });
+  assert.equal(obsoleta.status, 409);
+  assert.equal(app.db.prepare('SELECT estado_ficha FROM personagens_locais WHERE id = ?').get(rascunho.id).estado_ficha, 'rascunho');
+  assert.equal(app.db.prepare('SELECT COUNT(*) AS total FROM ativacoes_personagem_locais WHERE personagem_id = ?').get(rascunho.id).total, 0);
+});
+
+test('limite de dez personagens ativas é transacional e não consome vagas de rascunho', async t => {
+  const { app, url } = await criarServidor(t);
+  const mestre = await criarConta(url, 'mestre-limite-ativas@example.test');
+  const jogador = await criarConta(url, 'jogador-limite-ativas@example.test');
+  const mesa = await criarMesaComJogador(url, app, mestre, jogador);
+
+  for (let i = 1; i <= 10; i += 1) {
+    const rascunho = await criarRascunhoValido(url, jogador, mesa.id, 'Ativa ' + i);
+    const operationId = '00000000-0000-4000-8000-' + String(i).padStart(12, '0');
+    const resposta = await fetch(url + '/api/personagens/' + rascunho.id + '/ativar', {
+      method: 'POST',
+      headers: { ...jogador.headers, 'content-type': 'application/json' },
+      body: JSON.stringify({ expectedRevision: rascunho.revision, operationId }),
+    });
+    assert.equal(resposta.status, 200);
+  }
+
+  const ultima = await criarRascunhoValido(url, jogador, mesa.id, 'Décima primeira');
+  const conferencia = await fetch(url + '/api/personagens/' + ultima.id + '/conferencia', { headers: jogador.headers });
+  assert.equal((await conferencia.json()).ativas, 10);
+  const bloqueada = await fetch(url + '/api/personagens/' + ultima.id + '/ativar', {
+    method: 'POST',
+    headers: { ...jogador.headers, 'content-type': 'application/json' },
+    body: JSON.stringify({ expectedRevision: ultima.revision, operationId: '00000000-0000-4000-8000-000000000011' }),
+  });
+  assert.equal(bloqueada.status, 409);
+  assert.equal(app.db.prepare('SELECT estado_ficha FROM personagens_locais WHERE id = ?').get(ultima.id).estado_ficha, 'rascunho');
+  assert.equal(app.db.prepare("SELECT COUNT(*) AS total FROM personagens_locais WHERE mesa_id = ? AND estado_ficha = 'completa'").get(mesa.id).total, 10);
 });
