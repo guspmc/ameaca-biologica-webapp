@@ -390,6 +390,22 @@ test('ativação LAN valida no servidor, materializa inventário uma vez e é id
 
   const lista = await fetch(url + '/api/mesas/' + mesa.id + '/personagens', { headers: jogador.headers });
   assert.equal((await lista.json()).personagens[0].status, 'completa');
+
+  const alteracaoCriacao = await fetch(url + '/api/personagens/' + rascunho.id, {
+    method: 'PUT',
+    headers: { ...jogador.headers, 'content-type': 'application/json' },
+    body: JSON.stringify({ name: rascunho.name, data: { ...dadosCriacaoValida(), origem: 'Civil' }, expectedRevision: rascunho.revision + 1 }),
+  });
+  assert.equal(alteracaoCriacao.status, 409);
+
+  const alteracaoRecurso = await fetch(url + '/api/personagens/' + rascunho.id, {
+    method: 'PUT',
+    headers: { ...jogador.headers, 'content-type': 'application/json' },
+    body: JSON.stringify({ name: rascunho.name, data: { ...dadosCriacaoValida(), pvAtual: 5 }, expectedRevision: rascunho.revision + 1 }),
+  });
+  assert.equal(alteracaoRecurso.status, 200);
+  assert.equal((await alteracaoRecurso.json()).personagem.status, 'completa');
+
   const excluir = await fetch(url + '/api/personagens/' + rascunho.id, { method: 'DELETE', headers: jogador.headers });
   assert.equal(excluir.status, 409);
 });
