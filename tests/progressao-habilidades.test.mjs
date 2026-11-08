@@ -173,6 +173,20 @@ test('seletor de Habilidades filtra ramos e pré-requisitos antes da escolha', (
   assert.equal(habilidadesDisponiveisParaEscolha('Agente', 4, []).length, 0);
 });
 
+
+test('catálogo de efeitos oferece descrição para todas as Habilidades de Classe', async () => {
+  const fonte = await readFile(new URL('../src/efeitosHabilidades.ts', import.meta.url), 'utf8');
+  const ids = [
+    'finalizacao-a-distancia','na-minha-mira','contra-ataque-instintivo',
+    'armeira-autodidata','tentativa-e-erro','farmacia-de-campo',
+    'casca-grossa','armamento-especial','quanto-mais-melhor',
+    'luta-livre','brecha-tatica','retaliacao','arsenal-improvavel',
+    'reflexos-de-sobrevivente','primeiros-socorros','briga-de-gente-grande',
+    'controle-de-fogo','parede-humana','voce-aparou-um-missil','code-veronica','socador-de-pedras',
+  ];
+  for (const id of ids) assert.ok(fonte.includes("'"+id+"'"), 'Efeito ausente: '+id);
+});
+
 test('progressão objetiva usa os marcos cumulativos de Missões Completadas', () => {
   const base = { nivelAtual: 1, metodo: 'missoes', autorizacaoMestre: false, descansoCompletoEmSalaDescanso: true };
   assert.equal(avaliarDisponibilidadeProgressao({ ...base, missoesCompletadas: 0 }).disponivel, false);
