@@ -515,7 +515,7 @@ export default function FichaLocal({ nome, mesa, contextoId, dados, aoFechar, ao
           aoAlterarPendencia={pendente => registrarPendencia('Funcionamento', pendente)}
         />
         <RevisaoCriacaoLocal ficha={fichaRevisao} irPara={irParaRevisao} />
-        {origemDados === 'servidor' && estadoFicha === 'rascunho' && revisaoFicha !== undefined && aoConferirAtivacao && aoAtivar && <AtivacaoPersonagemLocal revision={revisaoFicha} bloqueado={bloqueadoAtivacao} aoConferir={aoConferirAtivacao} aoAtivar={aoAtivar} />}
+        {origemDados === 'servidor' && estadoFicha === 'rascunho' && revisaoFicha !== undefined && aoConferirAtivacao && aoAtivar && <AtivacaoPersonagemLocal revision={revisaoFicha} bloqueado={bloqueadoAtivacao || secoesPendentes.size > 0} aoConferir={aoConferirAtivacao} aoAtivar={aoAtivar} />}
         </section>
 
         <footer className="ficha-local-rodape">AMEAÇA BIOLÓGICA RPG · {origemDados === 'servidor' ? 'DADOS NO SERVIDOR' : 'DADOS LOCAIS'} · {estadoFicha === 'completa' ? 'FICHA ATIVA' : 'RASCUNHO NÃO ATIVO'}</footer>
