@@ -37,7 +37,8 @@ test('lanternas preservam alcance, Espaço e limitações de uso', () => {
 
 test('consumíveis e explosivos preservam seus efeitos e procedimentos', () => {
   assert.match(consultarItemExploracao('spray-primeiros-socorros').efeito, /3d8 PV/);
-  assert.match(consultarItemExploracao('esteroide').efeito, /2d8 PV Temporários/);\n  const agente = consultarItemExploracao('agente-reestruturante');\n  assert.match(agente.efeito, /Reimplanta automaticamente/);\n  assert.doesNotMatch(agente.efeito, /recupera 2d8 PV/);\n  assert.match(agente.observacoes.join(' '), /Vontade DT 15/);
+  assert.match(consultarItemExploracao('esteroide').efeito, /2d8 PV Temporários/);
+  const agente = consultarItemExploracao('agente-reestruturante');\n  assert.match(agente.efeito, /Reimplanta automaticamente/);\n  assert.doesNotMatch(agente.efeito, /recupera 2d8 PV/);\n  assert.match(agente.observacoes.join(' '), /Vontade DT 15/);
   assert.match(consultarItemExploracao('neurotoxina').efeito, /Fortitude DT 12/);
   assert.match(consultarItemExploracao('granada').efeito, /4d6/);
   assert.match(consultarItemExploracao('mina').observacoes.join(' '), /Não distingue aliados/);
