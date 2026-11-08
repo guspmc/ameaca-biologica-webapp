@@ -51,6 +51,10 @@ test('ficha contínua integra revisão local e ativação explícita pelo servid
   const ativacao = await ler('AtivacaoPersonagemLocal.tsx');
   assert.match(ativacao, /Conferir criação no servidor/);
   assert.match(ativacao, /Ativar personagem/);
+  assert.match(ficha, /estadoFicha === 'rascunho'\s*\? <details id="ficha-local-editor-caracteristicas"/);
+  assert.match(ficha, /estadoFicha === 'rascunho'\s*\? <details id="ficha-local-editor-pericias"/);
+  assert.match(ficha, /estadoFicha === 'rascunho'\s*\? <details id="ficha-local-editor-inventario"/);
+  assert.match(ficha, /O equipamento inicial foi materializado na ativação/);
 });
 
 test('calculadora manual está integrada à seção de Perícias e não rola nem salva dados', async () => {
