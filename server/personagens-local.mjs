@@ -260,6 +260,22 @@ export async function tratarRotaPersonagensLocal(req, res, url, db, notificarCon
           responder(res, 422, { error: 'Informe nome, dados JSON e a revisão atual do rascunho.' });
           return true;
         }
+        if (existente.estadoFicha === 'completa') {
+          const dadosAtuais = JSON.parse(existente.dataJson);
+          const camposProtegidos = [
+            'classe', 'origem', 'armaOperario', 'atributos',
+            'periciaOrigemTreinada', 'periciaOrigemExtra', 'periciaTentativaErroTreinada',
+            'distribuicaoPericias', 'habilidadeBasica', 'habilidadesAdquiridas',
+            'planejamentoCriacao', 'nivel', 'equipamentoInicial', 'comprasIniciais', 'revisaoCompras',
+          ];
+          const alterados = camposProtegidos.filter(campo =>
+            JSON.stringify(dadosAtuais[campo] ?? null) !== JSON.stringify(corpo.data[campo] ?? null)
+          );
+          if (alterados.length) {
+            responder(res, 409, { error: 'Dados de criação e equipamento inicial não podem ser alterados diretamente após a ativação. Use os fluxos próprios de progressão e Inventário quando estiverem disponíveis.' });
+            return true;
+          }
+        }
         const agora = new Date().toISOString();
         const resultado = db.prepare(`
           UPDATE personagens_locais
