@@ -26,7 +26,7 @@ type Props = {
 };
 
 export default function CalculadoraTesteLocal({ atributos, treinada, distribuicao, periciaOrigemExtra = '', periciaTentativaErroTreinada = '', temTentativaEErro = false, modoDados, origem = '', saDisponivel = 0 }: Props) {
-  const [tipo, setTipo] = useState<'pericia' | 'atributo'>('pericia');
+  const [tipo, setTipo] = useState<'pericia' | 'atributo' | 'ataque-corpo' | 'ataque-distancia'>('pericia');
   const [pericia, setPericia] = useState('Percepção');
   const [atributo, setAtributo] = useState<keyof AtributosIniciais>('astucia');
   const [dt, setDt] = useState('12');
@@ -38,17 +38,21 @@ export default function CalculadoraTesteLocal({ atributos, treinada, distribuica
   const [gastoSAConfirmado, setGastoSAConfirmado] = useState(false);
   const [finalidade, setFinalidade] = useState<'procurar_pista' | 'outra'>('outra');
 
-  const valorBase = tipo === 'pericia'
-    ? valorBasePericia(pericia, atributos, treinada || null, distribuicao, periciaOrigemExtra || null, periciaTentativaErroTreinada || null)
+  const periciaEfetiva = tipo === 'ataque-corpo' ? 'Luta' : tipo === 'ataque-distancia' ? 'Pontaria' : pericia;
+  const testeDePericia = tipo !== 'atributo';
+  const valorBase = testeDePericia
+    ? valorBasePericia(periciaEfetiva, atributos, treinada || null, distribuicao, periciaOrigemExtra || null, periciaTentativaErroTreinada || null)
     : atributos[atributo];
-  const atributoAssociado = tipo === 'pericia' ? ATRIBUTO_PERICIA[pericia] : atributo;
+  const atributoAssociado = testeDePericia ? ATRIBUTO_PERICIA[periciaEfetiva] : atributo;
   const bonusOrigem = bonusCondicionalOrigemTeste(origem, {
-    tipo, pericia, atributo: atributoAssociado ?? atributo, finalidade,
+    tipo: testeDePericia ? 'pericia' : 'atributo', pericia: periciaEfetiva, atributo: atributoAssociado ?? atributo, finalidade,
     saDisponivel, gastoSAConfirmado,
   });
-  const bonusTentativa = temTentativaEErro && tipo === 'pericia' ? bonusTentativaErro(pericia, treinada || null, distribuicao, periciaOrigemExtra || null, periciaTentativaErroTreinada || null) : 0;
+  const bonusTentativa = temTentativaEErro && testeDePericia ? bonusTentativaErro(periciaEfetiva, treinada || null, distribuicao, periciaOrigemExtra || null, periciaTentativaErroTreinada || null) : 0;
   const valorTeste = valorBase + bonusOrigem + bonusTentativa;
-  const formula = tipo === 'pericia' ? 'Perícia já inclui o Atributo.' : 'Teste puro de Atributo.';
+  const formula = tipo === 'ataque-corpo' ? 'Ataque Corpo a Corpo: 1d20 + Luta contra a Defesa do alvo.'
+    : tipo === 'ataque-distancia' ? 'Ataque à distância: 1d20 + Pontaria contra a Defesa do alvo.'
+    : tipo === 'pericia' ? 'Perícia já inclui o Atributo.' : 'Teste puro de Atributo.';
   const calculado = useMemo(() => {
     if (impossivel) return { resultado: calcularTesteManual({ valorBase: valorTeste, modificador: Number(modificador || 0), dt: null }), erro: '' };
     if (!dt.trim()) return { resultado: null, erro: '' };
@@ -69,8 +73,10 @@ export default function CalculadoraTesteLocal({ atributos, treinada, distribuica
     }
   }, [impossivel, valorTeste, modificador, dt, dado1, dado2, vantagem]);
 
-  function mudarTipo(valor: 'pericia' | 'atributo') {
+  function mudarTipo(valor: 'pericia' | 'atributo' | 'ataque-corpo' | 'ataque-distancia') {
     setTipo(valor);
+    if (valor === 'ataque-corpo') setPericia('Luta');
+    if (valor === 'ataque-distancia') setPericia('Pontaria');
     setDado1('');
     setDado2('');
     setGastoSAConfirmado(false);
@@ -84,10 +90,13 @@ export default function CalculadoraTesteLocal({ atributos, treinada, distribuica
   return <details className="ficha-local-editor calculadora-teste">
     <summary>Conferir Teste manual</summary>
     <p>{modoDados === 'fisicos' ? 'Modo Físicos: informe a face obtida.' : 'Modo Mistos: neste incremento, somente a entrada física manual está disponível; a rolagem virtual ainda não foi implementada.'} A calculadora não rola dados, não registra uma rolagem e não altera a ficha.</p>
+    {(tipo === 'ataque-corpo' || tipo === 'ataque-distancia') && <p>20 natural: acerto automático e Crítico, multiplicado pelo fator da arma; fecha as Reações defensivas normais. 1 natural: Falha Crítica e aplica Exposto, salvo regra específica. O cálculo de Dano depende da arma equipada e permanece manual.</p>}
     <p>Se o Teste de Pontaria ou Luta for um Ataque, 20 natural também acerta automaticamente, fecha as Reações defensivas normais e causa Crítico. Arma, Dano e efeitos específicos ainda precisam ser resolvidos no módulo de Combate.</p>
     <label>Tipo de Teste
       <select value={tipo} onChange={evento => mudarTipo(evento.target.value as 'pericia' | 'atributo')}>
         <option value="pericia">Teste de Perícia</option>
+        <option value="ataque-corpo">Ataque Corpo a Corpo · Luta</option>
+        <option value="ataque-distancia">Ataque à distância · Pontaria</option>
         <option value="atributo">Teste puro de Atributo</option>
       </select>
     </label>
@@ -97,13 +106,15 @@ export default function CalculadoraTesteLocal({ atributos, treinada, distribuica
             {PERICIAS.map(nome => <option key={nome} value={nome}>{nome}</option>)}
           </select>
         </label>
-      : <label>Atributo
+      : tipo === 'ataque-corpo' || tipo === 'ataque-distancia'
+        ? <p><strong>Perícia de Ataque: {periciaEfetiva} (+{valorBase})</strong> · O valor já inclui o Atributo associado e o Treinamento.</p>
+        : <label>Atributo
           <select value={atributo} onChange={evento => { setAtributo(evento.target.value as keyof AtributosIniciais); setDado1(''); setDado2(''); setGastoSAConfirmado(false); }}>
             {ATRIBUTOS.map(item => <option key={item.chave} value={item.chave}>{item.nome}</option>)}
           </select>
         </label>}
     <p><strong>Valor base: +{valorBase}</strong> · {formula}</p>
-    {(origem === 'Atleta' || origem === 'Investigador') && tipo === 'pericia' && (origem !== 'Investigador' || pericia === 'Investigação') && <div className="ficha-local-editor">
+    {(origem === 'Atleta' || origem === 'Investigador') && testeDePericia && (origem !== 'Investigador' || periciaEfetiva === 'Investigação') && <div className="ficha-local-editor">
       {origem === 'Investigador' && <label>Finalidade do Teste
         <select value={finalidade} onChange={evento => { setFinalidade(evento.target.value as 'procurar_pista' | 'outra'); setGastoSAConfirmado(false); }}>
           <option value="outra">Outra finalidade</option>
@@ -111,18 +122,18 @@ export default function CalculadoraTesteLocal({ atributos, treinada, distribuica
         </select>
       </label>}
       <label className="ficha-local-opcao">
-        <input type="checkbox" checked={gastoSAConfirmado} disabled={(origem === 'Atleta' && (atributoAssociado !== 'forca' && atributoAssociado !== 'agilidade')) || (origem === 'Investigador' && (pericia !== 'Investigação' || finalidade !== 'procurar_pista'))} onChange={evento => setGastoSAConfirmado(evento.target.checked)} />
+        <input type="checkbox" checked={gastoSAConfirmado} disabled={(origem === 'Atleta' && ((atributoAssociado !== 'forca' && atributoAssociado !== 'agilidade') || periciaEfetiva === 'Luta' || periciaEfetiva === 'Pontaria')) || (origem === 'Investigador' && (periciaEfetiva !== 'Investigação' || finalidade !== 'procurar_pista'))} onChange={evento => setGastoSAConfirmado(evento.target.checked)} />
         Confirmo que já descontei 1 SA no painel de Recursos para este Teste
       </label>
       <small>{origem === 'Atleta' ? 'Atleta: +5 em Perícias baseadas em FOR ou AGI, exceto Luta e Pontaria.' : 'Investigador: +5 em Investigação ao procurar uma pista.'} O saldo exibido é posterior ao gasto; confirme somente se realmente descontou 1 SA.</small>
     </div>}
     <p><strong>Modificador da Origem: {bonusOrigem >= 0 ? '+' : ''}{bonusOrigem}</strong>{bonusOrigem ? ' · aplicado somente a este Teste' : ''}</p>
-    {temTentativaEErro && <p><strong>Tentativa e Erro: +{bonusTentativa}</strong>{bonusTentativa ? ' · somente por esta Perícia estar Não Treinada' : ' · sem bônus: a Perícia está Treinada'}</p>}
-    {temTentativaEErro && <small>Você pode realizar Testes com Perícias não Treinadas, inclusive aplicações normalmente restritas a Treinamento, salvo requisito adicional expresso.</small>}
+    {temTentativaEErro && testeDePericia && <p><strong>Tentativa e Erro: +{bonusTentativa}</strong>{bonusTentativa ? ' · somente por esta Perícia estar Não Treinada' : ' · sem bônus: a Perícia está Treinada'}</p>}
+    {temTentativaEErro && testeDePericia && <small>Você pode realizar Testes com Perícias não Treinadas, inclusive aplicações normalmente restritas a Treinamento, salvo requisito adicional expresso.</small>}
     <label>Modificador circunstancial
       <input type="number" step="1" value={modificador} onChange={evento => setModificador(evento.target.value)} />
     </label>
-    <label>DT
+    <label>{tipo === 'ataque-corpo' || tipo === 'ataque-distancia' ? 'Defesa do alvo' : 'DT'}
       <input type="number" min="1" step="1" value={dt} disabled={impossivel} onChange={evento => setDt(evento.target.value)} placeholder="Ex.: 15" />
     </label>
     <label className="ficha-local-opcao">
