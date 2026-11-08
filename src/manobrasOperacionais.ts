@@ -8,15 +8,16 @@ export type EstadoManobrasTurno = {
   disparadaUsada: boolean;
   fugaUsada: boolean;
   mirarPreparado: boolean;
+  ataqueNormalRealizado: boolean;
   combateDuasArmasUsado: boolean;
 };
 
 export function estadoManobrasTurnoInicial(): EstadoManobrasTurno {
-  return { disparadaUsada: false, fugaUsada: false, mirarPreparado: false, combateDuasArmasUsado: false };
+  return { disparadaUsada: false, fugaUsada: false, mirarPreparado: false, ataqueNormalRealizado: false, combateDuasArmasUsado: false };
 }
 
 function validarEstadoManobras(estado: EstadoManobrasTurno): void {
-  const chaves = ['disparadaUsada', 'fugaUsada', 'mirarPreparado', 'combateDuasArmasUsado'];
+  const chaves = ['disparadaUsada', 'fugaUsada', 'mirarPreparado', 'ataqueNormalRealizado', 'combateDuasArmasUsado'];
   if (!estado || typeof estado !== 'object' || Array.isArray(estado)
     || Object.getPrototypeOf(estado) !== Object.prototype
     || Object.keys(estado).sort().join('|') !== chaves.sort().join('|')
@@ -99,7 +100,7 @@ export function registrarAtaque(
   validarEstadoManobras(manobras);
   return {
     economia: consumirRecursoNormal(economia, 'acao'),
-    manobras: { ...manobras, mirarPreparado: false },
+    manobras: { ...manobras, mirarPreparado: false, ataqueNormalRealizado: true },
     movimentosAdicionais: 0,
     ataqueAdicionalAutorizado: false,
   };
@@ -138,7 +139,7 @@ export function registrarCombateDuasArmas(
 ): ResultadoManobraOperacional {
   validarEstadoManobras(manobras);
   if (!economia.turnoEmAndamento) throw new Error('Combate com Duas Armas só pode ser registrado no próprio turno.');
-  if (!economia.normaisUsados.acao) throw new Error('Combate com Duas Armas exige que a Ação Atacar já tenha sido utilizada.');
+  if (!manobras.ataqueNormalRealizado) throw new Error('Combate com Duas Armas exige que a Ação Atacar já tenha sido registrada.');
   if (typeof ataqueInicialElegivel !== 'boolean' || !ataqueInicialElegivel) {
     throw new Error('O Ataque inicial não cumpre os requisitos de Combate com Duas Armas.');
   }
