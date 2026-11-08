@@ -32,7 +32,7 @@ export default function EditorCaracteristicasLocal({ iniciais, aoSalvar, aoAlter
     <h3>Editar Características</h3>
     <p>Alterações são salvas automaticamente após uma breve pausa. Classe ou Origem podem tornar Perícias, Habilidade ou Equipamento incompatíveis; corrija os avisos para concluir a sincronização.</p>
     <label>Classe<select value={dados.classe} disabled={ocupado} onChange={e => alterar({ ...dados, classe: e.target.value })}>
-      <option>Agente</option><option>Autodidata</option><option>Operador</option>
+      <option value="">Selecione uma Classe</option><option value="Agente">Agente</option><option value="Autodidata">Autodidata</option><option value="Operador">Operador</option>
     </select></label>
     <label>Origem<select value={dados.origem} disabled={ocupado} onChange={e => alterar({ ...dados, origem: e.target.value })}>
       <option value="">Selecione uma Origem</option>{ORIGENS.map(item => <option key={item.nome} value={item.nome}>{item.nome}</option>)}
