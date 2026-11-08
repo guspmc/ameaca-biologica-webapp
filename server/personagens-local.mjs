@@ -42,7 +42,8 @@ function ehObjeto(valor) {
 function obterPersonagem(db, id, contaId) {
   return db.prepare(`
     SELECT p.id, p.mesa_id AS mesaId, p.nome AS name,
-           p.dados_json AS dataJson, p.criada_em AS createdAt,
+           p.dados_json AS dataJson, p.estado_ficha AS estadoFicha,
+           p.inventario_json AS inventarioJson, p.criada_em AS createdAt,
            p.atualizada_em AS updatedAt, p.revisao AS revision
     FROM personagens_locais p
     WHERE p.id = ? AND p.conta_id = ?
@@ -55,7 +56,7 @@ function serializar(registro) {
     id: registro.id,
     mesaId: registro.mesaId,
     name: registro.name,
-    status: 'rascunho',
+    status: registro.estadoFicha === 'completa' ? 'completa' : 'rascunho',
     data: JSON.parse(registro.dataJson),
     createdAt: registro.createdAt,
     updatedAt: registro.updatedAt,
@@ -70,8 +71,9 @@ export async function tratarRotaPersonagensLocal(req, res, url, db, notificarCon
 
   const lista = /^\/api\/mesas\/([a-f0-9]{32})\/personagens$/.exec(rota);
   const conferencia = /^\/api\/personagens\/([a-f0-9]{32})\/conferencia$/.exec(rota);
+  const ativacao = /^\/api\/personagens\/([a-f0-9]{32})\/ativar$/.exec(rota);
   const item = /^\/api\/personagens\/([a-f0-9]{32})$/.exec(rota);
-  if (!lista && !item && !conferencia) return false;
+  if (!lista && !item && !conferencia && !ativacao) return false;
 
   const conta = await autenticarContaLocal(req, db);
   if (!conta) {
@@ -95,11 +97,11 @@ export async function tratarRotaPersonagensLocal(req, res, url, db, notificarCon
       if (metodo === 'GET') {
         const personagens = db.prepare(`
           SELECT id, mesa_id AS mesaId, nome AS name,
-                 criada_em AS createdAt, atualizada_em AS updatedAt
+                 estado_ficha AS estadoFicha, criada_em AS createdAt, atualizada_em AS updatedAt
           FROM personagens_locais
           WHERE mesa_id = ? AND conta_id = ?
           ORDER BY atualizada_em DESC, id
-        `).all(mesaId, conta.id).map(p => ({ ...p, status: 'rascunho' }));
+        `).all(mesaId, conta.id).map(p => ({ ...p, status: p.estadoFicha === 'completa' ? 'completa' : 'rascunho' }));
         responder(res, 200, { personagens });
         return true;
       }
@@ -111,7 +113,7 @@ export async function tratarRotaPersonagensLocal(req, res, url, db, notificarCon
           return true;
         }
         const quantidadeRascunhos = db.prepare(
-          'SELECT COUNT(*) AS total FROM personagens_locais WHERE mesa_id = ? AND conta_id = ?'
+          "SELECT COUNT(*) AS total FROM personagens_locais WHERE mesa_id = ? AND conta_id = ? AND estado_ficha = 'rascunho'"
         ).get(mesaId, conta.id).total;
         if (quantidadeRascunhos >= 3) {
           responder(res, 409, { error: 'Você já possui o limite de três rascunhos nesta Mesa.' });
@@ -131,8 +133,8 @@ export async function tratarRotaPersonagensLocal(req, res, url, db, notificarCon
       }
     }
 
-    if (item || conferencia) {
-      const id = (item ?? conferencia)[1];
+    if (item || conferencia || ativacao) {
+      const id = (item ?? conferencia ?? ativacao)[1];
       const existente = obterPersonagem(db, id, conta.id);
       if (!existente) {
         responder(res, 404, { error: 'Personagem não encontrado.' });
@@ -153,8 +155,80 @@ export async function tratarRotaPersonagensLocal(req, res, url, db, notificarCon
           responder(res, 405, { error: 'A conferência aceita somente GET.' });
           return true;
         }
+        if (existente.estadoFicha !== 'rascunho') {
+          responder(res, 409, { error: 'Esta personagem já está ativa.' });
+          return true;
+        }
         const resultado = validarCriacaoNoServidor(existente.name, JSON.parse(existente.dataJson));
-        responder(res, 200, { ...resultado, revision: existente.revision });
+        const ativas = db.prepare("SELECT COUNT(*) AS total FROM personagens_locais WHERE mesa_id = ? AND estado_ficha = 'completa'").get(existente.mesaId).total;
+        responder(res, 200, { ...resultado, revision: existente.revision, ativas });
+        return true;
+      }
+      if (ativacao) {
+        if (metodo !== 'POST') {
+          responder(res, 405, { error: 'A ativação aceita somente POST.' });
+          return true;
+        }
+        const corpo = await lerCorpo(req);
+        const uuidValido = typeof corpo.operationId === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(corpo.operationId);
+        if (!uuidValido || !Number.isSafeInteger(corpo.expectedRevision) || corpo.expectedRevision < 1) {
+          responder(res, 422, { error: 'Informe um identificador de operação válido e a revisão atual da ficha.' });
+          return true;
+        }
+        db.exec('BEGIN IMMEDIATE');
+        try {
+          const atual = obterPersonagem(db, id, conta.id);
+          if (!atual) { db.exec('ROLLBACK'); responder(res, 404, { error: 'Personagem não encontrado.' }); return true; }
+          const vinculo = db.prepare("SELECT papel FROM participantes_mesa WHERE mesa_id = ? AND conta_id = ?").get(atual.mesaId, conta.id);
+          if (!vinculo || vinculo.papel !== 'jogador') { db.exec('ROLLBACK'); responder(res, 404, { error: 'Personagem não encontrado.' }); return true; }
+          const reciboExistente = db.prepare(`
+            SELECT personagem_id AS personagemId, operacao_id AS operacaoId,
+                   revisao_ficha AS revisaoFicha, revisao_criacao AS revisaoCriacao,
+                   quantidade_instancias AS quantidadeInstancias
+            FROM ativacoes_personagem_locais WHERE personagem_id = ?
+          `).get(id);
+          if (reciboExistente) {
+            if (reciboExistente.operacaoId !== corpo.operationId || atual.estadoFicha !== 'completa') {
+              db.exec('ROLLBACK'); responder(res, 409, { error: 'Esta personagem já possui uma ativação confirmada.' }); return true;
+            }
+            db.exec('COMMIT');
+            responder(res, 200, { personagem: serializar(atual), recibo: { ...reciboExistente, estado: 'completa' } });
+            return true;
+          }
+          if (atual.estadoFicha !== 'rascunho') { db.exec('ROLLBACK'); responder(res, 409, { error: 'A personagem não está mais em estado de rascunho.' }); return true; }
+          if (atual.revision !== corpo.expectedRevision) { db.exec('ROLLBACK'); responder(res, 409, { error: 'A ficha mudou desde a conferência. Consulte novamente antes de ativar.' }); return true; }
+          const operacaoUsada = db.prepare('SELECT personagem_id FROM ativacoes_personagem_locais WHERE operacao_id = ?').get(corpo.operationId);
+          if (operacaoUsada) { db.exec('ROLLBACK'); responder(res, 409, { error: 'Este identificador de operação já foi utilizado.' }); return true; }
+          const validacao = validarCriacaoNoServidor(atual.name, JSON.parse(atual.dataJson));
+          if (!validacao.valido || !validacao.inventario || !Array.isArray(validacao.inventario.itens)) {
+            db.exec('ROLLBACK'); responder(res, 422, { error: 'A criação ainda possui pendências.', pendencias: validacao.pendencias }); return true;
+          }
+          const quantidadeAtivas = db.prepare("SELECT COUNT(*) AS total FROM personagens_locais WHERE mesa_id = ? AND estado_ficha = 'completa'").get(atual.mesaId).total;
+          if (quantidadeAtivas >= 10) { db.exec('ROLLBACK'); responder(res, 409, { error: 'A Mesa já possui dez personagens ativas.' }); return true; }
+          const agora = new Date().toISOString();
+          const revisaoCriacao = atual.revision + 1;
+          const atualizacaoInventario = db.prepare(`
+            UPDATE personagens_locais
+            SET inventario_json = ?, atualizada_em = ?, revisao = revisao + 1
+            WHERE id = ? AND conta_id = ? AND revisao = ? AND estado_ficha = 'rascunho'
+          `).run(JSON.stringify(validacao.inventario), agora, id, conta.id, corpo.expectedRevision);
+          if (Number(atualizacaoInventario.changes) !== 1) { db.exec('ROLLBACK'); responder(res, 409, { error: 'A ficha mudou durante a ativação. Consulte novamente.' }); return true; }
+          db.prepare(`
+            INSERT INTO ativacoes_personagem_locais
+              (personagem_id, operacao_id, revisao_ficha, revisao_criacao, quantidade_instancias, criada_em)
+            VALUES (?, ?, ?, ?, ?, ?)
+          `).run(id, corpo.operationId, corpo.expectedRevision, revisaoCriacao, validacao.inventario.itens.length, agora);
+          const conclusao = db.prepare("UPDATE personagens_locais SET estado_ficha = 'completa' WHERE id = ? AND conta_id = ? AND revisao = ? AND estado_ficha = 'rascunho'").run(id, conta.id, revisaoCriacao);
+          if (Number(conclusao.changes) !== 1) throw new Error('Não foi possível concluir a ativação da personagem.');
+          db.exec('COMMIT');
+          const personagem = obterPersonagem(db, id, conta.id);
+          const recibo = { personagemId: id, operacaoId: corpo.operationId, estado: 'completa', quantidadeInstancias: validacao.inventario.itens.length, revisaoCriacao };
+          notificarConta(conta.id);
+          responder(res, 200, { personagem: serializar(personagem), recibo });
+        } catch (erro) {
+          try { db.exec('ROLLBACK'); } catch { /* A transação pode já ter sido concluída. */ }
+          throw erro;
+        }
         return true;
       }
       if (metodo === 'GET') {
@@ -162,7 +236,11 @@ export async function tratarRotaPersonagensLocal(req, res, url, db, notificarCon
         return true;
       }
       if (metodo === 'DELETE') {
-        const resultado = db.prepare('DELETE FROM personagens_locais WHERE id = ? AND conta_id = ?').run(id, conta.id);
+        if (existente.estadoFicha !== 'rascunho') {
+          responder(res, 409, { error: 'Fichas ativas não podem ser excluídas como rascunhos.' });
+          return true;
+        }
+        const resultado = db.prepare("DELETE FROM personagens_locais WHERE id = ? AND conta_id = ? AND estado_ficha = 'rascunho'").run(id, conta.id);
         if (Number(resultado.changes) !== 1) {
           responder(res, 404, { error: 'Rascunho não encontrado.' });
           return true;
