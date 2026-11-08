@@ -32,7 +32,9 @@ export default function FuncionamentoFichaLocal({ inicial, aoSalvar, aoAlterarPe
     aoAlterarPendencia(true);
   }
 
-  return <div className="ficha-local-editor">
+  return <details className="ficha-local-editor painel-funcionamento-ficha">
+    <summary>Funcionamento da Ficha</summary>
+    <div className="ficha-local-editor-conteudo">
     <h3>Funcionamento da ficha</h3>
     <p>Defina como os controles elegíveis deverão operar. Cada preferência é salva automaticamente após uma breve pausa. Esta configuração não executa ações, rolagens ou alterações de recursos por conta própria.</p>
     <h4>Dados e histórico</h4>
@@ -93,5 +95,6 @@ export default function FuncionamentoFichaLocal({ inicial, aoSalvar, aoAlterarPe
           {salvamento.sucessoManual && <p className="offline-status" role="status">{salvamento.sucessoManual}</p>}
           {sujo && <button type="button" className="botao-claro" disabled={ocupado} onClick={() => void salvamento.salvarManual()}>Salvar preferências</button>}
         </>}
-  </div>;
+    </div>
+  </details>;
 }
