@@ -31,6 +31,27 @@ test('valida atributos e Perícias com as regras existentes de criação', () =>
   assert.equal(validarPersonagemLocal(base({ ...dados, distribuicaoPericias: { Vontade: 2 } })), false);
 });
 
+test('Tentativa e Erro só registra Perícia adicional após aquisição e sem duplicar treinamentos', () => {
+  const habilidadesAdquiridas = [
+    { nivel: 1, habilidadeId: 'ambidestria' },
+    { nivel: 2, habilidadeId: 'curiosa' },
+    { nivel: 4, habilidadeId: 'armeira-autodidata' },
+    { nivel: 6, habilidadeId: 'tentativa-e-erro' },
+  ];
+  const dados = {
+    versaoModelo: 1, estadoFicha: 'rascunho', classe: 'Autodidata', origem: 'Acadêmico',
+    nivel: 6, habilidadesAdquiridas, atributos,
+    periciaOrigemTreinada: 'Investigação', periciaOrigemExtra: null,
+    distribuicaoPericias: { Furtividade: 1 }, periciaTentativaErroTreinada: 'Medicina',
+  };
+  assert.equal(validarPersonagemLocal(base(dados)), true);
+  assert.equal(validarPersonagemLocal(base({ ...dados, periciaTentativaErroTreinada: 'Investigação' })), false);
+  assert.equal(validarPersonagemLocal(base({ ...dados, periciaTentativaErroTreinada: 'Furtividade' })), false);
+  assert.equal(validarPersonagemLocal(base({ ...dados, periciaTentativaErroTreinada: 'Perícia Inventada' })), false);
+  assert.equal(validarPersonagemLocal(base({ ...dados, habilidadesAdquiridas: habilidadesAdquiridas.slice(0, 3) })), false);
+  assert.equal(validarPersonagemLocal(base({ ...dados, periciaTentativaErroTreinada: null })), true);
+});
+
 test('valida Características e compatibilidade entre Classe, Origem e Habilidade', () => {
   const dados = {
     versaoModelo: 1, estadoFicha: 'rascunho', classe: 'Agente', origem: 'Acadêmico',
