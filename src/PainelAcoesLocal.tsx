@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { lembretesCondicoesPorTurno } from './condicoesFicha';
 import {
   comprarRecursoPorEsforco, consumirAcaoCompleta, consumirInteracaoGratuita,
-  consumirRecursoNormal,
+  consumirRecursoNormal, gastarSAEmManobra,
   saNaJanelaEsforco, type EstadoEconomiaAcoes, type RecursoAcao,
 } from './economiaAcoes';
 import {
