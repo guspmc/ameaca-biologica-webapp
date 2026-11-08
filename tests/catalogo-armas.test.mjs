@@ -25,21 +25,21 @@ test('perfis retornados não permitem alterar o catálogo interno', () => {
 });
 
 test('resultado natural 20 é acerto crítico automático e fecha reações defensivas', () => {
-  const perfil = consultarPerfilArma('sentinel-nine')!;
+  const perfil = consultarPerfilArma('sentinel-nine');
   assert.deepEqual(resolverAtaqueArma(20, 2, 30, perfil), {
     sucesso: true, critico: true, falhaCritica: false, fechaReacoesDefensivas: true, aplicaExposto: false,
   });
 });
 
 test('resultado natural 1 é Falha Crítica e aplica Exposto', () => {
-  const perfil = consultarPerfilArma('sentinel-nine')!;
+  const perfil = consultarPerfilArma('sentinel-nine');
   assert.deepEqual(resolverAtaqueArma(1, 40, 1, perfil), {
     sucesso: false, critico: false, falhaCritica: true, fechaReacoesDefensivas: false, aplicaExposto: true,
   });
 });
 
 test('margem crítica 19–20 exige alcançar Defesa no 19 e não fecha Reações', () => {
-  const perfil = { ...consultarPerfilArma('sentinel-nine')!, criticoNatural: 19 as const };
+  const perfil = { ...consultarPerfilArma('sentinel-nine'), criticoNatural: 19 };
   assert.equal(resolverAtaqueArma(19, 14, 15, perfil).critico, false);
   assert.deepEqual(resolverAtaqueArma(19, 15, 15, perfil), {
     sucesso: true, critico: true, falhaCritica: false, fechaReacoesDefensivas: false, aplicaExposto: false,
@@ -47,14 +47,14 @@ test('margem crítica 19–20 exige alcançar Defesa no 19 e não fecha Reaçõe
 });
 
 test('dano crítico multiplica Dados e Atributo associado', () => {
-  const perfil = consultarPerfilArma('sentinel-nine')!;
+  const perfil = consultarPerfilArma('sentinel-nine');
   const resultado = calcularDanoArma({ dadosRolados: 8, valorAtributo: 3, critico: true, perfil });
   assert.equal(resultado.total, 22);
   assert.equal(resultado.multiplicador, 2);
 });
 
 test('Operário adiciona 2 × FOR, mas o FOR adicional não é multiplicado no crítico', () => {
-  const perfil = consultarPerfilArma('cutelo')!;
+  const perfil = consultarPerfilArma('cutelo');
   const resultado = calcularDanoArma({ dadosRolados: 8, valorAtributo: 3, critico: true, perfil, armaOperarioEscolhida: true });
   assert.equal(resultado.total, 36);
   assert.equal(resultado.atributoMultiplicado, 9);
@@ -64,7 +64,7 @@ test('Operário adiciona 2 × FOR, mas o FOR adicional não é multiplicado no c
 });
 
 test('dado adicional já rolado pode ser incluído sem rolagem automática', () => {
-  const perfil = consultarPerfilArma('bastao')!;
+  const perfil = consultarPerfilArma('bastao');
   const resultado = calcularDanoArma({ dadosRolados: 6, dadosAdicionais: 4, valorAtributo: 2, critico: false, perfil });
   assert.equal(resultado.total, 12);
   assert.throws(() => calcularDanoArma({ dadosRolados: -1, valorAtributo: 2, critico: false, perfil }));
