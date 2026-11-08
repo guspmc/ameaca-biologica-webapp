@@ -573,7 +573,7 @@ export default function ConexaoServidorLocal() {
 
 
   async function excluirRascunho(mesa: MesaLocal, personagem: ResumoPersonagemLocal) {
-    if (!sessao || mesa.role !== 'jogador') return;
+    if (!sessao || mesa.role !== 'jogador' || personagem.status !== 'rascunho') return;
     const geracaoSolicitada = geracaoSessao.current;
     const confirmado = window.confirm('Excluir definitivamente o rascunho “' + personagem.name + '”? Esta ação não pode ser desfeita.');
     if (!confirmado) return;
@@ -646,7 +646,7 @@ export default function ConexaoServidorLocal() {
           personagemId: resposta.personagem.id,
         }));
       } catch { /* A ficha continua funcional mesmo sem persistência do contexto de navegação. */ }
-      setAviso('Ficha consultada e confirmada pelo servidor. As alterações continuam em estado de rascunho.');
+      setAviso(resposta.personagem.status === 'completa' ? 'Ficha ativa consultada e confirmada pelo servidor.' : 'Rascunho consultado e confirmado pelo servidor.');
     } catch (problema) {
       if (!sessaoContinuaSendoAtual(geracaoSessao.current, geracaoSolicitada)) return;
       if (problema instanceof ErroServidorLocal && problema.status === 401) encerrarSessao('A sessão expirou ou foi encerrada no servidor. Entre novamente.');
@@ -755,7 +755,7 @@ export default function ConexaoServidorLocal() {
         const confirmada = { ...fichaAindaAberta, personagem: resposta.personagem };
         fichaAbertaRef.current = confirmada;
         setFichaAberta(confirmada);
-        setAviso('Alterações recebidas e confirmadas pelo servidor. O personagem continua como rascunho não ativo.');
+        setAviso(resposta.personagem.status === 'completa' ? 'Alterações da ficha ativa confirmadas pelo servidor.' : 'Alterações recebidas e confirmadas pelo servidor. O personagem continua como rascunho não ativo.');
         return true;
       } catch (problema) {
         // Uma resposta da sessão anterior não pode encerrar ou alterar a sessão recém-aberta.
@@ -780,6 +780,91 @@ export default function ConexaoServidorLocal() {
         }
       }
     });
+  }
+
+  async function conferirAtivacaoFicha() {
+    const ficha = fichaAbertaRef.current;
+    if (!sessao || !ficha || ficha.mesa.role !== 'jogador' || ficha.personagem.status !== 'rascunho') {
+      throw new Error('Abra um rascunho pertencente a uma Mesa em que você seja Jogador.');
+    }
+    const geracaoSolicitada = geracaoSessao.current;
+    const resultado = await criarClienteServidorLocal({ baseUrl: endereco.trim(), token: sessao.token })
+      .conferirCriacaoPersonagem(ficha.personagem.id);
+    if (!sessaoContinuaSendoAtual(geracaoSessao.current, geracaoSolicitada)) {
+      throw new Error('A sessão mudou durante a conferência. Abra novamente a ficha.');
+    }
+    const fichaAtual = fichaAbertaRef.current;
+    if (!fichaContinuaSendoAlvo(fichaAtual, { personagemId: ficha.personagem.id, mesaId: ficha.mesa.id })) {
+      throw new Error('A ficha aberta mudou durante a conferência. Abra novamente a ficha.');
+    }
+    return resultado;
+  }
+
+  async function ativarPersonagemFicha(revisaoEsperada: number, operationId: string): Promise<boolean> {
+    const fichaSolicitada = fichaAbertaRef.current;
+    if (!sessao || !fichaSolicitada || fichaSolicitada.mesa.role !== 'jogador' ||
+        fichaSolicitada.personagem.status !== 'rascunho') {
+      throw new Error('Apenas o Jogador proprietário pode ativar o próprio rascunho.');
+    }
+    const geracaoSolicitada = geracaoSessao.current;
+    const cliente = criarClienteServidorLocal({ baseUrl: endereco.trim(), token: sessao.token });
+    const personagemId = fichaSolicitada.personagem.id;
+    const mesaId = fichaSolicitada.mesa.id;
+
+    const aplicarConfirmacao = (personagem: PersonagemRascunhoLocal) => {
+      const fichaAtual = fichaAbertaRef.current;
+      if (!sessaoContinuaSendoAtual(geracaoSessao.current, geracaoSolicitada) ||
+          !fichaContinuaSendoAlvo(fichaAtual, { personagemId, mesaId })) return false;
+      if (personagem.id !== personagemId || personagem.mesaId !== mesaId || personagem.status !== 'completa') {
+        throw new Error('O servidor não confirmou a ativação da personagem solicitada.');
+      }
+      const confirmada = { ...fichaAtual, personagem };
+      fichaAbertaRef.current = confirmada;
+      setFichaAberta(confirmada);
+      setPersonagens(atual => {
+        const lista = atual[mesaId] ?? [];
+        const resumo: ResumoPersonagemLocal = {
+          id: personagem.id, mesaId: personagem.mesaId, name: personagem.name,
+          status: 'completa', createdAt: personagem.createdAt, updatedAt: personagem.updatedAt,
+        };
+        return {
+          ...atual,
+          [mesaId]: lista.some(item => item.id === personagem.id)
+            ? lista.map(item => item.id === personagem.id ? resumo : item)
+            : [resumo, ...lista],
+        };
+      });
+      setAviso('Ativação confirmada pelo servidor. A personagem agora está ativa na Mesa.');
+      setErro('');
+      return true;
+    };
+
+    try {
+      const resposta = await cliente.ativarPersonagem(personagemId, revisaoEsperada, operationId);
+      if (resposta.recibo.personagemId !== personagemId || resposta.recibo.operacaoId !== operationId ||
+          resposta.recibo.estado !== 'completa' || !Number.isSafeInteger(resposta.recibo.revisaoCriacao)) {
+        throw new Error('O recibo de ativação retornado pelo servidor não corresponde ao pedido.');
+      }
+      return aplicarConfirmacao(resposta.personagem);
+    } catch (problema) {
+      if (!sessaoContinuaSendoAtual(geracaoSessao.current, geracaoSolicitada)) return false;
+      if (problema instanceof ErroServidorLocal && problema.status === 401) {
+        encerrarSessao('A sessão expirou ou foi encerrada no servidor. Entre novamente.');
+        throw problema;
+      }
+      // Se a resposta da ativação se perdeu após o COMMIT, a consulta do estado
+      // atual permite reconhecer a confirmação sem criar uma segunda operação.
+      try {
+        const atual = await cliente.consultarPersonagem(personagemId);
+        if (atual.personagem.status === 'completa') return aplicarConfirmacao(atual.personagem);
+      } catch (consulta) {
+        if (consulta instanceof ErroServidorLocal && consulta.status === 401) {
+          encerrarSessao('A sessão expirou ou foi encerrada no servidor. Entre novamente.');
+          throw consulta;
+        }
+      }
+      throw problema;
+    }
   }
 
   function editarSecaoFicha(secao: 'caracteristicas' | 'pericias' | 'inventario') {
@@ -1035,7 +1120,7 @@ export default function ConexaoServidorLocal() {
             </ul> : <p className="servidor-local-vazio">Nenhuma Mesa vinculada a esta conta ainda.</p>}
             {mesas.filter(mesa => mesa.role === 'jogador').map(mesa => <section className="servidor-local-controle-mesa" key={mesa.id}>
               <h4>Personagens · {mesa.name}</h4>
-              <p className="secundario">Os personagens começam como rascunhos e ficam vinculados a esta Mesa e à sua conta. A criação ainda não ativa o personagem nem abre a ficha completa.</p>
+              <p className="secundario">Os rascunhos ficam vinculados a esta Mesa e à sua conta. Abra a ficha para completar a criação, conferir os dados no servidor e solicitar a ativação; somente personagens ativos ocupam as dez vagas da Mesa.</p>
               <form className="formulario servidor-local-form-mesa" onSubmit={evento => void criarPersonagem(mesa, evento)}>
                 <label>Nome do personagem
                   <input value={nomesPersonagens[mesa.id] ?? ''} onChange={evento => setNomesPersonagens(atual => ({ ...atual, [mesa.id]: evento.target.value }))} maxLength={80} required placeholder="Ex.: Claire Redfield" />
@@ -1046,8 +1131,8 @@ export default function ConexaoServidorLocal() {
                 <button className="botao-claro" type="button" disabled={consultando} onClick={() => void carregarPersonagens(mesa)}>Consultar rascunhos</button>
               </div>
               {personagens[mesa.id] ? personagens[mesa.id].length ? <ul className="servidor-local-lista-mesas">{personagens[mesa.id].map(personagem => <li key={personagem.id}>
-                <div><strong>{personagem.name}</strong><small>Rascunho · atualizado em {new Intl.DateTimeFormat('pt-BR', { dateStyle: 'short', timeStyle: 'short' }).format(new Date(personagem.updatedAt))}</small></div>
-                <div className="servidor-local-botoes"><span className="papel-jogador">RASCUNHO</span><button className="botao-claro" type="button" disabled={consultando || salvandoFicha} onClick={() => void abrirFicha(mesa, personagem)}>Abrir ficha</button><button className="botao-claro" type="button" disabled={consultando || salvandoFicha} onClick={() => void excluirRascunho(mesa, personagem)}>Excluir</button></div>
+                <div><strong>{personagem.name}</strong><small>{personagem.status === 'completa' ? 'Ficha ativa' : 'Rascunho'} · atualizado em {new Intl.DateTimeFormat('pt-BR', { dateStyle: 'short', timeStyle: 'short' }).format(new Date(personagem.updatedAt))}</small></div>
+                <div className="servidor-local-botoes"><span className="papel-jogador">{personagem.status === 'completa' ? 'ATIVA' : 'RASCUNHO'}</span><button className="botao-claro" type="button" disabled={consultando || salvandoFicha} onClick={() => void abrirFicha(mesa, personagem)}>Abrir ficha</button>{personagem.status === 'rascunho' && <button className="botao-claro" type="button" disabled={consultando || salvandoFicha} onClick={() => void excluirRascunho(mesa, personagem)}>Excluir</button>}</div>
               </li>)}</ul> : <p className="servidor-local-vazio">Nenhum rascunho nesta Mesa.</p> : <p className="servidor-local-vazio">Consulte os rascunhos para carregar a lista do servidor.</p>}
             </section>)}
             {mesas.filter(mesa => mesa.role === 'jogador').map(mesa => <ArquivosJogadorLocal key={mesa.id} mesaId={mesa.id} mesaNome={mesa.name} />)}
@@ -1145,6 +1230,11 @@ export default function ConexaoServidorLocal() {
         aoSalvarFuncionamento={configuracao => salvarDadosFicha({ configuracaoFuncionamento: configuracao })}
         aoSalvarRecursos={recursos => salvarDadosFicha(recursos)}
         origemDados="servidor"
+        estadoFicha={fichaAberta.personagem.status}
+        revisaoFicha={fichaAberta.personagem.revision}
+        aoConferirAtivacao={conferirAtivacaoFicha}
+        aoAtivar={ativarPersonagemFicha}
+        bloqueadoAtivacao={salvandoFicha}
       />}
       {salvandoFicha && <p className="servidor-local-feedback" role="status">Confirmando salvamento da ficha no servidor…</p>}
       {erro && <p className="erro servidor-local-feedback" role="alert">{erro}</p>}
