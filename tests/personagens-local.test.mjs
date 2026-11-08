@@ -291,7 +291,8 @@ test('migration 11 prepara ciclo de ativação sem alterar rascunhos legados', a
   assert.ok(colunas.includes('estado_ficha'));
   assert.ok(colunas.includes('inventario_json'));
   const legado = app.db.prepare('SELECT estado_ficha, inventario_json FROM personagens_locais WHERE id = ?').get(personagem.id);
-  assert.deepEqual(legado, { estado_ficha: 'rascunho', inventario_json: null });
+  assert.equal(legado.estado_ficha, 'rascunho');
+  assert.equal(legado.inventario_json, null);
   assert.throws(() => app.db.prepare("UPDATE personagens_locais SET estado_ficha = 'completa' WHERE id = ?").run(personagem.id), /Ativação exige inventário e recibo/);
   const operacao = '8d8b1a25-8b8f-4e1c-9d1a-5b21d9f2a301';
   const agora = new Date().toISOString();
