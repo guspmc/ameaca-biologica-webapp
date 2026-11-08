@@ -59,7 +59,7 @@ export type PersonagemRascunhoLocal = {
   id: string;
   mesaId: string;
   name: string;
-  status: 'rascunho';
+  status: 'rascunho' | 'completa';
   data: Record<string, unknown>;
   createdAt: string;
   updatedAt: string;
@@ -70,7 +70,7 @@ export type ResumoPersonagemLocal = {
   id: string;
   mesaId: string;
   name: string;
-  status: 'rascunho';
+  status: 'rascunho' | 'completa';
   createdAt: string;
   updatedAt: string;
 };
@@ -81,6 +81,12 @@ export type ResultadoConferenciaCriacaoLocal = {
   conferencia: { nome: string; estado: 'conferido' | 'pendente' | 'revisar'; detalhe: string; secao: string }[];
   inventario?: { capacidade: number; ocupados: number; itens: unknown[] };
   revision: number;
+  ativas: number;
+};
+
+export type ResultadoAtivacaoPersonagemLocal = {
+  personagem: PersonagemRascunhoLocal;
+  recibo: { personagemId: string; operacaoId: string; estado: 'completa'; quantidadeInstancias: number; revisaoCriacao: number };
 };
 
 export type DiagnosticoTransporteLocal = {
@@ -316,6 +322,15 @@ export function criarClienteServidorLocal({ baseUrl, token, fetcher = fetch }: O
     conferirCriacaoPersonagem(id: string): Promise<ResultadoConferenciaCriacaoLocal> {
       if (!/^[a-f0-9]{32}$/.test(id)) throw new Error('Identificador de personagem inválido.');
       return requisicao(`/api/personagens/${id}/conferencia`, { autenticada: true });
+    },
+
+    ativarPersonagem(id: string, expectedRevision: number, operationId: string): Promise<ResultadoAtivacaoPersonagemLocal> {
+      if (!/^[a-f0-9]{32}$/.test(id)) throw new Error('Identificador de personagem inválido.');
+      if (!Number.isSafeInteger(expectedRevision) || expectedRevision < 1) throw new Error('Revisão da ficha inválida.');
+      if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(operationId)) throw new Error('Identificador de operação inválido.');
+      return requisicao(`/api/personagens/${id}/ativar`, {
+        metodo: 'POST', corpo: { expectedRevision, operationId }, autenticada: true,
+      });
     },
 
     excluirPersonagem(id: string): Promise<{ deleted: true; id: string }> {
