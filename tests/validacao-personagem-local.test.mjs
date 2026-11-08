@@ -48,7 +48,10 @@ test('Tentativa e Erro só registra Perícia adicional após aquisição e sem d
   assert.equal(validarPersonagemLocal(base({ ...dados, distribuicaoPericias: { Furtividade: 1, Medicina: 1 } })), true);
   assert.equal(validarPersonagemLocal(base({ ...dados, distribuicaoPericias: { Furtividade: 1, Medicina: 2 } })), false);
   assert.equal(validarPersonagemLocal(base({ ...dados, periciaTentativaErroTreinada: 'Investigação' })), false);
-  assert.equal(validarPersonagemLocal(base({ ...dados, periciaTentativaErroTreinada: 'Furtividade' })), false);
+  // Um ponto posterior pode elevar a Perícia escolhida a Mestre; o seletor impede escolhê-la se já estava treinada antes.
+  assert.equal(validarPersonagemLocal(base({ ...dados, distribuicaoPericias: { Furtividade: 1, Medicina: 1 } })), true);
+  const amnesico = { ...dados, origem: 'Amnésico', periciaOrigemTreinada: 'Investigação', periciaOrigemExtra: 'Pontaria', distribuicaoPericias: {}, periciaTentativaErroTreinada: 'Pontaria' };
+  assert.equal(validarPersonagemLocal(base(amnesico)), false);
   assert.equal(validarPersonagemLocal(base({ ...dados, periciaTentativaErroTreinada: 'Perícia Inventada' })), false);
   assert.equal(validarPersonagemLocal(base({ ...dados, habilidadesAdquiridas: habilidadesAdquiridas.slice(0, 3) })), false);
   assert.equal(validarPersonagemLocal(base({ ...dados, periciaTentativaErroTreinada: null })), true);
