@@ -284,6 +284,32 @@ export function prepararAutenticacaoLocal(db) {
       db.exec('COMMIT');
     } catch (erro) { db.exec('ROLLBACK'); throw erro; }
   }
+  if (versaoAtual < 11) {
+    db.exec('BEGIN IMMEDIATE');
+    try {
+      const colunasPersonagens = db.prepare('PRAGMA table_info(personagens_locais)').all();
+      if (!colunasPersonagens.some(coluna => coluna.name === 'estado_ficha')) {
+        db.exec("ALTER TABLE personagens_locais ADD COLUMN estado_ficha TEXT NOT NULL DEFAULT 'rascunho' CHECK (estado_ficha IN ('rascunho', 'completa'))");
+      }
+      if (!colunasPersonagens.some(coluna => coluna.name === 'inventario_json')) {
+        db.exec("ALTER TABLE personagens_locais ADD COLUMN inventario_json TEXT CHECK (inventario_json IS NULL OR (json_valid(inventario_json) AND json_type(inventario_json) = 'object'))");
+      }
+      db.exec(`
+        CREATE TABLE IF NOT EXISTS ativacoes_personagem_locais (
+          personagem_id TEXT PRIMARY KEY REFERENCES personagens_locais(id) ON DELETE CASCADE,
+          operacao_id TEXT NOT NULL UNIQUE CHECK (length(operacao_id) = 36),
+          revisao_ficha INTEGER NOT NULL CHECK (revisao_ficha >= 1),
+          revisao_criacao INTEGER NOT NULL CHECK (revisao_criacao > revisao_ficha),
+          quantidade_instancias INTEGER NOT NULL CHECK (quantidade_instancias >= 0),
+          criada_em TEXT NOT NULL
+        );
+        CREATE INDEX IF NOT EXISTS idx_personagens_ativas_mesa
+          ON personagens_locais(mesa_id, estado_ficha, atualizada_em);
+      `);
+      db.prepare('INSERT INTO schema_migrations (version, applied_at) VALUES (?, ?)').run(11, new Date().toISOString());
+      db.exec('COMMIT');
+    } catch (erro) { db.exec('ROLLBACK'); throw erro; }
+  }
 
 }
 
