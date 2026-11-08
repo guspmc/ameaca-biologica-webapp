@@ -90,3 +90,8 @@ export function calcularDanoArma(entrada: EntradaDanoArma): ResultadoDanoArma {
   const atributoMultiplicado = forca * multiplicador;
   return { dados, atributoMultiplicado, bonusOperarioNaoMultiplicado: 0, multiplicador, total: (dados + forca) * multiplicador };
 }
+
+/** Bônus de Ataque da Origem Operário, apenas com a arma escolhida na criação. */
+export function bonusAtaqueOperario(armaOperarioEscolhida: boolean): number {
+  return armaOperarioEscolhida ? 1 : 0;
+}
