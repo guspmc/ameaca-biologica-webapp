@@ -9,6 +9,15 @@ type Props = {
   origemDados?: 'local' | 'servidor';
 };
 
+function novoIdCondicao(): string {
+  const aleatorio = () => Math.floor(Math.random() * 16).toString(16);
+  return globalThis.crypto?.randomUUID?.() ??
+    'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, caractere => {
+      const valor = Number.parseInt(aleatorio(), 16);
+      return (caractere === 'x' ? valor : (valor & 0x3) | 0x8).toString(16);
+    });
+}
+
 const ICONE_CONDICAO: Record<CondicaoId, string> = {
   agarrado:'🫳', amedrontado:'😨', atordoado:'💫', caido:'⬇️', cego:'🙈', 'colapso-viral':'🧬',
   corrosao:'☣️', desacordado:'💤', desorientado:'🌀', enfraquecido:'🪫', exposto:'⚠️',
@@ -33,7 +42,7 @@ export default function CondicoesFichaLocal({ dados, pvAtual, pvMaximo, aoSalvar
     setSalvando(true); setMensagem('');
     try {
       const atualizadas = adicionarInstanciaCondicao(itens, {
-        id: crypto.randomUUID(), condicao, fonte: fonte.trim(),
+        id: novoIdCondicao(), condicao, fonte: fonte.trim(),
         observacao: observacao.trim(), estado: 'ativa', encerradaEm: null,
       });
       if (await aoSalvar({ condicoes: atualizadas })) {
