@@ -56,7 +56,8 @@ test('Combate com Duas Armas exige Ação Atacar prévia, turno ativo e elegibil
   const estado = estadoManobrasTurnoInicial();
   const economia = economiaAcoesInicial(3);
   assert.throws(() => registrarCombateDuasArmas(economia, estado, true), /Ação Atacar já tenha sido registrada/);
-  assert.throws(() => registrarCombateDuasArmas(consumirRecursoNormal(economia, 'acao'), estado, false), /não cumpre/);
+  const ataqueInelegivel = registrarAtaque(economia, estado);
+  assert.throws(() => registrarCombateDuasArmas(ataqueInelegivel.economia, ataqueInelegivel.manobras, false), /não cumpre/);
   const ataqueInicial = registrarAtaque(economia, estado);
   const r = registrarCombateDuasArmas(ataqueInicial.economia, ataqueInicial.manobras, true);
   assert.equal(r.economia.normaisUsados.acaoBonus, true);
