@@ -5,6 +5,7 @@ import { criarFilaSerializada } from './filaSerializada';
 import { criarBackup, lerArquivoBackup, nomeDeCopiaUnico, serializarBackup } from './backupFicha';
 import { adicionarPersonagens, excluirPersonagem, listarPersonagens, obterPersonagem, salvarPersonagem, salvarPatchPersonagem, substituirPersonagens, type PersonagemLocal } from './persistenciaFicha';
 import { estadoEconomiaAcoesValido, sincronizarSAAtual } from './economiaAcoes';
+import { estadoTurnoCombateValido } from './estadoTurnoCombate';
 
 function agora() { return new Date().toISOString(); }
 function novoId() { return globalThis.crypto?.randomUUID?.() ?? `personagem-${Date.now()}-${Math.random().toString(16).slice(2)}`; }
@@ -86,12 +87,25 @@ export default function FichaOfflineApp() {
       delete patchEfetivo.economiaAcoesSaldoBase;
       // Ajustes de SA pelo painel de Recursos também atualizam o espelho da
       // Economia de Ações, evitando saldos divergentes entre as duas seções.
-      if (typeof patchEfetivo.saAtual === 'number' && !('economiaAcoes' in patchEfetivo)
-        && estadoEconomiaAcoesValido(base.dados.economiaAcoes)) {
-        patchEfetivo.economiaAcoes = sincronizarSAAtual(base.dados.economiaAcoes, patchEfetivo.saAtual);
+      if (typeof patchEfetivo.saAtual === 'number') {
+        if (!('economiaAcoes' in patchEfetivo) && estadoEconomiaAcoesValido(base.dados.economiaAcoes)) {
+          patchEfetivo.economiaAcoes = sincronizarSAAtual(base.dados.economiaAcoes, patchEfetivo.saAtual);
+        }
+        if (!('estadoTurnoCombate' in patchEfetivo) && estadoTurnoCombateValido(base.dados.estadoTurnoCombate)) {
+          patchEfetivo.estadoTurnoCombate = {
+            ...base.dados.estadoTurnoCombate,
+            economia: sincronizarSAAtual(base.dados.estadoTurnoCombate.economia, patchEfetivo.saAtual),
+          };
+        }
       }
       setStatus('Salvando no dispositivo…'); setErro('');
       try {
+        if ('estadoTurnoCombate' in patchEfetivo) {
+          if (!estadoTurnoCombateValido(patchEfetivo.estadoTurnoCombate)
+            || patchEfetivo.estadoTurnoCombate.economia.saAtual !== patchEfetivo.saAtual) {
+            throw new Error('O estado integrado do turno de combate é inválido ou está dessincronizado do saldo de SA.');
+          }
+        }
         if ('economiaAcoes' in patchEfetivo) {
           if (!estadoEconomiaAcoesValido(patchEfetivo.economiaAcoes)
             || patchEfetivo.economiaAcoes.saAtual !== patchEfetivo.saAtual
