@@ -163,3 +163,13 @@ export function aplicarReacaoCombate<T extends { economia: EstadoEconomiaAcoes }
 function exigirEstadoValido(estado: EstadoTurnoCombate): void {
   if (!estadoTurnoCombateValido(estado)) throw new Error('Estado integrado do turno de combate inválido.');
 }
+
+
+/** Consome a autorização de Ataque adicional sem gastar outra Ação: o custo já foi pago pela Ação Bônus. */
+export function registrarResolucaoAtaqueAdicional(estado: EstadoTurnoCombate): EstadoTurnoCombate {
+  exigirEstadoValido(estado);
+  if (!estado.ataqueAdicionalAutorizado || !estado.manobras.combateDuasArmasUsado) {
+    throw new Error('Não há Ataque adicional de Combate com Duas Armas aguardando resolução.');
+  }
+  return { ...estado, ataqueAdicionalAutorizado: false };
+}
