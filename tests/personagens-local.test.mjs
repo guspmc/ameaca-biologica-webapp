@@ -510,8 +510,21 @@ test('servidor LAN valida o estado integrado de Combate e recusa estado inválid
     body: JSON.stringify({ name: personagem.name, data: { ...personagem.data, saAtual: 3, estadoTurnoCombate: estado }, expectedRevision: personagem.revision }),
   });
   assert.equal(valido.status, 200);
-  const salvo = (await valido.json()).personagem;
+  let salvo = (await valido.json()).personagem;
   assert.deepEqual(salvo.data.estadoTurnoCombate, estado);
+
+  const compostoLegado = {
+    versao: 1,
+    economia: estado.economia,
+    manobras: { disparadaUsada: true, fugaUsada: true, mirarPreparado: false, combateDuasArmasUsado: false },
+  };
+  const legadoAceito = await fetch(url + '/api/personagens/' + personagem.id, {
+    method: 'PUT', headers: { ...jogador.headers, 'content-type': 'application/json' },
+    body: JSON.stringify({ name: salvo.name, data: { ...salvo.data, estadoTurnoCombate: compostoLegado }, expectedRevision: salvo.revision }),
+  });
+  assert.equal(legadoAceito.status, 200);
+  salvo = (await legadoAceito.json()).personagem;
+  assert.deepEqual(salvo.data.estadoTurnoCombate, compostoLegado);
 
   const invalido = await fetch(url + '/api/personagens/' + personagem.id, {
     method: 'PUT', headers: { ...jogador.headers, 'content-type': 'application/json' },
