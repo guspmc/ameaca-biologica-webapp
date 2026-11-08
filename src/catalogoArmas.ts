@@ -59,7 +59,7 @@ export function resolverAtaqueArma(faceNatural: number, total: number, defesa: n
 
 export type EntradaDanoArma = {
   dadosRolados: number;
-  forca: number;
+  valorAtributo: number;
   critico: boolean;
   perfil: PerfilArma;
   armaOperarioEscolhida?: boolean;
@@ -76,19 +76,19 @@ export type ResultadoDanoArma = {
 
 /** Recebe resultados já rolados. Nunca gera dados; respeita a exceção de Operário no crítico. */
 export function calcularDanoArma(entrada: EntradaDanoArma): ResultadoDanoArma {
-  const { dadosRolados, forca, critico, perfil, armaOperarioEscolhida = false, dadosAdicionais = 0 } = entrada;
-  if (![dadosRolados, forca, dadosAdicionais].every(Number.isFinite) || dadosRolados < 0 || forca < 0 || dadosAdicionais < 0) {
-    throw new Error('Dano rolado, FOR e dados adicionais precisam ser valores não negativos.');
+  const { dadosRolados, valorAtributo, critico, perfil, armaOperarioEscolhida = false, dadosAdicionais = 0 } = entrada;
+  if (![dadosRolados, valorAtributo, dadosAdicionais].every(Number.isFinite) || dadosRolados < 0 || valorAtributo < 0 || dadosAdicionais < 0) {
+    throw new Error('Dano rolado, Atributo e dados adicionais precisam ser valores não negativos.');
   }
   const dados = dadosRolados + dadosAdicionais;
   const multiplicador = critico ? perfil.multiplicadorCritico : 1;
   if (armaOperarioEscolhida && perfil.categoria === 'corpo-a-corpo') {
-    const atributoMultiplicado = forca * multiplicador;
-    const bonusOperarioNaoMultiplicado = forca;
+    const atributoMultiplicado = valorAtributo * multiplicador;
+    const bonusOperarioNaoMultiplicado = valorAtributo;
     return { dados, atributoMultiplicado, bonusOperarioNaoMultiplicado, multiplicador, total: dados * multiplicador + atributoMultiplicado + bonusOperarioNaoMultiplicado };
   }
-  const atributoMultiplicado = forca * multiplicador;
-  return { dados, atributoMultiplicado, bonusOperarioNaoMultiplicado: 0, multiplicador, total: (dados + forca) * multiplicador };
+  const atributoMultiplicado = valorAtributo * multiplicador;
+  return { dados, atributoMultiplicado, bonusOperarioNaoMultiplicado: 0, multiplicador, total: (dados + valorAtributo) * multiplicador };
 }
 
 /** Bônus de Ataque da Origem Operário, apenas com a arma escolhida na criação. */
