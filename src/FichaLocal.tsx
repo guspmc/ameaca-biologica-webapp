@@ -441,7 +441,7 @@ export default function FichaLocal({ nome, mesa, contextoId, dados, aoFechar, ao
           <details className="ficha-local-acordeao">
             <summary>Proficiências <span>{dadosClasse?.proficiencias.length ?? 0} registros</span></summary>
             <div className="ficha-local-acordeao-corpo">
-              <strong>Proficiencias iniciais da Classe</strong>
+              <strong>Proficiências iniciais da Classe</strong>
               <ul>{(dadosClasse?.proficiencias ?? []).map(item => <li key={item}>{item}</li>)}</ul>
               {proficienciasAdicionais.length > 0 && <><strong>Ampliações por Habilidade</strong><ul>{[...new Set(proficienciasAdicionais)].map(item => <li key={item}>{item}</li>)}</ul></>}
               {regrasEspeciaisProficiencia.map(item => <p key={item}>{item}</p>)}
