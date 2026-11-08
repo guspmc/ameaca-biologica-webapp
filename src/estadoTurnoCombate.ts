@@ -45,7 +45,7 @@ export function carregarEstadoTurnoCombate(
       estado: {
         versao: 1,
         economia: sincronizarSAAtual(legado, saAtual),
-        manobras: { disparadaUsada: false, fugaUsada: false, mirarPreparado: false, combateDuasArmasUsado: false },
+        manobras: { disparadaUsada: false, fugaUsada: false, mirarPreparado: false, ataqueNormalRealizado: false, combateDuasArmasUsado: false },
         movimentosAdicionaisConcedidos: 0,
         ataqueAdicionalAutorizado: false,
       },
@@ -64,6 +64,7 @@ export function estadoTurnoCombateInicial(saAtual: number): EstadoTurnoCombate {
       disparadaUsada: false,
       fugaUsada: false,
       mirarPreparado: false,
+      ataqueNormalRealizado: false,
       combateDuasArmasUsado: false,
     },
     movimentosAdicionaisConcedidos: 0,
@@ -84,11 +85,12 @@ export function estadoTurnoCombateValido(valor: unknown): valor is EstadoTurnoCo
     || Object.getPrototypeOf(manobras) !== Object.prototype) return false;
   const m = manobras as Record<string, unknown>;
   return Object.keys(m).sort().join('|') === [
-    'disparadaUsada', 'fugaUsada', 'mirarPreparado', 'combateDuasArmasUsado',
+    'disparadaUsada', 'fugaUsada', 'mirarPreparado', 'ataqueNormalRealizado', 'combateDuasArmasUsado',
   ].sort().join('|')
     && typeof m.disparadaUsada === 'boolean'
     && typeof m.fugaUsada === 'boolean'
     && typeof m.mirarPreparado === 'boolean'
+    && typeof m.ataqueNormalRealizado === 'boolean'
     && typeof m.combateDuasArmasUsado === 'boolean'
     && (!m.fugaUsada || m.disparadaUsada);
 }
@@ -104,6 +106,7 @@ export function iniciarTurnoCombate(estado: EstadoTurnoCombate): EstadoTurnoComb
       disparadaUsada: false,
       fugaUsada: false,
       mirarPreparado: estado.manobras.mirarPreparado,
+      ataqueNormalRealizado: false,
       combateDuasArmasUsado: false,
     },
     movimentosAdicionaisConcedidos: 0,
