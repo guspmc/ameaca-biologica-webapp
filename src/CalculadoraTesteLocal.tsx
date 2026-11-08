@@ -107,10 +107,10 @@ export default function CalculadoraTesteLocal({ atributos, treinada, distribuica
         </select>
       </label>}
       <label className="ficha-local-opcao">
-        <input type="checkbox" checked={gastoSAConfirmado} disabled={saDisponivel < 1 || (origem === 'Atleta' && (atributoAssociado !== 'forca' && atributoAssociado !== 'agilidade')) || (origem === 'Investigador' && (pericia !== 'Investigação' || finalidade !== 'procurar_pista'))} onChange={evento => setGastoSAConfirmado(evento.target.checked)} />
+        <input type="checkbox" checked={gastoSAConfirmado} disabled={(origem === 'Atleta' && (atributoAssociado !== 'forca' && atributoAssociado !== 'agilidade')) || (origem === 'Investigador' && (pericia !== 'Investigação' || finalidade !== 'procurar_pista'))} onChange={evento => setGastoSAConfirmado(evento.target.checked)} />
         Confirmo que já descontei 1 SA no painel de Recursos para este Teste
       </label>
-      <small>{saDisponivel < 1 ? 'Sem SA disponível. O benefício não pode ser aplicado.' : origem === 'Atleta' ? 'Atleta: +5 em Perícias baseadas em FOR ou AGI, exceto Luta e Pontaria.' : 'Investigador: +5 em Investigação ao procurar uma pista.'}</small>
+      <small>{origem === 'Atleta' ? 'Atleta: +5 em Perícias baseadas em FOR ou AGI, exceto Luta e Pontaria.' : 'Investigador: +5 em Investigação ao procurar uma pista.'} O saldo exibido é posterior ao gasto; confirme somente se realmente descontou 1 SA.</small>
     </div>}
     <p><strong>Modificador da Origem: {bonusOrigem >= 0 ? '+' : ''}{bonusOrigem}</strong>{bonusOrigem ? ' · aplicado somente a este Teste' : ''}</p>
     <label>Modificador circunstancial
