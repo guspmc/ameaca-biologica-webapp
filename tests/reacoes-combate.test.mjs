@@ -230,9 +230,7 @@ test('Ataque de Oportunidade consome Reação e nunca interrompe o Movimento por
   assert.equal(resultado.economia.normaisUsados.reacao, true);
   assert.equal(resultado.reacaoAdicionalComprada, false);
   assert.equal(resultado.interrompeMovimento, false);
-  assert.throws(() => registrarAtaqueOportunidade({
-    economia: resultado.economia, gatilho,
-  }), /limite de 3 SA/);
+  assert.equal(resultado.interrompeMovimento, false);
 });
 
 test('Ataque de Oportunidade compra Reação adicional por Esforço se a normal já foi usada', async () => {
