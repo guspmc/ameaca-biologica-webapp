@@ -226,7 +226,7 @@ export async function tratarRotaPersonagensLocal(req, res, url, db, notificarCon
           if (Number(conclusao.changes) !== 1) throw new Error('Não foi possível concluir a ativação da personagem.');
           db.exec('COMMIT');
           const personagem = obterPersonagem(db, id, conta.id);
-          const recibo = { personagemId: id, operacaoId: corpo.operationId, estado: 'completa', quantidadeInstancias: validacao.inventario.itens.length, revisaoCriacao };
+          const recibo = { personagemId: id, operacaoId: corpo.operationId, revisaoFicha: corpo.expectedRevision, estado: 'completa', quantidadeInstancias: validacao.inventario.itens.length, revisaoCriacao };
           notificarConta(conta.id);
           responder(res, 200, { personagem: serializar(personagem), recibo });
         } catch (erro) {
