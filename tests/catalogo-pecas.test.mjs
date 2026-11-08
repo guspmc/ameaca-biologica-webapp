@@ -7,10 +7,10 @@ import {
   listarTiposPecas,
 } from '../src/catalogoPecas.ts';
 
-test('catálogo reúne as 30 Peças Extras descritas nas páginas 62–64', () => {
+test('catálogo reúne as 31 Peças Extras descritas nas páginas 62–64', () => {
   const pecas = listarPecasExtras();
-  assert.equal(pecas.length, 30);
-  assert.equal(new Set(pecas.map(item => item.id)).size, 30);
+  assert.equal(pecas.length, 31);
+  assert.equal(new Set(pecas.map(item => item.id)).size, 31);
   assert.deepEqual(listarCategoriasPecas(), ['corpo-a-corpo', 'armas-de-fogo-e-especiais']);
   assert.deepEqual(listarTiposPecas(), ['generica', 'especifica']);
   assert.equal(pecas.filter(item => item.tipo === 'generica' && item.categoria === 'corpo-a-corpo').length, 5);
