@@ -148,7 +148,7 @@ test('sequência completa até o nível 10 respeita ramos e Habilidade Avassalad
 
 
 test('progressão objetiva usa os marcos cumulativos de Missões Completadas', () => {
-  const base = { nivelAtual: 1, metodo: 'missoes', autorizacaoMestre: false, descansoCompletoEmSalaDescanso: true };
+  const base = { nivelAtual: 1, metodo: 'missoes', autorizacaoMestre: true, descansoCompletoEmSalaDescanso: true };
   assert.equal(avaliarDisponibilidadeProgressao({ ...base, missoesCompletadas: 0 }).disponivel, false);
   assert.equal(avaliarDisponibilidadeProgressao({ ...base, missoesCompletadas: 1 }).proximoNivel, 2);
   assert.equal(avaliarDisponibilidadeProgressao({ ...base, missoesCompletadas: 1 }).disponivel, true);
@@ -158,22 +158,20 @@ test('progressão objetiva usa os marcos cumulativos de Missões Completadas', (
 });
 
 test('progressão por Marco Narrativo depende de concessão expressa do Narrador', () => {
-  const base = { nivelAtual: 4, metodo: 'marco_narrativo', autorizacaoMestre: false, missoesCompletadas: 99, descansoCompletoEmSalaDescanso: true };
+  const base = { nivelAtual: 4, metodo: 'marco_narrativo', autorizacaoMestre: true, missoesCompletadas: 99, descansoCompletoEmSalaDescanso: true };
   assert.equal(avaliarDisponibilidadeProgressao({ ...base, marcoNarrativoConcedido: false }).disponivel, false);
   assert.equal(avaliarDisponibilidadeProgressao({ ...base, marcoNarrativoConcedido: true }).disponivel, true);
 });
 
-test('Missões concluídas habilitam a progressão sem autorização individual do Mestre', () => {
+test('sem autorização individual do Mestre a progressão não fica disponível', () => {
   const base = { nivelAtual: 1, metodo: 'missoes', autorizacaoMestre: false, missoesCompletadas: 1, descansoCompletoEmSalaDescanso: true };
-  assert.equal(avaliarDisponibilidadeProgressao(base).disponivel, true);
+  assert.equal(avaliarDisponibilidadeProgressao(base).disponivel, false);
+  assert.match(avaliarDisponibilidadeProgressao(base).motivo, /autorização de evolução/);
   assert.equal(avaliarDisponibilidadeProgressao({ ...base, autorizacaoMestre: true }).disponivel, true);
-  const semCampoLegado = { ...base };
-  delete semCampoLegado.autorizacaoMestre;
-  assert.equal(avaliarDisponibilidadeProgressao(semCampoLegado).disponivel, true);
 });
 
 test('subida só é aplicada em Descanso Completo na Sala de Descanso', () => {
-  const base = { nivelAtual: 1, metodo: 'missoes', missoesCompletadas: 1, descansoCompletoEmSalaDescanso: false };
+  const base = { nivelAtual: 1, metodo: 'missoes', autorizacaoMestre: true, missoesCompletadas: 1, descansoCompletoEmSalaDescanso: false };
   assert.equal(avaliarDisponibilidadeProgressao(base).disponivel, false);
   assert.match(avaliarDisponibilidadeProgressao(base).motivo, /Sala de Descanso/);
 });
