@@ -38,6 +38,7 @@ test('Amnésico escolhe duas Perícias distintas e ambas podem receber distribui
   assert.equal(distribuicaoPericiasValida('Agente','Amnésico','Medicina',{Luta:1,Reflexos:1},'Luta'),true);
   assert.equal(distribuicaoPericiasValida('Agente','Amnésico','Medicina',{Medicina:1},'Medicina'),false);
   assert.equal(distribuicaoPericiasValida('Agente','Amnésico','Medicina',{Medicina:1,Vontade:1},'Vontade'),true);
+  assert.equal(distribuicaoPericiasValida('Agente','Amnésico','Medicina',{Vontade:2},'Vontade'),false);
 });
 
 test('distribuição respeita limite por Classe, grau Mestre e Perícias permitidas',()=>{
