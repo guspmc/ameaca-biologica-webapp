@@ -101,7 +101,11 @@ export async function tratarRotaPersonagensLocal(req, res, url, db, notificarCon
           FROM personagens_locais
           WHERE mesa_id = ? AND conta_id = ?
           ORDER BY atualizada_em DESC, id
-        `).all(mesaId, conta.id).map(p => ({ ...p, status: p.estadoFicha === 'completa' ? 'completa' : 'rascunho' }));
+        `).all(mesaId, conta.id).map(p => ({
+          id: p.id, mesaId: p.mesaId, name: p.name,
+          status: p.estadoFicha === 'completa' ? 'completa' : 'rascunho',
+          createdAt: p.createdAt, updatedAt: p.updatedAt,
+        }));
         responder(res, 200, { personagens });
         return true;
       }
