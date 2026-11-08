@@ -534,5 +534,5 @@ test('servidor LAN valida o estado integrado de Combate e recusa estado inválid
   const preservado = await fetch(url + '/api/personagens/' + personagem.id, { headers: jogador.headers });
   const final = (await preservado.json()).personagem;
   assert.equal(final.revision, salvo.revision);
-  assert.deepEqual(final.data.estadoTurnoCombate, estado);
+  assert.deepEqual(final.data.estadoTurnoCombate, compostoLegado);
 });
