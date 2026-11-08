@@ -9,6 +9,7 @@ import { simularCompras } from './comprasIniciais.ts';
 import { configuracaoFuncionamentoValida } from './funcionamentoFicha.ts';
 import { reanimacaoValida } from './reanimacaoFicha.ts';
 import { estadoEconomiaAcoesValido } from './economiaAcoes.ts';
+import { estadoTurnoCombateValido } from './estadoTurnoCombate.ts';
 import { listaCondicoesValida } from './condicoesFicha.ts';
 import { HABILIDADES_PROGRESSAO, ganhosProgressaoAte, validarProgressaoHabilidades } from './progressaoHabilidades.ts';
 import { usosDescansoCompletoValido } from './usosDescansoCompleto.ts';
@@ -131,6 +132,11 @@ function validarDadosFicha(valor: unknown): valor is Record<string, unknown> {
   if ('configuracaoFuncionamento' in valor && !configuracaoFuncionamentoValida(valor.configuracaoFuncionamento)) return false;
   if ('reanimacao' in valor && valor.reanimacao !== null && !reanimacaoValida(valor.reanimacao)) return false;
   if ('condicoes' in valor && !listaCondicoesValida(valor.condicoes)) return false;
+  if ('estadoTurnoCombate' in valor) {
+    if (!estadoTurnoCombateValido(valor.estadoTurnoCombate)
+      || !Number.isSafeInteger(valor.saAtual)
+      || (valor.estadoTurnoCombate as { economia: { saAtual: number } }).economia.saAtual !== valor.saAtual) return false;
+  }
   if ('economiaAcoes' in valor) {
     if (!estadoEconomiaAcoesValido(valor.economiaAcoes)) return false;
     // SA é exibida e administrada também no painel de Recursos; os dois registros
