@@ -45,6 +45,8 @@ test('Tentativa e Erro só registra Perícia adicional após aquisição e sem d
     distribuicaoPericias: { Furtividade: 1 }, periciaTentativaErroTreinada: 'Medicina',
   };
   assert.equal(validarPersonagemLocal(base(dados)), true);
+  assert.equal(validarPersonagemLocal(base({ ...dados, distribuicaoPericias: { Furtividade: 1, Medicina: 1 } })), true);
+  assert.equal(validarPersonagemLocal(base({ ...dados, distribuicaoPericias: { Furtividade: 1, Medicina: 2 } })), false);
   assert.equal(validarPersonagemLocal(base({ ...dados, periciaTentativaErroTreinada: 'Investigação' })), false);
   assert.equal(validarPersonagemLocal(base({ ...dados, periciaTentativaErroTreinada: 'Furtividade' })), false);
   assert.equal(validarPersonagemLocal(base({ ...dados, periciaTentativaErroTreinada: 'Perícia Inventada' })), false);
