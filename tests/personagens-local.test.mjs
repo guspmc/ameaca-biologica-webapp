@@ -4,6 +4,7 @@ import { mkdtemp, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { createLocalServer } from '../server/index.mjs';
+import { estadoTurnoCombateInicial } from '../src/estadoTurnoCombate.ts';
 
 async function criarServidor(t) {
   const dataDir = await mkdtemp(join(tmpdir(), 'ameaca-personagens-'));
@@ -494,4 +495,31 @@ test('limite de dez personagens ativas é transacional e não consome vagas de r
   assert.equal(bloqueada.status, 409);
   assert.equal(app.db.prepare('SELECT estado_ficha FROM personagens_locais WHERE id = ?').get(ultima.id).estado_ficha, 'rascunho');
   assert.equal(app.db.prepare("SELECT COUNT(*) AS total FROM personagens_locais WHERE mesa_id = ? AND estado_ficha = 'completa'").get(mesa.id).total, 10);
+});
+
+
+test('servidor LAN valida o estado integrado de Combate e recusa estado inválido', async t => {
+  const { app, url } = await criarServidor(t);
+  const mestre = await criarConta(url, 'mestre-turno-combate@example.test');
+  const jogador = await criarConta(url, 'jogador-turno-combate@example.test');
+  const mesa = await criarMesaComJogador(url, app, mestre, jogador, 'Mesa de estado de combate');
+  const personagem = await criarRascunhoValido(url, jogador, mesa.id, 'Claire');
+  const estado = estadoTurnoCombateInicial(3);
+  const valido = await fetch(url + '/api/personagens/' + personagem.id, {
+    method: 'PUT', headers: { ...jogador.headers, 'content-type': 'application/json' },
+    body: JSON.stringify({ name: personagem.name, data: { ...personagem.data, saAtual: 3, estadoTurnoCombate: estado }, expectedRevision: personagem.revision }),
+  });
+  assert.equal(valido.status, 200);
+  const salvo = (await valido.json()).personagem;
+  assert.deepEqual(salvo.data.estadoTurnoCombate, estado);
+
+  const invalido = await fetch(url + '/api/personagens/' + personagem.id, {
+    method: 'PUT', headers: { ...jogador.headers, 'content-type': 'application/json' },
+    body: JSON.stringify({ name: salvo.name, data: { ...salvo.data, estadoTurnoCombate: { ...estado, versao: 99 } }, expectedRevision: salvo.revision }),
+  });
+  assert.equal(invalido.status, 422);
+  const preservado = await fetch(url + '/api/personagens/' + personagem.id, { headers: jogador.headers });
+  const final = (await preservado.json()).personagem;
+  assert.equal(final.revision, salvo.revision);
+  assert.deepEqual(final.data.estadoTurnoCombate, estado);
 });
