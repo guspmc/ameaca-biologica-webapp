@@ -8,8 +8,8 @@ import {
 
 test('catálogo reúne os itens de exploração e consumíveis descritos nas páginas 67–71', () => {
   const itens = listarItensExploracao();
-  assert.equal(itens.length, 27);
-  assert.equal(new Set(itens.map(item => item.id)).size, 27);
+  assert.equal(itens.length, 28);
+  assert.equal(new Set(itens.map(item => item.id)).size, 28);
   assert.deepEqual(listarCategoriasItensExploracao(), [
     'iluminacao',
     'consumivel',
@@ -33,6 +33,12 @@ test('lanternas preservam alcance, Espaço e limitações de uso', () => {
   assert.match(consultarItemExploracao('lanterna-grande').observacoes.join(' '), /não permite Mirar/);
   assert.match(consultarItemExploracao('lanterna-de-bolso').observacoes.join(' '), /Sempre Equipada/);
   assert.match(consultarItemExploracao('lanterna-de-cabeca').efeito, /Vantagem ao Mirar/);
+  const policial = consultarItemExploracao('lanterna-policial');
+  assert.match(policial.efeito, /Cone de 12 m/);
+  assert.match(policial.efeito, /Durabilidade 1/);
+  assert.match(policial.uso, /Cassetete/);
+  assert.match(policial.observacoes.join(' '), /arma de 2 mãos/);
+  assert.equal(policial.aquisicao, '2 Moedas Antigas.');
 });
 
 test('consumíveis e explosivos preservam seus efeitos e procedimentos', () => {
