@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { validarPersonagemLocal } from '../src/validacaoPersonagemLocal.ts';
 import { configuracaoInicial } from '../src/funcionamentoFicha.ts';
 import { economiaAcoesInicial } from '../src/economiaAcoes.ts';
+import { estadoTurnoCombateInicial } from '../src/estadoTurnoCombate.ts';
 
 const base = (dados = { versaoModelo: 1, estadoFicha: 'rascunho' }) => ({
   id: 'claire', geracao: 'geracao-claire', nome: 'Claire Redfield',
@@ -295,4 +296,14 @@ test('valida planejamento parcial e completo de Habilidades para criação em N�
     ...planoCompleto,
     planejamentoCriacao: { ...planoCompleto.planejamentoCriacao, nivelAlvo: 11 },
   })), false);
+});
+
+
+test('valida o estado integrado de Combate e impede divergência com o saldo de SA', () => {
+  const estado = estadoTurnoCombateInicial(4);
+  const dados = { versaoModelo: 1, estadoFicha: 'rascunho', saAtual: 4, estadoTurnoCombate: estado };
+  assert.equal(validarPersonagemLocal(base(dados)), true);
+  assert.equal(validarPersonagemLocal(base({ ...dados, saAtual: 3 })), false);
+  assert.equal(validarPersonagemLocal(base({ ...dados, estadoTurnoCombate: { ...estado, versao: 99 } })), false);
+  assert.equal(validarPersonagemLocal(base({ ...dados, estadoTurnoCombate: { ...estado, ataqueAdicionalAutorizado: 'sim' } })), false);
 });
