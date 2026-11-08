@@ -114,3 +114,17 @@ test('Combate com Duas Armas mantém autorização do Ataque adicional no estado
   assert.equal(estado.ataqueAdicionalAutorizado, true);
   assert.equal(estado.economia.normaisUsados.acaoBonus, true);
 });
+
+
+test('registrar resolução do Ataque adicional consome apenas a autorização, sem gastar outra Ação', async () => {
+  const { registrarCombateDuasArmas } = await import('../src/manobrasOperacionais.ts');
+  const { registrarResolucaoAtaqueAdicional } = await import('../src/estadoTurnoCombate.ts');
+  let estado = estadoTurnoCombateInicial(3);
+  estado = aplicarManobraCombate(estado, (economia, manobras) => registrarCombateDuasArmas(economia, manobras, true)).estado;
+  const antes = estado.economia;
+  const resolvido = registrarResolucaoAtaqueAdicional(estado);
+  assert.equal(resolvido.ataqueAdicionalAutorizado, false);
+  assert.equal(resolvido.manobras.combateDuasArmasUsado, true);
+  assert.deepEqual(resolvido.economia, antes);
+  assert.throws(() => registrarResolucaoAtaqueAdicional(resolvido), /Não há Ataque adicional/);
+});
