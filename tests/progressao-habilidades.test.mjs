@@ -161,7 +161,8 @@ test('seletor de Habilidades filtra ramos e pré-requisitos antes da escolha', (
     { nivel: 2, habilidadeId: 'nao-vai-escapar' },
   ]);
   assert.ok(avancadas.some(h => h.id === 'finalizacao-a-distancia'));
-  assert.ok(!avancadas.some(h => h.id === 'na-minha-mira'));
+  assert.ok(avancadas.some(h => h.id === 'na-minha-mira'));
+  assert.ok(!avancadas.some(h => h.id === 'contra-ataque-instintivo'));
   const superiores = habilidadesDisponiveisParaEscolha('Agente', 8, [
     { nivel: 1, habilidadeId: 'anatomia-de-combate' },
     { nivel: 2, habilidadeId: 'nao-vai-escapar' },
@@ -169,7 +170,8 @@ test('seletor de Habilidades filtra ramos e pré-requisitos antes da escolha', (
     { nivel: 6, habilidadeId: 'na-minha-mira' },
   ]);
   assert.ok(superiores.some(h => h.id === 'luta-livre'));
-  assert.ok(!superiores.some(h => h.id === 'brecha-tatica'));
+  assert.ok(superiores.some(h => h.id === 'brecha-tatica'));
+  assert.ok(!superiores.some(h => h.id === 'retaliacao'));
   assert.equal(habilidadesDisponiveisParaEscolha('Agente', 4, []).length, 0);
 });
 
