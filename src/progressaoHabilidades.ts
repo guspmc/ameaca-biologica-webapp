@@ -196,7 +196,8 @@ export type MetodoProgressao = 'marco_narrativo' | 'missoes';
 export type EstadoProgressao = {
   nivelAtual: number;
   metodo: MetodoProgressao;
-  autorizacaoMestre: boolean;
+  /** Campo legado opcional; não bloqueia progressão por Missões. */
+  autorizacaoMestre?: boolean;
   missoesCompletadas: number;
   marcoNarrativoConcedido?: boolean;
   missoesCompletadasNaUltimaMorte?: number | null;
@@ -213,7 +214,7 @@ export function avaliarDisponibilidadeProgressao(estado: EstadoProgressao): {
   if (!estado || typeof estado !== 'object' || Array.isArray(estado)
     || !nivelValido(estado.nivelAtual)
     || !['marco_narrativo', 'missoes'].includes(estado.metodo)
-    || typeof estado.autorizacaoMestre !== 'boolean'
+    || (estado.autorizacaoMestre !== undefined && typeof estado.autorizacaoMestre !== 'boolean')
     || !Number.isSafeInteger(estado.missoesCompletadas) || estado.missoesCompletadas < 0
     || typeof estado.descansoCompletoEmSalaDescanso !== 'boolean'
     || (estado.marcoNarrativoConcedido !== undefined && typeof estado.marcoNarrativoConcedido !== 'boolean')
@@ -225,7 +226,6 @@ export function avaliarDisponibilidadeProgressao(estado: EstadoProgressao): {
   }
   if (estado.nivelAtual >= 10) return { disponivel: false, proximoNivel: null, motivo: 'A personagem já alcançou o nível máximo.' };
   const proximoNivel = estado.nivelAtual + 1;
-  if (!estado.autorizacaoMestre) return { disponivel: false, proximoNivel, motivo: 'Aguardando autorização de evolução do Mestre para esta ficha.' };
   const requisitoCumprido = estado.metodo === 'marco_narrativo'
     ? estado.marcoNarrativoConcedido === true
     : estado.missoesCompletadas >= MISSOES_POR_NIVEL[proximoNivel - 1];
