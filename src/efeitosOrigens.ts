@@ -13,7 +13,7 @@ export type ContextoTesteOrigem = {
  * precisa confirmar o gasto e persistir o novo saldo separadamente.
  */
 export function bonusCondicionalOrigemTeste(origem: string, contexto: ContextoTesteOrigem): number {
-  if (!Number.isSafeInteger(contexto.saDisponivel) || contexto.saDisponivel < 1
+  if (!Number.isSafeInteger(contexto.saDisponivel) || contexto.saDisponivel < 0
     || contexto.gastoSAConfirmado !== true || contexto.tipo !== 'pericia'
     || typeof contexto.pericia !== 'string') return 0;
 
