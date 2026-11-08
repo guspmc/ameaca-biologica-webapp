@@ -2,7 +2,7 @@ import { randomBytes } from 'node:crypto';
 import { autenticarContaLocal } from './auth-local.mjs';
 import { validarCriacaoNoServidor } from '../src/validarCriacaoServidor.ts';
 import { estadoEconomiaAcoesValido } from '../src/economiaAcoes.ts';
-import { estadoTurnoCombateValido } from '../src/estadoTurnoCombate.ts';
+import { estadoTurnoCombateValido, estadoTurnoCombateCompostoLegadoReconhecido } from '../src/estadoTurnoCombate.ts';
 
 function responder(res, status, body) {
   res.writeHead(status, {
@@ -264,7 +264,7 @@ export async function tratarRotaPersonagensLocal(req, res, url, db, notificarCon
         }
         if (Object.prototype.hasOwnProperty.call(corpo.data, 'estadoTurnoCombate')) {
           const turno = corpo.data.estadoTurnoCombate;
-          if (!estadoTurnoCombateValido(turno)
+          if (!(estadoTurnoCombateValido(turno) || estadoTurnoCombateCompostoLegadoReconhecido(turno))
             || !Number.isSafeInteger(corpo.data.saAtual)
             || turno.economia.saAtual !== corpo.data.saAtual) {
             responder(res, 422, { error: 'O estado integrado do turno de combate é inválido ou está dessincronizado do saldo de SA.' });
