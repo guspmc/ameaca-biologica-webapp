@@ -46,6 +46,8 @@ export function carregarEstadoTurnoCombate(
         versao: 1,
         economia: sincronizarSAAtual(legado, saAtual),
         manobras: { disparadaUsada: false, fugaUsada: false, mirarPreparado: false, combateDuasArmasUsado: false },
+        movimentosAdicionaisConcedidos: 0,
+        ataqueAdicionalAutorizado: false,
       },
       valido: true,
       origem: 'legado',
