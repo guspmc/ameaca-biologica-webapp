@@ -842,7 +842,7 @@ export default function ConexaoServidorLocal() {
     try {
       const resposta = await cliente.ativarPersonagem(personagemId, revisaoEsperada, operationId);
       if (resposta.recibo.personagemId !== personagemId || resposta.recibo.operacaoId !== operationId ||
-          resposta.recibo.estado !== 'completa' || !Number.isSafeInteger(resposta.recibo.revisaoCriacao)) {
+          resposta.recibo.estado !== 'completa' || resposta.recibo.revisaoFicha !== revisaoEsperada || resposta.recibo.revisaoCriacao !== revisaoEsperada + 1) {
         throw new Error('O recibo de ativação retornado pelo servidor não corresponde ao pedido.');
       }
       return aplicarConfirmacao(resposta.personagem);
