@@ -12,6 +12,8 @@ export type EstadoTurnoCombate = {
   versao: 1;
   economia: EstadoEconomiaAcoes;
   manobras: EstadoManobrasTurno;
+  movimentosAdicionaisConcedidos: number;
+  ataqueAdicionalAutorizado: boolean;
 };
 
 export type OrigemEstadoTurnoCombate = 'composto' | 'legado' | 'novo';
@@ -62,6 +64,8 @@ export function estadoTurnoCombateInicial(saAtual: number): EstadoTurnoCombate {
       mirarPreparado: false,
       combateDuasArmasUsado: false,
     },
+    movimentosAdicionaisConcedidos: 0,
+    ataqueAdicionalAutorizado: false,
   };
 }
 
@@ -69,8 +73,10 @@ export function estadoTurnoCombateValido(valor: unknown): valor is EstadoTurnoCo
   if (!valor || typeof valor !== 'object' || Array.isArray(valor)
     || Object.getPrototypeOf(valor) !== Object.prototype) return false;
   const estado = valor as Record<string, unknown>;
-  if (Object.keys(estado).sort().join('|') !== ['economia', 'manobras', 'versao'].sort().join('|')
-    || estado.versao !== 1 || !estadoEconomiaAcoesValido(estado.economia)) return false;
+  if (Object.keys(estado).sort().join('|') !== ['ataqueAdicionalAutorizado', 'economia', 'manobras', 'movimentosAdicionaisConcedidos', 'versao'].sort().join('|')
+    || estado.versao !== 1 || !estadoEconomiaAcoesValido(estado.economia)
+    || !Number.isSafeInteger(estado.movimentosAdicionaisConcedidos) || (estado.movimentosAdicionaisConcedidos as number) < 0
+    || typeof estado.ataqueAdicionalAutorizado !== 'boolean') return false;
   const manobras = estado.manobras;
   if (!manobras || typeof manobras !== 'object' || Array.isArray(manobras)
     || Object.getPrototypeOf(manobras) !== Object.prototype) return false;
@@ -98,6 +104,8 @@ export function iniciarTurnoCombate(estado: EstadoTurnoCombate): EstadoTurnoComb
       mirarPreparado: estado.manobras.mirarPreparado,
       combateDuasArmasUsado: false,
     },
+    movimentosAdicionaisConcedidos: 0,
+    ataqueAdicionalAutorizado: false,
   };
 }
 
@@ -126,6 +134,8 @@ export function aplicarManobraCombate(
     versao: 1,
     economia: resultado.economia,
     manobras: { ...resultado.manobras },
+    movimentosAdicionaisConcedidos: estado.movimentosAdicionaisConcedidos + resultado.movimentosAdicionais,
+    ataqueAdicionalAutorizado: estado.ataqueAdicionalAutorizado || resultado.ataqueAdicionalAutorizado,
   };
   if (!estadoTurnoCombateValido(proximo)) throw new Error('A Manobra produziu um estado de turno inválido.');
   return { estado: proximo, resultado };
