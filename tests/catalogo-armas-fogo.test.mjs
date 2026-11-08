@@ -39,6 +39,8 @@ test('escopetas e submetralhadoras preservam diferenças operacionais', () => {
     ['4d6', 'Curto', 1],
   );
   assert.ok(consultarPerfilArmaFogo('w-870').propriedades.includes('Ação por bombeamento'));
+  assert.equal(consultarPerfilArmaFogo('tmp').maos, '1/2');
+  assert.equal(consultarPerfilArmaFogo('gal').maos, '1/2');
   assert.ok(consultarPerfilArmaFogo('chicago-sweeper').regrasEspeciais[0].includes('Só pode atacar por Rajada'));
   assert.ok(consultarPerfilArmaFogo('gal').propriedades.includes('Sem Disparo Único'));
 });
