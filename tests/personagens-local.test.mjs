@@ -495,3 +495,71 @@ test('limite de dez personagens ativas é transacional e não consome vagas de r
   assert.equal(app.db.prepare('SELECT estado_ficha FROM personagens_locais WHERE id = ?').get(ultima.id).estado_ficha, 'rascunho');
   assert.equal(app.db.prepare("SELECT COUNT(*) AS total FROM personagens_locais WHERE mesa_id = ? AND estado_ficha = 'completa'").get(mesa.id).total, 10);
 });
+
+test('consulta do Inventário ativo é restrita ao jogador proprietário e valida o snapshot', async t => {
+  const { app, url } = await criarServidor(t);
+  const mestre = await criarConta(url, 'mestre-consulta-inventario@example.test');
+  const jogador = await criarConta(url, 'jogador-consulta-inventario@example.test');
+  const terceiro = await criarConta(url, 'terceiro-consulta-inventario@example.test');
+  const mesa = await criarMesaComJogador(url, app, mestre, jogador);
+  const personagem = await criarRascunhoValido(url, jogador, mesa.id, 'Claire Redfield');
+
+  const ativacao = await fetch(url + '/api/personagens/' + personagem.id + '/ativar', {
+    method: 'POST',
+    headers: { ...jogador.headers, 'content-type': 'application/json' },
+    body: JSON.stringify({
+      expectedRevision: personagem.revision,
+      operationId: '8d8b1a25-8b8f-4e1c-9d1a-5b21d9f2a399',
+    }),
+  });
+  assert.equal(ativacao.status, 200);
+
+  const consulta = await fetch(url + '/api/personagens/' + personagem.id + '/inventario', {
+    headers: jogador.headers,
+  });
+  assert.equal(consulta.status, 200);
+  const resultado = await consulta.json();
+  const registro = app.db.prepare('SELECT inventario_json FROM personagens_locais WHERE id = ?').get(personagem.id);
+  assert.deepEqual(resultado.inventario, JSON.parse(registro.inventario_json));
+  assert.equal(resultado.inventario.personagemId, personagem.id);
+  assert.ok(Array.isArray(resultado.inventario.itens));
+
+  const fichaGeral = await fetch(url + '/api/personagens/' + personagem.id, { headers: jogador.headers });
+  assert.equal(fichaGeral.status, 200);
+  assert.equal(Object.hasOwn((await fichaGeral.json()).personagem, 'inventario'), false);
+
+  for (const headers of [mestre.headers, terceiro.headers]) {
+    const negada = await fetch(url + '/api/personagens/' + personagem.id + '/inventario', { headers });
+    assert.equal(negada.status, 404);
+  }
+
+  const rascunho = await criarRascunhoValido(url, jogador, mesa.id, 'Rascunho sem Inventário ativo');
+  const consultaRascunho = await fetch(url + '/api/personagens/' + rascunho.id + '/inventario', {
+    headers: jogador.headers,
+  });
+  assert.equal(consultaRascunho.status, 409);
+
+  const semSessao = await fetch(url + '/api/personagens/' + personagem.id + '/inventario');
+  assert.equal(semSessao.status, 401);
+
+  const metodoIncorreto = await fetch(url + '/api/personagens/' + personagem.id + '/inventario', {
+    method: 'POST',
+    headers: jogador.headers,
+  });
+  assert.equal(metodoIncorreto.status, 405);
+
+  app.db.prepare('UPDATE personagens_locais SET inventario_json = ? WHERE id = ?')
+    .run(JSON.stringify({ personagemId: personagem.id }), personagem.id);
+  const corrompido = await fetch(url + '/api/personagens/' + personagem.id + '/inventario', {
+    headers: jogador.headers,
+  });
+  assert.equal(corrompido.status, 409);
+  assert.match((await corrompido.json()).error, /não pôde ser verificado/);
+
+  app.db.prepare('UPDATE sessoes_locais SET expira_em = ? WHERE conta_id = ?')
+    .run('2000-01-01T00:00:00.000Z', jogador.account.id);
+  const sessaoExpirada = await fetch(url + '/api/personagens/' + personagem.id + '/inventario', {
+    headers: jogador.headers,
+  });
+  assert.equal(sessaoExpirada.status, 401);
+});
