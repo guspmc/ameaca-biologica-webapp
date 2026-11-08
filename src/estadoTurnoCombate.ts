@@ -168,6 +168,7 @@ function exigirEstadoValido(estado: EstadoTurnoCombate): void {
 /** Consome a autorização de Ataque adicional sem gastar outra Ação: o custo já foi pago pela Ação Bônus. */
 export function registrarResolucaoAtaqueAdicional(estado: EstadoTurnoCombate): EstadoTurnoCombate {
   exigirEstadoValido(estado);
+  if (!estado.economia.turnoEmAndamento) throw new Error('O Ataque adicional só pode ser registrado durante o próprio turno.');
   if (!estado.ataqueAdicionalAutorizado || !estado.manobras.combateDuasArmasUsado) {
     throw new Error('Não há Ataque adicional de Combate com Duas Armas aguardando resolução.');
   }
