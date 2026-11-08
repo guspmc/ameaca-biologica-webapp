@@ -7,9 +7,9 @@ import {
 } from './economiaAcoes';
 import {
   aplicarManobraCombate, carregarEstadoTurnoCombate, encerrarTurnoCombate,
-  iniciarTurnoCombate, type EstadoTurnoCombate,
+  iniciarTurnoCombate, registrarResolucaoAtaqueAdicional, type EstadoTurnoCombate,
 } from './estadoTurnoCombate';
-import { registrarDisparada, registrarFuga, registrarMirar, registrarAtaque } from './manobrasOperacionais';
+import { registrarCombateDuasArmas, registrarDisparada, registrarFuga, registrarMirar, registrarAtaque } from './manobrasOperacionais';
 
 type Props = {
   dados: Record<string, unknown>;
@@ -44,6 +44,7 @@ export default function PainelAcoesLocal({ dados, saAtual, aoSalvar, origemDados
   const [salvando, setSalvando] = useState(false);
   const [erro, setErro] = useState('');
   const [confirmacao, setConfirmacao] = useState('');
+  const [confirmouDuasArmas, setConfirmouDuasArmas] = useState(false);
   const bloqueioOperacao = useRef(false);
   useEffect(() => {
     if (salvando) return;
@@ -127,6 +128,17 @@ export default function PainelAcoesLocal({ dados, saAtual, aoSalvar, origemDados
             <button type="button" disabled={salvando || !economia.turnoEmAndamento || !estado.manobras.mirarPreparado || economia.normaisUsados.acao} onClick={() => void aplicar(atual => aplicarManobraCombate(atual, registrarAtaque).estado)}>Registrar Ataque (consome Mirar)</button>
           </div>
           <p className="ficha-local-legenda">Estes controles registram custos e marcadores. Disparada/Fuga não movem a personagem; Mirar não rola o Ataque nem aplica o bônus. O registro de Ataque consome a preparação de Mirar, mas a resolução continua manual.</p>
+
+          <div className="ficha-local-editor">
+            <strong>Combate com Duas Armas · 1 vez por turno</strong>
+            <p>Após usar a Ação Atacar com uma Arma Corpo a Corpo de Grau Comum e Mãos 1 empunhada em uma mão, você pode gastar a Ação Bônus para realizar um Ataque adicional com outra arma que cumpra os mesmos requisitos, empunhada na outra mão. O Ataque adicional não adiciona FOR ao Dano.</p>
+            <label><input type="checkbox" checked={confirmouDuasArmas} disabled={salvando || !economia.turnoEmAndamento || estado.manobras.combateDuasArmasUsado} onChange={evento => setConfirmouDuasArmas(evento.target.checked)} /> Confirmo que o Ataque inicial e as duas armas cumprem os requisitos descritos.</label>
+            <div className="recursos-controles">
+              <button type="button" disabled={salvando || !economia.turnoEmAndamento || !economia.normaisUsados.acao || economia.normaisUsados.acaoBonus || estado.manobras.combateDuasArmasUsado || !confirmouDuasArmas} onClick={() => void aplicar(atual => aplicarManobraCombate(atual, (economiaAtual, manobras) => registrarCombateDuasArmas(economiaAtual, manobras, true)).estado)}>Registrar Combate com Duas Armas · Ação Bônus</button>
+              <button type="button" disabled={salvando || !estado.ataqueAdicionalAutorizado} onClick={() => void aplicar(registrarResolucaoAtaqueAdicional)}>Registrar Ataque adicional realizado</button>
+            </div>
+            <p className="ficha-local-legenda">O aplicativo registra a elegibilidade confirmada pelo jogador e o gasto da Ação Bônus. O Ataque e sua rolagem continuam manuais; registrar sua realização apenas consome a autorização pendente.</p>
+          </div>
 
           <h4>Condições que exigem atenção neste turno</h4>
           {economia.turnoEmAndamento ? (() => {
