@@ -238,6 +238,13 @@ export default function FichaLocal({ nome, mesa, contextoId, dados, aoFechar, ao
       })
     : [];
   const habilidadesAtivasIds = [...new Set([...(habilidade ? [habilidade.id] : []), ...habilidadesProgressaoIds])];
+  const proficienciasAdicionais = [
+    ...(habilidadesProgressaoIds.includes('arsenal-improvavel') ? ['Magnums'] : []),
+    ...(habilidadesProgressaoIds.includes('armamento-especial') ? ['Magnums', 'Armas Especiais'] : []),
+  ];
+  const regrasEspeciaisProficiencia = [
+    ...(habilidadesProgressaoIds.includes('code-veronica') ? ['CODE VERONICA: permite usar Submetralhadoras sem coronha com Ambidestria.'] : []),
+  ];
   const temTentativaEErro = habilidadesProgressaoIds.includes('tentativa-e-erro');
   const atributosDaFicha = {
     forca: numero(atributos.forca), agilidade: numero(atributos.agilidade),
@@ -434,7 +441,11 @@ export default function FichaLocal({ nome, mesa, contextoId, dados, aoFechar, ao
           <details className="ficha-local-acordeao">
             <summary>Proficiências <span>{dadosClasse?.proficiencias.length ?? 0} registros</span></summary>
             <div className="ficha-local-acordeao-corpo">
-              <p>{dadosClasse?.proficiencias.length ? dadosClasse.proficiencias.join(' · ') : 'As proficiências desta Classe ainda não estão definidas.'}</p>
+              <strong>Proficiencias iniciais da Classe</strong>
+              <ul>{(dadosClasse?.proficiencias ?? []).map(item => <li key={item}>{item}</li>)}</ul>
+              {proficienciasAdicionais.length > 0 && <><strong>Ampliações por Habilidade</strong><ul>{[...new Set(proficienciasAdicionais)].map(item => <li key={item}>{item}</li>)}</ul></>}
+              {regrasEspeciaisProficiencia.map(item => <p key={item}>{item}</p>)}
+              <p className="ficha-local-legenda">Usar arma sem Proficiência impõe Desvantagem e não permite Rajada, Disparo Cadenciado ou Finalização com essa arma, salvo regra específica. Proficiência nominal em um modelo prevalece sobre restrições de Grupo, Família ou Grau. Este resumo informa as permissões da personagem; a validação automática por arma equipada será integrada ao módulo de Inventário.</p>
             </div>
           </details>
         </section>
