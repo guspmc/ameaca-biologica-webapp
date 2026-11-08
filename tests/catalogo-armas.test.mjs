@@ -13,7 +13,35 @@ test('catálogo inicial contém armas dos conjuntos de criação e da Origem Ope
   for (const id of ['bastao', 'hatchet', 'sentinel-nine', 'jmb-hp3', 'lemi', 'cutelo', 'machadinha', 'martelo', 'machado', 'marreta', 'motosserra']) {
     assert.ok(consultarPerfilArma(id), `perfil ausente: ${id}`);
   }
-  assert.equal(perfis.length, 11);
+  assert.equal(perfis.length, 18);
+});
+
+
+test('catálogo corpo a corpo cobre os 15 modelos e seus dados canônicos de equipamento', () => {
+  const perfis = listarPerfisArma().filter(perfil => perfil.categoria === 'corpo-a-corpo');
+  const ids = [
+    'bastao', 'cutelo', 'faca', 'machadinha', 'martelo', 'punhal',
+    'replica-espada', 'replica-katana', 'cassetete', 'faca-combate',
+    'hatchet', 'machado', 'machete', 'marreta', 'motosserra',
+  ];
+  assert.equal(perfis.length, 15);
+  for (const id of ids) {
+    const perfil = consultarPerfilArma(id);
+    assert.ok(perfil, 'perfil ausente: ' + id);
+    assert.ok(['Comum', 'Tática'].includes(perfil.grau));
+    assert.ok(Array.isArray(perfil.maos) && perfil.maos.length > 0);
+    assert.ok(perfil.maos.every(mao => mao === 1 || mao === 2));
+    assert.ok(Number.isInteger(perfil.espacos) && perfil.espacos >= 0);
+    assert.ok(Number.isInteger(perfil.pecas) && perfil.pecas >= 0);
+    assert.ok(perfil.durabilidade === 'Indestrutível' || Number.isInteger(perfil.durabilidade));
+    assert.equal(perfil.alcance, 'Curto');
+    assert.ok(typeof perfil.aquisicao === 'string' && perfil.aquisicao.length > 0);
+  }
+  assert.deepEqual(consultarPerfilArma('bastao').maos, [1, 2]);
+  assert.deepEqual(consultarPerfilArma('replica-katana').maos, [1, 2]);
+  assert.equal(consultarPerfilArma('hatchet').durabilidade, 'Indestrutível');
+  assert.equal(consultarPerfilArma('hatchet').pecas, 3);
+  assert.equal(consultarPerfilArma('motosserra').dano, '3d6');
 });
 
 test('perfis retornados não permitem alterar o catálogo interno', () => {
