@@ -37,6 +37,7 @@ type DadosFichaLocal = {
   atributos?: unknown;
   periciaOrigemTreinada?: unknown;
   periciaOrigemExtra?: unknown;
+  periciaTentativaErroTreinada?: unknown;
   habilidadeBasica?: unknown;
   habilidadesAdquiridas?: unknown;
   planejamentoCriacao?: unknown;
@@ -64,7 +65,7 @@ type Props = {
   aoRecarregar?: () => void;
   aoAlterarPendencia?: (secao: string, pendente: boolean) => void;
   aoEditar: (secao: 'caracteristicas' | 'pericias' | 'inventario') => void;
-  aoSalvarAtributosPericias: (dados: { atributos: AtributosIniciais; periciaOrigemTreinada: string; periciaOrigemExtra: string | null; distribuicaoPericias: Record<string, number> }) => Promise<boolean>;
+  aoSalvarAtributosPericias: (dados: { atributos: AtributosIniciais; periciaOrigemTreinada: string; periciaOrigemExtra: string | null; periciaTentativaErroTreinada: string | null; distribuicaoPericias: Record<string, number> }) => Promise<boolean>;
   aoSalvarCaracteristicas: (dados: { classe: string; origem: string; armaOperario: string; habilidadeBasica: string }) => Promise<boolean>;
   aoSalvarIdentidade?: (dados: { nome: string; identidade: Record<string, string> }) => Promise<boolean>;
   aoSalvarInventario: (dados: { equipamentoInicial: string; comprasIniciais: Record<string, number>; revisaoCompras: number }) => Promise<boolean>;
@@ -217,6 +218,7 @@ export default function FichaLocal({ nome, mesa, contextoId, dados, aoFechar, ao
     : {};
   const treinada = typeof ficha.periciaOrigemTreinada === 'string' ? ficha.periciaOrigemTreinada : '';
   const extra = typeof ficha.periciaOrigemExtra === 'string' ? ficha.periciaOrigemExtra : '';
+  const extraTentativa = typeof ficha.periciaTentativaErroTreinada === 'string' ? ficha.periciaTentativaErroTreinada : '';
   const dadosClasse = dadosDaClasse(classe);
   const dadosOrigem = ORIGENS.find(item => item.nome === origem);
   const habilidadeSelecionada = typeof ficha.habilidadeBasica === 'string' ? ficha.habilidadeBasica : ''; 
@@ -229,6 +231,7 @@ export default function FichaLocal({ nome, mesa, contextoId, dados, aoFechar, ao
       })
     : [];
   const habilidadesAtivasIds = [...new Set([...(habilidade ? [habilidade.id] : []), ...habilidadesProgressaoIds])];
+  const temTentativaEErro = habilidadesProgressaoIds.includes('tentativa-e-erro');
   const atributosDaFicha = {
     forca: numero(atributos.forca), agilidade: numero(atributos.agilidade),
     vigor: numero(atributos.vigor), astucia: numero(atributos.astucia),
@@ -250,7 +253,7 @@ export default function FichaLocal({ nome, mesa, contextoId, dados, aoFechar, ao
   const faseBi = calcularFaseBioInfeccao(biAtual, bi);
   const defesa = derivados?.defesa ?? 10 + numero(atributos.agilidade);
   const capacidade = derivados?.inventario ?? capacidadeInventario(numero(atributos.forca), origem);
-  const listaPericias = [...new Set([...(PERICIAS_CLASSE[classe] ?? []), ...(dadosOrigem?.pericias ?? []), ...(treinada ? [treinada] : []), ...(extra ? [extra] : []), ...Object.keys(distribuicao)])].sort();
+  const listaPericias = [...new Set([...(PERICIAS_CLASSE[classe] ?? []), ...(dadosOrigem?.pericias ?? []), ...(treinada ? [treinada] : []), ...(extra ? [extra] : []), ...(extraTentativa ? [extraTentativa] : []), ...Object.keys(distribuicao)])].sort();
   const itensClasse = caracteristicos(classe);
   const kitSelecionado = typeof ficha.equipamentoInicial === 'string' ? ficha.equipamentoInicial : '';
   const kit = opcoesEquipamento(classe).find(item => item.id === kitSelecionado);
@@ -427,25 +430,26 @@ export default function FichaLocal({ nome, mesa, contextoId, dados, aoFechar, ao
           <div className="ficha-local-titulo-secao"><h2><span>02</span> Atributos e Perícias</h2><button type="button" className="ficha-local-editar-secao" onClick={() => abrirEditor('pericias')}>Editar seção ↗</button></div>
           <details id="ficha-local-editor-pericias" className="ficha-local-editor-detalhe" data-ficha-editor>
             <summary><span>Editar Atributos e distribuição de Perícias</span><small>Valores · Treinamento · Pontos de Perícia</small></summary>
-            <EditorAtributosPericiasLocal autoSalvar={autoSalvar} classe={classe} origem={origem} atributosIniciais={atributos} treinadaInicial={treinada} extraInicial={extra} distribuicaoInicial={distribuicao} aoSalvar={aoSalvarAtributosPericias} aoAlterarPendencia={pendente => registrarPendencia('Atributos e Perícias', pendente)} mensagemSucesso={origemDados === 'servidor' ? 'Atributos e Perícias confirmados pelo servidor.' : undefined} />
+            <EditorAtributosPericiasLocal autoSalvar={autoSalvar} classe={classe} origem={origem} atributosIniciais={atributos} treinadaInicial={treinada} extraInicial={extra} extraTentativaInicial={extraTentativa} temTentativaEErro={temTentativaEErro} distribuicaoInicial={distribuicao} aoSalvar={aoSalvarAtributosPericias} aoAlterarPendencia={pendente => registrarPendencia('Atributos e Perícias', pendente)} mensagemSucesso={origemDados === 'servidor' ? 'Atributos e Perícias confirmados pelo servidor.' : undefined} />
           </details>
           <div className="ficha-local-atributos">
             {ATRIBUTOS.map(item => <div key={item.chave}><small>{item.sigla}</small><strong>{numero(atributos[item.chave])}</strong><span>{item.nome}</span></div>)}
           </div>
           <div className="ficha-local-pontos"><span>Treinamento gratuito da Origem</span><strong>{treinada || 'Pendente'}</strong></div>
           {origem === 'Amnésico' && <div className="ficha-local-pontos"><span>Segunda Perícia da Origem</span><strong>{extra || 'Pendente'}</strong></div>}
+          {temTentativaEErro && <div className="ficha-local-pontos"><span>Perícia adicional — Tentativa e Erro</span><strong>{extraTentativa || 'Escolha pendente'}</strong></div>}
           <div className="ficha-local-pericias">
             {listaPericias.map(pericia => {
-              const grau = Math.min(2, Math.max(0, numero(distribuicao[pericia]) + (pericia === treinada ? 1 : 0)));
+              const grau = Math.min(2, Math.max(0, numero(distribuicao[pericia]) + (pericia === treinada ? 1 : 0) + (pericia === extra ? 1 : 0) + (pericia === extraTentativa ? 1 : 0)));
               const rotulo = grau === 2 ? 'Mestre' : grau === 1 ? 'Treinada' : 'Não Treinada';
               const atributo = ATRIBUTO_PERICIA[pericia];
-              const totalBase = valorBasePericia(pericia, atributos, treinada || null, distribuicao);
-              const passivo = valorPassivoPericia(pericia, atributos, treinada || null, distribuicao);
-              return <div key={pericia}><span>{pericia}<small>{rotulo}{pericia === treinada ? ' · Origem' : ''} · {atributo?.toUpperCase()} {atributo ? numero(atributos[atributo]) : ''} + Treinamento · Passivo {passivo}</small></span><strong>+{totalBase}</strong></div>;
+              const totalBase = valorBasePericia(pericia, atributos, treinada || null, distribuicao, extra || null, extraTentativa || null);
+              const passivo = valorPassivoPericia(pericia, atributos, treinada || null, distribuicao, extra || null, extraTentativa || null);
+              return <div key={pericia}><span>{pericia}<small>{rotulo}{pericia === treinada ? ' · Origem' : ''}{pericia === extra ? ' · 2ª Perícia da Origem' : ''}{pericia === extraTentativa ? ' · Tentativa e Erro' : ''} · {atributo?.toUpperCase()} {atributo ? numero(atributos[atributo]) : ''} + Treinamento · Passivo {passivo}</small></span><strong>+{totalBase}</strong></div>;
             })}
           </div>
           <p className="ficha-local-legenda">O valor exibido soma o Atributo associado e o Treinamento. O Passivo exibido é o normal; Testes Passivos recebem +5 com Vantagem ou -5 com Desvantagem. A circunstância é resolvida pela Mesa. Não some o Atributo novamente ao realizar o Teste.</p>
-          <CalculadoraTesteLocal atributos={atributos} treinada={treinada} distribuicao={distribuicao} modoDados={configuracaoFuncionamento.modoDados} origem={origem} saDisponivel={recursosAtuais.saAtual} />
+          <CalculadoraTesteLocal atributos={atributos} treinada={treinada} periciaOrigemExtra={extra} periciaTentativaErroTreinada={extraTentativa} temTentativaEErro={temTentativaEErro} distribuicao={distribuicao} modoDados={configuracaoFuncionamento.modoDados} origem={origem} saDisponivel={recursosAtuais.saAtual} />
         </section>
 
         <section id="ficha-local-combate" className="ficha-local-secao">
