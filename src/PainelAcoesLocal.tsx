@@ -117,6 +117,8 @@ export default function PainelAcoesLocal({ dados, saAtual, aoSalvar, origemDados
             <div><small>FUGA</small><strong>{estado.manobras.fugaUsada ? 'Utilizada' : 'Não utilizada'}</strong></div>
             <div><small>MIRAR</small><strong>{estado.manobras.mirarPreparado ? 'Preparado para o próximo Ataque' : 'Não preparado'}</strong></div>
             <div><small>DUAS ARMAS</small><strong>{estado.manobras.combateDuasArmasUsado ? 'Utilizado' : 'Não utilizado'}</strong></div>
+            <div><small>MOVIMENTOS ADICIONAIS</small><strong>{estado.movimentosAdicionaisConcedidos}</strong><p>Concedidos por Disparada/Fuga; o deslocamento é realizado pela Mesa.</p></div>
+            <div><small>ATAQUE ADICIONAL</small><strong>{estado.ataqueAdicionalAutorizado ? 'Autorizado' : 'Não autorizado'}</strong><p>O painel registra a autorização, sem executar o Ataque.</p></div>
           </div>
           <div className="recursos-controles">
             <button type="button" disabled={salvando || !economia.turnoEmAndamento || estado.manobras.mirarPreparado || economia.saAtual < 1 || janela >= 3} onClick={() => void aplicar(atual => aplicarManobraCombate(atual, registrarMirar).estado)}>Mirar · 1 SA</button>
