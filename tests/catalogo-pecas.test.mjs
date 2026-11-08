@@ -11,10 +11,10 @@ test('catálogo reúne as 30 Peças Extras descritas nas páginas 62–64', () =
   const pecas = listarPecasExtras();
   assert.equal(pecas.length, 30);
   assert.equal(new Set(pecas.map(item => item.id)).size, 30);
-  assert.deepEqual(listarCategoriasPecas(), ['corpo-a-corpo', 'arma-de-fogo']);
+  assert.deepEqual(listarCategoriasPecas(), ['corpo-a-corpo', 'armas-de-fogo-e-especiais']);
   assert.deepEqual(listarTiposPecas(), ['generica', 'especifica']);
   assert.equal(pecas.filter(item => item.tipo === 'generica' && item.categoria === 'corpo-a-corpo').length, 5);
-  assert.equal(pecas.filter(item => item.tipo === 'generica' && item.categoria === 'arma-de-fogo').length, 16);
+  assert.equal(pecas.filter(item => item.tipo === 'generica' && item.categoria === 'armas-de-fogo-e-especiais').length, 16);
   assert.equal(pecas.filter(item => item.tipo === 'especifica').length, 9);
   for (const item of pecas) {
     assert.ok(item.nome.trim());
@@ -31,7 +31,7 @@ test('peças genéricas preservam compatibilidade e efeitos especiais', () => {
   assert.match(consultarPecaExtra('coronha-escopeta').efeito, /Estabilidade/);
   assert.match(consultarPecaExtra('freio-boca-magnum').compatibilidade[0], /exceto Requiem/);
   assert.match(consultarPecaExtra('mira-laser').efeito, /não consome SA/);
-  assert.match(consultarPecaExtra('pente-estendido-magnum').compatibilidade[0], /Wolfsbane/);
+  assert.match(consultarPecaExtra('pente-estendido-magnum').compatibilidade[0], /Wolfsban/);
   assert.match(consultarPecaExtra('silenciador-9mm').efeito, /posição pelo som/);
 });
 
