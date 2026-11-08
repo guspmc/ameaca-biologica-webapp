@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { descricaoEfeitoHabilidade } from './efeitosHabilidades';
 import {
   HABILIDADES_PROGRESSAO,
   ganhosProgressaoAte,
@@ -100,12 +101,13 @@ export default function PlanejadorHabilidadesCriacaoLocal({
     <strong>Habilidades previstas</strong>
     {ganhos.map(ganho => {
       const opcoes = HABILIDADES_PROGRESSAO.filter(item => item.classe === classe && item.grau === ganho.grau);
-      return <label key={ganho.nivel}>Nível {ganho.nivel} · {ganho.grau === 'basica' ? 'Básica' : ganho.grau === 'avancada' ? 'Avançada' : ganho.grau === 'superior' ? 'Superior' : 'Avassaladora'}
+      const habilidadeSelecionada = HABILIDADES_PROGRESSAO.find(item => item.id === escolhasPorNivel.get(ganho.nivel));
+      return <div key={ganho.nivel}><label>Nível {ganho.nivel} · {ganho.grau === 'basica' ? 'Básica' : ganho.grau === 'avancada' ? 'Avançada' : ganho.grau === 'superior' ? 'Superior' : 'Avassaladora'}
         <select value={escolhasPorNivel.get(ganho.nivel) ?? ''} onChange={evento => alterarHabilidade(ganho.nivel, evento.target.value)} disabled={ocupado || !classe}>
           <option value="">Selecione uma Habilidade</option>
           {opcoes.map(item => <option key={item.id} value={item.id}>{item.nome} · {item.ramo}</option>)}
         </select>
-      </label>;
+      </label>{habilidadeSelecionada && <p className="ficha-local-legenda">{descricaoEfeitoHabilidade(habilidadeSelecionada.id)}</p>}</div>;
     })}
     {!classe && <p role="alert">Defina a Classe antes de escolher as Habilidades da progressão.</p>}
     {completas && !validacao.valida && <p role="alert">{validacao.pendencias.map(item => 'Nível ' + item.nivel + ': ' + item.motivo).join(' ')}</p>}
