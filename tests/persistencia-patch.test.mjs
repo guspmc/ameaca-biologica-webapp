@@ -148,8 +148,8 @@ test('persistência grava escolhas de Habilidade e usos; patch de Descanso Compl
       planejamentoCriacao: {
         nivelAlvo: 2,
         habilidades: [
-          { nivel: 1, habilidadeId: 'anatomia-de-combate' },
-          { nivel: 2, habilidadeId: 'nao-vai-escapar' },
+          { nivel: 1, habilidadeId: 'ambidestria' },
+          { nivel: 2, habilidadeId: 'curiosa' },
         ],
       },
     },
