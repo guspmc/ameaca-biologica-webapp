@@ -38,15 +38,19 @@ test('preferências de funcionamento sinalizam pendência e só confirmam após 
   assert.match(fonte, /value="mistos"/);
 });
 
-test('ficha contínua integra revisão local das escolhas salvas sem ativar personagem', async () => {
+test('ficha contínua integra revisão local e ativação explícita pelo servidor', async () => {
   const ficha = await ler('FichaLocal.tsx');
   assert.match(ficha, /<RevisaoCriacaoLocal ficha=\{fichaRevisao\}/);
+  assert.match(ficha, /<AtivacaoPersonagemLocal revision=\{revisaoFicha\}/);
   assert.match(ficha, /const fichaRevisao: FichaRevisao/);
   const revisao = await ler('RevisaoCriacaoLocal.tsx');
   assert.match(revisao, /revisarCriacao\(ficha\)/);
   assert.match(revisao, /conferidos\}\//);
   assert.match(revisao, /não ativa a personagem/);
-  assert.match(revisao, /finalização ainda não está disponível/i);
+  assert.doesNotMatch(revisao, /finalização ainda não está disponível/i);
+  const ativacao = await ler('AtivacaoPersonagemLocal.tsx');
+  assert.match(ativacao, /Conferir criação no servidor/);
+  assert.match(ativacao, /Ativar personagem/);
 });
 
 test('calculadora manual está integrada à seção de Perícias e não rola nem salva dados', async () => {
