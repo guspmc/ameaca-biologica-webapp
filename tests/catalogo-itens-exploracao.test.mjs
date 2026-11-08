@@ -39,7 +39,7 @@ test('consumíveis e explosivos preservam seus efeitos e procedimentos', () => {
   assert.match(consultarItemExploracao('spray-primeiros-socorros').efeito, /3d8 PV/);
   assert.match(consultarItemExploracao('esteroide').efeito, /2d8 PV Temporários/);
   const agente = consultarItemExploracao('agente-reestruturante');
-  assert.match(agente.efeito, /Reimplanta automaticamente/);
+  assert.match(agente.efeito, /reimplanta automaticamente/i);
   assert.match(agente.efeito, /recupera 2d8 PV/);
   assert.match(agente.observacoes.join(' '), /Vontade DT 15/);
   assert.match(agente.uso, /Ação, exige ambas as mãos livres/);
