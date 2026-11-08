@@ -22,7 +22,7 @@ test('catálogo contém as três Classes e os nove Ramos com todos os graus prev
   assert.equal(habilidadesPorGrau.avassaladora.length, 3);
   for (const classe of ['Agente', 'Autodidata', 'Operador']) {
     assert.equal((basicas.match(new RegExp("classe:'" + classe + "'", 'g')) || []).length, 3, classe + ' Básicas');
-    assert.equal((progressao.match(new RegExp("classe: '" + classe + "'", 'g')) || []).length, 7, classe + ' progressões');
+    assert.equal((progressao.match(new RegExp("classe: '" + classe + "',", 'g')) || []).length, 7, classe + ' progressões');
   }
 });
 
