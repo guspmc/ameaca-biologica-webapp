@@ -44,13 +44,22 @@ const perfis: PerfilArma[] = [
 
 const porId = new Map(perfis.map(perfil => [perfil.id, perfil]));
 
+function clonarPerfilArma(perfil: PerfilArma): PerfilArma {
+  return {
+    ...perfil,
+    propriedades: [...perfil.propriedades],
+    ...(perfil.maos ? { maos: [...perfil.maos] } : {}),
+    ...(perfil.regrasEspeciais ? { regrasEspeciais: [...perfil.regrasEspeciais] } : {}),
+  };
+}
+
 export function consultarPerfilArma(id: string): PerfilArma | null {
   const perfil = porId.get(id);
-  return perfil ? { ...perfil, propriedades: [...perfil.propriedades] } : null;
+  return perfil ? clonarPerfilArma(perfil) : null;
 }
 
 export function listarPerfisArma(): PerfilArma[] {
-  return perfis.map(perfil => ({ ...perfil, propriedades: [...perfil.propriedades] }));
+  return perfis.map(clonarPerfilArma);
 }
 
 export type ResultadoAtaqueArma = {
