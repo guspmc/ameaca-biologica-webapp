@@ -60,12 +60,12 @@ export default function IdentidadeLocal({ nome: nomeInicial, identidade: identid
     <p>Campos narrativos da personagem. São opcionais e não alteram Atributos ou recursos. Gênero se refere à personagem e auxilia a flexão dos textos da ficha.</p>
     <div className="ficha-local-identidade-form">
       <label>Nome da personagem
-        <input value={nome} minLength={2} maxLength={80} required disabled={ocupado} onChange={evento => { setNome(evento.target.value); marcarAlteracao(); }} />
+        <input value={nome} minLength={2} maxLength={80} required onChange={evento => { setNome(evento.target.value); marcarAlteracao(); }} />
       </label>
       {CAMPOS.map(campo => <label key={campo.id}>{campo.nome}
         {campo.limite > 120
-          ? <textarea rows={campo.id === 'historia' ? 6 : 3} maxLength={campo.limite} value={dados[campo.id] ?? ''} disabled={ocupado} onChange={evento => { setDados(atual => ({ ...atual, [campo.id]: evento.target.value })); marcarAlteracao(); }} />
-          : <input maxLength={campo.limite} value={dados[campo.id] ?? ''} disabled={ocupado} onChange={evento => { setDados(atual => ({ ...atual, [campo.id]: evento.target.value })); marcarAlteracao(); }} />}
+          ? <textarea rows={campo.id === 'historia' ? 6 : 3} maxLength={campo.limite} value={dados[campo.id] ?? ''} onChange={evento => { setDados(atual => ({ ...atual, [campo.id]: evento.target.value })); marcarAlteracao(); }} />
+          : <input maxLength={campo.limite} value={dados[campo.id] ?? ''} onChange={evento => { setDados(atual => ({ ...atual, [campo.id]: evento.target.value })); marcarAlteracao(); }} />}
         <small>{(dados[campo.id] ?? '').length}/{campo.limite}</small>
       </label>)}
       {autoSalvar
