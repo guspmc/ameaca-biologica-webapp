@@ -14,6 +14,8 @@ import EditorInventarioLocal from './EditorInventarioLocal';
 import IdentidadeLocal from './IdentidadeLocal';
 import FuncionamentoFichaLocal from './FuncionamentoFichaLocal';
 import RevisaoCriacaoLocal from './RevisaoCriacaoLocal';
+import AtivacaoPersonagemLocal from './AtivacaoPersonagemLocal';
+import type { ResultadoConferenciaCriacaoLocal } from './servidorLocal';
 import CalculadoraTesteLocal from './CalculadoraTesteLocal';
 import RecursosFichaLocal from './RecursosFichaLocal';
 import DescansoFichaLocal from './DescansoFichaLocal';
@@ -72,6 +74,11 @@ type Props = {
   aoSalvarFuncionamento: (configuracao: ConfiguracaoFuncionamento) => Promise<boolean>;
   aoSalvarRecursos: (patch: Record<string, unknown>) => Promise<boolean>;
   origemDados?: 'local' | 'servidor';
+  estadoFicha?: 'rascunho' | 'completa';
+  revisaoFicha?: number;
+  aoConferirAtivacao?: () => Promise<ResultadoConferenciaCriacaoLocal>;
+  aoAtivar?: (revision: number, operationId: string) => Promise<boolean>;
+  bloqueadoAtivacao?: boolean;
   status?: string;
   erro?: string;
   autoSalvar?: boolean;
@@ -102,7 +109,7 @@ function numero(valor: unknown): number {
   return typeof valor === 'number' && Number.isFinite(valor) ? valor : 0;
 }
 
-export default function FichaLocal({ nome, mesa, contextoId, dados, aoFechar, aoRecarregar, aoAlterarPendencia, aoEditar, aoSalvarAtributosPericias, aoSalvarCaracteristicas, aoSalvarIdentidade, aoSalvarInventario, aoSalvarFuncionamento, aoSalvarRecursos, origemDados = 'local', status, erro, autoSalvar = false }: Props) {
+export default function FichaLocal({ nome, mesa, contextoId, dados, aoFechar, aoRecarregar, aoAlterarPendencia, aoEditar, aoSalvarAtributosPericias, aoSalvarCaracteristicas, aoSalvarIdentidade, aoSalvarInventario, aoSalvarFuncionamento, aoSalvarRecursos, origemDados = 'local', estadoFicha = 'rascunho', revisaoFicha, aoConferirAtivacao, aoAtivar, bloqueadoAtivacao = false, status, erro, autoSalvar = false }: Props) {
   const pendenciasInternas = useRef(new Set<string>());
   const [secoesPendentes, setSecoesPendentes] = useState<Set<string>>(() => new Set());
   const [secaoAtiva, setSecaoAtiva] = useState('caracteristicas');
@@ -323,7 +330,7 @@ export default function FichaLocal({ nome, mesa, contextoId, dados, aoFechar, ao
         </div>}
         {erro && <p className="offline-erro" role="alert">{erro}</p>}
         {erro?.includes('alterada em outra aba') && aoRecarregar && <button type="button" className="botao-claro" onClick={aoRecarregar}>Descartar esta edição e carregar a versão mais recente</button>}
-        <div className="ficha-local-chapter-meta">{termo('REGISTRO DO SOBREVIVENTE')} · {origemDados === 'servidor' ? 'DADOS NO SERVIDOR' : 'DADOS LOCAIS'} · RASCUNHO NÃO ATIVO</div>
+        <div className="ficha-local-chapter-meta">{termo('REGISTRO DO SOBREVIVENTE')} · {origemDados === 'servidor' ? 'DADOS NO SERVIDOR' : 'DADOS LOCAIS'} · {estadoFicha === 'completa' ? 'FICHA ATIVA' : 'RASCUNHO NÃO ATIVO'}</div>
         <div className="ficha-local-identidade">
           <div className="ficha-local-identidade-principal">
             <h1 id="ficha-local-titulo">{nome}</h1>
@@ -334,8 +341,8 @@ export default function FichaLocal({ nome, mesa, contextoId, dados, aoFechar, ao
         </div>
         <div className="ficha-local-acoes">
           <button type="button" className="ficha-local-voltar" onClick={fecharFicha}>← Voltar</button>
-          <span className="ficha-local-selo">RASCUNHO · NÃO ATIVA</span>
-          <button type="button" className="botao-claro" onClick={() => abrirEditor('caracteristicas')}>Editar rascunho</button>
+          <span className="ficha-local-selo">{estadoFicha === 'completa' ? 'FICHA ATIVA' : 'RASCUNHO · NÃO ATIVA'}</span>
+          <button type="button" className="botao-claro" onClick={() => abrirEditor('caracteristicas')}>{estadoFicha === 'completa' ? 'Editar ficha' : 'Editar rascunho'}</button>
         </div>
 
         <div className="ficha-local-recursos">
@@ -508,9 +515,10 @@ export default function FichaLocal({ nome, mesa, contextoId, dados, aoFechar, ao
           aoAlterarPendencia={pendente => registrarPendencia('Funcionamento', pendente)}
         />
         <RevisaoCriacaoLocal ficha={fichaRevisao} irPara={irParaRevisao} />
+        {origemDados === 'servidor' && estadoFicha === 'rascunho' && revisaoFicha !== undefined && aoConferirAtivacao && aoAtivar && <AtivacaoPersonagemLocal revision={revisaoFicha} bloqueado={bloqueadoAtivacao} aoConferir={aoConferirAtivacao} aoAtivar={aoAtivar} />}
         </section>
 
-        <footer className="ficha-local-rodape">AMEAÇA BIOLÓGICA RPG · {origemDados === 'servidor' ? 'DADOS NO SERVIDOR' : 'DADOS LOCAIS'} · RASCUNHO NÃO ATIVO</footer>
+        <footer className="ficha-local-rodape">AMEAÇA BIOLÓGICA RPG · {origemDados === 'servidor' ? 'DADOS NO SERVIDOR' : 'DADOS LOCAIS'} · {estadoFicha === 'completa' ? 'FICHA ATIVA' : 'RASCUNHO NÃO ATIVO'}</footer>
       </div>
       <nav className="ficha-local-nav" aria-label="Atalhos da ficha">
         <button type="button" className={secaoAtiva === 'caracteristicas' ? 'ativo' : ''} aria-current={secaoAtiva === 'caracteristicas' ? 'location' : undefined} onClick={() => { setSecaoAtiva('caracteristicas'); document.getElementById('ficha-local-caracteristicas')?.scrollIntoView({ behavior: 'smooth', block: 'start' }); }}><span aria-hidden="true"><IconeFicha tipo="perfil" /></span><small>PERFIL</small></button>
