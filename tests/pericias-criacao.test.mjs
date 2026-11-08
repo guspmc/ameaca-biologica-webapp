@@ -12,7 +12,7 @@ const {periciasPermitidasNaCriacao,distribuicaoPericiasValida}=await import('dat
 
 test('catálogo de Origens apresenta benefícios completos e escolhas de perícia', async () => {
   const origemSource = await readFile(new URL('../src/origens.ts', import.meta.url), 'utf8');
-  assert.equal((origemSource.match(/\{nome:/g) ?? []).length, 17);
+  assert.equal((origemSource.match(/^\s*\{nome:/gm) ?? []).length, 17);
   for (const trecho of [
     'Teste baseado em AST', 'Não se aplica à própria personagem',
     'uma vez por sessão', 'gastar 1 SA para receber +5',
