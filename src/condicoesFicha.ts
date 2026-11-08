@@ -22,7 +22,7 @@ export const CATALOGO_CONDICOES = {
 } as const;
 
 export type CondicaoId = keyof typeof CATALOGO_CONDICOES;
-export type InstanciaCondicao = { id: string; condicao: CondicaoId; fonte: string; duracao: string; observacao: string; estado?: 'ativa' | 'encerrada'; encerradaEm?: string | null };
+export type InstanciaCondicao = { id: string; condicao: CondicaoId; fonte: string; duracao?: string; observacao: string; estado?: 'ativa' | 'encerrada'; encerradaEm?: string | null };
 const IDS = Object.keys(CATALOGO_CONDICOES) as CondicaoId[];
 function objetoSimples(v: unknown): v is Record<string, unknown> {
   return !!v && typeof v === 'object' && !Array.isArray(v)
@@ -31,13 +31,13 @@ function objetoSimples(v: unknown): v is Record<string, unknown> {
 export function instanciaCondicaoValida(v: unknown): v is InstanciaCondicao {
   if (!objetoSimples(v)) return false;
   const chaves = Object.keys(v).sort().join('|');
-  const legado = chaves === 'condicao|duracao|fonte|id|observacao';
-  const atual = chaves === 'condicao|duracao|encerradaEm|estado|fonte|id|observacao';
+  const legado = chaves === 'condicao|duracao|fonte|id|observacao' || chaves === 'condicao|fonte|id|observacao';
+  const atual = chaves === 'condicao|duracao|encerradaEm|estado|fonte|id|observacao' || chaves === 'condicao|encerradaEm|estado|fonte|id|observacao';
   return (legado || atual)
     && typeof v.id === 'string' && v.id.trim().length > 0 && v.id.length <= 100
     && typeof v.condicao === 'string' && IDS.includes(v.condicao as CondicaoId)
     && typeof v.fonte === 'string' && v.fonte.trim().length > 0 && v.fonte.length <= 160
-    && typeof v.duracao === 'string' && v.duracao.trim().length > 0 && v.duracao.length <= 160
+    && (v.duracao === undefined || (typeof v.duracao === 'string' && v.duracao.trim().length > 0 && v.duracao.length <= 160))
     && typeof v.observacao === 'string' && v.observacao.length <= 500
     && (!atual || (v.estado === 'ativa' || v.estado === 'encerrada')
       && (v.encerradaEm === null || (typeof v.encerradaEm === 'string' && !Number.isNaN(Date.parse(v.encerradaEm))))
