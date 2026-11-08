@@ -203,3 +203,61 @@ test('gatilho de Reação, Teste defensivo e item de Aparar rejeitam estruturas 
     item: { durabilidadeAtual: 2, indestrutivel: false }, automacaoAtiva: true,
   }), { durabilidadeAtual: 1, indestrutivel: false });
 });
+
+
+test('Ataque de Oportunidade exige saída voluntária de quadrado ameaçado sem proteção', async () => {
+  const { avaliarAtaqueOportunidade } = await import('../src/reacoesCombate.ts');
+  assert.equal(avaliarAtaqueOportunidade({
+    saiuVoluntariamente: true, saiuQuadradoAmeacado: true, protegidoContraGatilho: false,
+  }).disponivel, true);
+  assert.equal(avaliarAtaqueOportunidade({
+    saiuVoluntariamente: false, saiuQuadradoAmeacado: true, protegidoContraGatilho: false,
+  }).disponivel, false);
+  assert.equal(avaliarAtaqueOportunidade({
+    saiuVoluntariamente: true, saiuQuadradoAmeacado: false, protegidoContraGatilho: false,
+  }).disponivel, false);
+  assert.equal(avaliarAtaqueOportunidade({
+    saiuVoluntariamente: true, saiuQuadradoAmeacado: true, protegidoContraGatilho: true,
+  }).disponivel, false);
+});
+
+test('Ataque de Oportunidade consome Reação e nunca interrompe o Movimento por si só', async () => {
+  const { avaliarAtaqueOportunidade, registrarAtaqueOportunidade } = await import('../src/reacoesCombate.ts');
+  const gatilho = avaliarAtaqueOportunidade({
+    saiuVoluntariamente: true, saiuQuadradoAmeacado: true, protegidoContraGatilho: false,
+  });
+  const resultado = registrarAtaqueOportunidade({ economia: economiaAcoesInicial(3), gatilho });
+  assert.equal(resultado.economia.normaisUsados.reacao, true);
+  assert.equal(resultado.reacaoAdicionalComprada, false);
+  assert.equal(resultado.interrompeMovimento, false);
+  assert.throws(() => registrarAtaqueOportunidade({
+    economia: resultado.economia, gatilho,
+  }), /limite de 3 SA/);
+});
+
+test('Ataque de Oportunidade compra Reação adicional por Esforço se a normal já foi usada', async () => {
+  const { avaliarAtaqueOportunidade, registrarAtaqueOportunidade } = await import('../src/reacoesCombate.ts');
+  const gatilho = avaliarAtaqueOportunidade({
+    saiuVoluntariamente: true, saiuQuadradoAmeacado: true, protegidoContraGatilho: false,
+  });
+  const economia = consumirRecursoNormal(economiaAcoesInicial(3), 'reacao');
+  const resultado = registrarAtaqueOportunidade({ economia, gatilho });
+  assert.equal(resultado.economia.saAtual, 2);
+  assert.equal(resultado.economia.comprasEsforco.reacao, 1);
+  assert.equal(resultado.reacaoAdicionalComprada, true);
+  assert.equal(resultado.interrompeMovimento, false);
+});
+
+test('Ataque de Oportunidade rejeita gatilhos malformados ou indisponíveis', async () => {
+  const { avaliarAtaqueOportunidade, registrarAtaqueOportunidade } = await import('../src/reacoesCombate.ts');
+  assert.throws(() => avaliarAtaqueOportunidade(null), /Gatilho de Ataque de Oportunidade inválido/);
+  assert.throws(() => avaliarAtaqueOportunidade({
+    saiuVoluntariamente: true, saiuQuadradoAmeacado: true, protegidoContraGatilho: false, extra: true,
+  }), /Gatilho de Ataque de Oportunidade inválido/);
+  const indisponivel = avaliarAtaqueOportunidade({
+    saiuVoluntariamente: false, saiuQuadradoAmeacado: true, protegidoContraGatilho: false,
+  });
+  assert.throws(() => registrarAtaqueOportunidade({
+    economia: economiaAcoesInicial(3), gatilho: indisponivel,
+  }), /não está disponível/);
+});

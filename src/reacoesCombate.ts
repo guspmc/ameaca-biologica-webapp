@@ -102,6 +102,61 @@ export function prepararContraAtaque(args: {
   return { economia, reacaoAdicionalComprada, custoSA: 1 + (reacaoAdicionalComprada ? 1 : 0) };
 }
 
+/** Avalia o gatilho universal de Ataque de Oportunidade. Não realiza o Ataque. */
+export function avaliarAtaqueOportunidade(args: {
+  saiuVoluntariamente: boolean;
+  saiuQuadradoAmeacado: boolean;
+  protegidoContraGatilho: boolean;
+}): { disponivel: boolean; motivo: string; interrompeMovimento: false } {
+  if (!args || typeof args !== 'object' || Array.isArray(args)
+    || Object.getPrototypeOf(args) !== Object.prototype
+    || Object.keys(args).sort().join('|') !== ['protegidoContraGatilho', 'saiuQuadradoAmeacado', 'saiuVoluntariamente'].sort().join('|')
+    || typeof args.saiuVoluntariamente !== 'boolean'
+    || typeof args.saiuQuadradoAmeacado !== 'boolean'
+    || typeof args.protegidoContraGatilho !== 'boolean') {
+    throw new Error('Gatilho de Ataque de Oportunidade inválido.');
+  }
+  if (!args.saiuVoluntariamente) return {
+    disponivel: false, motivo: 'O deslocamento não foi voluntário.', interrompeMovimento: false,
+  };
+  if (!args.saiuQuadradoAmeacado) return {
+    disponivel: false, motivo: 'A criatura não saiu de um quadrado ameaçado.', interrompeMovimento: false,
+  };
+  if (args.protegidoContraGatilho) return {
+    disponivel: false, motivo: 'A criatura está protegida contra este gatilho.', interrompeMovimento: false,
+  };
+  return {
+    disponivel: true,
+    motivo: 'Pode usar uma Reação para realizar um Ataque contra a criatura que está saindo.',
+    interrompeMovimento: false,
+  };
+}
+
+/** Registra a Reação do Ataque de Oportunidade; não rola nem resolve o Ataque. */
+export function registrarAtaqueOportunidade(args: {
+  economia: EstadoEconomiaAcoes;
+  gatilho: ReturnType<typeof avaliarAtaqueOportunidade>;
+}): { economia: EstadoEconomiaAcoes; reacaoAdicionalComprada: boolean; interrompeMovimento: false } {
+  if (!args || typeof args !== 'object' || Array.isArray(args)
+    || !args.gatilho || typeof args.gatilho !== 'object'
+    || typeof args.gatilho.disponivel !== 'boolean'
+    || args.gatilho.interrompeMovimento !== false
+    || typeof args.gatilho.motivo !== 'string') {
+    throw new Error('Dados de registro do Ataque de Oportunidade inválidos.');
+  }
+  if (!args.gatilho.disponivel) throw new Error('Ataque de Oportunidade não está disponível para este gatilho.');
+  if (!estadoEconomiaAcoesValido(args.economia)) throw new Error('Estado da economia de ações inválido para Ataque de Oportunidade.');
+  let economia = args.economia;
+  let reacaoAdicionalComprada = false;
+  if (!economia.normaisUsados.reacao) {
+    economia = consumirRecursoNormal(economia, 'reacao');
+  } else {
+    economia = comprarRecursoPorEsforco(economia, 'reacao');
+    reacaoAdicionalComprada = true;
+  }
+  return { economia, reacaoAdicionalComprada, interrompeMovimento: false };
+}
+
 export type EstadoDurabilidadeAparar = {
   durabilidadeAtual: number | null;
   indestrutivel: boolean;
