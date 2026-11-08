@@ -3,6 +3,7 @@ import {
   iniciarTurnoAcoes,
   encerrarTurnoAcoes,
   estadoEconomiaAcoesValido,
+  sincronizarSAAtual,
   type EstadoEconomiaAcoes,
 } from './economiaAcoes.ts';
 import type { ResultadoManobraOperacional, EstadoManobrasTurno } from './manobrasOperacionais.ts';
@@ -12,6 +13,44 @@ export type EstadoTurnoCombate = {
   economia: EstadoEconomiaAcoes;
   manobras: EstadoManobrasTurno;
 };
+
+export type OrigemEstadoTurnoCombate = 'composto' | 'legado' | 'novo';
+
+/** Carrega o formato atual ou migra em memória a economia legada, sem corrigir registros inválidos. */
+export function carregarEstadoTurnoCombate(
+  composto: unknown,
+  legado: unknown,
+  saAtual: number,
+): { estado: EstadoTurnoCombate; valido: boolean; origem: OrigemEstadoTurnoCombate } {
+  if (!Number.isSafeInteger(saAtual) || saAtual < 0) {
+    return { estado: estadoTurnoCombateInicial(0), valido: false, origem: 'novo' };
+  }
+  if (composto !== undefined && composto !== null) {
+    if (!estadoTurnoCombateValido(composto)) {
+      return { estado: estadoTurnoCombateInicial(saAtual), valido: false, origem: 'composto' };
+    }
+    return {
+      estado: { ...composto, economia: sincronizarSAAtual(composto.economia, saAtual) },
+      valido: true,
+      origem: 'composto',
+    };
+  }
+  if (legado !== undefined && legado !== null) {
+    if (!estadoEconomiaAcoesValido(legado)) {
+      return { estado: estadoTurnoCombateInicial(saAtual), valido: false, origem: 'legado' };
+    }
+    return {
+      estado: {
+        versao: 1,
+        economia: sincronizarSAAtual(legado, saAtual),
+        manobras: { disparadaUsada: false, fugaUsada: false, mirarPreparado: false, combateDuasArmasUsado: false },
+      },
+      valido: true,
+      origem: 'legado',
+    };
+  }
+  return { estado: estadoTurnoCombateInicial(saAtual), valido: true, origem: 'novo' };
+}
 
 export function estadoTurnoCombateInicial(saAtual: number): EstadoTurnoCombate {
   return {
