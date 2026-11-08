@@ -444,7 +444,7 @@ export default function FichaLocal({ nome, mesa, contextoId, dados, aoFechar, ao
           {estadoFicha === 'rascunho'
             ? <details id="ficha-local-editor-pericias" className="ficha-local-editor-detalhe" data-ficha-editor>
                 <summary><span>Editar Atributos e distribuição de Perícias</span><small>Valores · Treinamento · Pontos de Perícia</small></summary>
-                <EditorAtributosPericiasLocal autoSalvar={autoSalvar} classe={classe} origem={origem} atributosIniciais={atributos} treinadaInicial={treinada} extraInicial={extra} extraTentativaInicial={extraTentativa} temTentativaEErro={temTentativaEErro} distribuicaoInicial={distribuicao} aoSalvar={aoSalvarAtributosPericias} aoAlterarPendencia={pendente => registrarPendencia('Atributos e Perícias', pendente)} mensagemSucesso={origemDados === 'servidor' ? 'Atributos e Perícias confirmados pelo servidor.' : undefined} />
+                <EditorAtributosPericiasLocal autoSalvar={autoSalvar} classe={classe} origem={origem} habilidadeBasica={habilidadeSelecionada} atributosIniciais={atributos} treinadaInicial={treinada} extraInicial={extra} extraTentativaInicial={extraTentativa} temTentativaEErro={temTentativaEErro} distribuicaoInicial={distribuicao} aoSalvar={aoSalvarAtributosPericias} aoAlterarPendencia={pendente => registrarPendencia('Atributos e Perícias', pendente)} mensagemSucesso={origemDados === 'servidor' ? 'Atributos e Perícias confirmados pelo servidor.' : undefined} />
               </details>
             : <p className="ficha-local-legenda">Atributos e Treinamentos da criação são preservados após a ativação. Aumentos e novas Perícias serão feitos pelo fluxo de Progressão quando implementado.</p>}
           <div className="ficha-local-atributos">
