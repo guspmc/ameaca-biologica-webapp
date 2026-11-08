@@ -13,7 +13,7 @@ export default function CondicoesFichaLocal({ dados, pvAtual, pvMaximo }: Props)
 
   return <details className="ficha-local-editor condicoes-ficha">
     <summary>Condições e efeitos</summary>
-    <p>Consulta das Condições recebidas. O registro e a administração dos efeitos são feitos pelo Mestre; a ficha do jogador apresenta as informações sem oferecer edição administrativa.</p>
+    <p>Consulta das Condições recebidas. O registro e a administração dos efeitos são feitos pelo Mestre; a ficha do jogador apresenta as informações sem oferecer edição administrativa. A duração e a remoção seguem a regra específica de cada Condição no Arquivo do Jogador v1.0; não há expiração genérica por descanso.</p>
     <div className="ficha-local-grade">
       <div><small>VULNERÁVEL</small><strong>{vulneravel === null ? 'Não calculável' : vulneravel ? 'Sim' : 'Não'}</strong><p>Derivada dos PV Atuais iguais ou inferiores a 1/5 dos PV Máximos; não é cadastrada manualmente.</p></div>
     </div>
@@ -24,6 +24,7 @@ export default function CondicoesFichaLocal({ dados, pvAtual, pvMaximo }: Props)
           <strong>{regra.nome}</strong> · Fonte: {item.fonte}
           <p>{regra.efeito}</p>
           <p>Duração/remoção: {item.duracao}</p>
+          <small>Referência: Arquivo do Jogador v1.0, capítulos 4 e 5, conforme a origem da Condição. Contagem de rodadas e atualização de duração são controladas pelo Mestre no módulo de Combate.</small>
           {item.observacao && <p>Observação: {item.observacao}</p>}
         </li>;
       })}
