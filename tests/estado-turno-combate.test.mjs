@@ -11,6 +11,8 @@ import { registrarReacaoDefensiva, avaliarJanelaReacao } from '../src/reacoesCom
 test('estado integrado nasce versionado e valida sua estrutura completa', () => {
   const estado = estadoTurnoCombateInicial(4);
   assert.equal(estado.versao, 1);
+  assert.equal(estado.movimentosAdicionaisConcedidos, 0);
+  assert.equal(estado.ataqueAdicionalAutorizado, false);
   assert.equal(estadoTurnoCombateValido(estado), true);
   assert.equal(estadoTurnoCombateValido({ ...estado, campoExtra: true }), false);
   assert.equal(estadoTurnoCombateValido({ ...estado, manobras: { ...estado.manobras, fugaUsada: true } }), false);
@@ -38,6 +40,7 @@ test('Manobras encadeadas preservam Economia e marcadores no mesmo estado', () =
   assert.equal(estado.economia.saGastaNaJanela, 1);
   assert.equal(estado.manobras.disparadaUsada, true);
   assert.equal(estado.manobras.fugaUsada, true);
+  assert.equal(estado.movimentosAdicionaisConcedidos, 2);
 });
 
 test('Reação defensiva atualiza Economia sem apagar estado das Manobras', () => {
@@ -80,6 +83,8 @@ test('migração legada preserva a Economia e cria marcadores de Manobras sem gr
   assert.equal(resultado.estado.economia.saAtual, 4);
   assert.equal(resultado.estado.economia.turnoEmAndamento, true);
   assert.equal(resultado.estado.manobras.disparadaUsada, false);
+  assert.equal(resultado.estado.movimentosAdicionaisConcedidos, 0);
+  assert.equal(resultado.estado.ataqueAdicionalAutorizado, false);
   assert.equal(legado.saAtual, 5);
 });
 
@@ -99,4 +104,13 @@ test('sincronização de SA externo preserva gastos e marcadores integrados', ()
   assert.equal(carregado.estado.economia.saAtual, 3);
   assert.equal(carregado.estado.economia.saGastaNaJanela, 0);
   assert.equal(carregado.estado.manobras.disparadaUsada, true);
+});
+
+
+test('Combate com Duas Armas mantém autorização do Ataque adicional no estado composto', () => {
+  const { registrarCombateDuasArmas } = await import('../src/manobrasOperacionais.ts');
+  let estado = estadoTurnoCombateInicial(3);
+  estado = aplicarManobraCombate(estado, (economia, manobras) => registrarCombateDuasArmas(economia, manobras, true)).estado;
+  assert.equal(estado.ataqueAdicionalAutorizado, true);
+  assert.equal(estado.economia.normaisUsados.acaoBonus, true);
 });
