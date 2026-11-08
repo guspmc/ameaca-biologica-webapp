@@ -22,19 +22,26 @@ export const CATALOGO_CONDICOES = {
 } as const;
 
 export type CondicaoId = keyof typeof CATALOGO_CONDICOES;
-export type InstanciaCondicao = { id: string; condicao: CondicaoId; fonte: string; duracao: string; observacao: string };
+export type InstanciaCondicao = { id: string; condicao: CondicaoId; fonte: string; duracao: string; observacao: string; estado?: 'ativa' | 'encerrada'; encerradaEm?: string | null };
 const IDS = Object.keys(CATALOGO_CONDICOES) as CondicaoId[];
 function objetoSimples(v: unknown): v is Record<string, unknown> {
   return !!v && typeof v === 'object' && !Array.isArray(v)
     && (Object.getPrototypeOf(v) === Object.prototype || Object.getPrototypeOf(v) === null);
 }
 export function instanciaCondicaoValida(v: unknown): v is InstanciaCondicao {
-  return objetoSimples(v) && Object.keys(v).sort().join('|') === 'condicao|duracao|fonte|id|observacao'
+  if (!objetoSimples(v)) return false;
+  const chaves = Object.keys(v).sort().join('|');
+  const legado = chaves === 'condicao|duracao|fonte|id|observacao';
+  const atual = chaves === 'condicao|duracao|encerradaEm|estado|fonte|id|observacao';
+  return (legado || atual)
     && typeof v.id === 'string' && v.id.trim().length > 0 && v.id.length <= 100
     && typeof v.condicao === 'string' && IDS.includes(v.condicao as CondicaoId)
     && typeof v.fonte === 'string' && v.fonte.trim().length > 0 && v.fonte.length <= 160
     && typeof v.duracao === 'string' && v.duracao.trim().length > 0 && v.duracao.length <= 160
-    && typeof v.observacao === 'string' && v.observacao.length <= 500;
+    && typeof v.observacao === 'string' && v.observacao.length <= 500
+    && (!atual || (v.estado === 'ativa' || v.estado === 'encerrada')
+      && (v.encerradaEm === null || (typeof v.encerradaEm === 'string' && !Number.isNaN(Date.parse(v.encerradaEm))))
+      && (v.estado === 'ativa' ? v.encerradaEm === null : typeof v.encerradaEm === 'string'));
 }
 export function listaCondicoesValida(v: unknown): v is InstanciaCondicao[] {
   if (!Array.isArray(v) || v.length > 100) return false;
@@ -51,10 +58,23 @@ export function removerInstanciaCondicao(atuais: InstanciaCondicao[], id: string
   if (!listaCondicoesValida(atuais) || typeof id !== 'string' || !id) throw new Error('Registro de Condições inválido.');
   return atuais.filter(item => item.id !== id);
 }
+/** Registros legados sem estado explícito continuam sendo considerados ativos. */
+export function condicaoEstaAtiva(item: InstanciaCondicao): boolean {
+  return item.estado !== 'encerrada';
+}
+export function condicoesAtivas(atuais: InstanciaCondicao[]): InstanciaCondicao[] {
+  if (!listaCondicoesValida(atuais)) throw new Error('Registro de Condições inválido.');
+  return atuais.filter(condicaoEstaAtiva);
+}
+export function encerrarInstanciaCondicao(atuais: InstanciaCondicao[], id: string, encerradaEm = new Date().toISOString()): InstanciaCondicao[] {
+  if (!listaCondicoesValida(atuais) || typeof id !== 'string' || !id || Number.isNaN(Date.parse(encerradaEm))) throw new Error('Registro de Condições inválido.');
+  if (!atuais.some(item => item.id === id && condicaoEstaAtiva(item))) throw new Error('Condição ativa não encontrada.');
+  return atuais.map(item => item.id === id ? { ...item, estado: 'encerrada', encerradaEm } : { ...item });
+}
 /** Fontes distintas permanecem registradas, mas a mesma Condição só produz um conjunto de efeitos. */
 export function condicoesComEfeitoUnico(atuais: InstanciaCondicao[]): CondicaoId[] {
   if (!listaCondicoesValida(atuais)) throw new Error('Registro de Condições inválido.');
-  return [...new Set(atuais.map(item => item.condicao))];
+  return [...new Set(condicoesAtivas(atuais).map(item => item.condicao))];
 }
 /** Vulnerável é derivada dos PV; não deve ser cadastrada como uma instância manual. */
 export function vulneravelPorPV(pvAtual: number, pvMaximo: number): boolean {
