@@ -18,7 +18,7 @@ export type PerfilArmaFogo = {
   critico: string | null;
   capacidade: number;
   alcance: string;
-  maos: 1 | 2;
+  maos: 1 | 2 | '1/2';
   espacos: number | string;
   pecas: number;
   durabilidade: number;
@@ -51,8 +51,8 @@ const perfis: PerfilArmaFogo[] = [
   { id: 'striker', nome: 'Striker', categoria: 'Escopeta', grau: 'Militar', dano: '3d6', critico: 'x3', capacidade: 12, alcance: 'Médio', maos: 2, espacos: 2, pecas: 0, durabilidade: 4, recarga: 'Movimento', aquisicao: '4 Moedas Antigas', propriedades: ['Semiautomática', 'Não bombeia', 'Sem Coronhada', 'Coice de Escopeta: Ação Bônus'], regrasEspeciais: [], referencia },
 
   // Submetralhadoras — p. 56
-  { id: 'tmp', nome: 'TMP', categoria: 'Submetralhadora', grau: 'Tática', dano: '2d4', critico: 'x2', capacidade: 30, alcance: 'Curto/Médio', maos: 1, espacos: 1, pecas: 3, durabilidade: 3, recarga: 'Ação Bônus', aquisicao: '2 Moedas Antigas', propriedades: ['Disparo Cadenciado', 'Com 2 mãos, Vantagem ao Mirar', 'Coronha Leve não permite Coronhada nem Aparar pela coronha'], regrasEspeciais: [], referencia },
-  { id: 'gal', nome: 'Gal', categoria: 'Submetralhadora', grau: 'Militar', dano: '2d4', critico: 'x2', capacidade: 40, alcance: 'Curto/Médio', maos: 1, espacos: 1, pecas: 1, durabilidade: 3, recarga: 'Ação Bônus', aquisicao: '3 Moedas Antigas', propriedades: ['Disparo Cadenciado', 'Rajada', 'Sem Disparo Único', 'Com 2 mãos, Vantagem ao Mirar'], regrasEspeciais: [], referencia },
+  { id: 'tmp', nome: 'TMP', categoria: 'Submetralhadora', grau: 'Tática', dano: '2d4', critico: 'x2', capacidade: 30, alcance: 'Curto/Médio', maos: '1/2', espacos: 1, pecas: 3, durabilidade: 3, recarga: 'Ação Bônus', aquisicao: '2 Moedas Antigas', propriedades: ['Disparo Cadenciado', 'Com 2 mãos, Vantagem ao Mirar', 'Coronha Leve não permite Coronhada nem Aparar pela coronha'], regrasEspeciais: [], referencia },
+  { id: 'gal', nome: 'Gal', categoria: 'Submetralhadora', grau: 'Militar', dano: '2d4', critico: 'x2', capacidade: 40, alcance: 'Curto/Médio', maos: '1/2', espacos: 1, pecas: 1, durabilidade: 3, recarga: 'Ação Bônus', aquisicao: '3 Moedas Antigas', propriedades: ['Disparo Cadenciado', 'Rajada', 'Sem Disparo Único', 'Com 2 mãos, Vantagem ao Mirar'], regrasEspeciais: [], referencia },
   { id: 'hk-mp5', nome: 'H&K MP5', categoria: 'Submetralhadora', grau: 'Militar', dano: '2d4', critico: 'x2', capacidade: 35, alcance: 'Curto/Médio', maos: 2, espacos: 2, pecas: 2, durabilidade: 4, recarga: 'Ação Bônus', aquisicao: '3 Moedas Antigas', propriedades: ['Disparo Cadenciado', 'Rajada'], regrasEspeciais: [], referencia },
   { id: 'chicago-sweeper', nome: 'Chicago Sweeper', categoria: 'Submetralhadora', grau: 'Exótica', dano: '4d4', critico: 'x2', capacidade: 50, alcance: 'Curto/Médio', maos: 2, espacos: 2, pecas: 0, durabilidade: 3, recarga: 'Ação Bônus', aquisicao: '4 Moedas Antigas', propriedades: ['Rajada Exclusiva'], regrasEspeciais: ['Só pode atacar por Rajada; não possui Disparo Único nem Disparo Cadenciado.'], referencia },
 
