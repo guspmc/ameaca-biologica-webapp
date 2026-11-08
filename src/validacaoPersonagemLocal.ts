@@ -199,7 +199,7 @@ function validarDadosFicha(valor: unknown): valor is Record<string, unknown> {
         && valor.habilidadesAdquiridas.some(item => !!item && typeof item === 'object' && !Array.isArray(item)
           && (item as Record<string, unknown>).habilidadeId === 'tentativa-e-erro');
       if (!adquirida || escolha === valor.periciaOrigemTreinada || escolha === valor.periciaOrigemExtra) return false;
-      if (objeto(valor.distribuicaoPericias) && Number(valor.distribuicaoPericias[escolha] ?? 0) > 0) return false;
+      if (objeto(valor.distribuicaoPericias) && Number(valor.distribuicaoPericias[escolha] ?? 0) > 1) return false;
     }
   }
   if ('distribuicaoPericias' in valor) {
