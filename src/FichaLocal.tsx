@@ -415,13 +415,16 @@ export default function FichaLocal({ nome, mesa, contextoId, dados, aoFechar, ao
               <p>{habilidade ? habilidade.efeito : 'Ainda não selecionada. Nenhuma habilidade foi presumida para o personagem.'}</p>
             </div>
           </details>
-          {estadoFicha === 'rascunho' && <PlanejadorHabilidadesCriacaoLocal
-            classe={classe}
-            inicial={ficha.planejamentoCriacao as { nivelAlvo: number; habilidades: { nivel: number; habilidadeId: string }[] } | null | undefined}
-            aoSalvar={planejamento => aoSalvarRecursos({ planejamentoCriacao: planejamento })}
-            aoAlterarPendencia={pendente => registrarPendencia('Planejamento de criação', pendente)}
-            autoSalvar={autoSalvar}
-          />}
+          {estadoFicha === 'rascunho' && <details className="ficha-local-editor-detalhe">
+            <summary><span>Planejamento de criação em Nível superior</span><small>Nível-alvo · Habilidades previstas</small></summary>
+            <PlanejadorHabilidadesCriacaoLocal
+              classe={classe}
+              inicial={ficha.planejamentoCriacao as { nivelAlvo: number; habilidades: { nivel: number; habilidadeId: string }[] } | null | undefined}
+              aoSalvar={planejamento => aoSalvarRecursos({ planejamentoCriacao: planejamento })}
+              aoAlterarPendencia={pendente => registrarPendencia('Planejamento de criação', pendente)}
+              autoSalvar={autoSalvar}
+            />
+          </details>}
           <details className="ficha-local-acordeao">
             <summary>Identidade e histórico <span>{ficha.identidade && typeof ficha.identidade === 'object' && Object.keys(ficha.identidade).length > 0 ? 'Dados registrados' : 'Dados pendentes'}</span></summary>
             <div className="ficha-local-acordeao-corpo">
