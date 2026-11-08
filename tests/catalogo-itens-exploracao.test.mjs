@@ -41,7 +41,9 @@ test('consumíveis e explosivos preservam seus efeitos e procedimentos', () => {
   const agente = consultarItemExploracao('agente-reestruturante');
   assert.match(agente.efeito, /Reimplanta automaticamente/);
   assert.match(agente.efeito, /recupera 2d8 PV/);
-  assert.match(agente.observacoes.join(' '), /Vontade DT 15/);\n  assert.match(agente.uso, /Ação, exige ambas as mãos livres/);\n  assert.match(agente.uso, /Movimento/);
+  assert.match(agente.observacoes.join(' '), /Vontade DT 15/);
+  assert.match(agente.uso, /Ação, exige ambas as mãos livres/);
+  assert.match(agente.uso, /Movimento/);
   assert.match(consultarItemExploracao('neurotoxina').efeito, /Fortitude DT 12/);
   assert.match(consultarItemExploracao('granada').efeito, /4d6/);
   assert.match(consultarItemExploracao('mina').observacoes.join(' '), /Não distingue aliados/);
