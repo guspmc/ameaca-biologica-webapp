@@ -15,7 +15,7 @@ test('catálogo reúne as 30 Peças Extras descritas nas páginas 62–64', () =
   assert.deepEqual(listarTiposPecas(), ['generica', 'especifica']);
   assert.equal(pecas.filter(item => item.tipo === 'generica' && item.categoria === 'corpo-a-corpo').length, 5);
   assert.equal(pecas.filter(item => item.tipo === 'generica' && item.categoria === 'armas-de-fogo-e-especiais').length, 16);
-  assert.equal(pecas.filter(item => item.tipo === 'especifica').length, 9);
+  assert.equal(pecas.filter(item => item.tipo === 'especifica').length, 10);
   for (const item of pecas) {
     assert.ok(item.nome.trim());
     assert.ok(item.compatibilidade.length > 0);
