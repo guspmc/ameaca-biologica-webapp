@@ -76,6 +76,29 @@ export function condicoesComEfeitoUnico(atuais: InstanciaCondicao[]): CondicaoId
   if (!listaCondicoesValida(atuais)) throw new Error('Registro de Condições inválido.');
   return [...new Set(condicoesAtivas(atuais).map(item => item.condicao))];
 }
+/** Lembretes de resolução por turno. Apenas orienta o jogador; nunca rola, aplica Dano ou encerra Condições. */
+export function lembretesCondicoesPorTurno(valor: unknown): { inicio: string[]; fim: string[] } {
+  if (!listaCondicoesValida(valor)) return { inicio: [], fim: [] };
+  const ativas = condicoesAtivas(valor);
+  const inicio: string[] = [];
+  const fim: string[] = [];
+  if (ativas.some(item => item.condicao === 'queimadura')) {
+    inicio.push('Queimadura: faça Reflexos DT 12; em sucesso, apague as chamas.');
+    fim.push('Queimadura: aplique 1d6 de Dano ao final do turno, se ainda estiver ativa.');
+  }
+  if (ativas.some(item => item.condicao === 'corrosao')) {
+    inicio.push('Corrosão: faça Fortitude DT 12; em sucesso, encerre antes do Dano.');
+    fim.push('Corrosão: se permaneceu ativa após o Teste do início do turno, aplique 1d4 de Dano.');
+  }
+  if (ativas.some(item => item.condicao === 'surpreendido')) {
+    fim.push('Surpreendido: normalmente termina ao final do primeiro turno da própria criatura; confira se este é o turno aplicável.');
+  }
+  if (ativas.some(item => item.condicao === 'exposto')) {
+    fim.push('Exposto: se foi causado por Falha Crítica, termina ao final do próximo turno da criatura; confira a origem e a contagem antes de encerrar.');
+  }
+  return { inicio, fim };
+}
+
 /** Vulnerável é derivada dos PV; não deve ser cadastrada como uma instância manual. */
 export function vulneravelPorPV(pvAtual: number, pvMaximo: number): boolean {
   if (!Number.isSafeInteger(pvAtual) || pvAtual < 0 || !Number.isSafeInteger(pvMaximo) || pvMaximo <= 0) throw new Error('PV inválidos para avaliar Vulnerável.');
