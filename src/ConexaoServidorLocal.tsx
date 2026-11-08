@@ -599,7 +599,7 @@ export default function ConexaoServidorLocal() {
       const resposta = await criarClienteServidorLocal({ baseUrl: endereco.trim(), token: sessao.token }).listarPersonagens(mesa.id);
       if (!sessaoContinuaSendoAtual(geracaoSessao.current, geracaoSolicitada)) return;
       setPersonagens(atual => ({ ...atual, [mesa.id]: resposta.personagens }));
-      setAviso('Rascunhos consultados e confirmados pelo servidor.');
+      setAviso('Personagens consultados e confirmados pelo servidor.');
     } catch (problema) {
       if (!sessaoContinuaSendoAtual(geracaoSessao.current, geracaoSolicitada)) return;
       if (problema instanceof ErroServidorLocal && problema.status === 401) encerrarSessao('A sessão expirou ou foi encerrada no servidor. Entre novamente.');
@@ -1128,12 +1128,12 @@ export default function ConexaoServidorLocal() {
                 <button className="acao" type="submit" disabled={consultando || !(nomesPersonagens[mesa.id] ?? '').trim()}>Criar rascunho <span>→</span></button>
               </form>
               <div className="servidor-local-botoes">
-                <button className="botao-claro" type="button" disabled={consultando} onClick={() => void carregarPersonagens(mesa)}>Consultar rascunhos</button>
+                <button className="botao-claro" type="button" disabled={consultando} onClick={() => void carregarPersonagens(mesa)}>Consultar personagens</button>
               </div>
               {personagens[mesa.id] ? personagens[mesa.id].length ? <ul className="servidor-local-lista-mesas">{personagens[mesa.id].map(personagem => <li key={personagem.id}>
                 <div><strong>{personagem.name}</strong><small>{personagem.status === 'completa' ? 'Ficha ativa' : 'Rascunho'} · atualizado em {new Intl.DateTimeFormat('pt-BR', { dateStyle: 'short', timeStyle: 'short' }).format(new Date(personagem.updatedAt))}</small></div>
                 <div className="servidor-local-botoes"><span className="papel-jogador">{personagem.status === 'completa' ? 'ATIVA' : 'RASCUNHO'}</span><button className="botao-claro" type="button" disabled={consultando || salvandoFicha} onClick={() => void abrirFicha(mesa, personagem)}>Abrir ficha</button>{personagem.status === 'rascunho' && <button className="botao-claro" type="button" disabled={consultando || salvandoFicha} onClick={() => void excluirRascunho(mesa, personagem)}>Excluir</button>}</div>
-              </li>)}</ul> : <p className="servidor-local-vazio">Nenhum rascunho nesta Mesa.</p> : <p className="servidor-local-vazio">Consulte os rascunhos para carregar a lista do servidor.</p>}
+              </li>)}</ul> : <p className="servidor-local-vazio">Nenhum personagem nesta Mesa.</p> : <p className="servidor-local-vazio">Consulte os personagens para carregar a lista do servidor.</p>}
             </section>)}
             {mesas.filter(mesa => mesa.role === 'jogador').map(mesa => <ArquivosJogadorLocal key={mesa.id} mesaId={mesa.id} mesaNome={mesa.name} />)}
             {mesas.filter(mesa => mesa.role === 'mestre' && mesa.id === painelMestreAberto).map(mesa => <PainelMestreLocal
