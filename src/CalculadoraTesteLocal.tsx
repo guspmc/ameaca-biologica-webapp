@@ -91,9 +91,9 @@ export default function CalculadoraTesteLocal({ atributos, treinada, distribuica
     <summary>Conferir Teste manual</summary>
     <p>{modoDados === 'fisicos' ? 'Modo Físicos: informe a face obtida.' : 'Modo Mistos: neste incremento, somente a entrada física manual está disponível; a rolagem virtual ainda não foi implementada.'} A calculadora não rola dados, não registra uma rolagem e não altera a ficha.</p>
     {(tipo === 'ataque-corpo' || tipo === 'ataque-distancia') && <p>20 natural: acerto automático e Crítico, multiplicado pelo fator da arma; fecha as Reações defensivas normais. 1 natural: Falha Crítica e aplica Exposto, salvo regra específica. O cálculo de Dano depende da arma equipada e permanece manual.</p>}
-    <p>Se o Teste de Pontaria ou Luta for um Ataque, 20 natural também acerta automaticamente, fecha as Reações defensivas normais e causa Crítico. Arma, Dano e efeitos específicos ainda precisam ser resolvidos no módulo de Combate.</p>
+
     <label>Tipo de Teste
-      <select value={tipo} onChange={evento => mudarTipo(evento.target.value as 'pericia' | 'atributo')}>
+      <select value={tipo} onChange={evento => mudarTipo(evento.target.value as 'pericia' | 'atributo' | 'ataque-corpo' | 'ataque-distancia')}>
         <option value="pericia">Teste de Perícia</option>
         <option value="ataque-corpo">Ataque Corpo a Corpo · Luta</option>
         <option value="ataque-distancia">Ataque à distância · Pontaria</option>
