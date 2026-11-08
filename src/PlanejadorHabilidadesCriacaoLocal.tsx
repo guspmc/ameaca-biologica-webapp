@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
 import {
+  HABILIDADES_PROGRESSAO,
   ganhosProgressaoAte,
   validarProgressaoHabilidades,
-  habilidadesDisponiveisParaEscolha,
   type EscolhaHabilidadeProgressao,
 } from './progressaoHabilidades';
 
@@ -99,7 +99,7 @@ export default function PlanejadorHabilidadesCriacaoLocal({
     </label>
     <strong>Habilidades previstas</strong>
     {ganhos.map(ganho => {
-      const opcoes = habilidadesDisponiveisParaEscolha(classe, ganho.nivel, habilidades);
+      const opcoes = HABILIDADES_PROGRESSAO.filter(item => item.classe === classe && item.grau === ganho.grau);
       return <label key={ganho.nivel}>Nível {ganho.nivel} · {ganho.grau === 'basica' ? 'Básica' : ganho.grau === 'avancada' ? 'Avançada' : ganho.grau === 'superior' ? 'Superior' : 'Avassaladora'}
         <select value={escolhasPorNivel.get(ganho.nivel) ?? ''} onChange={evento => alterarHabilidade(ganho.nivel, evento.target.value)} disabled={ocupado || !classe}>
           <option value="">Selecione uma Habilidade</option>

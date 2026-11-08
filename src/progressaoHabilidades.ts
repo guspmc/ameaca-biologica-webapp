@@ -54,34 +54,6 @@ export const HABILIDADES_PROGRESSAO: HabilidadeProgressao[] = [
 ];
 
 export type EscolhaHabilidadeProgressao = { nivel: number; habilidadeId: string };
-
-/** Lista apenas Habilidades elegíveis para o nível, considerando escolhas anteriores. */
-export function habilidadesDisponiveisParaEscolha(
-  classe: string,
-  nivel: number,
-  escolhas: EscolhaHabilidadeProgressao[],
-): HabilidadeProgressao[] {
-  if (!CLASSES_PROGRESSAO.includes(classe as typeof CLASSES_PROGRESSAO[number])
-    || !nivelValido(nivel) || !Array.isArray(escolhas)) return [];
-  const grau = GRAUS_POR_NIVEL[nivel];
-  if (!grau) return [];
-  const anteriores = escolhas.filter(item => item && Number.isInteger(item.nivel) && item.nivel < nivel);
-  const idsUsados = new Set(anteriores.map(item => item.habilidadeId));
-  const basicas = anteriores
-    .map(item => HABILIDADES_PROGRESSAO.find(h => h.id === item.habilidadeId))
-    .filter((h): h is HabilidadeProgressao => !!h && h.classe === classe && h.grau === 'basica');
-  const avancadasEscolhidas = anteriores
-    .map(item => HABILIDADES_PROGRESSAO.find(h => h.id === item.habilidadeId))
-    .filter((h): h is HabilidadeProgressao => !!h && h.classe === classe && h.grau === 'avancada');
-  return HABILIDADES_PROGRESSAO.filter(h => {
-    if (h.classe !== classe || h.grau !== grau || idsUsados.has(h.id)) return false;
-    if (nivel === 2 && h.grau === 'basica') return !basicas.some(item => item.ramo === h.ramo);
-    if (h.grau === 'avancada') return basicas.some(item => item.ramo === h.ramo);
-    if (h.grau === 'superior') return avancadasEscolhidas.some(item => item.ramo === h.ramo);
-    return true;
-  });
-}
-
 export type PendenciaProgressao = { nivel: number; grau: GrauHabilidade; motivo: string };
 
 const CLASSES_PROGRESSAO = ['Agente', 'Autodidata', 'Operador'] as const;

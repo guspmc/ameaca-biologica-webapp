@@ -9,7 +9,7 @@ const progressao = (await readFile(new URL('../src/progressaoHabilidades.ts', im
   .replace(/^import .*;\r?\n/gm, '');
 const source = pericias + '\n' + habilidades + '\n' + progressao;
 const { outputText } = ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2022 } });
-const { ganhosProgressaoAte, validarProgressaoHabilidades, validarGanhoAtributoProgressao, validarGanhoPericiaProgressao, HABILIDADES_PROGRESSAO, avaliarDisponibilidadeProgressao, aplicarGanhoAtributoProgressao, aplicarGanhoPericiaProgressao } =
+const { ganhosProgressaoAte, validarProgressaoHabilidades, habilidadesDisponiveisParaEscolha, validarGanhoAtributoProgressao, validarGanhoPericiaProgressao, HABILIDADES_PROGRESSAO, avaliarDisponibilidadeProgressao, aplicarGanhoAtributoProgressao, aplicarGanhoPericiaProgressao } =
   await import('data:text/javascript;base64,' + Buffer.from(outputText).toString('base64'));
 
 test('catálogo contém habilidades de todos os graus e classes conforme o Arquivo do Jogador', () => {
@@ -147,8 +147,34 @@ test('sequência completa até o nível 10 respeita ramos e Habilidade Avassalad
 });
 
 
+
+test('seletor de Habilidades filtra ramos e pré-requisitos antes da escolha', () => {
+  const nivel1 = habilidadesDisponiveisParaEscolha('Agente', 1, []);
+  assert.ok(nivel1.some(h => h.id === 'anatomia-de-combate'));
+  const nivel2 = habilidadesDisponiveisParaEscolha('Agente', 2, [
+    { nivel: 1, habilidadeId: 'anatomia-de-combate' },
+  ]);
+  assert.ok(nivel2.every(h => h.ramo !== 'Impiedoso'));
+  assert.ok(nivel2.some(h => h.id === 'nao-vai-escapar'));
+  const avancadas = habilidadesDisponiveisParaEscolha('Agente', 4, [
+    { nivel: 1, habilidadeId: 'anatomia-de-combate' },
+    { nivel: 2, habilidadeId: 'nao-vai-escapar' },
+  ]);
+  assert.ok(avancadas.some(h => h.id === 'finalizacao-a-distancia'));
+  assert.ok(!avancadas.some(h => h.id === 'na-minha-mira'));
+  const superiores = habilidadesDisponiveisParaEscolha('Agente', 8, [
+    { nivel: 1, habilidadeId: 'anatomia-de-combate' },
+    { nivel: 2, habilidadeId: 'nao-vai-escapar' },
+    { nivel: 4, habilidadeId: 'finalizacao-a-distancia' },
+    { nivel: 6, habilidadeId: 'na-minha-mira' },
+  ]);
+  assert.ok(superiores.some(h => h.id === 'luta-livre'));
+  assert.ok(!superiores.some(h => h.id === 'brecha-tatica'));
+  assert.equal(habilidadesDisponiveisParaEscolha('Agente', 4, []).length, 0);
+});
+
 test('progressão objetiva usa os marcos cumulativos de Missões Completadas', () => {
-  const base = { nivelAtual: 1, metodo: 'missoes', autorizacaoMestre: true, descansoCompletoEmSalaDescanso: true };
+  const base = { nivelAtual: 1, metodo: 'missoes', autorizacaoMestre: false, descansoCompletoEmSalaDescanso: true };
   assert.equal(avaliarDisponibilidadeProgressao({ ...base, missoesCompletadas: 0 }).disponivel, false);
   assert.equal(avaliarDisponibilidadeProgressao({ ...base, missoesCompletadas: 1 }).proximoNivel, 2);
   assert.equal(avaliarDisponibilidadeProgressao({ ...base, missoesCompletadas: 1 }).disponivel, true);
@@ -158,20 +184,22 @@ test('progressão objetiva usa os marcos cumulativos de Missões Completadas', (
 });
 
 test('progressão por Marco Narrativo depende de concessão expressa do Narrador', () => {
-  const base = { nivelAtual: 4, metodo: 'marco_narrativo', autorizacaoMestre: true, missoesCompletadas: 99, descansoCompletoEmSalaDescanso: true };
+  const base = { nivelAtual: 4, metodo: 'marco_narrativo', autorizacaoMestre: false, missoesCompletadas: 99, descansoCompletoEmSalaDescanso: true };
   assert.equal(avaliarDisponibilidadeProgressao({ ...base, marcoNarrativoConcedido: false }).disponivel, false);
   assert.equal(avaliarDisponibilidadeProgressao({ ...base, marcoNarrativoConcedido: true }).disponivel, true);
 });
 
-test('sem autorização individual do Mestre a progressão não fica disponível', () => {
+test('Missões concluídas habilitam a progressão sem autorização individual do Mestre', () => {
   const base = { nivelAtual: 1, metodo: 'missoes', autorizacaoMestre: false, missoesCompletadas: 1, descansoCompletoEmSalaDescanso: true };
-  assert.equal(avaliarDisponibilidadeProgressao(base).disponivel, false);
-  assert.match(avaliarDisponibilidadeProgressao(base).motivo, /autorização de evolução/);
+  assert.equal(avaliarDisponibilidadeProgressao(base).disponivel, true);
   assert.equal(avaliarDisponibilidadeProgressao({ ...base, autorizacaoMestre: true }).disponivel, true);
+  const semCampoLegado = { ...base };
+  delete semCampoLegado.autorizacaoMestre;
+  assert.equal(avaliarDisponibilidadeProgressao(semCampoLegado).disponivel, true);
 });
 
 test('subida só é aplicada em Descanso Completo na Sala de Descanso', () => {
-  const base = { nivelAtual: 1, metodo: 'missoes', autorizacaoMestre: true, missoesCompletadas: 1, descansoCompletoEmSalaDescanso: false };
+  const base = { nivelAtual: 1, metodo: 'missoes', missoesCompletadas: 1, descansoCompletoEmSalaDescanso: false };
   assert.equal(avaliarDisponibilidadeProgressao(base).disponivel, false);
   assert.match(avaliarDisponibilidadeProgressao(base).motivo, /Sala de Descanso/);
 });
