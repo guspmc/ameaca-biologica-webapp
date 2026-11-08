@@ -7,6 +7,8 @@ import QRCodeLocal from './QRCodeLocal';
 import { calcularAtrasoReconexao } from './reconexaoLocal';
 import { criarFilaSerializada } from './filaSerializada';
 import { fichaContinuaSendoAlvo, sessaoContinuaSendoAtual } from './fichaContinuaSendoAlvo';
+import { estadoEconomiaAcoesValido, sincronizarSAAtual } from './economiaAcoes';
+import { estadoTurnoCombateValido } from './estadoTurnoCombate';
 
 const CHAVE_ENDERECO = 'ameaca-biologica:servidor-local:endereco:v1';
 const CHAVE_CONTEXTO_FICHA = 'ameaca-biologica:servidor-local:contexto-ficha:v1';
@@ -736,6 +738,17 @@ export default function ConexaoServidorLocal() {
         // A base e a revisão são lidas somente quando esta operação chega à vez.
         // Assim, patches de seções diferentes preservam as confirmações anteriores.
         const dadosAtualizados = { ...fichaAtual.personagem.data, ...delta };
+        if (typeof delta.saAtual === 'number') {
+          if (!('economiaAcoes' in delta) && estadoEconomiaAcoesValido(fichaAtual.personagem.data.economiaAcoes)) {
+            dadosAtualizados.economiaAcoes = sincronizarSAAtual(fichaAtual.personagem.data.economiaAcoes, delta.saAtual);
+          }
+          if (!('estadoTurnoCombate' in delta) && estadoTurnoCombateValido(fichaAtual.personagem.data.estadoTurnoCombate)) {
+            dadosAtualizados.estadoTurnoCombate = {
+              ...fichaAtual.personagem.data.estadoTurnoCombate,
+              economia: sincronizarSAAtual(fichaAtual.personagem.data.estadoTurnoCombate.economia, delta.saAtual),
+            };
+          }
+        }
         const resposta = await criarClienteServidorLocal({ baseUrl: endereco.trim(), token: sessao.token }).atualizarPersonagem(
           fichaAtual.personagem.id,
           nome?.trim() || fichaAtual.personagem.name,
