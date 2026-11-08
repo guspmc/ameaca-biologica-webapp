@@ -80,9 +80,10 @@ export default function AtivacaoPersonagemLocal({ revision, bloqueado = false, a
     && conferencia.ativas < 10
     && conferencia.revision === revision;
 
-  return <details className="ficha-local-editor condicoes-ficha">
+  return <details className="ficha-local-editor">
     <summary>Conferência final e ativação</summary>
     <p>A conferência é refeita pelo servidor. A ativação só ocorre após sua confirmação explícita; os recursos atuais não são restaurados. O inventário inicial é preparado uma única vez.</p>
+    {bloqueado && <p className="ficha-local-legenda">Conclua os salvamentos pendentes antes de conferir ou ativar.</p>}
     {!concluido && <button type="button" className="botao-claro" disabled={ocupado || bloqueado} onClick={() => void conferir()}>
       {ocupado ? 'Conferindo…' : 'Conferir criação no servidor'}
     </button>}
