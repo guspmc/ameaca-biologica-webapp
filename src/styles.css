@@ -563,8 +563,14 @@ footer { margin-top:45px; border-top:1px solid #dce2df; padding-top:19px; color:
 .ficha-local-editor-detalhe[open]>summary::after{content:'−'}
 .ficha-local-editor-detalhe>summary small{display:block;margin-left:auto;color:#746d61;font:9px 'Courier New',monospace;text-align:right}
 .ficha-local-editor-detalhe>.ficha-local-editor{margin:0;border:0;border-top:1px solid #c9bba4;background:#f7efdf}
+.painel-funcionamento-ficha{margin:14px 0;border:1px solid #b7aa92;border-radius:5px;background:#e5dac5}
+.painel-funcionamento-ficha>summary{list-style:none;display:flex;align-items:center;justify-content:space-between;gap:8px;padding:10px 11px;color:#64252b;font:800 10px 'Courier New',monospace;cursor:pointer}
+.painel-funcionamento-ficha>summary::-webkit-details-marker{display:none}
+.painel-funcionamento-ficha>summary:after{content:'+';color:#8f2e36;font:20px Georgia,serif}
+.painel-funcionamento-ficha[open]>summary:after{content:'−'}
+.painel-funcionamento-ficha>.ficha-local-editor-conteudo{padding:10px;border-top:1px solid #c9bba4;background:#eee7d7}
 .ficha-local-editor-detalhe>summary:focus-visible{outline:3px solid #c47f33;outline-offset:-3px}
-@media(max-width:560px){.ficha-local-editor-detalhe>summary{align-items:flex-start;flex-wrap:wrap}.ficha-local-editor-detalhe>summary small{width:100%;margin:0;text-align:left}}
+@media(max-width:560px){.ficha-local-editor-detalhe>summary{align-items:center;flex-wrap:nowrap}.ficha-local-editor-detalhe>summary small{width:auto;max-width:42%;margin-left:auto;text-align:right;white-space:normal}}
 
 
 /* Cabeçalho editorial e iconografia de recursos da ficha do Jogador. */
