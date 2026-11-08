@@ -48,7 +48,15 @@ test('perfis retornados não permitem alterar o catálogo interno', () => {
   const perfil = consultarPerfilArma('hatchet');
   assert.ok(perfil);
   perfil.propriedades.push('alteração externa');
-  assert.equal(consultarPerfilArma('hatchet')?.propriedades.includes('alteração externa'), false);
+  perfil.maos?.push(2);
+  perfil.regrasEspeciais?.push('alteração externa');
+  const original = consultarPerfilArma('hatchet');
+  assert.equal(original?.propriedades.includes('alteração externa'), false);
+  assert.deepEqual(original?.maos, [1]);
+  assert.equal(original?.regrasEspeciais?.includes('alteração externa'), false);
+  const lista = listarPerfisArma();
+  lista.find(item => item.id === 'hatchet')?.regrasEspeciais?.push('mutação externa');
+  assert.equal(consultarPerfilArma('hatchet')?.regrasEspeciais?.includes('mutação externa'), false);
   assert.equal(consultarPerfilArma('inexistente'), null);
 });
 
