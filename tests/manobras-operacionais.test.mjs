@@ -8,7 +8,7 @@ import {
 import { economiaAcoesInicial, consumirRecursoNormal } from '../src/economiaAcoes.ts';
 
 test('Desengajar consome Movimento e não simula o deslocamento', () => {
-  const r = registrarDesengajar(economiaAcoesInicial(3));
+  const r = registrarDesengajar(economiaAcoesInicial(3), estadoManobrasTurnoInicial());
   assert.equal(r.economia.normaisUsados.movimento, true);
   assert.equal(r.movimentosAdicionais, 0);
 });
@@ -48,8 +48,8 @@ test('Ataque consome Ação e consome a preparação de Mirar', () => {
 });
 
 test('Ajudar e Usar um Objeto consomem Ação sem resolver a tarefa', () => {
-  assert.equal(registrarAjudar(economiaAcoesInicial(2)).economia.normaisUsados.acao, true);
-  assert.equal(registrarUsarObjeto(economiaAcoesInicial(2)).economia.normaisUsados.acao, true);
+  assert.equal(registrarAjudar(economiaAcoesInicial(2), estadoManobrasTurnoInicial()).economia.normaisUsados.acao, true);
+  assert.equal(registrarUsarObjeto(economiaAcoesInicial(2), estadoManobrasTurnoInicial()).economia.normaisUsados.acao, true);
 });
 
 test('Combate com Duas Armas consome Ação Bônus uma vez após Ataque elegível', () => {

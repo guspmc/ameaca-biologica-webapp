@@ -34,10 +34,11 @@ export type ResultadoManobraOperacional = {
 };
 
 /** Desengajar consome o Movimento normal e concede deslocamento protegido de 1,5 m. */
-export function registrarDesengajar(economia: EstadoEconomiaAcoes): ResultadoManobraOperacional {
+export function registrarDesengajar(economia: EstadoEconomiaAcoes, manobras: EstadoManobrasTurno): ResultadoManobraOperacional {
+  validarEstadoManobras(manobras);
   return {
     economia: consumirRecursoNormal(economia, 'movimento'),
-    manobras: estadoManobrasTurnoInicial(),
+    manobras: { ...manobras },
     movimentosAdicionais: 0,
     ataqueAdicionalAutorizado: false,
   };
@@ -105,20 +106,22 @@ export function registrarAtaque(
 }
 
 /** Ajudar consome Ação; a elegibilidade do Teste e o treinamento são avaliados fora deste registro. */
-export function registrarAjudar(economia: EstadoEconomiaAcoes): ResultadoManobraOperacional {
+export function registrarAjudar(economia: EstadoEconomiaAcoes, manobras: EstadoManobrasTurno): ResultadoManobraOperacional {
+  validarEstadoManobras(manobras);
   return {
     economia: consumirRecursoNormal(economia, 'acao'),
-    manobras: estadoManobrasTurnoInicial(),
+    manobras: { ...manobras },
     movimentosAdicionais: 0,
     ataqueAdicionalAutorizado: false,
   };
 }
 
 /** Usar um Objeto consome Ação para uma interação adicional; regras específicas podem alterar o custo. */
-export function registrarUsarObjeto(economia: EstadoEconomiaAcoes): ResultadoManobraOperacional {
+export function registrarUsarObjeto(economia: EstadoEconomiaAcoes, manobras: EstadoManobrasTurno): ResultadoManobraOperacional {
+  validarEstadoManobras(manobras);
   return {
     economia: consumirRecursoNormal(economia, 'acao'),
-    manobras: estadoManobrasTurnoInicial(),
+    manobras: { ...manobras },
     movimentosAdicionais: 0,
     ataqueAdicionalAutorizado: false,
   };
