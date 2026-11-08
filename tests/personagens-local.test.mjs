@@ -414,7 +414,9 @@ test('ativação recusa ficha incompleta e preserva integralmente o rascunho', a
   });
   assert.equal(resposta.status, 422);
   const registro = app.db.prepare('SELECT estado_ficha, inventario_json, revisao FROM personagens_locais WHERE id = ?').get(personagem.id);
-  assert.deepEqual(registro, { estado_ficha: 'rascunho', inventario_json: null, revisao: 1 });
+  assert.equal(registro.estado_ficha, 'rascunho');
+  assert.equal(registro.inventario_json, null);
+  assert.equal(registro.revisao, 1);
   assert.equal(app.db.prepare('SELECT COUNT(*) AS total FROM ativacoes_personagem_locais WHERE personagem_id = ?').get(personagem.id).total, 0);
 });
 
