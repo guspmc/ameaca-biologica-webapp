@@ -4,12 +4,13 @@ import { pontosRestantesAtributos } from './atributosCriacao';
 import { NOMES_PERICIAS, periciasPermitidasNaCriacao, pontosGastosPericias } from './periciasCriacao';
 import { PONTOS_CLASSE } from './pericias';
 import { ORIGENS } from './origens';
+import { calcularDerivadosCriacao } from './derivadosCriacao';
 import AutoSaveStatusLocal from './AutoSaveStatusLocal';
 import { useSalvamentoEditorLocal } from './useSalvamentoEditorLocal';
 
 type Dados = { atributos: AtributosIniciais; periciaOrigemTreinada: string; periciaOrigemExtra: string | null; periciaTentativaErroTreinada: string | null; distribuicaoPericias: Record<string, number> };
 type Props = {
-  classe: string; origem: string; atributosIniciais: AtributosIniciais;
+  classe: string; origem: string; habilidadeBasica?: string; atributosIniciais: AtributosIniciais;
   treinadaInicial: string; extraInicial: string; extraTentativaInicial: string; temTentativaEErro: boolean; distribuicaoInicial: Record<string, number>;
   aoSalvar: (dados: Dados) => Promise<boolean>;
   aoAlterarPendencia: (pendente: boolean) => void;
@@ -59,6 +60,13 @@ export default function EditorAtributosPericias(props: Props) {
   const visiveis = [...new Set([...permitidas, ...Object.keys(distribuicao), ...(extraTentativa ? [extraTentativa] : [])])].sort();
   const gastos = pontosGastosPericias(distribuicao);
   const limite = PONTOS_CLASSE[props.classe] ?? 0;
+  let derivadosPrevia: ReturnType<typeof calcularDerivadosCriacao> | null = null;
+  try {
+    if (props.classe) derivadosPrevia = calcularDerivadosCriacao({
+      classe: props.classe, origem: props.origem,
+      habilidadeBasica: props.habilidadeBasica ?? '', atributos,
+    });
+  } catch { derivadosPrevia = null; }
   function marcarAlteracao() { setSujo(true); props.aoAlterarPendencia(true); }
   function mudarAtributo(chave: keyof AtributosIniciais, delta: -1 | 1) {
     const valor = atributos[chave] + delta;
@@ -82,6 +90,12 @@ export default function EditorAtributosPericias(props: Props) {
     <h3>Editar Atributos e Perícias</h3>
     <p>As alterações são salvas automaticamente após uma breve pausa. As regras e os limites da criação são os mesmos do formulário inicial.</p>
     <strong>Atributos · {pontosRestantesAtributos(atributos)} ponto(s) restante(s)</strong>
+    {derivadosPrevia && <div className="ficha-local-grade" aria-live="polite">
+      <div><small>PV MÁXIMOS · PRÉVIA</small><strong>{derivadosPrevia.pvMaximo}</strong></div>
+      <div><small>SA MÁXIMA · PRÉVIA</small><strong>{derivadosPrevia.saMaximo}</strong></div>
+      <div><small>BI MÁXIMA · PRÉVIA</small><strong>{derivadosPrevia.biMaxima}</strong></div>
+    </div>}
+    {!derivadosPrevia && <p className="ficha-local-legenda">Selecione uma Classe válida para visualizar a prévia de PV, SA e BI.</p>}
     <div className="criar-grid">{chaves.map(item => <div className="criar-stat" key={item.chave}><small>{item.sigla} · {item.nome}</small><div className="controle-stat"><button type="button" onClick={() => mudarAtributo(item.chave,-1)} disabled={ocupado || atributos[item.chave] === 0}>−</button><b>{atributos[item.chave]}</b><button type="button" onClick={() => mudarAtributo(item.chave,1)} disabled={ocupado || atributos[item.chave] === 3 || pontosRestantesAtributos(atributos) === 0}>+</button></div></div>)}</div>
     <label>Perícia treinada pela Origem<select value={treinada} onChange={e => {setTreinada(e.target.value);marcarAlteracao();}} disabled={ocupado}><option value="">Escolha uma Perícia</option>{(props.origem === 'Amnésico' ? NOMES_PERICIAS : (ORIGENS.find(o => o.nome === props.origem)?.pericias ?? [])).map(p=><option key={p} value={p}>{p}</option>)}</select></label>
     {props.origem === 'Amnésico' && <label>Segunda Perícia da Origem<select value={extra} onChange={e=>{setExtra(e.target.value);marcarAlteracao();}} disabled={ocupado}><option value="">Escolha outra Perícia</option>{NOMES_PERICIAS.filter(p=>p!==treinada).map(p=><option key={p} value={p}>{p}</option>)}</select></label>}
