@@ -1,7 +1,6 @@
 import { randomBytes } from 'node:crypto';
 import { autenticarContaLocal } from './auth-local.mjs';
 import { validarCriacaoNoServidor } from '../src/validarCriacaoServidor.ts';
-import { validarInventarioAtivo } from '../src/inventarioAtivo.ts';
 
 function responder(res, status, body) {
   res.writeHead(status, {
@@ -73,9 +72,8 @@ export async function tratarRotaPersonagensLocal(req, res, url, db, notificarCon
   const lista = /^\/api\/mesas\/([a-f0-9]{32})\/personagens$/.exec(rota);
   const conferencia = /^\/api\/personagens\/([a-f0-9]{32})\/conferencia$/.exec(rota);
   const ativacao = /^\/api\/personagens\/([a-f0-9]{32})\/ativar$/.exec(rota);
-  const inventario = /^\/api\/personagens\/([a-f0-9]{32})\/inventario$/.exec(rota);
   const item = /^\/api\/personagens\/([a-f0-9]{32})$/.exec(rota);
-  if (!lista && !item && !conferencia && !ativacao && !inventario) return false;
+  if (!lista && !item && !conferencia && !ativacao) return false;
 
   const conta = await autenticarContaLocal(req, db);
   if (!conta) {
@@ -139,8 +137,8 @@ export async function tratarRotaPersonagensLocal(req, res, url, db, notificarCon
       }
     }
 
-    if (item || conferencia || ativacao || inventario) {
-      const id = (item ?? conferencia ?? ativacao ?? inventario)[1];
+    if (item || conferencia || ativacao) {
+      const id = (item ?? conferencia ?? ativacao)[1];
       const existente = obterPersonagem(db, id, conta.id);
       if (!existente) {
         responder(res, 404, { error: 'Personagem não encontrado.' });
@@ -154,24 +152,6 @@ export async function tratarRotaPersonagensLocal(req, res, url, db, notificarCon
       ).get(existente.mesaId, conta.id);
       if (!participanteAtual || participanteAtual.papel !== 'jogador') {
         responder(res, 404, { error: 'Personagem não encontrado.' });
-        return true;
-      }
-      if (inventario) {
-        if (metodo !== 'GET') {
-          responder(res, 405, { error: 'A consulta do Inventário aceita somente GET.' });
-          return true;
-        }
-        if (existente.estadoFicha !== 'completa') {
-          responder(res, 409, { error: 'O Inventário só está disponível para personagens ativas.' });
-          return true;
-        }
-        try {
-          const snapshot = JSON.parse(existente.inventarioJson ?? 'null');
-          const inventarioVerificado = validarInventarioAtivo(snapshot, id);
-          responder(res, 200, { inventario: inventarioVerificado });
-        } catch {
-          responder(res, 409, { error: 'O Inventário não está disponível ou não pôde ser verificado. Consulte novamente mais tarde.' });
-        }
         return true;
       }
       if (conferencia) {
