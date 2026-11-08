@@ -107,7 +107,7 @@ test('sincronização de SA externo preserva gastos e marcadores integrados', ()
 });
 
 
-test('Combate com Duas Armas mantém autorização do Ataque adicional no estado composto', () => {
+test('Combate com Duas Armas mantém autorização do Ataque adicional no estado composto', async () => {
   const { registrarCombateDuasArmas } = await import('../src/manobrasOperacionais.ts');
   let estado = estadoTurnoCombateInicial(3);
   estado = aplicarManobraCombate(estado, (economia, manobras) => registrarCombateDuasArmas(economia, manobras, true)).estado;
