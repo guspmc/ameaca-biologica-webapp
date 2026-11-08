@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import { ATRIBUTO_PERICIA, valorBasePericia } from './pericias';
+import { bonusCondicionalOrigemTeste } from './efeitosOrigens';
 import { calcularTesteManual, type VantagemTeste } from './testes';
 import type { ModoDados } from './funcionamentoFicha';
 import type { AtributosIniciais } from './atributosCriacao';
@@ -17,9 +18,11 @@ type Props = {
   treinada: string;
   distribuicao: Record<string, number>;
   modoDados: ModoDados;
+  origem?: string;
+  saDisponivel?: number;
 };
 
-export default function CalculadoraTesteLocal({ atributos, treinada, distribuicao, modoDados }: Props) {
+export default function CalculadoraTesteLocal({ atributos, treinada, distribuicao, modoDados, origem = '', saDisponivel = 0 }: Props) {
   const [tipo, setTipo] = useState<'pericia' | 'atributo'>('pericia');
   const [pericia, setPericia] = useState('Percepção');
   const [atributo, setAtributo] = useState<keyof AtributosIniciais>('astucia');
@@ -29,18 +32,26 @@ export default function CalculadoraTesteLocal({ atributos, treinada, distribuica
   const [vantagem, setVantagem] = useState<VantagemTeste>('normal');
   const [dado1, setDado1] = useState('');
   const [dado2, setDado2] = useState('');
+  const [gastoSAConfirmado, setGastoSAConfirmado] = useState(false);
+  const [finalidade, setFinalidade] = useState<'procurar_pista' | 'outra'>('outra');
 
   const valorBase = tipo === 'pericia'
     ? valorBasePericia(pericia, atributos, treinada || null, distribuicao)
     : atributos[atributo];
+  const atributoAssociado = tipo === 'pericia' ? ATRIBUTO_PERICIA[pericia] : atributo;
+  const bonusOrigem = bonusCondicionalOrigemTeste(origem, {
+    tipo, pericia, atributo: atributoAssociado ?? atributo, finalidade,
+    saDisponivel, gastoSAConfirmado,
+  });
+  const valorTeste = valorBase + bonusOrigem;
   const formula = tipo === 'pericia' ? 'Perícia já inclui o Atributo.' : 'Teste puro de Atributo.';
   const calculado = useMemo(() => {
-    if (impossivel) return { resultado: calcularTesteManual({ valorBase, modificador: Number(modificador || 0), dt: null }), erro: '' };
+    if (impossivel) return { resultado: calcularTesteManual({ valorBase: valorTeste, modificador: Number(modificador || 0), dt: null }), erro: '' };
     if (!dt.trim()) return { resultado: null, erro: '' };
     try {
       return {
         resultado: calcularTesteManual({
-          valorBase,
+          valorBase: valorTeste,
           modificador: Number(modificador || 0),
           dt: Number(dt),
           dado1: dado1.trim() ? Number(dado1) : null,
@@ -52,12 +63,13 @@ export default function CalculadoraTesteLocal({ atributos, treinada, distribuica
     } catch (problema) {
       return { resultado: null, erro: problema instanceof Error ? problema.message : 'Valores inválidos.' };
     }
-  }, [impossivel, valorBase, modificador, dt, dado1, dado2, vantagem]);
+  }, [impossivel, valorTeste, modificador, dt, dado1, dado2, vantagem]);
 
   function mudarTipo(valor: 'pericia' | 'atributo') {
     setTipo(valor);
     setDado1('');
     setDado2('');
+    setGastoSAConfirmado(false);
   }
 
   if (modoDados === 'virtuais') return <details className="ficha-local-editor calculadora-teste">
@@ -77,16 +89,30 @@ export default function CalculadoraTesteLocal({ atributos, treinada, distribuica
     </label>
     {tipo === 'pericia'
       ? <label>Perícia
-          <select value={pericia} onChange={evento => { setPericia(evento.target.value); setDado1(''); setDado2(''); }}>
+          <select value={pericia} onChange={evento => { setPericia(evento.target.value); setDado1(''); setDado2(''); setGastoSAConfirmado(false); }}>
             {PERICIAS.map(nome => <option key={nome} value={nome}>{nome}</option>)}
           </select>
         </label>
       : <label>Atributo
-          <select value={atributo} onChange={evento => { setAtributo(evento.target.value as keyof AtributosIniciais); setDado1(''); setDado2(''); }}>
+          <select value={atributo} onChange={evento => { setAtributo(evento.target.value as keyof AtributosIniciais); setDado1(''); setDado2(''); setGastoSAConfirmado(false); }}>
             {ATRIBUTOS.map(item => <option key={item.chave} value={item.chave}>{item.nome}</option>)}
           </select>
         </label>}
     <p><strong>Valor base: +{valorBase}</strong> · {formula}</p>
+    {(origem === 'Atleta' || origem === 'Investigador') && tipo === 'pericia' && (origem !== 'Investigador' || pericia === 'Investigação') && <div className="ficha-local-editor">
+      {origem === 'Investigador' && <label>Finalidade do Teste
+        <select value={finalidade} onChange={evento => { setFinalidade(evento.target.value as 'procurar_pista' | 'outra'); setGastoSAConfirmado(false); }}>
+          <option value="outra">Outra finalidade</option>
+          <option value="procurar_pista">Procurar uma pista</option>
+        </select>
+      </label>}
+      <label className="ficha-local-opcao">
+        <input type="checkbox" checked={gastoSAConfirmado} disabled={saDisponivel < 1 || (origem === 'Atleta' && (atributoAssociado !== 'forca' && atributoAssociado !== 'agilidade')) || (origem === 'Investigador' && (pericia !== 'Investigação' || finalidade !== 'procurar_pista'))} onChange={evento => setGastoSAConfirmado(evento.target.checked)} />
+        Confirmo que já descontei 1 SA no painel de Recursos para este Teste
+      </label>
+      <small>{saDisponivel < 1 ? 'Sem SA disponível. O benefício não pode ser aplicado.' : origem === 'Atleta' ? 'Atleta: +5 em Perícias baseadas em FOR ou AGI, exceto Luta e Pontaria.' : 'Investigador: +5 em Investigação ao procurar uma pista.'}</small>
+    </div>}
+    <p><strong>Modificador da Origem: {bonusOrigem >= 0 ? '+' : ''}{bonusOrigem}</strong>{bonusOrigem ? ' · aplicado somente a este Teste' : ''}</p>
     <label>Modificador circunstancial
       <input type="number" step="1" value={modificador} onChange={evento => setModificador(evento.target.value)} />
     </label>
@@ -121,7 +147,7 @@ export default function CalculadoraTesteLocal({ atributos, treinada, distribuica
         : calculado.resultado.estado === 'sucesso' ? 'Sucesso'
         : 'Falha'}</strong>
       <p>{calculado.resultado.detalhe}</p>
-      {calculado.resultado.total !== null && <p>Dado escolhido: {calculado.resultado.dadoEscolhido} · Valor base: {valorBase} · Modificador: {Number(modificador || 0)} · Total: {calculado.resultado.total} · DT: {calculado.resultado.dt}</p>}
+      {calculado.resultado.total !== null && <p>Dado escolhido: {calculado.resultado.dadoEscolhido} · Valor base: {valorTeste} · Modificador: {Number(modificador || 0)} · Total: {calculado.resultado.total} · DT: {calculado.resultado.dt}</p>}
     </div>}
   </details>;
 }
