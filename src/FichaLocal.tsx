@@ -342,7 +342,7 @@ export default function FichaLocal({ nome, mesa, contextoId, dados, aoFechar, ao
         <div className="ficha-local-acoes">
           <button type="button" className="ficha-local-voltar" onClick={fecharFicha}>← Voltar</button>
           <span className="ficha-local-selo">{estadoFicha === 'completa' ? 'FICHA ATIVA' : 'RASCUNHO · NÃO ATIVA'}</span>
-          <button type="button" className="botao-claro" onClick={() => abrirEditor('caracteristicas')}>{estadoFicha === 'completa' ? 'Editar ficha' : 'Editar rascunho'}</button>
+          {estadoFicha === 'rascunho' && <button type="button" className="botao-claro" onClick={() => abrirEditor('caracteristicas')}>Editar rascunho</button>}
         </div>
 
         <div className="ficha-local-recursos">
@@ -395,12 +395,14 @@ export default function FichaLocal({ nome, mesa, contextoId, dados, aoFechar, ao
         />
 
         <section id="ficha-local-caracteristicas" className="ficha-local-secao">
-          <div className="ficha-local-titulo-secao"><h2><span>01</span> Características</h2><button type="button" className="ficha-local-editar-secao" onClick={() => abrirEditor('caracteristicas')}>Editar seção ↗</button></div>
+          <div className="ficha-local-titulo-secao"><h2><span>01</span> Características</h2>{estadoFicha === 'rascunho' && <button type="button" className="ficha-local-editar-secao" onClick={() => abrirEditor('caracteristicas')}>Editar seção ↗</button>}</div>
           {alertasCompatibilidade.length > 0 && <p className="ficha-local-aviso" role="alert">Revisão da criação necessária: {alertasCompatibilidade.join("; ")}. As escolhas foram preservadas; corrija os itens incompatíveis antes de confirmar a criação.</p>}
-          <details id="ficha-local-editor-caracteristicas" className="ficha-local-editor-detalhe" open data-ficha-editor>
-            <summary><span>Editar características e Habilidade Básica</span><small>Classe · Origem · Habilidade Básica</small></summary>
-            <EditorCaracteristicasLocal autoSalvar={autoSalvar} iniciais={{ classe, origem, armaOperario: typeof ficha.armaOperario === 'string' ? ficha.armaOperario : '', habilidadeBasica: typeof ficha.habilidadeBasica === 'string' ? ficha.habilidadeBasica : '' }} aoSalvar={aoSalvarCaracteristicas} aoAlterarPendencia={pendente => registrarPendencia('Características', pendente)} mensagemSucesso={origemDados === 'servidor' ? 'Características confirmadas pelo servidor.' : undefined} />
-          </details>
+          {estadoFicha === 'rascunho'
+            ? <details id="ficha-local-editor-caracteristicas" className="ficha-local-editor-detalhe" open data-ficha-editor>
+                <summary><span>Editar características e Habilidade Básica</span><small>Classe · Origem · Habilidade Básica</small></summary>
+                <EditorCaracteristicasLocal autoSalvar={autoSalvar} iniciais={{ classe, origem, armaOperario: typeof ficha.armaOperario === 'string' ? ficha.armaOperario : '', habilidadeBasica: typeof ficha.habilidadeBasica === 'string' ? ficha.habilidadeBasica : '' }} aoSalvar={aoSalvarCaracteristicas} aoAlterarPendencia={pendente => registrarPendencia('Características', pendente)} mensagemSucesso={origemDados === 'servidor' ? 'Características confirmadas pelo servidor.' : undefined} />
+              </details>
+            : <p className="ficha-local-legenda">Classe, Origem e Habilidade Básica foram fixadas na ativação. Alterações dessas escolhas dependem de uma regra ou ferramenta própria aprovada.</p>}
           {aoSalvarIdentidade && <IdentidadeLocal autoSalvar={autoSalvar} nome={nome} identidade={(ficha.identidade as Record<string, string>) ?? {}} aoSalvar={aoSalvarIdentidade} aoAlterarPendencia={pendente => registrarPendencia('Identificação', pendente)} mensagemSucesso={origemDados === 'servidor' ? 'Identificação confirmada pelo servidor.' : undefined} />}
           <div className="ficha-local-fatos-rapidos">
             <div><small>ORIGEM</small><strong>{termo(origem || 'Pendente')}</strong><span>{dadosOrigem?.beneficio ?? 'Benefício ainda não definido.'}</span></div>
@@ -413,13 +415,13 @@ export default function FichaLocal({ nome, mesa, contextoId, dados, aoFechar, ao
               <p>{habilidade ? habilidade.efeito : 'Ainda não selecionada. Nenhuma habilidade foi presumida para o personagem.'}</p>
             </div>
           </details>
-          <PlanejadorHabilidadesCriacaoLocal
+          {estadoFicha === 'rascunho' && <PlanejadorHabilidadesCriacaoLocal
             classe={classe}
             inicial={ficha.planejamentoCriacao as { nivelAlvo: number; habilidades: { nivel: number; habilidadeId: string }[] } | null | undefined}
             aoSalvar={planejamento => aoSalvarRecursos({ planejamentoCriacao: planejamento })}
             aoAlterarPendencia={pendente => registrarPendencia('Planejamento de criação', pendente)}
             autoSalvar={autoSalvar}
-          />
+          />}
           <details className="ficha-local-acordeao">
             <summary>Identidade e histórico <span>{ficha.identidade && typeof ficha.identidade === 'object' && Object.keys(ficha.identidade).length > 0 ? 'Dados registrados' : 'Dados pendentes'}</span></summary>
             <div className="ficha-local-acordeao-corpo">
@@ -435,11 +437,13 @@ export default function FichaLocal({ nome, mesa, contextoId, dados, aoFechar, ao
         </section>
 
         <section id="ficha-local-pericias" className="ficha-local-secao">
-          <div className="ficha-local-titulo-secao"><h2><span>02</span> Atributos e Perícias</h2><button type="button" className="ficha-local-editar-secao" onClick={() => abrirEditor('pericias')}>Editar seção ↗</button></div>
-          <details id="ficha-local-editor-pericias" className="ficha-local-editor-detalhe" data-ficha-editor>
-            <summary><span>Editar Atributos e distribuição de Perícias</span><small>Valores · Treinamento · Pontos de Perícia</small></summary>
-            <EditorAtributosPericiasLocal autoSalvar={autoSalvar} classe={classe} origem={origem} atributosIniciais={atributos} treinadaInicial={treinada} extraInicial={extra} extraTentativaInicial={extraTentativa} temTentativaEErro={temTentativaEErro} distribuicaoInicial={distribuicao} aoSalvar={aoSalvarAtributosPericias} aoAlterarPendencia={pendente => registrarPendencia('Atributos e Perícias', pendente)} mensagemSucesso={origemDados === 'servidor' ? 'Atributos e Perícias confirmados pelo servidor.' : undefined} />
-          </details>
+          <div className="ficha-local-titulo-secao"><h2><span>02</span> Atributos e Perícias</h2>{estadoFicha === 'rascunho' && <button type="button" className="ficha-local-editar-secao" onClick={() => abrirEditor('pericias')}>Editar seção ↗</button>}</div>
+          {estadoFicha === 'rascunho'
+            ? <details id="ficha-local-editor-pericias" className="ficha-local-editor-detalhe" data-ficha-editor>
+                <summary><span>Editar Atributos e distribuição de Perícias</span><small>Valores · Treinamento · Pontos de Perícia</small></summary>
+                <EditorAtributosPericiasLocal autoSalvar={autoSalvar} classe={classe} origem={origem} atributosIniciais={atributos} treinadaInicial={treinada} extraInicial={extra} extraTentativaInicial={extraTentativa} temTentativaEErro={temTentativaEErro} distribuicaoInicial={distribuicao} aoSalvar={aoSalvarAtributosPericias} aoAlterarPendencia={pendente => registrarPendencia('Atributos e Perícias', pendente)} mensagemSucesso={origemDados === 'servidor' ? 'Atributos e Perícias confirmados pelo servidor.' : undefined} />
+              </details>
+            : <p className="ficha-local-legenda">Atributos e Treinamentos da criação são preservados após a ativação. Aumentos e novas Perícias serão feitos pelo fluxo de Progressão quando implementado.</p>}
           <div className="ficha-local-atributos">
             {ATRIBUTOS.map(item => <div key={item.chave}><small>{item.sigla}</small><strong>{numero(atributos[item.chave])}</strong><span>{item.nome}</span></div>)}
           </div>
@@ -496,11 +500,13 @@ export default function FichaLocal({ nome, mesa, contextoId, dados, aoFechar, ao
         </section>
 
         <section id="ficha-local-inventario" className="ficha-local-secao">
-          <div className="ficha-local-titulo-secao"><h2><span>04</span> Inventário</h2><button type="button" className="ficha-local-editar-secao" onClick={() => abrirEditor('inventario')}>Editar seção ↗</button></div>
-          <details id="ficha-local-editor-inventario" className="ficha-local-editor-detalhe" data-ficha-editor open>
-            <summary><span>Editar Equipamento Inicial e compras</span><small>Equipamento · Catálogo · Capacidade</small></summary>
-            <EditorInventarioLocal autoSalvar={autoSalvar} classe={classe} capacidade={capacidade} kitInicial={kitSelecionado} comprasIniciais={(ficha.comprasIniciais as Record<string, number>) ?? {}} revisaoCompras={numero(ficha.revisaoCompras)} aoSalvar={aoSalvarInventario} aoAlterarPendencia={pendente => registrarPendencia('Inventário', pendente)} mensagemSucesso={origemDados === 'servidor' ? 'Planejamento do inventário confirmado pelo servidor.' : undefined} />
-          </details>
+          <div className="ficha-local-titulo-secao"><h2><span>04</span> Inventário</h2>{estadoFicha === 'rascunho' && <button type="button" className="ficha-local-editar-secao" onClick={() => abrirEditor('inventario')}>Editar seção ↗</button>}</div>
+          {estadoFicha === 'rascunho'
+            ? <details id="ficha-local-editor-inventario" className="ficha-local-editor-detalhe" data-ficha-editor open>
+                <summary><span>Editar Equipamento Inicial e compras</span><small>Equipamento · Catálogo · Capacidade</small></summary>
+                <EditorInventarioLocal autoSalvar={autoSalvar} classe={classe} capacidade={capacidade} kitInicial={kitSelecionado} comprasIniciais={(ficha.comprasIniciais as Record<string, number>) ?? {}} revisaoCompras={numero(ficha.revisaoCompras)} aoSalvar={aoSalvarInventario} aoAlterarPendencia={pendente => registrarPendencia('Inventário', pendente)} mensagemSucesso={origemDados === 'servidor' ? 'Planejamento do inventário confirmado pelo servidor.' : undefined} />
+              </details>
+            : <p className="ficha-local-legenda">O equipamento inicial foi materializado na ativação e permanece preservado. A movimentação e o gerenciamento contínuo dos itens serão liberados no módulo Inventário.</p>}
           <div className="ficha-local-inventario-topo"><span>CAPACIDADE BASE</span><strong>{capacidade} Espaços</strong></div>
           <div className="ficha-local-itens">
             <strong>Itens característicos</strong>
