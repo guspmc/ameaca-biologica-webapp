@@ -3,6 +3,7 @@ import { autenticarContaLocal } from './auth-local.mjs';
 import { validarCriacaoNoServidor } from '../src/validarCriacaoServidor.ts';
 import { estadoEconomiaAcoesValido } from '../src/economiaAcoes.ts';
 import { estadoTurnoCombateValido, estadoTurnoCombateCompostoLegadoReconhecido } from '../src/estadoTurnoCombate.ts';
+import { estadoProgressaoPersistenteValido } from '../src/progressaoPersistente.ts';
 
 function responder(res, status, body) {
   res.writeHead(status, {
@@ -261,6 +262,15 @@ export async function tratarRotaPersonagensLocal(req, res, url, db, notificarCon
             !Number.isSafeInteger(corpo.expectedRevision) || corpo.expectedRevision < 1) {
           responder(res, 422, { error: 'Informe nome, dados JSON e a revisão atual do rascunho.' });
           return true;
+        }
+        if (Object.prototype.hasOwnProperty.call(corpo.data, 'progressao')) {
+          const progressao = corpo.data.progressao;
+          if (typeof corpo.data.classe !== 'string' || !Number.isSafeInteger(corpo.data.nivel)
+            || !progressao || progressao.nivelAtual !== corpo.data.nivel
+            || !estadoProgressaoPersistenteValido(progressao, corpo.data.classe)) {
+            responder(res, 422, { error: 'O estado persistente de Progressão é inválido ou está dessincronizado do Nível da personagem.' });
+            return true;
+          }
         }
         if (Object.prototype.hasOwnProperty.call(corpo.data, 'estadoTurnoCombate')) {
           const turno = corpo.data.estadoTurnoCombate;

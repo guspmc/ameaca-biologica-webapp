@@ -321,3 +321,18 @@ test('backup e persistência aceitam somente formatos compostos históricos reco
   assert.equal(validarPersonagemLocal(base({ ...dados, estadoTurnoCombate: { ...legado, campoExtra: true } })), false);
   assert.equal(validarPersonagemLocal(base({ ...dados, saAtual: 3 })), false);
 });
+
+
+test('valida Progressão persistente quando presente e exige sincronização com o Nível', () => {
+  const progressao = {
+    versao: 1, nivelAtual: 1, metodo: 'missoes', missoesCompletadas: 0,
+    marcoNarrativoConcedido: false, missoesCompletadasNaUltimaMorte: null,
+    nivelNaUltimaMorte: null, marcoNarrativoAposUltimaMorte: false,
+    penalidadeMorteNivel1: false, beneficiosPorNivel: [],
+  };
+  const dados = { versaoModelo: 1, estadoFicha: 'rascunho', classe: 'Agente', nivel: 1, progressao };
+  assert.equal(validarPersonagemLocal(base(dados)), true);
+  assert.equal(validarPersonagemLocal(base({ ...dados, nivel: 2 })), false);
+  assert.equal(validarPersonagemLocal(base({ ...dados, progressao: { ...progressao, campoExtra: true } })), false);
+  assert.equal(validarPersonagemLocal(base({ versaoModelo: 1, estadoFicha: 'rascunho' })), true);
+});

@@ -536,3 +536,35 @@ test('servidor LAN valida o estado integrado de Combate e recusa estado inválid
   assert.equal(final.revision, salvo.revision);
   assert.deepEqual(final.data.estadoTurnoCombate, compostoLegado);
 });
+
+
+test('servidor LAN valida Progressão persistente e recusa estado inválido sem avançar revisão', async t => {
+  const { app, url } = await criarServidor(t);
+  const mestre = await criarConta(url, 'mestre-progressao@example.test');
+  const jogador = await criarConta(url, 'jogador-progressao@example.test');
+  const mesa = await criarMesaComJogador(url, app, mestre, jogador, 'Mesa de Progressão');
+  const personagem = await criarRascunhoValido(url, jogador, mesa.id, 'Claire');
+  const progressao = {
+    versao: 1, nivelAtual: 1, metodo: 'missoes', missoesCompletadas: 0,
+    marcoNarrativoConcedido: false, missoesCompletadasNaUltimaMorte: null,
+    nivelNaUltimaMorte: null, marcoNarrativoAposUltimaMorte: false,
+    penalidadeMorteNivel1: false, beneficiosPorNivel: [],
+  };
+  const valido = await fetch(url + '/api/personagens/' + personagem.id, {
+    method: 'PUT', headers: { ...jogador.headers, 'content-type': 'application/json' },
+    body: JSON.stringify({ name: personagem.name, data: { ...personagem.data, nivel: 1, progressao }, expectedRevision: personagem.revision }),
+  });
+  assert.equal(valido.status, 200);
+  const salvo = (await valido.json()).personagem;
+  assert.deepEqual(salvo.data.progressao, progressao);
+
+  const invalido = await fetch(url + '/api/personagens/' + personagem.id, {
+    method: 'PUT', headers: { ...jogador.headers, 'content-type': 'application/json' },
+    body: JSON.stringify({ name: salvo.name, data: { ...salvo.data, progressao: { ...progressao, campoExtra: true } }, expectedRevision: salvo.revision }),
+  });
+  assert.equal(invalido.status, 422);
+  const preservado = await fetch(url + '/api/personagens/' + personagem.id, { headers: jogador.headers });
+  const final = (await preservado.json()).personagem;
+  assert.equal(final.revision, salvo.revision);
+  assert.deepEqual(final.data.progressao, progressao);
+});

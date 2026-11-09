@@ -13,6 +13,7 @@ import { estadoTurnoCombateValido, estadoTurnoCombateCompostoLegadoReconhecido }
 import { listaCondicoesValida } from './condicoesFicha.ts';
 import { HABILIDADES_PROGRESSAO, ganhosProgressaoAte, validarProgressaoHabilidades } from './progressaoHabilidades.ts';
 import { usosDescansoCompletoValido } from './usosDescansoCompleto.ts';
+import { estadoProgressaoPersistenteValido } from './progressaoPersistente.ts';
 
 export type PersonagemValidavel = {
   id: string;
@@ -124,6 +125,12 @@ function validarDadosFicha(valor: unknown): valor is Record<string, unknown> {
     const habilidadeNivel1 = (valor.habilidadesAdquiridas as { nivel: number; habilidadeId: string }[])
       .find(escolha => escolha.nivel === 1)?.habilidadeId;
     if (typeof valor.habilidadeBasica === 'string' && habilidadeNivel1 !== valor.habilidadeBasica) return false;
+  }
+  if ('progressao' in valor) {
+    if (typeof valor.classe !== 'string' || !Number.isSafeInteger(valor.nivel)
+      || !objeto(valor.progressao)
+      || valor.progressao.nivelAtual !== valor.nivel
+      || !estadoProgressaoPersistenteValido(valor.progressao, valor.classe)) return false;
   }
   if ('usosDescansoCompleto' in valor && !usosDescansoCompletoValido(valor.usosDescansoCompleto)) return false;
   for (const campo of ['pvAtual', 'pvTemporarios', 'saAtual'] as const) {
