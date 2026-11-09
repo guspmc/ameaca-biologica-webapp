@@ -67,6 +67,6 @@ test('painel respeita método Virtual e salva somente após ação expressa', as
   assert.match(painelDescanso, /origemDados=\{origemDados\}/);
   assert.match(painelDescanso, /aoPrepararPatchCompleto=\{\(\) =>/);
   assert.match(ui, /\.\.\.\(aoPrepararPatchCompleto\?\.\(\) \?\? \{\}\)/);
-  assert.match(ficha, /pedidoProgressao\.estado === 'descanso_confirmado'/);
+  assert.match(ficha, /pedidoAtual\.estado === 'descanso_confirmado'/);
   assert.match(progressao, /Cancelar solicitação/);
 });
