@@ -33,7 +33,7 @@ export default function CondicoesFichaLocal({ dados, pvAtual, pvMaximo, aoSalvar
     setSalvando(true); setMensagem('');
     try {
       const atualizadas = adicionarInstanciaCondicao(itens, {
-        id: novoIdCondicao(), condicao, fonte: fonte.trim(),
+        id: gerarIdCondicao(), condicao, fonte: fonte.trim(),
         observacao: observacao.trim(), estado: 'ativa', encerradaEm: null,
       });
       if (await aoSalvar({ condicoes: atualizadas })) {
