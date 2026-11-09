@@ -220,3 +220,14 @@ A conferência do texto de Recarga identificou uma regra geral que ainda não es
 **Limite:** o catálogo continua sendo consulta. Não reduz custos automaticamente nem altera a economia de ações; a aplicação de reduções continua dependendo das Habilidades/Peças e de seus fluxos próprios.
 
 **CI:** os workflows do HEAD `8fce8f8459d4e331a6b7f79d24351f8aeb3618c3` estavam em execução no momento da atualização anterior. Os commits `ef6d69e` e `4ba5bda` são posteriores; validar CI pelo HEAD consolidado após esta atualização documental.
+
+
+### 7.11 Auditoria complementar — Carnificina (p. 49)
+
+A comparação com a regra publicada identificou que o procedimento anterior dizia corretamente que Carnificina é narrativa, não aumenta Dano e não cria Condições, mas omitia o gatilho narrativo expresso no livro.
+
+- **Fonte:** Arquivo do Jogador v1.0, Capítulo 3, regra “Decepamento e Carnificina”, p. 49. Quando uma arma com Carnificina reduz uma criatura a 0 PV, a morte deve ser descrita de forma especialmente violenta e espalhafatosa.
+- **Correção:** commit `36e8eff` em `src/catalogoProcedimentosArmas.ts`; texto agora registra o gatilho de 0 PV e mantém explícita a natureza puramente narrativa.
+- **Teste:** commit `8d86ded` em `tests/catalogo-procedimentos-armas.test.mjs`; cobre gatilho, natureza narrativa e ausência de efeito mecânico.
+- **Limite:** a descrição narrativa pertence à resolução do Narrador; o catálogo não cria morte automática, dano adicional ou Condição.
+- **CI:** validar os workflows do HEAD consolidado após esta atualização documental; os workflows anteriormente observados pertenciam a commits anteriores.
