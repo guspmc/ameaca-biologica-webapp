@@ -427,3 +427,15 @@ Novo arquivo: `tests/catalogo-armas-auditoria-completa.test.mjs`.
 - **PENDENTE:** atualizar o §7.6 do Planejamento v2.6 na próxima revisão documental; confirmar build/testes no CI; validar integração real na bateria humana final.
 - **Checkpoint atualizado:** `docs/checkpoint-rolagens-testes-pericia-atributo-2026-11-09.md`.
 - **Checkpoint deste ciclo:** `docs/checkpoint-exposto-falha-critica-2026-11-09.md` (commit `30232785a38c461130357b87a8cea3b8e4a0bbcf`).
+
+
+## Atualização — Auditoria inicial de Ataque e Dano (09/11/2026)
+
+- **FONTE:** Arquivo do Jogador v1.0, pp. 43–45, 48, 50–52, 53–61 e 80–81. Ataque usa Luta/Pontaria com Atributo já incluído; Dano normalmente usa dados da arma + FOR em Corpo a Corpo ou + AGI à distância; a regra específica da arma prevalece.
+- **ACHADO:** `CalculadoraTesteLocal` atualmente pede Defesa/DT e compara o total no caminho de Ataque. A decisão de produto é apresentar rolagem e total, deixando a comparação com Defesa e a resolução para Jogador/Mestre. Ajuste pendente.
+- **ACHADO:** `calcularTesteManual` associa genericamente Exposto à descrição de toda Falha Crítica. Deve ser desacoplado da Falha Crítica comum, preservando a decisão aprovada: ativação automática apenas em Ataque no modo Automático.
+- **DEPENDÊNCIA:** margens críticas ampliadas, bônus de Peças/Habilidades e cálculo de Dano dependem de arma real selecionada/equipada e dados mecânicos válidos. Equipamento inicial atual é projeção de criação, guardado/não equipado; `armaOperario.ts` é somente lista de opções. Não presumir equipamento ativo.
+- **IMPLEMENTADO NESTE CICLO:** nenhum código; foi criado checkpoint documental.
+- **TESTES:** testes estruturais existentes inspecionados; build/suíte não executados nesta auditoria. CI para SHA `411a78efc1b16b85639c72c90d3c053b44e0c63a` permanece pendente/não observada.
+- **PRÓXIMO:** separar rolagem de Ataque da comparação com Defesa; remover menção genérica de Exposto nos Testes comuns; auditar em paralelo catálogo de armas/Peças/Habilidades; implementar cálculo puro de Dano apenas com entradas explícitas.
+- **Checkpoint:** `docs/checkpoint-auditoria-ataque-dano-2026-11-09.md` (commit `755775b0524ddca6c3fd354d4aed8290285d5019`).
