@@ -34,7 +34,7 @@ import { calcularFaseBioInfeccao } from './bioInfeccao';
 import { reanimacaoValida } from './reanimacaoFicha';
 import { adicionarInstanciaCondicao, condicoesAtivas, gerarIdCondicao, listaCondicoesValida } from './condicoesFicha';
 import { classePersonagem, termoPersonagem } from './textoPersonagem';
-import { confirmarDescansoCompletoProgressao, estadoProgressaoPersistenteValido } from './progressaoPersistente';
+import { confirmarDescansoCompletoProgressao, estadoProgressaoPersistenteValido, pedidoProgressaoPersistenteValido } from './progressaoPersistente';
 
 type DadosFichaLocal = {
   classe?: unknown;
@@ -420,8 +420,12 @@ export default function FichaLocal({ nome, mesa, contextoId, dados, aoFechar, ao
           aoSalvar={aoSalvarRecursos}
           aoPrepararPatchCompleto={() => {
             if (origemDados !== 'local' || dados.pedidoProgressao === undefined || dados.pedidoProgressao === null) return {};
-            if (!estadoProgressaoPersistenteValido(dados.progressao, classe)) {
-              throw new Error('Não foi possível confirmar a Progressão: o histórico está inválido.');
+            if (!estadoProgressaoPersistenteValido(dados.progressao, classe)
+              || !pedidoProgressaoPersistenteValido(dados.pedidoProgressao, dados.progressao, classe)) {
+              throw new Error('Não foi possível confirmar a Progressão: o pedido ou o histórico está inválido.');
+            }
+            if (dados.pedidoProgressao.estado === 'descanso_confirmado') {
+              return { pedidoProgressao: dados.pedidoProgressao };
             }
             return { pedidoProgressao: confirmarDescansoCompletoProgressao(dados.pedidoProgressao, dados.progressao, classe, 'sala_descanso') };
           }}

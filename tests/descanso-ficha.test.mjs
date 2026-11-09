@@ -48,6 +48,7 @@ test('local permitido diferencia Descanso Parcial e Completo', () => {
 test('painel respeita método Virtual e salva somente após ação expressa', async () => {
   const ui = await readFile(new URL('../src/DescansoFichaLocal.tsx', import.meta.url), 'utf8');
   const ficha = await readFile(new URL('../src/FichaLocal.tsx', import.meta.url), 'utf8');
+  const progressao = await readFile(new URL('../src/ProgressaoFichaLocal.tsx', import.meta.url), 'utf8');
   assert.match(ui, /useState<LocalDescanso \| ''>\(''\)/);
   assert.match(ui, /resultadosValidos/);
   assert.match(ui, /resultados\.map\(Number\)/);
@@ -66,4 +67,6 @@ test('painel respeita método Virtual e salva somente após ação expressa', as
   assert.match(painelDescanso, /origemDados=\{origemDados\}/);
   assert.match(painelDescanso, /aoPrepararPatchCompleto=\{\(\) =>/);
   assert.match(ui, /\.\.\.\(aoPrepararPatchCompleto\?\.\(\) \?\? \{\}\)/);
+  assert.match(ficha, /pedidoProgressao\.estado === 'descanso_confirmado'/);
+  assert.match(progressao, /Cancelar solicitação/);
 });

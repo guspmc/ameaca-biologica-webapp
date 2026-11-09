@@ -150,6 +150,19 @@ export default function ProgressaoFichaLocal({ dados, classe, nivel, origemDados
     catch (e) { setErro(e instanceof Error ? e.message : 'Não foi possível registrar o Marco Narrativo.'); }
   }
 
+  async function cancelarSolicitacao() {
+    if (ocupado || pedido === null || pedido.estado !== 'aguardando_descanso') return;
+    setOcupado(true); setErro(''); setMensagem('');
+    try {
+      if (!await aoSalvar({ pedidoProgressao: null })) {
+        throw new Error('O armazenamento não confirmou o cancelamento da solicitação.');
+      }
+      setMensagem('Solicitação cancelada. O Nível e os benefícios permanecem inalterados.');
+    } catch (e) {
+      setErro(e instanceof Error ? e.message : 'Não foi possível cancelar a solicitação.');
+    } finally { setOcupado(false); }
+  }
+
   return <details className="ficha-local-editor progressao-ficha">
     <summary>Progressão de Personagem · Nível {estado.nivelAtual}</summary>
     <p>A Progressão é registrada nesta Ficha e não depende de uma configuração da Mesa.</p>
@@ -179,7 +192,10 @@ export default function ProgressaoFichaLocal({ dados, classe, nivel, origemDados
           </button>}
         </>
       : pedido.estado === 'aguardando_descanso'
-        ? <p className="offline-status" role="status">Solicitação de Nível {pedido.nivel} registrada. Conclua Descanso Completo na Sala de Descanso. O Nível e os benefícios ainda não foram alterados.</p>
+        ? <>
+            <p className="offline-status" role="status">Solicitação de Nível {pedido.nivel} registrada. Conclua Descanso Completo na Sala de Descanso. O Nível e os benefícios ainda não foram alterados.</p>
+            <button type="button" className="botao-claro" disabled={ocupado} onClick={() => void cancelarSolicitacao()}>Cancelar solicitação</button>
+          </>
         : <p className="offline-status" role="status">Descanso Completo confirmado. As escolhas dos benefícios do Nível {pedido.nivel} serão liberadas nesta Ficha; o Nível só muda após a aplicação confirmada dessas escolhas.</p>}
     {estado.beneficiosPorNivel.length > 0 && <p>Histórico de benefícios registrado: {estado.beneficiosPorNivel.length} nível(is) com escolhas preservadas.</p>}
     {erro && <p className="offline-erro" role="alert">{erro}</p>}
