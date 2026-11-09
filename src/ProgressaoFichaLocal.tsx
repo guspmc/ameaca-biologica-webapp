@@ -8,6 +8,7 @@ import {
   pedidoProgressaoPersistenteValido,
   type MetodoProgressaoPersistente,
   type EstadoProgressaoPersistente,
+  type PedidoProgressaoPersistente,
 } from './progressaoPersistente';
 import { avaliarDisponibilidadeProgressao } from './progressaoHabilidades';
 
@@ -96,7 +97,8 @@ export default function ProgressaoFichaLocal({ dados, classe, nivel, origemDados
   }
 
   const estado = progressao as EstadoProgressaoPersistente;
-  const pedido = dados.pedidoProgressao ?? null;
+  const pedido = dados.pedidoProgressao === undefined || dados.pedidoProgressao === null
+    ? null : dados.pedidoProgressao as PedidoProgressaoPersistente;
   if (pedido !== null && !pedidoProgressaoPersistenteValido(pedido, estado, classe)) {
     return <details className="ficha-local-editor progressao-ficha" open>
       <summary>Progressão de Personagem</summary>

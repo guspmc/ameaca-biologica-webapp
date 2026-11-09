@@ -34,7 +34,7 @@ import { calcularFaseBioInfeccao } from './bioInfeccao';
 import { reanimacaoValida } from './reanimacaoFicha';
 import { adicionarInstanciaCondicao, condicoesAtivas, gerarIdCondicao, listaCondicoesValida } from './condicoesFicha';
 import { classePersonagem, termoPersonagem } from './textoPersonagem';
-import { confirmarDescansoCompletoProgressao, estadoProgressaoPersistenteValido, pedidoProgressaoPersistenteValido } from './progressaoPersistente';
+import { confirmarDescansoCompletoProgressao, estadoProgressaoPersistenteValido, pedidoProgressaoPersistenteValido, type PedidoProgressaoPersistente } from './progressaoPersistente';
 
 type DadosFichaLocal = {
   classe?: unknown;
@@ -424,10 +424,11 @@ export default function FichaLocal({ nome, mesa, contextoId, dados, aoFechar, ao
               || !pedidoProgressaoPersistenteValido(dados.pedidoProgressao, dados.progressao, classe)) {
               throw new Error('Não foi possível confirmar a Progressão: o pedido ou o histórico está inválido.');
             }
-            if (dados.pedidoProgressao.estado === 'descanso_confirmado') {
-              return { pedidoProgressao: dados.pedidoProgressao };
+            const pedidoAtual = dados.pedidoProgressao as PedidoProgressaoPersistente;
+            if (pedidoAtual.estado === 'descanso_confirmado') {
+              return { pedidoProgressao: pedidoAtual };
             }
-            return { pedidoProgressao: confirmarDescansoCompletoProgressao(dados.pedidoProgressao, dados.progressao, classe, 'sala_descanso') };
+            return { pedidoProgressao: confirmarDescansoCompletoProgressao(pedidoAtual, dados.progressao, classe, 'sala_descanso') };
           }}
           bloqueado={secoesPendentes.size > 0 || reanimacaoEmCurso}
         />
