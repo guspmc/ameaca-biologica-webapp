@@ -62,7 +62,7 @@ const procedimentos: ProcedimentoArma[] = [
     }
     if (arma.categoria === 'Magnum') {
       combate.push('Coice de Magnum: normalmente exige Movimento após o disparo. Se disparar depois de já ter usado o Movimento no turno, fica Caído. Peças e Habilidades podem reduzir o custo.');
-      combate.push('Magnums possuem Decepamento e Carnificina. Decepamento só é acionado quando o ataque com essa propriedade causa Dano Massivo: o Narrador faz secretamente Fortitude DT 15; falha causa mutilação compatível. Não causa Morte Instantânea em alvo ainda não Vulnerável, salvo regra específica. Carnificina é narrativa e não aumenta Dano nem cria Condições.');
+      combate.push('Magnums possuem Decepamento e Carnificina. Decepamento só é acionado quando o ataque com essa propriedade causa Dano Massivo: o Narrador faz secretamente Fortitude DT 15; falha causa mutilação compatível. Não causa Morte Instantânea em alvo ainda não Vulnerável, salvo regra específica. Carnificina é puramente narrativa: quando uma arma com essa propriedade reduz uma criatura a 0 PV, a morte deve ser descrita de forma especialmente violenta e espalhafatosa; não aumenta Dano nem cria Condições.');
     }
     if (arma.id === 'sw-m29') combate.push('Poder de Parada: em Acerto Crítico no Ataque, o alvo deve passar em Fortitude DT 15 ou fica Atordoado até o fim do próximo turno.');
     if (especiais.some(x => /bombeamento|ferrolho|Manejar Ferrolho/i.test(x))) {
