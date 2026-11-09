@@ -263,12 +263,28 @@ export async function tratarRotaPersonagensLocal(req, res, url, db, notificarCon
           responder(res, 422, { error: 'Informe nome, dados JSON e a revisão atual do rascunho.' });
           return true;
         }
-        if (Object.prototype.hasOwnProperty.call(corpo.data, 'progressao')) {
-          const progressao = corpo.data.progressao;
+        const dadosAtuaisProgressao = JSON.parse(existente.dataJson);
+        const progressaoAtual = dadosAtuaisProgressao.progressao;
+        const progressaoNova = corpo.data.progressao;
+        const possuiProgressaoAtual = Object.prototype.hasOwnProperty.call(dadosAtuaisProgressao, 'progressao');
+        const possuiProgressaoNova = Object.prototype.hasOwnProperty.call(corpo.data, 'progressao');
+        if (possuiProgressaoAtual || possuiProgressaoNova) {
+          if (!possuiProgressaoAtual || !possuiProgressaoNova) {
+            responder(res, 403, { error: 'A criação ou remoção do estado de Progressão exige o fluxo próprio da Mesa.' });
+            return true;
+          }
           if (typeof corpo.data.classe !== 'string' || !Number.isSafeInteger(corpo.data.nivel)
-            || !progressao || progressao.nivelAtual !== corpo.data.nivel
-            || !estadoProgressaoPersistenteValido(progressao, corpo.data.classe)) {
+            || !progressaoNova || progressaoNova.nivelAtual !== corpo.data.nivel
+            || !estadoProgressaoPersistenteValido(progressaoNova, corpo.data.classe)) {
             responder(res, 422, { error: 'O estado persistente de Progressão é inválido ou está dessincronizado do Nível da personagem.' });
+            return true;
+          }
+          const camposProgressaoProtegidos = Object.keys(progressaoAtual).filter(campo => campo !== 'missoesCompletadas');
+          const progressaoAlterada = camposProgressaoProtegidos.some(campo =>
+            JSON.stringify(progressaoAtual[campo] ?? null) !== JSON.stringify(progressaoNova[campo] ?? null)
+          );
+          if (progressaoAlterada) {
+            responder(res, 403, { error: 'Somente o contador de Missões pode ser editado diretamente pelo Jogador; benefícios, Nível, método, Marcos e registros de Morte exigem os fluxos próprios.' });
             return true;
           }
         }

@@ -538,7 +538,7 @@ test('servidor LAN valida o estado integrado de Combate e recusa estado inválid
 });
 
 
-test('servidor LAN valida Progressão persistente e recusa estado inválido sem avançar revisão', async t => {
+test('servidor LAN permite editar apenas contador de Missões e protege método, Marcos e histórico', async t => {
   const { app, url } = await criarServidor(t);
   const mestre = await criarConta(url, 'mestre-progressao@example.test');
   const jogador = await criarConta(url, 'jogador-progressao@example.test');
@@ -550,21 +550,38 @@ test('servidor LAN valida Progressão persistente e recusa estado inválido sem 
     nivelNaUltimaMorte: null, marcoNarrativoAposUltimaMorte: false,
     penalidadeMorteNivel1: false, beneficiosPorNivel: [],
   };
-  const valido = await fetch(url + '/api/personagens/' + personagem.id, {
+
+  const criacaoDireta = await fetch(url + '/api/personagens/' + personagem.id, {
     method: 'PUT', headers: { ...jogador.headers, 'content-type': 'application/json' },
     body: JSON.stringify({ name: personagem.name, data: { ...personagem.data, nivel: 1, progressao }, expectedRevision: personagem.revision }),
   });
+  assert.equal(criacaoDireta.status, 403);
+
+  app.db.prepare('UPDATE personagens_locais SET dados_json = ? WHERE id = ?')
+    .run(JSON.stringify({ ...personagem.data, nivel: 1, progressao }), personagem.id);
+
+  const valido = await fetch(url + '/api/personagens/' + personagem.id, {
+    method: 'PUT', headers: { ...jogador.headers, 'content-type': 'application/json' },
+    body: JSON.stringify({ name: personagem.name, data: { ...personagem.data, nivel: 1, progressao: { ...progressao, missoesCompletadas: 1 } }, expectedRevision: personagem.revision }),
+  });
   assert.equal(valido.status, 200);
   const salvo = (await valido.json()).personagem;
-  assert.deepEqual(salvo.data.progressao, progressao);
+  assert.equal(salvo.data.progressao.missoesCompletadas, 1);
 
-  const invalido = await fetch(url + '/api/personagens/' + personagem.id, {
+  const marcoAlterado = await fetch(url + '/api/personagens/' + personagem.id, {
     method: 'PUT', headers: { ...jogador.headers, 'content-type': 'application/json' },
-    body: JSON.stringify({ name: salvo.name, data: { ...salvo.data, progressao: { ...progressao, campoExtra: true } }, expectedRevision: salvo.revision }),
+    body: JSON.stringify({ name: salvo.name, data: { ...salvo.data, progressao: { ...salvo.data.progressao, marcoNarrativoConcedido: true } }, expectedRevision: salvo.revision }),
   });
-  assert.equal(invalido.status, 422);
+  assert.equal(marcoAlterado.status, 403);
+
+  const metodoAlterado = await fetch(url + '/api/personagens/' + personagem.id, {
+    method: 'PUT', headers: { ...jogador.headers, 'content-type': 'application/json' },
+    body: JSON.stringify({ name: salvo.name, data: { ...salvo.data, progressao: { ...salvo.data.progressao, metodo: 'marco_narrativo' } }, expectedRevision: salvo.revision }),
+  });
+  assert.equal(metodoAlterado.status, 403);
+
   const preservado = await fetch(url + '/api/personagens/' + personagem.id, { headers: jogador.headers });
   const final = (await preservado.json()).personagem;
   assert.equal(final.revision, salvo.revision);
-  assert.deepEqual(final.data.progressao, progressao);
+  assert.deepEqual(final.data.progressao, salvo.data.progressao);
 });
