@@ -203,3 +203,20 @@ Inspeção de `src/servidorLocal.ts`, `src/ConexaoServidorLocal.tsx` e `server/a
 - No HEAD anterior `9790db4c071cf32e686059e87e6d8c339605a96f`: Build [42616478555](https://github.com/guspmc/ameaca-biologica-webapp/actions/runs/42616478555) — success; verificação offline [42616478550](https://github.com/guspmc/ameaca-biologica-webapp/actions/runs/42616478550) — success.
 - Os commits `a47de44` e `fe425ac` são posteriores a esses workflows; CI do HEAD atual precisa ser consultada antes de considerar esta nova implementação validada.
 - Nenhuma alteração em `main`, deploy ou produção. Nenhum teste humano integrado solicitado; permanece adiado até a Ficha completa. Inventário ativo permanece bloqueado.
+
+
+### 7.10 Auditoria complementar — regra geral de Recarga (p. 48 e continuação)
+
+A conferência do texto de Recarga identificou uma regra geral que ainda não estava reproduzida no procedimento comum das armas de fogo:
+- O custo da Recarga é definido por arma; a descrição individual sempre prevalece.
+- Pistolas e Magnums do tipo pistola normalmente usam Ação Bônus.
+- Escopetas, Revólveres Magnum e Armas Especiais normalmente usam Movimento ou uma ação maior indicada na ficha.
+- Nenhuma redução de custo pode levar uma Recarga abaixo de Interação Gratuita com Objeto.
+
+**Correção:** commit `ef6d69e` em `src/catalogoProcedimentosArmas.ts`, adicionando a regra geral a cada procedimento de arma de fogo, sem substituir os custos individuais já cadastrados.
+
+**Teste:** commit `4ba5bda` em `tests/catalogo-procedimentos-armas.test.mjs`, verificando as categorias de custo, a prevalência da descrição individual e o piso de Interação Gratuita com Objeto.
+
+**Limite:** o catálogo continua sendo consulta. Não reduz custos automaticamente nem altera a economia de ações; a aplicação de reduções continua dependendo das Habilidades/Peças e de seus fluxos próprios.
+
+**CI:** os workflows do HEAD `8fce8f8459d4e331a6b7f79d24351f8aeb3618c3` estavam em execução no momento da atualização anterior. Os commits `ef6d69e` e `4ba5bda` são posteriores; validar CI pelo HEAD consolidado após esta atualização documental.
