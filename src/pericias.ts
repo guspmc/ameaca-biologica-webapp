@@ -4,8 +4,9 @@ export const PERICIAS_CLASSE:Record<string,string[]>={
   Autodidata:['Furtividade','Investigação','Luta','Medicina','Percepção','Pontaria','Reflexos','Sobrevivência','Vontade'],
   Operador:['Atletismo','Fortitude','Investigação','Luta','Percepção','Pontaria'],
 };
-export function grauPericia(nome:string,treinada:string|null,pontos:Record<string,number>,periciaOrigemExtra:string|null=null,periciaTentativaErro:string|null=null):number{
-  return Math.min(2,(pontos[nome]??0)+(nome===treinada?1:0)+(nome===periciaOrigemExtra?1:0)+(nome===periciaTentativaErro?1:0));
+export function grauPericia(nome:string,treinada:string|null,pontos:Record<string,number>,_periciaOrigemExtra:string|null=null,periciaTentativaErro:string|null=null):number{
+  // A segunda Perícia do Amnésico só amplia as opções da Classe; não concede Treinamento.
+  return Math.min(2,(pontos[nome]??0)+(nome===treinada?1:0)+(nome===periciaTentativaErro?1:0));
 }
 export function bonusTentativaErro(nome:string,treinada:string|null,pontos:Record<string,number>,periciaOrigemExtra:string|null=null,periciaTentativaErro:string|null=null):number{
   return grauPericia(nome,treinada,pontos,periciaOrigemExtra,periciaTentativaErro)===0?1:0;

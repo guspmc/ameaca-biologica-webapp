@@ -7,7 +7,7 @@ const files=['pericias','origens','periciasCriacao'];
 const source=(await Promise.all(files.map(f=>readFile(new URL('../src/'+f+'.ts',import.meta.url),'utf8'))))
   .map(s=>s.replace(/^import .*;\r?$/gm,'')).join('\n');
 const {outputText}=ts.transpileModule(source,{compilerOptions:{module:ts.ModuleKind.ESNext,target:ts.ScriptTarget.ES2022}});
-const {periciasPermitidasNaCriacao,distribuicaoPericiasValida}=await import('data:text/javascript;base64,'+Buffer.from(outputText).toString('base64'));
+const {periciasPermitidasNaCriacao,distribuicaoPericiasValida,grauPericia}=await import('data:text/javascript;base64,'+Buffer.from(outputText).toString('base64'));
 
 
 test('catálogo de Origens apresenta benefícios completos e escolhas de perícia', async () => {
@@ -38,7 +38,10 @@ test('Amnésico escolhe duas Perícias distintas e ambas podem receber distribui
   assert.equal(distribuicaoPericiasValida('Agente','Amnésico','Medicina',{Luta:1,Reflexos:1},'Luta'),true);
   assert.equal(distribuicaoPericiasValida('Agente','Amnésico','Medicina',{Medicina:1},'Medicina'),false);
   assert.equal(distribuicaoPericiasValida('Agente','Amnésico','Medicina',{Medicina:1,Vontade:1},'Vontade'),true);
-  assert.equal(distribuicaoPericiasValida('Agente','Amnésico','Medicina',{Vontade:2},'Vontade'),false);
+  assert.equal(distribuicaoPericiasValida('Agente','Amnésico','Medicina',{Vontade:2},'Vontade'),true);
+  assert.equal(grauPericia('Vontade','Medicina',{Vontade:0},'Vontade'),0);
+  assert.equal(grauPericia('Vontade','Medicina',{Vontade:2},'Vontade'),2);
+  assert.equal(grauPericia('Medicina','Medicina',{},'Vontade'),1);
 });
 
 test('distribuição respeita limite por Classe, grau Mestre e Perícias permitidas',()=>{
