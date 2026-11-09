@@ -1,7 +1,7 @@
 # Checkpoint — Progressão Offline, interface inicial e registro de avanço
 **Data:** 09/11/2026  
 **Branch:** `feat/offline-first-ficha`  
-**HEAD de código/testes:** `534ae7419951d52a449ab7c934c8cadd01111679`
+**HEAD de código/testes:** `76f7b03670b593b4943d904806cac685b6725adc`
 
 ## Escopo
 Primeira integração visível do estado de Progressão na Ficha. Este ciclo não aplica ganho de Nível nem benefícios; prepara o registro seguro de avanço e elimina a apresentação fixa de Nível 1 na identidade/revisão.
@@ -39,14 +39,16 @@ Primeira integração visível do estado de Progressão na Ficha. Este ciclo nã
 - Testes de domínio existentes em `tests/progressao-persistente.test.mjs` e `tests/progressao-habilidades.test.mjs` foram inspecionados, não executados nesta sessão.
 - Nenhum teste automatizado novo foi adicionado neste ciclo.
 - Workflow no commit ancestral `51f5d56837d0f7804414e5c970853f0ace0ea29c` falhou em 1 de 791 testes: expectativa obsoleta em `tests/pendencias-edicao.test.mjs` sobre a calculadora não realizar rolagem virtual; 790 testes passaram.
-- A expectativa foi atualizada no commit `534ae7419951d52a449ab7c934c8cadd01111679` para refletir a rolagem física/virtual expressa já implementada.
-- Os workflows do commit de código `8c72ea0c10cf04e2290326655d31faefa818b2a1` estavam em execução; os novos workflows do commit `534ae7419951d52a449ab7c934c8cadd01111679` ainda precisam ser consultados. **CI PENDENTE; não declarar suíte ou build aprovados.**
+- A expectativa da calculadora foi atualizada no commit `534ae7419951d52a449ab7c934c8cadd01111679` para refletir a rolagem física/virtual expressa já implementada.
+- O teste `tests/descanso-ficha.test.mjs` foi atualizado no commit `76f7b03670b593b4943d904806cac685b6725adc` para conferir o Nível normalizado que a Ficha passa ao Descanso.
+- No commit `534ae7419951d52a449ab7c934c8cadd01111679`, a verificação Offline falhou apenas no teste antigo de Descanso; a compilação ainda estava em execução. Os workflows do commit `76f7b03670b593b4943d904806cac685b6725adc` estavam em execução no momento deste registro. **CI PENDENTE; não declarar suíte ou build aprovados.**
 - Build/TypeScript não executados localmente.
 
 ## Arquivos e commits
 - `src/ProgressaoFichaLocal.tsx`: criado no commit `1f42aed224d4f9b578e52a59bcf4ce00379f2e69`; proteção LAN somente leitura no commit `8c72ea0c10cf04e2290326655d31faefa818b2a1`.
 - `src/FichaLocal.tsx`: integrado no commit `1f42aed224d4f9b578e52a59bcf4ce00379f2e69`.
 - `tests/pendencias-edicao.test.mjs`: expectativa de rolagem virtual atualizada no commit `534ae7419951d52a449ab7c934c8cadd01111679`.
+- `tests/descanso-ficha.test.mjs`: expectativa do Nível dinâmico atualizada no commit `76f7b03670b593b4943d904806cac685b6725adc`.
 
 ## Próximo passo
 1. Completar o contrato de solicitação de avanço e escolha dos benefícios por Nível.

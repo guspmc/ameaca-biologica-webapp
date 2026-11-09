@@ -511,3 +511,12 @@ Esta atualização substitui qualquer ordem anterior incompatível nesta matriz.
 - **HEAD de código/testes:** `534ae7419951d52a449ab7c934c8cadd01111679`.
 - **Checkpoint:** `docs/checkpoint-progressao-ui-inicial-2026-11-09.md`.
 - Sem merge para `main`, deploy, alteração de produção/Supabase ou teste humano.
+
+
+## Atualização — correção de regressão no teste de Descanso (09/11/2026)
+
+- **TESTE CORRIGIDO:** `tests/descanso-ficha.test.mjs` ainda esperava a expressão antiga que passava o Nível diretamente do campo opcional `ficha.nivel`. A Ficha agora normaliza o Nível persistido em `nivelAtual`, validando faixa 1–10, e passa esse valor ao Descanso; o teste foi atualizado para verificar essa fonte dinâmica.
+- **TESTES CORRIGIDOS NESTA RODADA:** expectativa obsoleta da calculadora virtual em `tests/pendencias-edicao.test.mjs`; expectativa do Nível do Descanso em `tests/descanso-ficha.test.mjs`.
+- **CI:** para o commit `534ae7419951d52a449ab7c934c8cadd01111679`, a verificação Offline falhou apenas no teste antigo de Descanso; a compilação ainda estava em execução. A correção foi enviada no commit `76f7b03670b593b4943d904806cac685b6725adc`. Os dois workflows desse HEAD estavam em execução quando este checkpoint foi atualizado. **Não declarar CI aprovada até observar ambos os resultados.**
+- **HEAD de código/testes:** `76f7b03670b593b4943d904806cac685b6725adc`.
+- Sem merge, deploy, produção/Supabase ou teste humano.
