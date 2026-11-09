@@ -16,7 +16,7 @@ test('rolagem rejeita valores fora do universo para evitar viés de módulo', ()
 
 test('rolagem valida quantidade, tipo de dado e fonte aleatória', () => {
   assert.throws(() => sortearDados(0, 6, () => 0), /quantidade/);
-  assert.throws(() => sortearDados(1, 7 as never, () => 0), /Tipo de dado/);
+  assert.throws(() => sortearDados(1, 7, () => 0), /Tipo de dado/);
   assert.throws(() => sortearDados(1, 6, () => -1), /fonte aleatória/);
 });
 
