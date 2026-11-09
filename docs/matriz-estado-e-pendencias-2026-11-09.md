@@ -395,3 +395,6 @@ Novo arquivo: `tests/catalogo-armas-auditoria-completa.test.mjs`.
 - **PENDENTE:** roladores integrados de Ataque, Dano, Perícia e Atributo; integração dos modificadores e efeitos específicos; enforcement de privacidade no contexto LAN. Não foi criada regra de acerto, dano ou consequência.
 - **TESTES:** `tests/roladores-ficha.test.mjs` cobre fonte aleatória, distribuição sem viés de módulo, validação de resultados físicos e limites de persistência/visibilidade. CI vinculada ao HEAD abaixo ainda em execução no momento deste registro.
 - **Não houve:** merge para `main`, deploy, alteração de produção, teste humano ou alteração de cânone.
+
+- **Checkpoint deste ciclo:** `docs/checkpoint-roladores-basicos-ficha-2026-11-09.md`.
+- **HEAD documental atual:** `593988f2bdab4213952bd642dc013512631a265b`; código validado pela CI deve ser conferido no SHA `69b4839cae01f9a1fc7730f34bd45a53b3cc03de`.
