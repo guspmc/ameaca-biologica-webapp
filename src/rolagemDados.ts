@@ -30,7 +30,7 @@ export function sortearDados(
 }
 
 export function validarResultadosFisicos(texto: string, quantidade: number, faces: FacesDado): number[] {
-  const partes = texto.trim().split(/[\\s,;]+/).filter(Boolean);
+  const partes = texto.trim().split(/[\s,;]+/).filter(Boolean);
   if (partes.length !== quantidade) {
     throw new Error(`Informe exatamente ${quantidade} resultado(s) físico(s).`);
   }
