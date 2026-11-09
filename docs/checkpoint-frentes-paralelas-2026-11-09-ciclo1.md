@@ -171,3 +171,35 @@ Inspeção de `src/servidorLocal.ts`, `src/ConexaoServidorLocal.tsx` e `server/a
   4. Armas: fechar auditoria individual das pp. 48–61 e reforçar testes por exceção.
   5. Progressão: não implementar escolha de método até decisão de produto e contrato da Mesa estarem definidos.
   6. Ao consolidar próximo lote, acompanhar CI pelo HEAD exato e atualizar este checkpoint.
+
+
+### 7.9 Auditoria de procedimentos de armas — fechamento de regras gerais e exceções
+
+**Base normativa:** Arquivo do Jogador v1.0, Capítulo 3 — Arsenal e Equipamento, pp. 48–61; em especial p. 52 para Arma Improvisada e Ataque Desarmado. A auditoria é de transcrição e estruturação da regra publicada, não de criação de regra nova.
+
+**Correções e consolidações registradas nesta rodada:**
+- `c6925ee`: ações fora de combate e Durabilidade — sacar/guardar usa Interação Gratuita com Objeto; guardar uma arma e sacar outra são duas interações; manutenção para restaurar Durabilidade máxima leva 30 minutos em Sala de Descanso ou com Kit de Ferramentas.
+- `5c62b4d`: Bear Commander — lançador integrado tratado como sistema separado, capacidade de 1 Cartucho GM 79, alcance Médio, reserva própria e recarga por Ação Bônus.
+- `35f58d8`: Gal, Clatter Carbine e Chicago Sweeper — não recebem Ataque à Distância padrão de Disparo Único; só podem usar modos concedidos por suas fichas.
+- `1529a90`: S&W M29 — Poder de Parada em Acerto Crítico, Fortitude DT 15 ou Atordoado até o fim do próximo turno.
+- `0a657b7` e `623fd2b`: Hatchet — exceção Indestrutível explicitada e teste genérico de Durabilidade 0 corrigido para usar Bastão, sem aplicar a regra geral à Hatchet.
+- `c4d6d75`: Redemption — tiro único, munição de Rifle, uso com uma mão, Forte Coice narrativo e recarga por Ação Bônus.
+- `8b12126`: Coronhada — exige autorização explícita da ficha, arma de duas mãos e coronha resistente; Riot Gun autoriza; Hydra, Striker e TMP não autorizam.
+- `9790db4`: TMP — Coronha Leve não permite Coronhada nem Aparar pela coronha.
+- `a47de44`: criado `src/catalogoProcedimentosAtaquesUniversais.ts`, separado dos perfis de armas, para registrar Arma Improvisada e Ataque Desarmado conforme p. 52.
+- `fe425ac`: criado `tests/catalogo-procedimentos-ataques-universais.test.mjs` com cobertura dos dois procedimentos, seus valores de tabela, exceções e cópia defensiva.
+
+**Conteúdo transcrito para o catálogo universal (p. 52):**
+- Arma Improvisada: objeto adequado a um único golpe desesperado; dano Corpo a Corpo `1d6 + FOR`; Arremesso `1d6 + AGI`; uso único; não pode Aparar; após o Ataque quebra, perde-se ou deixa de ser adequada. Tabela: crítico x2, mãos 1/2, Espaços 0, Peças 0, Durabilidade 0, alcance Versátil. Aquisição não se aplica.
+- Ataque Desarmado: soco, chute, joelhada, cotovelada ou ataque com o próprio corpo; dano `1d4 + FOR`; Desvantagem por padrão, salvo Habilidade ou efeito que modifique; pode ser usado com as mãos ocupadas. Tabela: crítico x3, sem exigência de mãos, Espaços 0, sem Durabilidade, alcance Curto. Aquisição não se aplica.
+- Coronhada continua sendo uma regra condicional associada aos procedimentos de armas de fogo, não uma autorização universal para qualquer arma.
+
+**Limites preservados:**
+- O novo módulo é catálogo de consulta. Não executa rolagem, não consome ação/objeto, não altera Durabilidade, não controla posse e não integra ainda um fluxo de ataque na interface.
+- Não foi inferido custo de ação para ataques improvisados/desarmados nem distância numérica para o alcance Versátil: o trecho da fonte não os especifica.
+- A auditoria das armas pp. 48–61 ainda não está encerrada; esta rodada fechou a transcrição das duas categorias universais ausentes, mas resta revisão exaustiva de propriedades individuais e conferência final cruzada.
+
+**CI e estado técnico:**
+- No HEAD anterior `9790db4c071cf32e686059e87e6d8c339605a96f`: Build [42616478555](https://github.com/guspmc/ameaca-biologica-webapp/actions/runs/42616478555) — success; verificação offline [42616478550](https://github.com/guspmc/ameaca-biologica-webapp/actions/runs/42616478550) — success.
+- Os commits `a47de44` e `fe425ac` são posteriores a esses workflows; CI do HEAD atual precisa ser consultada antes de considerar esta nova implementação validada.
+- Nenhuma alteração em `main`, deploy ou produção. Nenhum teste humano integrado solicitado; permanece adiado até a Ficha completa. Inventário ativo permanece bloqueado.
