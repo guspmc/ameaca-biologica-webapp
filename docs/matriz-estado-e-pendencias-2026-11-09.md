@@ -426,3 +426,4 @@ Novo arquivo: `tests/catalogo-armas-auditoria-completa.test.mjs`.
 - **TESTES:** `tests/roladores-ficha.test.mjs` cobre o gatilho restrito a Ataque e a guarda do modo Automático. A execução da CI ainda precisa ser confirmada para o SHA `411a78efc1b16b85639c72c90d3c053b44e0c63a`.
 - **PENDENTE:** atualizar o §7.6 do Planejamento v2.6 na próxima revisão documental; confirmar build/testes no CI; validar integração real na bateria humana final.
 - **Checkpoint atualizado:** `docs/checkpoint-rolagens-testes-pericia-atributo-2026-11-09.md`.
+- **Checkpoint deste ciclo:** `docs/checkpoint-exposto-falha-critica-2026-11-09.md` (commit `30232785a38c461130357b87a8cea3b8e4a0bbcf`).
