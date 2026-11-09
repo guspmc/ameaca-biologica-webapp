@@ -387,7 +387,7 @@ export default function FichaLocal({ nome, mesa, contextoId, dados, aoFechar, ao
           <div><span className="ficha-local-recurso-icone"><IconeFicha tipo="bio" /></span><small>BIO-INFECÇÃO</small><strong>{biAtual} / {bi}</strong><span>{faseBi.estado === 'colapso' ? 'Colapso Viral' : faseBi.fase ? 'Fase ' + faseBi.fase : 'Fase indisponível'}</span></div>
           <div><span className="ficha-local-recurso-icone"><IconeFicha tipo="defesa" /></span><small>DEFESA</small><strong>{defesa}</strong><span>Sem equipamento</span></div>
         </div>
-        <ProgressaoFichaLocal dados={dados} classe={classe} nivel={nivelAtual} aoSalvar={aoSalvarRecursos} />
+        <ProgressaoFichaLocal dados={dados} classe={classe} nivel={nivelAtual} origemDados={origemDados} aoSalvar={aoSalvarRecursos} />
 
         <CondicoesFichaLocal dados={dados} pvAtual={recursosAtuais.pvAtual} pvMaximo={pv} aoSalvar={aoSalvarRecursos} origemDados={origemDados} />
 

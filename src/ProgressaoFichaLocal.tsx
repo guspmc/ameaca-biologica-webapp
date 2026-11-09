@@ -13,10 +13,11 @@ type Props = {
   dados: Record<string, unknown>;
   classe: string;
   nivel: number;
+  origemDados?: 'local' | 'servidor';
   aoSalvar: (patch: Record<string, unknown>) => Promise<boolean>;
 };
 
-export default function ProgressaoFichaLocal({ dados, classe, nivel, aoSalvar }: Props) {
+export default function ProgressaoFichaLocal({ dados, classe, nivel, origemDados = 'local', aoSalvar }: Props) {
   const [metodoInicial, setMetodoInicial] = useState<MetodoProgressaoPersistente>('marco_narrativo');
   const [ocupado, setOcupado] = useState(false);
   const [mensagem, setMensagem] = useState('');
@@ -34,7 +35,7 @@ export default function ProgressaoFichaLocal({ dados, classe, nivel, aoSalvar }:
         ? { nivel: estado.nivelAtual, progressao: estado }
         : { progressao: estado });
       if (!confirmado) throw new Error('O armazenamento não confirmou a Progressão.');
-      setMensagem('Progressão salva neste dispositivo.');
+      setMensagem(origemDados === 'servidor' ? 'Progressão confirmada pelo servidor.' : 'Progressão salva neste dispositivo.');
     } catch (e) {
       setErro(e instanceof Error ? e.message : 'Não foi possível salvar a Progressão.');
     } finally {

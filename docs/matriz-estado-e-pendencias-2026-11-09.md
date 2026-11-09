@@ -486,3 +486,15 @@ Esta atualização substitui qualquer ordem anterior incompatível nesta matriz.
 - **HEAD de código:** `51f5d56837d0f7804414e5c970853f0ace0ea29c`.
 - **Checkpoint:** `docs/checkpoint-progressao-inicial-2026-11-09.md`.
 - Não houve merge, deploy, alteração de produção/Supabase ou teste humano.
+
+
+## Atualização — Progressão Offline, interface inicial (09/11/2026)
+
+- **IMPLEMENTADO:** novo `src/ProgressaoFichaLocal.tsx` integrado à Ficha. Permite inicialização explícita no Nível 1, escolha entre Marco Narrativo (padrão) e Missões, edição do contador de Missões e registro de Marco Narrativo comunicado pelo Narrador.
+- **SEGURANÇA DO HISTÓRICO:** personagem acima do Nível 1 sem contrato/histórico de Progressão não recebe histórico retroativo inventado; a Progressão fica bloqueada até conferência explícita.
+- **IMPLEMENTADO:** `src/FichaLocal.tsx` passa a exibir o Nível persistido no cabeçalho e na revisão, e integra o painel de Progressão.
+- **LIMITE:** registrar Missão/Marco não concede Nível. Escolha e aplicação de benefícios e integração atômica ao Descanso Completo continuam pendentes.
+- **TESTES/CI:** nenhum teste novo foi executado nesta sessão; status checks e workflow runs não foram retornados para o commit `1f42aed224d4f9b578e52a59bcf4ce00379f2e69`. Resultado **PENDENTE**, sem declaração de build ou suíte aprovados.
+- **Checkpoint:** `docs/checkpoint-progressao-ui-inicial-2026-11-09.md`.
+- **Próximo:** contrato de solicitação e escolhas de benefícios; transição pura com histórico exato; patch único com Descanso Completo; testes de atomicidade e backup.
+- Sem merge, deploy, produção/Supabase ou teste humano.
