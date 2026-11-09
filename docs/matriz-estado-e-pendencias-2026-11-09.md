@@ -474,3 +474,15 @@ Esta atualização substitui qualquer ordem anterior incompatível nesta matriz.
   - IndexedDB/fila serializada/backup já existem; integração dos campos novos e regressões ainda precisam ser auditadas.
 - **Estado técnico:** checkpoint foi documental. Nenhuma alteração de código ou teste executado nesta rodada. HEAD-base `21e560a768556a034a25aaf9df3344441b426c36`; CI/status não observados. Sem merge, deploy ou alterações de produção.
 - **Próximo lote:** Progressão Offline integrada, depois Morte, Recursos/Condições/Descanso/Reanimação, Combate integral e auditoria final da Ficha. Frentes independentes podem ser paralelizadas sem editar simultaneamente os mesmos contratos.
+
+
+## Atualização — Lote A, fundação da Progressão Offline (09/11/2026)
+
+- **IMPLEMENTADO:** `criarEstadoProgressaoInicial()` em `src/progressaoPersistente.ts`; padrão Marco Narrativo, método de Missões opcional. Estado pertence à Ficha, sem configuração de Mesa.
+- **IMPLEMENTADO:** `registrarMarcoNarrativo()` registra concessão expressa sem alterar Nível ou benefícios e marca Marco posterior à Morte quando aplicável.
+- **TESTES ADICIONADOS:** inicialização padrão/alternativa, método inválido, registro sem concessão de nível, Marco após Morte e método incompatível.
+- **PENDENTE:** execução dos testes e CI; nenhum resultado foi observado para o commit.
+- **AINDA NÃO IMPLEMENTADO:** interface de Progressão, contador/registro de Missões/Marcos na UI, escolhas de benefícios, aplicação atômica após Descanso Completo, inicialização/migração de personagens existentes e integração backup/importação.
+- **HEAD de código:** `51f5d56837d0f7804414e5c970853f0ace0ea29c`.
+- **Checkpoint:** `docs/checkpoint-progressao-inicial-2026-11-09.md`.
+- Não houve merge, deploy, alteração de produção/Supabase ou teste humano.
