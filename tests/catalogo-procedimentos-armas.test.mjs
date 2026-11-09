@@ -111,3 +111,10 @@ test('regra geral de Recarga preserva custos usuais, prevalência individual e p
   assert.match(texto, /descrição individual prevalece/);
   assert.match(texto, /Nenhuma redução de custo pode levar uma Recarga abaixo de Interação Gratuita com Objeto/);
 });
+
+test('Carnificina mantém seu gatilho em 0 PV e não cria efeito mecânico', () => {
+  const texto = consultarProcedimentoArma('killer7').emCombate.join(' ');
+  assert.match(texto, /Carnificina é puramente narrativa/);
+  assert.match(texto, /reduz uma criatura a 0 PV/);
+  assert.match(texto, /não aumenta Dano nem cria Condições/);
+});
