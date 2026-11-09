@@ -3,14 +3,21 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 
 const ficha = readFileSync(new URL('../src/FichaLocal.tsx', import.meta.url), 'utf8');
+const roladores = readFileSync(new URL('../src/RoladoresBasicosLocal.tsx', import.meta.url), 'utf8');
 
-test('Ficha exibe apenas o modificador de Iniciativa derivado de AGI', () => {
+test('Ficha exibe o modificador de Iniciativa derivado de AGI', () => {
   assert.match(ficha, /MODIFICADOR DE INICIATIVA/);
   assert.match(ficha, /\+\{numero\(atributos\.agilidade\)\}/);
-  assert.doesNotMatch(ficha, /IniciativaFichaLocal/);
 });
 
-test('Ficha não solicita rolagem nem resultado natural de Iniciativa', () => {
-  assert.doesNotMatch(ficha, /resultado natural do d20/i);
-  assert.match(ficha, /rolagem e a ordem do Encontro pertencem ao Painel do Mestre/);
+test('rolagem pontual de Iniciativa fica na Ficha somente no modo Automático', () => {
+  assert.match(ficha, /RoladoresBasicosLocal modo=\{configuracaoFuncionamento\.modo\}/);
+  assert.match(roladores, /Iniciativa/);
+  assert.match(roladores, /1d20 \+ AGI/);
+  assert.match(roladores, /if \(modo !== 'automatico'\) return null/);
+});
+
+test('Ficha não administra ordem de turnos ou Encontros', () => {
+  assert.match(ficha, /a ordem do Encontro pertence ao Painel do Mestre/);
+  assert.match(roladores, /não organiza turnos ou Encontros/);
 });
