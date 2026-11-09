@@ -98,3 +98,20 @@ test('validador ignora derivados enviados pelo cliente e recalcula PV, SA, BI e 
   assert.ok(detalhe('BI máxima').includes('Salvo: 9.'), detalhe('BI máxima'));
   assert.ok(detalhe('Defesa básica').includes('Salvo: 12.'), detalhe('Defesa básica'));
 });
+
+
+test('servidor aceita a segunda Perícia do Amnésico com até dois pontos da Classe', () => {
+  const dados = {
+    classe: 'Agente',
+    origem: 'Amnésico',
+    atributos: { forca: 2, agilidade: 2, vigor: 2, astucia: 1 },
+    periciaOrigemTreinada: 'Investigação',
+    periciaOrigemExtra: 'Vontade',
+    distribuicaoPericias: { Vontade: 2, Luta: 2 },
+    habilidadeBasica: 'anatomia-de-combate',
+    equipamentoInicial: 'A',
+  };
+  const resultado = validarCriacaoNoServidor('Claire Redfield', dados);
+  assert.equal(resultado.valido, true);
+  assert.deepEqual(resultado.pendencias, []);
+});
