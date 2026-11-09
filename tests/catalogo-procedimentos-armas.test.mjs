@@ -55,3 +55,12 @@ test('Bear Commander mantém o lançador integrado como sistema separado', () =>
   assert.match(procedimento.emCombate.join(' '), /reserva de munição própria/);
   assert.match(procedimento.emCombate.join(' '), /recarga por Ação Bônus/);
 });
+
+test('armas sem Disparo Único não recebem ataque padrão de um cartucho', () => {
+  for (const id of ['gal', 'clatter-carbine', 'chicago-sweeper']) {
+    const texto = consultarProcedimentoArma(id).emCombate.join(' ');
+    assert.match(texto, /não possui Disparo Único/);
+    assert.match(texto, /não pode realizar o Ataque à Distância padrão de um cartucho/);
+  }
+  assert.doesNotMatch(consultarProcedimentoArma('jmb-hp3').emCombate.join(' '), /não possui Disparo Único/);
+});

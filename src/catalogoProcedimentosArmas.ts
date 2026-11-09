@@ -31,7 +31,11 @@ const procedimentos: ProcedimentoArma[] = [
   })),
   ...listarPerfisArmasFogo().map(arma => {
     const especiais = [...arma.propriedades, ...arma.regrasEspeciais];
-    const combate = [regraAtaqueFogo, `Capacidade: ${arma.capacidade}; recarga indicada na ficha: ${arma.recarga}.`];
+    const semDisparoUnico = especiais.some(x => /Sem Disparo Único|Rajada Exclusiva/.test(x));
+    const regraAtaqueAplicavel = semDisparoUnico
+      ? 'Esta arma não possui Disparo Único: não pode realizar o Ataque à Distância padrão de um cartucho. Use somente os modos de disparo concedidos pela ficha da arma, respeitando alcance, mãos exigidas, proficiência e munição disponível. A rolagem e o dano permanecem sob controle do jogador; este catálogo não rola nem aplica efeitos.'
+      : regraAtaqueFogo;
+    const combate = [regraAtaqueAplicavel, `Capacidade: ${arma.capacidade}; recarga indicada na ficha: ${arma.recarga}.`];
     if (especiais.some(x => /Disparo Cadenciado/.test(x))) {
       combate.push('Disparo Cadenciado, quando concedido pela ficha da arma ou Peça Extra: usa um Ataque normal, consome 5 cartuchos em vez de 1 e adiciona +2 Dados de Dano do mesmo tipo. A Matilda com sua Coronha específica consome 3 cartuchos.');
     }
