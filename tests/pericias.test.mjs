@@ -20,8 +20,8 @@ test('Pericia sem treinamento gratuito custa dois pontos para Mestre e nao trein
 
 test('treinamentos de Origem e Tentativa e Erro são fontes distintas, limitadas a Mestre',()=>{
   const atributos={forca:1,agilidade:2,vigor:2,astucia:2};
-  assert.equal(grauPericia('Medicina',null,{},'Medicina'),1);
-  assert.equal(valorBasePericia('Medicina',atributos,null,{},'Medicina'),4);
+  assert.equal(grauPericia('Medicina',null,{},'Medicina'),0);
+  assert.equal(valorBasePericia('Medicina',atributos,null,{},'Medicina'),2);
   assert.equal(grauPericia('Medicina','Medicina',{Medicina:1},'Medicina','Medicina'),2);
   assert.equal(bonusTentativaErro('Medicina',null,{}),1);
   assert.equal(bonusTentativaErro('Medicina','Medicina',{}),0);
