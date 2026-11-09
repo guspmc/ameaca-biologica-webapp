@@ -14,6 +14,7 @@ const regraFora = 'Sacar ou guardar uma arma usa Interação Gratuita com Objeto
 const regraDurabilidade = 'Durabilidade: normalmente só é perdida ao Aparar; reduza 1 a cada uso de Aparar, salvo regra específica. Ataques e uso comum não gastam Durabilidade. Em Durabilidade 0, a arma ou objeto não pode Aparar; suas outras funções permanecem normais, salvo regra específica. A manutenção por 30 minutos em Sala de Descanso ou com Kit de Ferramentas restaura a Durabilidade máxima.';
 const regraAtaqueCorpo = `Use a ação normal de Ataque Corpo a Corpo, respeitando alcance Curto, mãos exigidas, proficiência e propriedades da arma. ${regraDurabilidade} A rolagem e o dano permanecem sob controle do jogador; este catálogo não rola nem aplica efeitos.`;
 const regraAtaqueFogo = `Use a ação normal de Ataque à Distância, respeitando alcance, mãos exigidas, proficiência, munição carregada e propriedades da arma. Distâncias: Curto 1,5–3 m; Médio 4,5–9 m; Longo 10,5–18 m; Muito Longo 19,5–27 m. Usar abaixo da distância mínima impõe Desvantagem; acima do alcance máximo é impossível. Escopetas podem atacar uma categoria além do alcance máximo com Desvantagem; Rifles de Precisão em Muito Longo sem Mira Telescópica sofrem Desvantagem. ${regraDurabilidade} A rolagem e o dano permanecem sob controle do jogador; este catálogo não rola nem aplica efeitos.`;
+const regraRecarga = 'Recarga: o custo é definido por arma e a descrição individual prevalece. Pistolas e Magnums do tipo pistola normalmente usam Ação Bônus; Escopetas, Revólveres Magnum e Armas Especiais normalmente usam Movimento ou uma ação maior indicada na ficha. Nenhuma redução de custo pode levar uma Recarga abaixo de Interação Gratuita com Objeto.';
 
 const procedimentos: ProcedimentoArma[] = [
   ...listarPerfisArma().map(arma => {
@@ -48,7 +49,7 @@ const procedimentos: ProcedimentoArma[] = [
       : proibeCoronhada
         ? 'Esta arma não permite Coronhada.'
         : 'Coronhada somente é permitida se a ficha autorizar explicitamente, a arma exigir 2 mãos e possuir coronha resistente; nesse caso é Ataque Corpo a Corpo normal, sem a Desvantagem de Ataque Desarmado, Dano 1d6 + FOR.';
-    const combate = [regraAtaqueAplicavel, `Capacidade: ${arma.capacidade}; recarga indicada na ficha: ${arma.recarga}.`, regraCoronhada];
+    const combate = [regraAtaqueAplicavel, `Capacidade: ${arma.capacidade}; recarga indicada na ficha: ${arma.recarga}.`, regraCoronhada, regraRecarga];
     if (especiais.some(x => /Disparo Cadenciado/.test(x))) {
       combate.push('Disparo Cadenciado, quando concedido pela ficha da arma ou Peça Extra: usa um Ataque normal, consome 5 cartuchos em vez de 1 e adiciona +2 Dados de Dano do mesmo tipo. A Matilda com sua Coronha específica consome 3 cartuchos.');
     }
@@ -60,7 +61,7 @@ const procedimentos: ProcedimentoArma[] = [
       combate.push('Coice: normalmente exige Ação Bônus após o disparo; uma categoria superior de ação pode ser usada. Peças e Habilidades podem reduzir o custo.');
     }
     if (arma.categoria === 'Magnum') {
-      combate.push('Coice de Magnum: normalmente exige Movimento após o disparo. Se disparar depois de já usar o Movimento no turno, fica Caído. Peças e Habilidades podem reduzir o custo.');
+      combate.push('Coice de Magnum: normalmente exige Movimento após o disparo. Se disparar depois de já ter usado o Movimento no turno, fica Caído. Peças e Habilidades podem reduzir o custo.');
       combate.push('Magnums possuem Decepamento e Carnificina. Decepamento só é acionado quando o ataque com essa propriedade causa Dano Massivo: o Narrador faz secretamente Fortitude DT 15; falha causa mutilação compatível. Não causa Morte Instantânea em alvo ainda não Vulnerável, salvo regra específica. Carnificina é narrativa e não aumenta Dano nem cria Condições.');
     }
     if (arma.id === 'sw-m29') combate.push('Poder de Parada: em Acerto Crítico no Ataque, o alvo deve passar em Fortitude DT 15 ou fica Atordoado até o fim do próximo turno.');
