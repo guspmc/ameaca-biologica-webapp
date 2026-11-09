@@ -79,3 +79,12 @@ test('Hatchet indestrutível não perde Durabilidade ao Aparar', () => {
   assert.match(texto, /não perde Durabilidade/);
   assert.doesNotMatch(texto, /reduza 1 a cada uso de Aparar/);
 });
+ 
+test('Redemption conserva munição de Rifle, tiro único e uso com uma mão', () => {
+  const texto = consultarProcedimentoArma('redemption').emCombate.join(' ');
+  assert.match(texto, /Tiro único/);
+  assert.match(texto, /usa munição de Rifle/);
+  assert.match(texto, /1 mão/);
+  assert.match(texto, /Forte Coice narrativo/);
+  assert.match(texto, /Recarga: Ação Bônus/);
+});
