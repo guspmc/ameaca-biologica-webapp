@@ -55,6 +55,7 @@ const procedimentos: ProcedimentoArma[] = [
     if (especiais.some(x => /Rajada/.test(x))) {
       combate.push('Rajada, quando concedida pela ficha da arma: Manobra de Ação Completa, consome 10 cartuchos e cobre cone de 4,5 m (1 espaço na primeira fileira, 2 na segunda e 3 na terceira). Todos na área, inclusive aliados, fazem Reflexos DT 12; sucesso sofre metade do Dano da arma, falha sofre Dano integral. Para Rajada, a arma pode operar em alcance Curto mesmo quando seu alcance mínimo normal é Médio.');
     }
+    if (arma.id === 'tmp') combate.push('Coronha Leve: não permite Coronhada nem Aparar pela coronha.');
     if (arma.categoria === 'Escopeta' || arma.categoria === 'Rifle de Precisão') {
       combate.push('Coice: normalmente exige Ação Bônus após o disparo; uma categoria superior de ação pode ser usada. Peças e Habilidades podem reduzir o custo.');
     }

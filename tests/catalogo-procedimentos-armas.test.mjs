@@ -97,3 +97,9 @@ test('Coronhada respeita autorização e exceções expressas de cada arma', () 
   assert.match(consultarProcedimentoArma('dragoon').emCombate.join(' '), /somente é permitida se a ficha autorizar explicitamente/);
   assert.match(consultarProcedimentoArma('riot-gun').emCombate.join(' '), /Dano 1d6 \+ FOR/);
 });
+ 
+test('TMP não permite Coronhada nem Aparar pela Coronha Leve', () => {
+  const texto = consultarProcedimentoArma('tmp').emCombate.join(' ');
+  assert.match(texto, /Coronha Leve/);
+  assert.match(texto, /não permite Coronhada nem Aparar pela coronha/);
+});
