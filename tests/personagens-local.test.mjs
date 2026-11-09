@@ -580,6 +580,18 @@ test('servidor LAN permite editar apenas contador de Missões e protege método,
   });
   assert.equal(metodoAlterado.status, 403);
 
+  const nivelAlterado = await fetch(url + '/api/personagens/' + personagem.id, {
+    method: 'PUT', headers: { ...jogador.headers, 'content-type': 'application/json' },
+    body: JSON.stringify({ name: salvo.name, data: { ...salvo.data, nivel: 2, progressao: { ...salvo.data.progressao, nivelAtual: 2 } }, expectedRevision: salvo.revision }),
+  });
+  assert.equal(nivelAlterado.status, 403);
+
+  const classeAlterada = await fetch(url + '/api/personagens/' + personagem.id, {
+    method: 'PUT', headers: { ...jogador.headers, 'content-type': 'application/json' },
+    body: JSON.stringify({ name: salvo.name, data: { ...salvo.data, classe: 'Operador' }, expectedRevision: salvo.revision }),
+  });
+  assert.equal(classeAlterada.status, 403);
+
   app.db.prepare('UPDATE personagens_locais SET dados_json = ? WHERE id = ?')
     .run(JSON.stringify({ ...salvo.data, progressao: { ...salvo.data.progressao, campoExtra: true } }), personagem.id);
   const estadoAtualCorrompido = await fetch(url + '/api/personagens/' + personagem.id, {
