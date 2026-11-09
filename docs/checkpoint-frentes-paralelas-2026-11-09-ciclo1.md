@@ -3,13 +3,13 @@
 **Data:** 09/11/2026  
 **Repositório:** `guspmc/ameaca-biologica-webapp`  
 **Branch:** `feat/offline-first-ficha`  
-**HEAD no início deste checkpoint:** `8d8ddb6a00c6e0687a8d932f1f9eaa18e67e1429`  
+**HEAD atualizado neste ciclo:** `32853ab96c0b14340bf4b1e54d8c03e089f40743`  
 **Protocolo:** `docs/protocolo-eficiencia-e-continuidade.md`  
 **Escopo:** avanço simultâneo de Progressão, procedimentos de armas, auditoria de catálogos e cobertura de persistência.
 
 ## 1. Estado do repositório e segurança
 
-- **HEAD confirmado:** `8d8ddb6a00c6e0687a8d932f1f9eaa18e67e1429`.
+- **HEAD confirmado:** `32853ab96c0b14340bf4b1e54d8c03e089f40743`.
 - Nenhum merge para `main`, deploy ou alteração em produção.
 - Nenhum teste humano integrado foi realizado; permanece adiado até a Ficha estar completa.
 - Inventário ativo de Personagem continua bloqueado.
@@ -24,6 +24,7 @@ Commits:
 - `bc9c372058a96e2e5f430570026c653b230e9b08` — proteção no PUT genérico: o jogador só pode alterar diretamente `missoesCompletadas`; método, Marcos, Nível, benefícios e histórico de Morte ficam protegidos. Criação/remoção do estado exige fluxo próprio da Mesa.
 - `f2a8f866f3afd719cf09c9e57c0eb8cc7e38e62f` — servidor valida também o estado de Progressão já persistido, rejeita estado corrompido/dessincronizado e compara campos protegidos sem depender da ordem das chaves JSON.
 - `8d8ddb6a00c6e0687a8d932f1f9eaa18e67e1429` — testes de round-trip do estado de Progressão no backup JSON e no IndexedDB, incluindo rejeição de estado malformado.
+- `32853ab96c0b14340bf4b1e54d8c03e089f40743` — endurecimento do servidor LAN: Classe e Nível também não podem ser alterados pelo PUT genérico quando a Progressão está ativa; testes tentam elevar `nivel` e `progressao.nivelAtual` juntos e trocar Classe.
 
 ### O que isso significa
 
@@ -70,15 +71,17 @@ No commit `45940671c07a3aff79d0d8cc723a75db53c1eee0`:
 
 ### Pendentes no momento deste checkpoint
 
-Para o HEAD atual `8d8ddb6a00c6e0687a8d932f1f9eaa18e67e1429`:
-- Compilação do WebApp: run [42558502719](https://github.com/guspmc/ameaca-biologica-webapp/actions/runs/42558502719) — **in progress**.
-- Verificação da Ficha offline: run [42558502649](https://github.com/guspmc/ameaca-biologica-webapp/actions/runs/42558502649) — **in progress**.
+Para o HEAD atual `32853ab96c0b14340bf4b1e54d8c03e089f40743`:
+- Compilação do WebApp: run [42559057513](https://github.com/guspmc/ameaca-biologica-webapp/actions/runs/42559057513) — **in progress** no momento da atualização.
+- Verificação da Ficha offline: run [42559057480](https://github.com/guspmc/ameaca-biologica-webapp/actions/runs/42559057480) — **in progress** no momento da atualização.
+
+No commit anterior `e7094faece0a501aaf4fcc31ac48257d2a0b3aba`, os dois workflows concluíram com **success**: build [42558573130](https://github.com/guspmc/ameaca-biologica-webapp/actions/runs/42558573130) e verificação offline [42558573076](https://github.com/guspmc/ameaca-biologica-webapp/actions/runs/42558573076).
 
 Também havia runs dos commits anteriores `df4abbd` e `f2a8f86` em execução no momento da consulta. Não declarar o HEAD atual aprovado até os dois workflows dele concluírem com sucesso.
 
 ## 5. Frentes seguintes — avançar em paralelo
 
-1. **Progressão:** após CI, inspecionar o modelo e persistência de Mesa para implementar a configuração explícita do método; depois integrar criação do estado, contador de Missões, concessão de Marco, aplicação atômica no Descanso Completo e Morte.
+1. **Progressão:** proteger Classe e Nível no salvamento genérico está concluído no servidor. Próximo: inspecionar organização/persistência de Mesa para desenhar a configuração explícita do método; não inicializar Progressão até essa escolha estar definida. Depois integrar concessão de Marco, aplicação atômica no Descanso Completo e Morte.
 2. **Criação da Ficha:** continuar Origem, Classe, Perícias e Treinamento sem duplicar os catálogos existentes.
 3. **Habilidades:** completar a auditoria das descrições e integrar efeitos à Ficha/Combate; o catálogo atual já possui as habilidades por Classe e avaliadores de pré-requisitos.
 4. **Combate:** integrar ataques, dano, crítico, RD, BI, condições, durabilidade e estados de turno; preservar rolagens sob controle do jogador e modos de funcionamento.
