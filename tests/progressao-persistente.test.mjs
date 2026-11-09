@@ -48,6 +48,11 @@ test('registro de Morte distingue perda do nível 2 da penalidade por Morte no n
   };
   assert.equal(estadoProgressaoPersistenteValido(morteNivel1, 'Agente'), true);
   assert.equal(estadoProgressaoPersistenteValido({ ...morteNivel2, penalidadeMorteNivel1: true }, 'Agente'), false);
+  const recuperadoNivel2 = {
+    ...morteNivel1, nivelAtual: 2, missoesCompletadas: 1, penalidadeMorteNivel1: false,
+    beneficiosPorNivel: [{ nivel: 2, beneficios: [{ nivel: 2, tipo: 'habilidade', habilidadeId: 'nao-vai-escapar' }] }],
+  };
+  assert.equal(estadoProgressaoPersistenteValido(recuperadoNivel2, 'Agente'), true);
 });
 
 test('contador de Missões pode ser editado sem conceder nível nem alterar histórico', () => {
