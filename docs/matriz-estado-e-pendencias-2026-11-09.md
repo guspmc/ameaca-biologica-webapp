@@ -369,3 +369,16 @@ Novo arquivo: `tests/catalogo-armas-auditoria-completa.test.mjs`.
 - **Ainda pendente:** fechar matriz de cobertura das propriedades/procedimentos individuais e cruzamentos de compatibilidade com Peças Extras, munições e Habilidades; ampliar testes apenas onde essa matriz revelar lacunas.
 - **Não concluído:** sistema de Combate integrado, dano automático, consumo de munição ou equipamento ativo. Os catálogos continuam sendo referência.
 
+
+
+## Atualização — Ciclo 2: Iniciativa na Ficha (09/11/2026)
+
+- **IMPLEMENTADO:** a Ficha deixou de solicitar o resultado natural do d20 e passou a exibir apenas o modificador de Iniciativa derivado de AGI.
+- **IMPLEMENTADO:** removida a integração com `src/IniciativaFichaLocal.tsx`; o componente e seu fluxo de entrada de rolagem foram excluídos.
+- **TESTE AUTOMATIZADO ATUALIZADO:** `tests/iniciativa-ficha.test.mjs` agora verifica a exibição do modificador e a ausência de solicitação de rolagem na Ficha.
+- **REGRA PRESERVADA:** Arquivo do Jogador v1.0, p. 76 — Iniciativa = 1d20 + AGI. A Ficha não rola nem organiza a ordem; o fluxo cabe ao Painel do Mestre.
+- **PENDENTE:** integrar o modificador/rolagem ao futuro fluxo de Encontros do Painel do Mestre.
+- **LIMPEZA:** nenhum módulo de combate adicional foi removido sem auditoria de dependências.
+- **CI:** build [42655459041](https://github.com/guspmc/ameaca-biologica-webapp/actions/runs/42655459041) e verificação offline [42655459252](https://github.com/guspmc/ameaca-biologica-webapp/actions/runs/42655459252), ambos associados ao commit de código `b67548df116db614a047587de46a075c5ecafe67`; estavam em execução no momento do registro. Confirmar conclusão antes de considerar o ciclo validado.
+
+**Regra permanente de processo:** cada ciclo deve atualizar esta matriz e criar checkpoint com SHA, escopo, arquivos, testes, resultados, pendências e próximo passo. O checkpoint deve instruir a próxima sessão a ler a matriz e o checkpoint, confirmar HEAD e inspecionar dependências antes de alterar código. Não avançar sem apresentar o checkpoint ao Gus e obter validação.
