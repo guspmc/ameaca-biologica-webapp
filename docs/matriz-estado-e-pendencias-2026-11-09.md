@@ -331,3 +331,41 @@ Frentes podem avançar em paralelo quando não disputarem os mesmos arquivos/con
 - Inspeção do código confirmou os módulos e limites descritos neste documento.
 - Não houve merge para `main`, deploy ou alteração de produção.
 - Nenhuma bateria humana integrada foi solicitada ou executada.
+
+
+## 11. Atualização da auditoria de armas — 09/11/2026
+
+### Comparação manual com a fonte
+
+Foi feita conferência direta das tabelas e descrições individuais do Arquivo do Jogador v1.0:
+- Armas corpo a corpo: pp. 50–51 — 15 modelos.
+- Pistolas 9 mm: pp. 53–54 — 10 modelos.
+- Escopetas: p. 55 — 4 modelos.
+- Submetralhadoras: p. 56 — 4 modelos.
+- Rifles: p. 57 — 3 modelos.
+- Rifles de Precisão: p. 58 — 2 modelos.
+- Magnums: pp. 59–60 — 5 modelos.
+- Armas Especiais: pp. 60–61 — 6 modelos.
+- Regras gerais e ataques universais: pp. 48–52, conferidos em rodada anterior e complementados por procedimentos/testes específicos.
+
+Nos campos de tabela e exceções individuais examinados nesta passada, não foi identificada divergência material entre o livro e os perfis atuais. Isso é conclusão da comparação realizada, não declaração de que o sistema de Combate esteja integrado.
+
+### Cobertura automatizada adicionada
+
+Novo arquivo: `tests/catalogo-armas-auditoria-completa.test.mjs`.
+
+- Compara explicitamente os valores dos 15 perfis corpo a corpo: Grau, Dano, Crítico, Mãos, Espaços, Peças, Durabilidade e Aquisição.
+- Compara explicitamente os 34 perfis de armas de fogo/especiais: categoria, Grau quando aplicável, Dano, Crítico, capacidade, alcance, mãos, Espaços, Peças, Durabilidade, Recarga e Aquisição.
+- Mantém exceções como Requiem (Espaços variáveis) e RPG-7 (Dano/Crítico não definidos) explícitas.
+- Não altera os catálogos nem executa efeitos.
+
+**CI no HEAD `6fabb33c484cf696d2f24cd1e3a2ee9b472bc129`:**
+- Verificação Offline [42630134785](https://github.com/guspmc/ameaca-biologica-webapp/actions/runs/42630134785) — **success**.
+- Build [42630134878](https://github.com/guspmc/ameaca-biologica-webapp/actions/runs/42630134878) — **success**; incluiu testes PostgreSQL locais, compilação e verificação de tipos.
+
+### Estado da auditoria após esta rodada
+
+- **Concluído nesta passada:** conferência dos valores das tabelas de armas pp. 50–61 e cobertura automatizada exata dos 49 perfis.
+- **Ainda pendente:** fechar matriz de cobertura das propriedades/procedimentos individuais e cruzamentos de compatibilidade com Peças Extras, munições e Habilidades; ampliar testes apenas onde essa matriz revelar lacunas.
+- **Não concluído:** sistema de Combate integrado, dano automático, consumo de munição ou equipamento ativo. Os catálogos continuam sendo referência.
+
