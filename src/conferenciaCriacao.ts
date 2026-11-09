@@ -1,0 +1,70 @@
+import {simularCompras} from './comprasIniciais.ts';
+import {classePersonagem,termoPersonagem} from './textoPersonagem.ts';
+import {ORIGENS} from './origens.ts';
+import {HABILIDADES_BASICAS} from './habilidades.ts';
+import {PONTOS_CLASSE,PERICIAS_CLASSE} from './pericias.ts';
+import {capacidadeInventario,equipamentoInicial,espacosOcupados,opcoesEquipamento} from './equipamento.ts';
+import {armaOperarioValida} from './armaOperario.ts';
+import {calcularDerivadosCriacao} from './derivadosCriacao.ts';
+export type FichaRevisao={identidade?:{genero?:string};nome:string;classe:string|null;nivel:number;forca:number;agilidade:number;vigor:number;astucia:number;origem:string|null;pericia_origem_treinada:string|null;pericia_origem_extra:string|null;pontos_pericia_classe:Record<string,number>;habilidade_basica:string|null;arma_operario?:string|null;equipamento_inicial:string|null;compras_iniciais?:Record<string,number>;revisao_compras?:number;pv_maximo:number|null;sa_maximo:number|null;bi_maximo:number|null;defesa:number|null};
+export type Conferencia={nome:string;estado:'conferido'|'pendente'|'revisar';detalhe:string;secao:string};
+export function revisarCriacao(f:FichaRevisao):Conferencia[]{
+  const linhas:Conferencia[]=[];
+  const termo=(nome:string)=>termoPersonagem(nome,f.identidade?.genero);
+  const add=(nome:string,estado:Conferencia['estado'],detalhe:string,secao='perfil')=>linhas.push({nome,estado,detalhe,secao});
+  add('Identificação',f.nome.trim().length>=2&&f.nome.trim().length<=60?'conferido':'revisar',f.nome+' · campos narrativos opcionais');
+  const classeValida=Object.hasOwn(PONTOS_CLASSE,f.classe??'');
+  add('Classe e nível',classeValida&&f.nivel===1?'conferido':'revisar',`${classePersonagem(f.classe,f.identidade?.genero)} · nível ${f.nivel}. Esta revisão cobre a criação de nível 1.`);
+  const attrs=[f.forca,f.agilidade,f.vigor,f.astucia];
+  const attrsValidos=attrs.every(n=>Number.isInteger(n)&&n>=0&&n<=3)&&attrs.reduce((a,b)=>a+b,0)===7&&attrs.filter(n=>n===0).length<=1;
+  add('Atributos',attrsValidos?'conferido':'revisar',`FOR ${f.forca} · AGI ${f.agilidade} · VIG ${f.vigor} · AST ${f.astucia}. Base 1 em cada, +3 pontos; uma redução a 0 permite +1.`, 'pericias');
+  const origem=ORIGENS.find(o=>o.nome===f.origem);
+  const todas=['Acrobacia','Atletismo','Fortitude','Furtividade','Investigação','Luta','Medicina','Percepção','Pontaria','Reflexos','Sobrevivência','Vontade'];
+  const treinada=f.pericia_origem_treinada;
+  const extra=f.origem==='Amnésico'?f.pericia_origem_extra:origem?.pericias.find(p=>p!==treinada);
+  const origemValida=!!origem&&!!treinada&&(f.origem==='Amnésico'?todas.includes(treinada)&&!!extra&&todas.includes(extra)&&extra!==treinada:origem.pericias.includes(treinada)&&!f.pericia_origem_extra);
+  add('Origem e Treinamento',origemValida?'conferido':f.origem?'revisar':'pendente',`${termo(f.origem??'Escolha a Origem')} · Treinamento gratuito: ${treinada??'pendente'}${extra?' · outra opção: '+extra:''}`);
+  if(f.origem==='Operário') add('Arma da Origem',armaOperarioValida(f.arma_operario)?'conferido':f.arma_operario?'revisar':'pendente',armaOperarioValida(f.arma_operario)?`Arma escolhida: ${f.arma_operario}.`:'Escolha uma Arma Corpo a Corpo semelhante a uma ferramenta, conforme a Origem Operário.');
+  const pontos=f.pontos_pericia_classe??{};
+  const usados=Object.values(pontos).reduce((a,b)=>a+b,0);
+  const limite=PONTOS_CLASSE[f.classe??'']??0;
+  const permitidas=new Set([...(PERICIAS_CLASSE[f.classe??'']??[]),...(origemValida&&f.origem==='Amnésico'&&treinada?[treinada]:[]),...(origemValida&&extra?[extra]:[])]);
+  const pontosValidos=classeValida&&origemValida&&Object.entries(pontos).every(([p,n])=>permitidas.has(p)&&Number.isInteger(n)&&n>=0&&n+(p===treinada?1:0)<=2)&&usados<=limite;
+  add('Pontos de Perícia',!pontosValidos?'revisar':usados===limite?'conferido':'pendente',`${usados}/${limite} pontos salvos. Treinamento da Origem é gratuito; Mestre é o grau máximo.`,'pericias');
+  const hab=HABILIDADES_BASICAS.find(h=>h.id===f.habilidade_basica&&h.classe===f.classe);
+  add('Habilidade Básica',hab?'conferido':f.habilidade_basica?'revisar':'pendente',hab?`${termo(hab.nome)} · ${hab.referencia}`:'Escolha uma Básica da sua Classe.');
+  const kit=opcoesEquipamento(f.classe).find(o=>o.id===f.equipamento_inicial);
+  let ocupados:number|null=espacosOcupados(equipamentoInicial(f.classe,f.equipamento_inicial));
+  const capacidade=capacidadeInventario(f.forca,f.origem);
+  if(kit?.id==='C'){
+    try{
+      const plano=simularCompras(f.compras_iniciais??{},capacidade);
+      ocupados=plano.espacos;
+      const revisao=f.revisao_compras??0;
+      const valido=plano.orcamentoValido&&plano.cabe&&Number.isInteger(revisao)&&revisao>=0&&(revisao>0||plano.itens.length===0);
+      add('Compras do Personalizado',valido?'conferido':'revisar',
+        `Plano salvo: ${plano.itens.length?plano.itens.map(i=>i.nome+' × '+i.quantidade).join(' · '):'sem compras'}. ${plano.saldo}/3 Moedas restantes · ${plano.espacos}/${capacidade} Espaços. ${revisao>0?'Versão '+revisao+'.':'Plano inicial sem compras; as três Moedas estão preservadas.'} Disponibilidade será validada pelo servidor ao salvar; bloqueios posteriores não removem itens já salvos.`,'itens');
+    }catch{
+      ocupados=null;
+      add('Compras do Personalizado','revisar','O plano salvo contém dados inválidos. Confira o Inventário; nenhuma escolha foi alterada.','itens');
+    }
+  }else if(Object.keys(f.compras_iniciais??{}).length){
+    add('Compras do Personalizado','revisar','Há compras salvas fora do kit C. Confira o Inventário; nenhuma escolha foi alterada.','itens');
+  }
+  add('Equipamento inicial',kit?(ocupados!==null&&ocupados<=capacidade?'conferido':'revisar'):f.equipamento_inicial?'revisar':'pendente',kit?`${kit.id} · ${kit.nome} · ${ocupados??'?'}/${capacidade} Espaços. Característicos: 0 Espaços.`:'Escolha o conjunto inicial.','itens');
+  if(classeValida&&f.nivel===1&&attrsValidos){
+    const derivados=calcularDerivadosCriacao({
+      classe:f.classe!, origem:f.origem??'', habilidadeBasica:hab?.id??'',
+      atributos:{forca:f.forca,agilidade:f.agilidade,vigor:f.vigor,astucia:f.astucia},nivel:f.nivel,
+    });
+    const pv=derivados.pvMaximo, sa=derivados.saMaximo, bi=derivados.biMaxima, def=derivados.defesa;
+    for(const [nome,salvo,esperado,formula] of [
+      ['PV máximos',f.pv_maximo,pv,`Base da Classe + VIG ${f.vigor}${hab?.id==='parrudo'?' + '+termo('Parrudo')+' 5':''}`],
+      ['SA máximo',f.sa_maximo,sa,`AGI ${f.agilidade} + AST ${f.astucia}${f.origem==='Universitária'?' + '+termo('Universitária')+' 1':''}`],
+      ['BI máxima',f.bi_maximo,bi,`Base da Classe + AST ${f.astucia}${f.origem==='Cobaia'?' + Cobaia 2':''}${hab?.id==='parrudo'?' + '+termo('Parrudo')+' 3':''}`],
+      ['Defesa básica',f.defesa,def,`10 + AGI ${f.agilidade}${f.origem==='Policial'?' + Policial 2':''} · sem Colete equipado`]
+    ] as const)add(nome,salvo===esperado?'conferido':'revisar',`${formula} = ${esperado}. Salvo: ${salvo??'ausente'}.`);
+    add('Capacidade de Inventário','conferido',`4 + FOR ${f.forca}${f.origem==='Mochileiro'?' + '+termo('Mochileiro')+' 1':''} = ${capacidade}. Expansão equipada: nenhuma.`,'itens');
+  }
+  return linhas;
+}

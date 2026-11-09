@@ -1,0 +1,25 @@
+import React from 'react';
+import { createRoot } from 'react-dom/client';
+import FichaOfflineApp from './FichaOfflineApp';
+import ConexaoServidorLocal from './ConexaoServidorLocal';
+import './styles.css';
+
+// O cache offline guarda somente o shell estático; nunca dados pessoais/API.
+// A prévia de teste e o servidor de desenvolvimento não registram este worker.
+function registrarShellOffline() {
+  const modoTesteComPwa = import.meta.env.MODE === 'teste' && import.meta.env.VITE_PWA_TESTE === 'true';
+  if (!import.meta.env.PROD || (import.meta.env.MODE === 'teste' && !modoTesteComPwa) || !('serviceWorker' in navigator)) return;
+  void navigator.serviceWorker.register(`${import.meta.env.BASE_URL}sw.js`, {
+    scope: import.meta.env.BASE_URL,
+  }).catch(() => {
+    // Falha no service worker não deve impedir o uso online do WebApp.
+  });
+}
+if (document.readyState === 'complete') registrarShellOffline();
+else window.addEventListener('load', registrarShellOffline, { once: true });
+
+const root = document.querySelector<HTMLDivElement>('#root');
+if (!root) throw new Error('Elemento principal indisponível.');
+const parametros = new URLSearchParams(window.location.search);
+const Aplicacao = parametros.get('servidor') === 'local' ? ConexaoServidorLocal : FichaOfflineApp;
+createRoot(root).render(<React.StrictMode><Aplicacao /></React.StrictMode>);
