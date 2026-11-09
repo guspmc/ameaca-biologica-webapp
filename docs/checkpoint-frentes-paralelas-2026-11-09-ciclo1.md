@@ -239,3 +239,20 @@ No HEAD `ed3d5573dde6ad4eaf2705ca16a184bde6c29de2`:
 - Build [42627065264](https://github.com/guspmc/ameaca-biologica-webapp/actions/runs/42627065264) — **success**. Etapas incluem testes de regras/permissões em PostgreSQL local, compilação TypeScript/Vite e verificações de tipos.
 - Verificação offline [42627065307](https://github.com/guspmc/ameaca-biologica-webapp/actions/runs/42627065307) — **success**. Testes automatizados e validação do build concluídos.
 - Esses resultados validam o código até `ed3d557`; a atualização deste próprio checkpoint cria um novo HEAD documental e exigirá conferência final dos workflows correspondentes.
+
+
+## 8. Matriz geral de pendências — 09/11/2026
+
+Foi criada `docs/matriz-estado-e-pendencias-2026-11-09.md` para consolidar o estado de implementação, auditoria e testes do projeto com base na inspeção do código no HEAD `6bd0805ea4183043e0c8314f40e5a5459b8ec446`, nos checkpoints especializados e no Planejamento v2.5 (minuta).
+
+A matriz detalha:
+- Ficha: criação, identidade, Atributos/Perícias, Habilidades, recursos, Condições, Reanimação, Descanso, Progressão e Morte;
+- Combate: economia de ações, iniciativa, ataques, reações, dano, RD/BI, munição e persistência;
+- auditoria dos catálogos e procedimentos nas páginas 48–73;
+- Inventário ativo e Baú, com seus bloqueios;
+- Painel do Mestre, Missões, Arquivos e Encontros;
+- LAN, Laboratório, backup, conflitos, sessão e segurança;
+- bateria humana integrada, deliberadamente adiada até a Ficha estar completa;
+- ordem recomendada de execução e evidências de CI.
+
+A matriz distingue IMPLEMENTADO, TESTADO AUTOMATICAMENTE, AUDITORIA PARCIAL, PENDENTE DE INTEGRAÇÃO, PENDENTE HUMANO e DECISÃO PENDENTE. Não transforma a minuta v2.5 em documento aprovado e não altera o cânone.
