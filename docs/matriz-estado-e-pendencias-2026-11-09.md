@@ -498,3 +498,16 @@ Esta atualização substitui qualquer ordem anterior incompatível nesta matriz.
 - **Checkpoint:** `docs/checkpoint-progressao-ui-inicial-2026-11-09.md`.
 - **Próximo:** contrato de solicitação e escolhas de benefícios; transição pura com histórico exato; patch único com Descanso Completo; testes de atomicidade e backup.
 - Sem merge, deploy, produção/Supabase ou teste humano.
+
+
+## Atualização — Progressão Offline: proteção LAN e correção de teste legado (09/11/2026)
+
+- **IMPLEMENTADO:** `src/ProgressaoFichaLocal.tsx` mantém a edição habilitada somente na Ficha Offline. No contexto LAN, exibe aviso de somente leitura até existir fluxo próprio autorizado; evita enviar Progressão ao PUT genérico, que a protege por desenho.
+- **IMPLEMENTADO:** registro de Missões/Marcos e inicialização explícita no Nível 1; personagem acima do Nível 1 sem histórico continua bloqueada sem criação de benefícios presumidos.
+- **IMPLEMENTADO:** Nível persistido aparece dinamicamente no cabeçalho e na revisão da Ficha.
+- **TESTE CORRIGIDO:** `tests/pendencias-edicao.test.mjs` tinha expectativa obsoleta de que a calculadora não realizava rolagem virtual. A calculadora já implementa rolagem física/virtual sob ação expressa; o teste agora verifica esse comportamento e a ausência de persistência genérica dos resultados.
+- **EVIDÊNCIA CI:** workflow do commit ancestral `51f5d56837d0f7804414e5c970853f0ace0ea29c` falhou em 1 de 791 testes: exatamente a expectativa obsoleta acima; 790 passaram. O teste foi atualizado no commit `534ae7419951d52a449ab7c934c8cadd01111679`. Os dois workflows para o código `8c72ea0c10cf04e2290326655d31faefa818b2a1` estavam em execução no momento desta atualização; aguardar os novos workflows disparados pelo commit de teste antes de declarar CI aprovada.
+- **PENDENTE:** seleção/aplicação de benefícios, solicitação persistida, aplicação atômica com Descanso Completo, integração de Morte, testes específicos da UI e round-trip de backup/importação.
+- **HEAD de código/testes:** `534ae7419951d52a449ab7c934c8cadd01111679`.
+- **Checkpoint:** `docs/checkpoint-progressao-ui-inicial-2026-11-09.md`.
+- Sem merge para `main`, deploy, alteração de produção/Supabase ou teste humano.

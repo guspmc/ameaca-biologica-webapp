@@ -1,7 +1,7 @@
 # Checkpoint — Progressão Offline, interface inicial e registro de avanço
 **Data:** 09/11/2026  
 **Branch:** `feat/offline-first-ficha`  
-**HEAD de código:** `1f42aed224d4f9b578e52a59bcf4ce00379f2e69`
+**HEAD de código/testes:** `534ae7419951d52a449ab7c934c8cadd01111679`
 
 ## Escopo
 Primeira integração visível do estado de Progressão na Ficha. Este ciclo não aplica ganho de Nível nem benefícios; prepara o registro seguro de avanço e elimina a apresentação fixa de Nível 1 na identidade/revisão.
@@ -20,6 +20,7 @@ Primeira integração visível do estado de Progressão na Ficha. Este ciclo nã
   - Usa o Nível persistido no cabeçalho e na revisão, em vez de fixar Nível 1.
   - Passa o Nível vigente ao módulo de Descanso.
 - Mensagens de salvamento distinguem confirmação local e confirmação do servidor.
+- No contexto LAN, o painel fica em somente leitura até a implementação de um fluxo próprio de autorização/gravação; a UI Offline não tenta usar o PUT genérico protegido.
 
 ## Limites preservados
 - A edição do contador não concede Nível.
@@ -37,8 +38,15 @@ Primeira integração visível do estado de Progressão na Ficha. Este ciclo nã
 ## Testes e CI
 - Testes de domínio existentes em `tests/progressao-persistente.test.mjs` e `tests/progressao-habilidades.test.mjs` foram inspecionados, não executados nesta sessão.
 - Nenhum teste automatizado novo foi adicionado neste ciclo.
-- Para o commit de código `1f42aed224d4f9b578e52a59bcf4ce00379f2e69`, GitHub não retornou status checks nem workflow runs. **CI não comprovada; resultado PENDENTE.**
+- Workflow no commit ancestral `51f5d56837d0f7804414e5c970853f0ace0ea29c` falhou em 1 de 791 testes: expectativa obsoleta em `tests/pendencias-edicao.test.mjs` sobre a calculadora não realizar rolagem virtual; 790 testes passaram.
+- A expectativa foi atualizada no commit `534ae7419951d52a449ab7c934c8cadd01111679` para refletir a rolagem física/virtual expressa já implementada.
+- Os workflows do commit de código `8c72ea0c10cf04e2290326655d31faefa818b2a1` estavam em execução; os novos workflows do commit `534ae7419951d52a449ab7c934c8cadd01111679` ainda precisam ser consultados. **CI PENDENTE; não declarar suíte ou build aprovados.**
 - Build/TypeScript não executados localmente.
+
+## Arquivos e commits
+- `src/ProgressaoFichaLocal.tsx`: criado no commit `1f42aed224d4f9b578e52a59bcf4ce00379f2e69`; proteção LAN somente leitura no commit `8c72ea0c10cf04e2290326655d31faefa818b2a1`.
+- `src/FichaLocal.tsx`: integrado no commit `1f42aed224d4f9b578e52a59bcf4ce00379f2e69`.
+- `tests/pendencias-edicao.test.mjs`: expectativa de rolagem virtual atualizada no commit `534ae7419951d52a449ab7c934c8cadd01111679`.
 
 ## Próximo passo
 1. Completar o contrato de solicitação de avanço e escolha dos benefícios por Nível.
