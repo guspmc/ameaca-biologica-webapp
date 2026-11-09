@@ -15,7 +15,7 @@
 - **PENDENTE HUMANO:** depende de navegador, aparelho, rede ou observação humana. A bateria integrada está deliberadamente adiada até a Ficha estar completa.
 - **DECISÃO PENDENTE:** não implementar por suposição.
 
-A hierarquia normativa é: Arquivo do Jogador v1.0 e Arquivo do Mestre v1.0; decisões funcionais expressamente aprovadas; Planejamento v2.5 como minuta consolidada ainda aguardando validação; protótipos congelados apenas como referência visual; código e checkpoints como evidência técnica. Livro oficial prevalece sobre protótipo e código.
+A hierarquia normativa é: Arquivo do Jogador v1.0 e Arquivo do Mestre v1.0; decisões funcionais expressamente aprovadas; Planejamento v2.6 como guia de implementação aprovado para orientar o trabalho, com palavra final por deliberação conjunta; protótipos congelados apenas como referência visual; código e checkpoints como evidência técnica. Livro oficial prevalece sobre protótipo e código.
 
 ## 2. Ficha do Jogador — implementação restante
 
@@ -398,3 +398,18 @@ Novo arquivo: `tests/catalogo-armas-auditoria-completa.test.mjs`.
 
 - **Checkpoint deste ciclo:** `docs/checkpoint-roladores-basicos-ficha-2026-11-09.md`.
 - **HEAD documental atual:** `593988f2bdab4213952bd642dc013512631a265b`; código validado pela CI deve ser conferido no SHA `69b4839cae01f9a1fc7730f34bd45a53b3cc03de`.
+
+## Atualização — Rolagens integradas de Perícia e Atributo (09/11/2026)
+
+- **IMPLEMENTADO:** `src/CalculadoraTesteLocal.tsx` passou a usar o motor `src/rolagemDados.ts` para Testes de Perícia e Testes puros de Atributo no modo Automático.
+- **DADOS FÍSICOS:** o jogador informa a face ou as faces obtidas e confirma expressamente o resultado.
+- **DADOS VIRTUAIS:** o aplicativo gera os dados somente após o comando “Rolar Teste”.
+- **DADOS MISTOS:** o método pode ser escolhido em cada Teste.
+- **VANTAGEM/DESVANTAGEM:** preservado o procedimento de 2d20, escolhendo o melhor/pior resultado; Teste normal usa 1d20.
+- **FÓRMULAS:** Perícia usa `valorBasePericia` (Atributo associado já incluído, mais Treinamento e modificadores já existentes); Teste puro usa diretamente o Atributo escolhido. Modificadores de Origem, Tentativa e Erro e circunstanciais existentes permanecem no cálculo.
+- **RESULTADOS NATURAIS:** mantidos os tratamentos existentes de 20 natural e 1 natural em `src/testes.ts`. Nenhuma rolagem aplica automaticamente dano, altera recursos ou grava histórico.
+- **LIMITES:** a calculadora continua renderizada somente no modo Automático, por controle de `src/FichaLocal.tsx`. Misto/Manual não exibem o componente nem reservam espaço. Ataques continuam sem integração de arma equipada, bônus de arma/Peças ou Dano automático.
+- **TESTES AUTOMATIZADOS ADICIONADOS:** `tests/roladores-ficha.test.mjs` cobre resultados naturais, Vantagem/Desvantagem e a integração explícita de dados físicos/virtuais/mistos; `tests/ataques-calculadora.test.mjs` foi atualizado para refletir a calculadora com rolagem virtual sob comando.
+- **PENDENTE:** execução/resultado da CI para o código no SHA `4e1d67de002b04ee12707b44f71ae5e21f644a9b`; validação humana permanece reservada à bateria integrada final.
+- **PENDENTE DE DELIBERAÇÃO:** o Arquivo do Jogador p. 81 descreve a consequência de Exposto em Falha Crítica; o §7.6 da v2.6 mantém pendente a ativação automática da Condição. A interface apresenta o resultado, mas esta etapa não altera automaticamente a lista de Condições. Resolver a redação/alcance antes de integrar essa mutação.
+- **Não houve:** merge para `main`, deploy, alteração de produção ou teste humano.
