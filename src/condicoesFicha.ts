@@ -104,3 +104,15 @@ export function vulneravelPorPV(pvAtual: number, pvMaximo: number): boolean {
   if (!Number.isSafeInteger(pvAtual) || pvAtual < 0 || !Number.isSafeInteger(pvMaximo) || pvMaximo <= 0) throw new Error('PV inválidos para avaliar Vulnerável.');
   return pvAtual * 5 <= pvMaximo;
 }
+
+/** Gera ID compatível com navegadores/WebViews sem crypto.randomUUID funcional. */
+export function gerarIdCondicao(provedor: { randomUUID?: unknown } | null = globalThis.crypto): string {
+  if (typeof provedor?.randomUUID === 'function') {
+    return (provedor.randomUUID as () => string).call(provedor);
+  }
+  const aleatorio = () => Math.floor(Math.random() * 16).toString(16);
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, caractere => {
+    const valor = Number.parseInt(aleatorio(), 16);
+    return (caractere === 'x' ? valor : (valor & 0x3) | 0x8).toString(16);
+  });
+}
