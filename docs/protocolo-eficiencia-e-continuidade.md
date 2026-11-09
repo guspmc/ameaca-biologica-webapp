@@ -54,3 +54,16 @@ Reduzir retrabalho, preservar o tempo do usuário e garantir continuidade entre 
 ## Restrições
 
 Este protocolo não autoriza merge para `main`, deploy, alterações em produção, mudanças de stack ou alteração silenciosa do cânone. Permanecem válidas todas as regras de segurança, persistência, autorização e controle de concorrência do projeto.
+
+## Execução paralela por frentes independentes
+
+A execução deve avançar simultaneamente em todas as frentes que não dependam do mesmo contrato ou arquivo:
+
+1. Manter frentes explícitas (por exemplo: Progressão, Criação da Ficha, Habilidades, Combate, Descanso, Catálogos e Qualidade).
+2. Não bloquear uma frente por outra quando a tarefa puder ser implementada, auditada ou testada isoladamente.
+3. Identificar dependências reais antes de editar. Quando duas frentes precisarem alterar o mesmo arquivo ou contrato, coordenar a alteração em um lote integrado, sem sobrescritas concorrentes.
+4. Consolidar alterações em commits coerentes por frente ou por integração; evitar commits artificiais e testes repetidos sem mudança relevante.
+5. Executar CI no HEAD integrado mais recente e registrar separadamente resultados de cada commit ainda em execução.
+6. Atualizar o checkpoint com o estado de todas as frentes, incluindo o que avançou em paralelo, dependências, bloqueios e próxima ação de cada frente.
+
+A paralelização não autoriza mudanças de cânone, merge, deploy ou alteração de produção. A ordem final de integração continua subordinada às dependências reais e às validações de segurança.
