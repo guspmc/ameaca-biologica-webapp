@@ -157,6 +157,14 @@ function validarDadosFicha(valor: unknown): valor is Record<string, unknown> {
     if (plano.habilidades.length === ganhosPlanejados.length
       && !validarProgressaoHabilidades(valor.classe, plano.nivelAlvo as number, plano.habilidades as never).valida) return false;
   }
+  let progressaoFicha: EstadoProgressaoPersistente | null = null;
+  if ('progressao' in valor) {
+    if (typeof valor.classe !== 'string' || !Number.isSafeInteger(valor.nivel)
+      || !objeto(valor.progressao)
+      || valor.progressao.nivelAtual !== valor.nivel
+      || !estadoProgressaoPersistenteValido(valor.progressao, valor.classe)) return false;
+    progressaoFicha = valor.progressao as EstadoProgressaoPersistente;
+  }
   if ('habilidadesAdquiridas' in valor) {
     if (!Array.isArray(valor.habilidadesAdquiridas) || typeof valor.classe !== 'string'
       || !Number.isSafeInteger(valor.nivel)) return false;
@@ -181,14 +189,6 @@ function validarDadosFicha(valor: unknown): valor is Record<string, unknown> {
         .sort((a, b) => a.nivel - b.nivel);
       if (JSON.stringify(registradas) !== JSON.stringify(esperadas)) return false;
     }
-  }
-  let progressaoFicha: EstadoProgressaoPersistente | null = null;
-  if ('progressao' in valor) {
-    if (typeof valor.classe !== 'string' || !Number.isSafeInteger(valor.nivel)
-      || !objeto(valor.progressao)
-      || valor.progressao.nivelAtual !== valor.nivel
-      || !estadoProgressaoPersistenteValido(valor.progressao, valor.classe)) return false;
-    progressaoFicha = valor.progressao as EstadoProgressaoPersistente;
   }
   if ('usosDescansoCompleto' in valor && !usosDescansoCompletoValido(valor.usosDescansoCompleto)) return false;
   for (const campo of ['pvAtual', 'pvTemporarios', 'saAtual'] as const) {
