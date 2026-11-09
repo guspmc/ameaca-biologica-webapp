@@ -103,3 +103,11 @@ test('TMP não permite Coronhada nem Aparar pela Coronha Leve', () => {
   assert.match(texto, /Coronha Leve/);
   assert.match(texto, /não permite Coronhada nem Aparar pela coronha/);
 });
+
+test('regra geral de Recarga preserva custos usuais, prevalência individual e piso de custo', () => {
+  const texto = consultarProcedimentoArma('sentinel-nine').emCombate.join(' ');
+  assert.match(texto, /Pistolas e Magnums do tipo pistola normalmente usam Ação Bônus/);
+  assert.match(texto, /Escopetas, Revólveres Magnum e Armas Especiais normalmente usam Movimento/);
+  assert.match(texto, /descrição individual prevalece/);
+  assert.match(texto, /Nenhuma redução de custo pode levar uma Recarga abaixo de Interação Gratuita com Objeto/);
+});
