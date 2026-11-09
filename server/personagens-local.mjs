@@ -1,4 +1,5 @@
 import { randomBytes } from 'node:crypto';
+import { isDeepStrictEqual } from 'node:util';
 import { autenticarContaLocal } from './auth-local.mjs';
 import { validarCriacaoNoServidor } from '../src/validarCriacaoServidor.ts';
 import { estadoEconomiaAcoesValido } from '../src/economiaAcoes.ts';
@@ -279,9 +280,14 @@ export async function tratarRotaPersonagensLocal(req, res, url, db, notificarCon
             responder(res, 422, { error: 'O estado persistente de Progressão é inválido ou está dessincronizado do Nível da personagem.' });
             return true;
           }
+          if (!estadoProgressaoPersistenteValido(progressaoAtual, dadosAtuaisProgressao.classe)
+            || progressaoAtual.nivelAtual !== dadosAtuaisProgressao.nivel) {
+            responder(res, 409, { error: 'O estado de Progressão já persistido está inválido ou dessincronizado; exige reconciliação antes de nova edição.' });
+            return true;
+          }
           const camposProgressaoProtegidos = Object.keys(progressaoAtual).filter(campo => campo !== 'missoesCompletadas');
           const progressaoAlterada = camposProgressaoProtegidos.some(campo =>
-            JSON.stringify(progressaoAtual[campo] ?? null) !== JSON.stringify(progressaoNova[campo] ?? null)
+            !isDeepStrictEqual(progressaoAtual[campo], progressaoNova[campo])
           );
           if (progressaoAlterada) {
             responder(res, 403, { error: 'Somente o contador de Missões pode ser editado diretamente pelo Jogador; benefícios, Nível, método, Marcos e registros de Morte exigem os fluxos próprios.' });
