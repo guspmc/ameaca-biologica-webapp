@@ -88,3 +88,12 @@ test('Redemption conserva munição de Rifle, tiro único e uso com uma mão', (
   assert.match(texto, /Forte Coice narrativo/);
   assert.match(texto, /Recarga: Ação Bônus/);
 });
+ 
+test('Coronhada respeita autorização e exceções expressas de cada arma', () => {
+  assert.match(consultarProcedimentoArma('riot-gun').emCombate.join(' '), /Coronhada permitida pela ficha/);
+  assert.match(consultarProcedimentoArma('hydra').emCombate.join(' '), /não permite Coronhada/);
+  assert.match(consultarProcedimentoArma('striker').emCombate.join(' '), /não permite Coronhada/);
+  assert.match(consultarProcedimentoArma('tmp').emCombate.join(' '), /não permite Coronhada/);
+  assert.match(consultarProcedimentoArma('dragoon').emCombate.join(' '), /somente é permitida se a ficha autorizar explicitamente/);
+  assert.match(consultarProcedimentoArma('riot-gun').emCombate.join(' '), /Dano 1d6 \+ FOR/);
+});

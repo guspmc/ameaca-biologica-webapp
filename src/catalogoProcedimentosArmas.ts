@@ -41,7 +41,14 @@ const procedimentos: ProcedimentoArma[] = [
     const regraAtaqueAplicavel = semDisparoUnico
       ? 'Esta arma não possui Disparo Único: não pode realizar o Ataque à Distância padrão de um cartucho. Use somente os modos de disparo concedidos pela ficha da arma, respeitando alcance, mãos exigidas, proficiência e munição disponível. A rolagem e o dano permanecem sob controle do jogador; este catálogo não rola nem aplica efeitos.'
       : regraAtaqueFogo;
-    const combate = [regraAtaqueAplicavel, `Capacidade: ${arma.capacidade}; recarga indicada na ficha: ${arma.recarga}.`];
+    const permiteCoronhada = especiais.some(x => /permite Coronhada/i.test(x)) && !especiais.some(x => /não permite Coronhada|Sem Coronhada/i.test(x));
+    const proibeCoronhada = especiais.some(x => /não permite Coronhada|Sem Coronhada|Sem coronha/i.test(x));
+    const regraCoronhada = permiteCoronhada
+      ? 'Coronhada permitida pela ficha: Ataque Corpo a Corpo normal, sem a Desvantagem de Ataque Desarmado, Dano 1d6 + FOR.'
+      : proibeCoronhada
+        ? 'Esta arma não permite Coronhada.'
+        : 'Coronhada somente é permitida se a ficha autorizar explicitamente, a arma exigir 2 mãos e possuir coronha resistente; nesse caso é Ataque Corpo a Corpo normal, sem a Desvantagem de Ataque Desarmado, Dano 1d6 + FOR.';
+    const combate = [regraAtaqueAplicavel, `Capacidade: ${arma.capacidade}; recarga indicada na ficha: ${arma.recarga}.`, regraCoronhada];
     if (especiais.some(x => /Disparo Cadenciado/.test(x))) {
       combate.push('Disparo Cadenciado, quando concedido pela ficha da arma ou Peça Extra: usa um Ataque normal, consome 5 cartuchos em vez de 1 e adiciona +2 Dados de Dano do mesmo tipo. A Matilda com sua Coronha específica consome 3 cartuchos.');
     }
