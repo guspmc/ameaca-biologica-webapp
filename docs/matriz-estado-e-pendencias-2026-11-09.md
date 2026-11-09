@@ -1,0 +1,333 @@
+# Matriz de implementação, auditoria e testes — 09/11/2026
+
+**Projeto:** Ameaça Biológica RPG — WebApp/PWA  
+**Repositório:** `guspmc/ameaca-biologica-webapp`  
+**Branch:** `feat/offline-first-ficha`  
+**HEAD-base inspecionado:** `6bd0805ea4183043e0c8314f40e5a5459b8ec446`  
+**Finalidade:** inventário rastreável do que falta implementar, auditar e validar, evitando redescoberta entre ciclos.
+
+## 1. Como interpretar esta matriz
+
+- **IMPLEMENTADO:** há código identificável na branch.
+- **TESTADO AUTOMATICAMENTE:** há testes correspondentes; a CI do HEAD-base passou.
+- **AUDITORIA PARCIAL:** houve comparação com fonte oficial, mas não fechamento exaustivo.
+- **PENDENTE DE INTEGRAÇÃO:** módulos existem isoladamente, mas ainda não compõem o fluxo funcional completo.
+- **PENDENTE HUMANO:** depende de navegador, aparelho, rede ou observação humana. A bateria integrada está deliberadamente adiada até a Ficha estar completa.
+- **DECISÃO PENDENTE:** não implementar por suposição.
+
+A hierarquia normativa é: Arquivo do Jogador v1.0 e Arquivo do Mestre v1.0; decisões funcionais expressamente aprovadas; Planejamento v2.5 como minuta consolidada ainda aguardando validação; protótipos congelados apenas como referência visual; código e checkpoints como evidência técnica. Livro oficial prevalece sobre protótipo e código.
+
+## 2. Ficha do Jogador — implementação restante
+
+### 2.1 Criação e identidade
+
+**Já existe**
+- Ficha contínua com seções Características, Atributos e Perícias, Combate e Inventário.
+- Editores de Classe, Origem, Habilidade Básica, Identidade, Atributos, distribuição de Perícias e equipamento inicial.
+- Revisão da criação, validação local e conferência/ativação LAN.
+- Planejamento de criação em nível superior, separado do fluxo de criação de nível 1.
+- Validação de Origem Operário e arma exigida; regra do Amnésico e Perícia adicional foram corrigidas em ciclos anteriores.
+
+**Falta**
+- Auditoria mecânica integral da criação de nível 1 contra todas as opções, exceções e fórmulas do Arquivo do Jogador.
+- Conferir que todos os benefícios de Origem e Classe repercutem nos valores derivados e nos módulos consumidores, sem duplicar bônus.
+- Fechar a distinção entre planejamento de criação em nível superior e Progressão real de uma Personagem ativa.
+- Revisar consistência entre criação local, validação de servidor, revisão de ativação e inventário inicial materializado.
+
+**Testes**
+- Automatizar combinações e casos-limite de Classe × Origem × Atributos × Perícias × Habilidade × equipamento.
+- Cobrir migração e compatibilidade de rascunhos antigos.
+- Teste humano de criação completa será feito somente na bateria integrada final.
+
+### 2.2 Atributos, Perícias e Habilidades
+
+**Já existe**
+- Distribuição inicial de Atributos e Pontos de Perícia.
+- Cálculo de Perícias e valores passivos.
+- Catálogo de Habilidades Básicas e catálogo de progressão para Básicas, Avançadas, Superiores e Avassaladoras.
+- Avaliadores de pré-requisitos, ramo, Classe e grau.
+- Planejador de escolhas de Habilidades para rascunhos de criação em nível superior.
+
+**Falta**
+- Completar auditoria de todas as Habilidades e suas interações.
+- Completar a integração de efeitos de Habilidades nos módulos que os consomem: testes, ações, combate, recursos, descanso e equipamentos.
+- Separar claramente efeito informativo de efeito mecânico já aplicado; não exibir como ativo um efeito ainda não integrado.
+- Integrar ganhos de Atributo e Perícia por Progressão, com histórico exato de valores anteriores.
+- Conferir se bônus de fontes distintas acumulam ou não conforme cada regra, sem generalização indevida.
+
+**Testes**
+- Cobertura de pré-requisitos, incompatibilidades, escolhas repetidas, limites de Atributo e Perícia, e efeitos de cada Habilidade.
+- Testes de regressão de todas as Classes e Origens após integrar efeitos.
+- Não solicitar reteste humano isolado de Classes/Habilidades antes da bateria final.
+
+### 2.3 Recursos, Bio-Infecção, Condições, Reanimação e Descanso
+
+**Já existe**
+- Módulos de PV, SA, BI, Defesa derivada e fase de Bio-Infecção.
+- Painel unificado de Condições com confirmação, fonte/causa, duração/critério e histórico.
+- Reanimação com avaliadores e interface.
+- Descanso Parcial e Completo; renovação de usos limitados.
+- Validação de Condições e estados relacionados.
+
+**Falta**
+- Integrar efeitos de Habilidades, equipamentos e combate nos recursos derivados sem duplicação.
+- Fechar integração de Reanimação com estados de combate e consequências de Morte.
+- Integrar Progressão ao Descanso Completo válido na Sala de Descanso.
+- Garantir encerramento de Condições somente nos critérios e momentos previstos; BI/infecções não são limpas genericamente por descanso.
+- Revisar todos os casos de alteração de PV/SA/BI por ataques, itens, descanso, reanimação e habilidades.
+
+**Testes**
+- Testes de tabela para todas as fases de BI e modificadores.
+- Condições duplicadas, duração independente, encerramento e preservação de histórico.
+- Descanso Parcial/Completo, limites, dados físicos, modos de dados e persistência.
+- Reanimação, PV 0, sucesso/falha e interações de Origem/Habilidade.
+- A correção de compatibilidade de `crypto.randomUUID` possui teste automatizado; repetição em Android/WebView continua pendente para a bateria humana final.
+
+### 2.4 Progressão de Nível — prioridade estrutural
+
+**Já existe**
+- `src/progressaoHabilidades.ts`: elegibilidade, pré-requisitos, ganhos por nível e avaliação das escolhas.
+- `src/progressaoPersistente.ts`: contrato versionado v1, histórico de benefícios, contador de Missões, método e dados de Morte.
+- `src/progressaoMorte.ts`: planejamento seguro da perda de nível e validação dos benefícios que precisam ser revertidos.
+- Validação local da Progressão quando presente no registro da Personagem.
+- Backup JSON e IndexedDB usam a validação comum; testes de round-trip foram adicionados.
+- Servidor LAN protege o estado no PUT genérico: apenas `missoesCompletadas` pode ser editado diretamente pelo Jogador; Classe, Nível, método, Marcos, benefícios e histórico de Morte exigem fluxos próprios.
+- O servidor rejeita Progressão persistida inválida ou dessincronizada.
+
+**Falta**
+1. Definir a configuração do método de Progressão por Mesa. O contrato atual da Mesa tem `creationMethod` e `maxLevel`, mas não o método de Progressão. Não confundir método de criação com método de Progressão.
+2. Resolver a decisão para Mesas existentes e novas; o Arquivo do Mestre prefere Marco Narrativo, Missões é opcional. Não inicializar estado com um padrão técnico inventado.
+3. Inicializar Progressão em Personagens elegíveis sem quebrar fichas antigas.
+4. Criar fluxos próprios para concessão/reconhecimento de Marco Narrativo e edição do contador conforme a regra aprovada.
+5. Integrar a elegibilidade e a aplicação atômica de nível ao Descanso Completo na Sala de Descanso.
+6. Integrar escolhas de Habilidade, Atributo e Perícia e registrar exatamente o benefício aplicado em cada nível.
+7. Persistir tudo em IndexedDB/backup e LAN, com revisão, autorização, concorrência e migração estrita.
+8. Integrar nível máximo configurado na Mesa, respeitando o limite da campanha.
+9. Preservar cronologia de Missões/Marcos após Morte para exigir progresso posterior real.
+
+**Testes**
+- Elegibilidade nos requisitos acumulados de Missões e por Marco Narrativo.
+- Não subir automaticamente ao editar contador.
+- Não evoluir fora de Descanso Completo válido/Sala de Descanso no método de Missões.
+- Aplicação atômica: falha não deixa nível ou benefício parcialmente aplicado.
+- Duas sessões concorrentes, repetição de pedido, resposta de rede ambígua e revisão antiga.
+- Backup/importação e migração de fichas sem Progressão.
+- Autorização entre Jogador e Mestre.
+
+**Decisão pendente:** método de Progressão por Mesa e política de inicialização para Mesas antigas/novas.
+
+### 2.5 Consequência de Morte
+
+**Já existe**
+- Modelo de benefício por nível e avaliador que planeja a reversão.
+- Regra de penalidade -2 para Morte no nível 1.
+- Validação do estado persistente e bloqueios no salvamento genérico.
+
+**Falta**
+- Fluxo de registro de Morte LAN exclusivo do Mestre.
+- Fluxo de Morte Offline iniciado pelo Jogador, com confirmação e marca local/não confirmada.
+- Aplicar reversão real dos benefícios do nível perdido, sem adivinhar escolhas.
+- Registrar snapshot/cronologia para exigir Missão ou Marco posterior à Morte.
+- Encerrar penalidade de nível 1 somente quando a recuperação for válida.
+- Reconciliação Offline/LAN sem sobrescrever ou duplicar consequências.
+
+**Testes**
+- Morte em cada nível, especialmente 1, 2 e níveis com ganhos múltiplos.
+- Reversão exata de Habilidade, Atributo e Perícia.
+- Histórico ausente/corrompido deve bloquear reversão automática e preservar dados.
+- Progresso anterior à Morte não pode satisfazer requisito posterior.
+- Morte local conflitante com registro LAN e repetição de operação.
+
+## 3. Combate — implementação restante
+
+### Já existe
+- Economia de ações, SA/Esforço e estado persistente de turno.
+- Manobras operacionais: Desengajar, Disparada, Fuga, Mirar, Ataque, Ajudar, Usar Objeto e Combate com Duas Armas.
+- Iniciativa com entrada manual de d20 e soma de AGI; sem rolagem automática.
+- Calculadora manual para tipos de Teste já implementados.
+- Reações e Ataque de Oportunidade possuem avaliadores.
+- Painel de ações registra gastos e lembretes de Condições.
+- Procedimentos de armas e ataques universais estão em catálogos de consulta.
+
+### Falta integrar
+1. Fluxo completo de Iniciativa da Mesa: participantes, desempates, re-rolagem quando aplicável, ordem e persistência.
+2. Ataque contra Defesa de alvo e registro da origem do ataque.
+3. Janela de Reação após resultado conhecido e antes de Dano/BI/Condições.
+4. Defesa ativa: Aparar, Esquiva quando habilitada, Contra-Ataque e Ataque de Oportunidade integrados ao turno.
+5. Cálculo/registro de Dano, crítico, multiplicadores, Dano Massivo, RD, BI e PV.
+6. Munição carregada, recarga e consumo por modo de disparo, respeitando as exceções de cada arma.
+7. Durabilidade por Aparar e manutenção, incluindo Hatchet Indestrutível.
+8. Efeitos de Habilidades, Peças, Condições e propriedades de armas no cálculo.
+9. Duração de Condições por turnos/rodadas com administração manual do Mestre, sem expiração automática indevida.
+10. Estado de combate compartilhado na LAN e consistência com a Ficha do Jogador e Painel do Mestre.
+
+### Testes
+- Testes unitários de cada etapa e sequência válida/inválida.
+- Crítico natural 20 e margens ampliadas por 19, sem confundir os efeitos.
+- Reação em ataque que erra e fechamento da janela em 20 natural.
+- Dano Massivo e Decepamento sem morte/amputação inventada.
+- Defesa, RD, BI, PV, munição, Durabilidade e custos de ação.
+- Combate com Duas Armas e exceções de Habilidades.
+- Persistência e concorrência em duas sessões.
+- Teste integrado automatizado de um encontro completo, com entradas manuais e sem rolagens ou efeitos não autorizados.
+
+**Limite:** não implementar automação narrativa, rolagem presumida ou aplicação automática de efeitos que pertencem ao Jogador/Mestre.
+
+## 4. Catálogos e auditoria contra os livros
+
+### 4.1 Armas — Arquivo do Jogador pp. 48–61
+
+**Já existe**
+- 15 perfis de armas corpo a corpo e 34 perfis de armas de fogo/especiais.
+- Procedimentos para armas, regras gerais, recarga, Coice, modos de disparo, exceções e regras especiais.
+- Catálogo separado para Arma Improvisada e Ataque Desarmado, conforme p. 52.
+- Testes de cobertura estrutural e exceções identificadas.
+
+**Auditoria**
+- Regras gerais pp. 48–52: primeira passada e correções recentes; continuar conferência exaustiva de alcance, Durabilidade, saque/guarda, Recarga, Coice, ciclo manual, Disparo Cadenciado, Rajada, Perfuração, Decepamento, Carnificina, coronhada e ataques universais.
+- Armas corpo a corpo pp. 50–51: conferir linha a linha valores de dano, crítico, mãos, Espaços, Peças, Durabilidade, alcance, aquisição e propriedades individuais.
+- Pistolas pp. 53–54; Escopetas p. 55; Submetralhadoras p. 56; Rifles/Rifles de Precisão pp. 57–58; Magnums pp. 59–60; Armas Especiais pp. 60–61: conferir cada perfil e exceção individual, inclusive recarga, munição, modo de disparo, mãos, coronha, Coice e propriedade especial.
+- Confirmar testes para toda exceção real; não criar testes redundantes para texto sem comportamento mecânico.
+
+### 4.2 Peças, munições, coletes e lanternas — pp. 62–67
+
+**Já existe**
+- 31 Peças Extras, 13 tipos de munição, 8 configurações de colete e 28 itens de exploração.
+- Procedimentos de instalação/troca, munição de reserva, proteções e uso de itens.
+
+**Auditoria**
+- A comparação de peças, munições, coletes e lanternas foi registrada como primeira passada sem divergência material no checkpoint de 09/11.
+- Falta fechamento final cruzado com todas as compatibilidades e exceções, verificando se os procedimentos não conflitam com o catálogo principal.
+- Itens de exploração precisam de auditoria final integrada com suas regras de uso e ausência de custos não especificados.
+
+### 4.3 Receitas e fabricação — pp. 71–73
+
+**Já existe**
+- 15 receitas e regras gerais de fabricação medicinal e de armamento.
+- Testes de ingredientes, DT, tempo, requisitos e efeitos catalogados.
+
+**Auditoria/testes pendentes**
+- Fechar revisão linha a linha de cada receita e requisito.
+- Verificar falha, consumo/preservação de ingredientes, tempo, exceções por Habilidade e requisitos de local/ferramenta.
+- Confirmar que o catálogo não executa fabricação nem consome materiais.
+
+### Limite dos catálogos
+Catálogo é referência. Não significa posse, quantidade no Inventário, arma equipada, munição carregada, consumo, transferência, fabricação ativa ou efeito já aplicado na ficha.
+
+## 5. Inventário ativo e Baú — bloqueados por dependência
+
+**Já existe**
+- Planejamento de equipamento inicial e compras no rascunho.
+- Cálculo de capacidade e ocupação na prévia de criação.
+- Materialização transacional do Inventário inicial durante ativação LAN.
+- Catálogos e procedimentos necessários como referência.
+- Módulos de domínio/consulta/organização foram identificados no repositório, mas não equivalem ao fluxo ativo integrado.
+
+**Falta**
+- Inventário ativo contínuo da Personagem: grade, ocupação, itens, equipamentos, munição, uso, combinação, fabricação e transferência conforme regras.
+- Integrar Habilidades, capacidade, expansões, peças, coletes e estados de equipamento.
+- Operações atômicas e idempotentes para ações que movem/consomem múltiplos itens.
+- Morte/perda/recuperação de itens.
+- Baú compartilhado da Mesa, permissões e transferências LAN.
+- Política final de mutações do Inventário próprio em Offline; não permitir operações compartilhadas offline.
+
+**Bloqueio:** não ativar nem iniciar a implementação funcional do Inventário ativo antes da Ficha completa, auditorias, suíte automatizada e uma única bateria humana integrada final. O Baú e transferências compartilhadas são etapa posterior.
+
+## 6. Painel do Mestre, Missões, Arquivos e Encontros
+
+**Já existe**
+- Navegação Mesa/Encontros/Arquivos.
+- Administração de Mesa, convites, solicitações, aprovação/recusa e remoção de participante.
+- Resumo operacional da Personagem.
+- Esqueleto do painel com áreas para encontros, criaturas, documentos, diário e narração.
+
+**Falta**
+- Painel operacional integrado ao mesmo registro das Fichas ativas, sem editor universal.
+- Resumo limitado a Nível, Classe, PV, SA, Defesa, BI, Condições e Habilidades passivas relevantes.
+- Modelos e contratos de Missões, Cinemáticas, objetivos, conclusão e vínculo com Progressão.
+- Arquivos privados/compartilhados, revelação/revogação, leitura e permissões sem vazamento por cache/consulta.
+- Diário e notas secretas privadas do Mestre.
+- Catálogo canônico completo de criaturas a partir do Arquivo do Mestre; protótipos com dados fictícios não são canônicos.
+- Encontros preparados/ativos, iniciativa, turnos, rodadas, criaturas e contadores operacionais.
+- Preservação de contexto ao consultar arquivos/regras e retornar ao encontro/ficha.
+
+**Testes**
+- Isolamento Jogador/Mestre e entre Mesas.
+- Arquivo privado não pode vazar por rota, cache, busca ou resposta do servidor.
+- Revelar/desfazer compartilhamento com atualização entre clientes.
+- Painel lê o mesmo estado persistido da Ficha.
+- Encontro não aplica dano/efeitos ao avançar turno.
+- Ações administrativas autorizadas e auditadas.
+
+## 7. LAN, Laboratório, persistência e segurança
+
+### Já existe
+- Conta/sessão local, Mesas, convites, pedidos de ingresso, participantes e rascunhos.
+- Servidor Node.js/SQLite e canal WebSocket.
+- Sessão persistente por cookie HttpOnly e testes automatizados.
+- Autorização por vínculo/conta/papel em rotas de Personagem.
+- Revisões, transações, idempotência e recibo de ativação.
+- QR/endereço LAN e módulos de Laboratório/configuração.
+- IndexedDB Offline e backup JSON versionado.
+
+### Falta
+- Transporte seguro LAN; HTTP permanece limitação de segurança e o servidor é experimental.
+- Fechar política de nickname, nomes reservados, colisões e recuperação de conta sem e-mail.
+- Fechar retenção/arquivamento/reabertura/exclusão de Mesas e Personagens.
+- Definir reconciliação Offline/LAN por tipo de dado; não mesclar automaticamente estado compartilhado.
+- Definir dados locais mínimos após remoção/revogação de acesso à Mesa.
+- Completar Laboratório como entrada unificada: testar endereço configurado, disponibilidade real do servidor (não apenas `navigator.onLine`), LAN ou fallback Offline, QR e preservação do legado.
+- Garantir isolamento de dados no cache/service worker, logs e armazenamento.
+- Validar reconexão WebSocket e respostas tardias após troca de contexto.
+- Portabilidade: Windows primeiro; Linux Mint depois; Android/DeX somente após o núcleo Windows estabilizado.
+
+### Testes
+- Duas contas reais distintas, duas Mesas, papéis diferentes, remoção e sessão expirada.
+- Recarga/reabertura de navegador e persistência de cookie.
+- QR entre dispositivos na mesma rede, endereço correto e aprovação explícita.
+- Queda/retorno de Wi-Fi, reinício do servidor, suspensão Android, internet indisponível com LAN ativa.
+- Salvamento concorrente, revisão antiga, resposta ambígua, repetição de operações.
+- Backup completo: exportar, prévia, IDs duplicados, importar, falha atômica e versões desconhecidas.
+- Instalação PWA, abrir sem rede, atualização do shell e persistência IndexedDB.
+
+## 8. Bateria humana integrada — ainda não solicitar
+
+Somente depois de fechar a implementação da Ficha e passar pelas auditorias/testes automatizados, executar uma única bateria integrada imediatamente antes de liberar Inventário ativo. Ela deve cobrir, em roteiro agrupado:
+
+1. criação completa, revisão e ativação;
+2. navegação contínua e edição de Identidade em Windows e Android;
+3. persistência Offline, fechar/reabrir, F5 e backup/importação;
+4. recursos, Condições, descanso, BI e Reanimação;
+5. Progressão e Morte, quando implementadas;
+6. Combate completo com entradas manuais;
+7. modo de dados e preferências Automático/Misto/Manual;
+8. LAN: duas contas, permissões, isolamento, sessão, QR e reconexão;
+9. sincronização Ficha/Painel e preservação de contexto;
+10. regressões dos fluxos anteriores.
+
+Os resultados devem registrar dispositivo/navegador, versão/build, cenário, passos, esperado, observado, evidência e classificação (aprovado/parcial/reprovado/inconclusivo). Não pedir testes intermediários repetitivos ao responsável.
+
+## 9. Ordem de trabalho recomendada
+
+1. Continuar auditoria individual das armas pp. 48–61 e fechar testes apenas para divergências/lacunas reais.
+2. Consolidar a matriz de auditoria de catálogos pp. 62–73 e fechar pendências residuais.
+3. Resolver a decisão de método de Progressão por Mesa antes de inicializar dados.
+4. Integrar Progressão à Ficha, Descanso Completo, backup/IndexedDB e LAN.
+5. Implementar Consequência de Morte integrada.
+6. Fechar efeitos de Habilidades e suas integrações.
+7. Completar Combate na Ficha e contratos do Painel/Encontros.
+8. Fechar persistência, Laboratório, permissões e segurança LAN.
+9. Executar suíte automatizada completa e auditoria cruzada.
+10. Executar a bateria humana integrada uma única vez.
+11. Somente após aprovação, liberar Inventário ativo; depois Baú e transferências compartilhadas.
+
+Frentes podem avançar em paralelo quando não disputarem os mesmos arquivos/contratos. A ordem acima não autoriza ignorar dependências.
+
+## 10. Evidência e situação do HEAD-base
+
+- HEAD-base: `6bd0805ea4183043e0c8314f40e5a5459b8ec446`.
+- Build GitHub Actions [42627445025](https://github.com/guspmc/ameaca-biologica-webapp/actions/runs/42627445025): **success**.
+- Verificação Offline [42627444941](https://github.com/guspmc/ameaca-biologica-webapp/actions/runs/42627444941): **success**.
+- Inspeção do código confirmou os módulos e limites descritos neste documento.
+- Não houve merge para `main`, deploy ou alteração de produção.
+- Nenhuma bateria humana integrada foi solicitada ou executada.
