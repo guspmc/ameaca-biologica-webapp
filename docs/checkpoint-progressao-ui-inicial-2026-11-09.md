@@ -1,7 +1,7 @@
 # Checkpoint — Progressão Offline, interface inicial e registro de avanço
 **Data:** 09/11/2026  
 **Branch:** `feat/offline-first-ficha`  
-**HEAD de código/testes:** `76f7b03670b593b4943d904806cac685b6725adc`
+**HEAD de código/testes:** `fc187b9c9b3a3d7f42d39d409c76ace912d475f8`
 
 ## Escopo
 Primeira integração visível do estado de Progressão na Ficha. Este ciclo não aplica ganho de Nível nem benefícios; prepara o registro seguro de avanço e elimina a apresentação fixa de Nível 1 na identidade/revisão.
@@ -45,10 +45,17 @@ Primeira integração visível do estado de Progressão na Ficha. Este ciclo nã
 - Build/TypeScript não executados localmente.
 
 ## Arquivos e commits
+- `src/validacaoPersonagemLocal.ts` e `tests/validacao-personagem-local.test.mjs`: reconstrução reversa e testes de Atributos/Perícias/Habilidades com Progressão no commit `fc187b9c9b3a3d7f42d39d409c76ace912d475f8`.
 - `src/ProgressaoFichaLocal.tsx`: criado no commit `1f42aed224d4f9b578e52a59bcf4ce00379f2e69`; proteção LAN somente leitura no commit `8c72ea0c10cf04e2290326655d31faefa818b2a1`.
 - `src/FichaLocal.tsx`: integrado no commit `1f42aed224d4f9b578e52a59bcf4ce00379f2e69`.
 - `tests/pendencias-edicao.test.mjs`: expectativa de rolagem virtual atualizada no commit `534ae7419951d52a449ab7c934c8cadd01111679`.
 - `tests/descanso-ficha.test.mjs`: expectativa do Nível dinâmico atualizada no commit `76f7b03670b593b4943d904806cac685b6725adc`.
+
+## Validação de Atributos, Perícias e Habilidades com histórico
+- `src/validacaoPersonagemLocal.ts` reconstrói os valores-base de Atributos e Perícias a partir do histórico reverso de benefícios, em vez de aplicar diretamente os limites de criação à ficha evoluída.
+- A lista de Habilidades adquiridas precisa coincidir com o histórico persistido, incluindo a Habilidade básica do Nível 1.
+- Testes específicos cobrem evolução até os Níveis 3 e 4 e rejeitam divergências entre o estado atual e o histórico.
+- CI no commit `fc187b9c9b3a3d7f42d39d409c76ace912d475f8`: 793/793 testes na verificação Offline e na pipeline principal; build Vite e TypeScript aprovados. Ambos os workflows concluídos com sucesso.
 
 ## Próximo passo
 1. Completar o contrato de solicitação de avanço e escolha dos benefícios por Nível.

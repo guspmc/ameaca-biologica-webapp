@@ -520,3 +520,14 @@ Esta atualização substitui qualquer ordem anterior incompatível nesta matriz.
 - **CI:** para o commit `534ae7419951d52a449ab7c934c8cadd01111679`, a verificação Offline falhou apenas no teste antigo de Descanso; a compilação ainda estava em execução. A correção foi enviada no commit `76f7b03670b593b4943d904806cac685b6725adc`. Os dois workflows desse HEAD estavam em execução quando este checkpoint foi atualizado. **Não declarar CI aprovada até observar ambos os resultados.**
 - **HEAD de código/testes:** `76f7b03670b593b4943d904806cac685b6725adc`.
 - Sem merge, deploy, produção/Supabase ou teste humano.
+
+
+## Atualização — validação de ficha evoluída pela Progressão (09/11/2026)
+
+- **IMPLEMENTADO:** `src/validacaoPersonagemLocal.ts` reconstrói os Atributos originais revertendo, em ordem inversa, cada benefício registrado; confere se o valor atual corresponde exatamente ao `valorDepois` antes de reverter e só então aplica as regras da criação (4 atributos, soma inicial 7, teto inicial 3).
+- **IMPLEMENTADO:** reconstrói a distribuição original de Perícias revertendo somente os pontos documentados no histórico, respeitando o Treinamento gratuito da Origem; valida novamente o orçamento e as Perícias permitidas na criação.
+- **IMPLEMENTADO:** a lista `habilidadesAdquiridas` precisa corresponder exatamente à Habilidade básica do Nível 1 e às Habilidades registradas por nível no histórico de Progressão.
+- **TESTES ADICIONADOS:** fichas evoluídas em Nível 3 (Atributo acima do teto de criação) e Nível 4 (Perícia com ponto de Progressão) são aceitas somente quando o histórico reconstrói uma criação válida; divergências de valor atual ou histórico são rejeitadas.
+- **CI APROVADA:** commit de código `fc187b9c9b3a3d7f42d39d409c76ace912d475f8` — Verificação Offline: 793/793 testes e build aprovados; pipeline principal: 793/793 testes, build Vite e verificação TypeScript aprovados. Ambos os workflows concluíram com sucesso.
+- **PENDENTE:** solicitação de avanço persistida, escolhas de benefícios, aplicação atômica com Descanso Completo e integração da reversão por Morte à ficha evoluída.
+- Sem merge, deploy, produção/Supabase ou teste humano.
