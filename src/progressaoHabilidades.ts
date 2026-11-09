@@ -248,8 +248,7 @@ export function avaliarDisponibilidadeProgressao(estado: EstadoProgressao): {
     || (estado.marcoNarrativoConcedido !== undefined && typeof estado.marcoNarrativoConcedido !== 'boolean')
     || (estado.marcoNarrativoAposUltimaMorte !== undefined && typeof estado.marcoNarrativoAposUltimaMorte !== 'boolean')
     || (estado.missoesCompletadasNaUltimaMorte !== undefined && estado.missoesCompletadasNaUltimaMorte !== null
-      && (!Number.isSafeInteger(estado.missoesCompletadasNaUltimaMorte) || estado.missoesCompletadasNaUltimaMorte < 0
-        || estado.missoesCompletadasNaUltimaMorte > estado.missoesCompletadas))) {
+      && (!Number.isSafeInteger(estado.missoesCompletadasNaUltimaMorte) || estado.missoesCompletadasNaUltimaMorte < 0))) {
     return { disponivel: false, proximoNivel: null, motivo: 'Registro de progressão inválido.' };
   }
   if (estado.nivelAtual >= 10) return { disponivel: false, proximoNivel: null, motivo: 'A personagem já alcançou o nível máximo.' };
