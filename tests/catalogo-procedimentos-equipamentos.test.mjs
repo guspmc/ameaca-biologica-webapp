@@ -16,7 +16,7 @@ test('instalação de peças preserva tempo, bancada, ausência de Teste e exclu
   assert.match(p.foraDeCombate, /30 minutos/);
   assert.match(p.foraDeCombate, /não há Teste/);
   assert.match(p.foraDeCombate, /não pode beneficiar duas armas/);
-  assert.match(p.emCombate, /\\+2 Dados de Dano/);
+  assert.ok(p.emCombate.includes('+2 Dados de Dano'));
 });
 
 test('munição usa reserva abstrata e respeita regras específicas', () => {
