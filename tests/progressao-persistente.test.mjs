@@ -64,6 +64,18 @@ test('contador de Missões pode ser editado sem conceder nível nem alterar hist
   assert.equal(original.missoesCompletadas, 6);
 });
 
+test('edição do contador para baixo preserva o marco histórico de Morte e exige superar o snapshot', () => {
+  const aposMorte = {
+    ...nivel1(), missoesCompletadas: 1, missoesCompletadasNaUltimaMorte: 3,
+    nivelNaUltimaMorte: 2, penalidadeMorteNivel1: false,
+  };
+  assert.equal(estadoProgressaoPersistenteValido(aposMorte, 'Agente'), true);
+  const editado = atualizarContadorMissoes(aposMorte, 'Agente', 0);
+  assert.equal(editado.missoesCompletadas, 0);
+  assert.equal(editado.missoesCompletadasNaUltimaMorte, 3);
+  assert.equal(estadoProgressaoPersistenteValido(editado, 'Agente'), true);
+});
+
 test('estrutura desconhecida, campos extras e contadores inválidos são recusados', () => {
   assert.equal(estadoProgressaoPersistenteValido({ ...nivel1(), admin: true }, 'Agente'), false);
   assert.equal(estadoProgressaoPersistenteValido({ ...nivel1(), versao: 2 }, 'Agente'), false);
