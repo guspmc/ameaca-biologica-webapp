@@ -411,5 +411,7 @@ Novo arquivo: `tests/catalogo-armas-auditoria-completa.test.mjs`.
 - **LIMITES:** a calculadora continua renderizada somente no modo Automático, por controle de `src/FichaLocal.tsx`. Misto/Manual não exibem o componente nem reservam espaço. Ataques continuam sem integração de arma equipada, bônus de arma/Peças ou Dano automático.
 - **TESTES AUTOMATIZADOS ADICIONADOS:** `tests/roladores-ficha.test.mjs` cobre resultados naturais, Vantagem/Desvantagem e a integração explícita de dados físicos/virtuais/mistos; `tests/ataques-calculadora.test.mjs` foi atualizado para refletir a calculadora com rolagem virtual sob comando.
 - **PENDENTE:** execução/resultado da CI para o código no SHA `4e1d67de002b04ee12707b44f71ae5e21f644a9b`; validação humana permanece reservada à bateria integrada final.
+- **Checkpoint do ciclo:** `docs/checkpoint-rolagens-testes-pericia-atributo-2026-11-09.md` (commit `3994531d854d639542126bcdff2e803d43374b53`).
+
 - **PENDENTE DE DELIBERAÇÃO:** o Arquivo do Jogador p. 81 descreve a consequência de Exposto em Falha Crítica; o §7.6 da v2.6 mantém pendente a ativação automática da Condição. A interface apresenta o resultado, mas esta etapa não altera automaticamente a lista de Condições. Resolver a redação/alcance antes de integrar essa mutação.
 - **Não houve:** merge para `main`, deploy, alteração de produção ou teste humano.
