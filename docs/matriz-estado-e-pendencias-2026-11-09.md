@@ -415,3 +415,14 @@ Novo arquivo: `tests/catalogo-armas-auditoria-completa.test.mjs`.
 
 - **PENDENTE DE DELIBERAÇÃO:** o Arquivo do Jogador p. 81 descreve a consequência de Exposto em Falha Crítica; o §7.6 da v2.6 mantém pendente a ativação automática da Condição. A interface apresenta o resultado, mas esta etapa não altera automaticamente a lista de Condições. Resolver a redação/alcance antes de integrar essa mutação.
 - **Não houve:** merge para `main`, deploy, alteração de produção ou teste humano.
+
+## Decisão e implementação — Exposto em Falha Crítica (09/11/2026)
+
+- **DECISÃO APROVADA PELO GUS:** Exposto ocorre quando há Falha Crítica (resultado natural 1 no d20).
+- **FICHA AUTOMÁTICA:** ativa Exposto automaticamente apenas quando o resultado natural 1 ocorre em Ataque (corpo a corpo ou à distância).
+- **TESTES COMUNS:** resultado natural 1 em Teste comum de Perícia ou Atributo não dispara essa automação.
+- **FICHA MISTA/MANUAL:** a ativação de Exposto é manual pelo Jogador.
+- **IMPLEMENTADO:** `src/CalculadoraTesteLocal.tsx` aciona callback somente quando o resultado avaliado é Falha Crítica em Ataque; `src/FichaLocal.tsx` valida o modo Automático, registra Exposto com fonte e duração, evita duplicar Condição ativa e persiste pelo fluxo de salvamento da Ficha.
+- **TESTES:** `tests/roladores-ficha.test.mjs` cobre o gatilho restrito a Ataque e a guarda do modo Automático. A execução da CI ainda precisa ser confirmada para o SHA `411a78efc1b16b85639c72c90d3c053b44e0c63a`.
+- **PENDENTE:** atualizar o §7.6 do Planejamento v2.6 na próxima revisão documental; confirmar build/testes no CI; validar integração real na bateria humana final.
+- **Checkpoint atualizado:** `docs/checkpoint-rolagens-testes-pericia-atributo-2026-11-09.md`.
