@@ -15,6 +15,8 @@ test('regras universais de disparo são consolidadas sem conceder modos não exi
   assert.doesNotMatch(consultarProcedimentoArma('jmb-hp3').emCombate.join(' '), /Rajada é uma Manobra/);
   assert.match(consultarProcedimentoArma('gal').emCombate.join(' '), /Rajada, quando concedida/);
   assert.match(consultarProcedimentoArma('w-870').emCombate.join(' '), /Coice/);
+  assert.match(consultarProcedimentoArma('w-870').emCombate.join(' '), /Escopetas podem atacar uma categoria além/);
+  assert.match(consultarProcedimentoArma('hatchet').emCombate.join(' '), /Durabilidade 0/);
   assert.match(consultarProcedimentoArma('elephant-killer').emCombate.join(' '), /fica Caído/);
 });
 

@@ -11,8 +11,9 @@ export type ProcedimentoArma = {
 };
 
 const regraFora = 'O Arquivo do Jogador não fixa custo de ação nem duração para sacar, guardar, inspecionar ou manter esta arma fora de combate; não presumir tempo, teste ou efeito.';
-const regraAtaqueCorpo = 'Use a ação normal de Ataque Corpo a Corpo, respeitando alcance Curto, mãos exigidas, proficiência e propriedades da arma. A rolagem e o dano permanecem sob controle do jogador; este catálogo não rola nem aplica efeitos.';
-const regraAtaqueFogo = 'Use a ação normal de Ataque à Distância, respeitando alcance, mãos exigidas, proficiência, munição carregada e propriedades da arma. A rolagem e o dano permanecem sob controle do jogador; este catálogo não rola nem aplica efeitos.';
+const regraDurabilidade = 'Durabilidade: normalmente é perdida apenas ao Aparar; reduza 1 por uso, salvo regra específica. Ataques e uso comum não gastam Durabilidade. Em Durabilidade 0, a arma ou objeto não pode Aparar; suas outras funções permanecem normais, salvo regra específica.';
+const regraAtaqueCorpo = `Use a ação normal de Ataque Corpo a Corpo, respeitando alcance Curto, mãos exigidas, proficiência e propriedades da arma. ${regraDurabilidade} A rolagem e o dano permanecem sob controle do jogador; este catálogo não rola nem aplica efeitos.`;
+const regraAtaqueFogo = `Use a ação normal de Ataque à Distância, respeitando alcance, mãos exigidas, proficiência, munição carregada e propriedades da arma. Distâncias: Curto 1,5–3 m; Médio 4,5–9 m; Longo 10,5–18 m; Muito Longo 19,5–27 m. Usar abaixo da distância mínima impõe Desvantagem; acima do alcance máximo é impossível. Escopetas podem atacar uma categoria além do alcance máximo com Desvantagem; Rifles de Precisão em Muito Longo sem Mira Telescópica sofrem Desvantagem. ${regraDurabilidade} A rolagem e o dano permanecem sob controle do jogador; este catálogo não rola nem aplica efeitos.`;
 
 const procedimentos: ProcedimentoArma[] = [
   ...listarPerfisArma().map(arma => ({
