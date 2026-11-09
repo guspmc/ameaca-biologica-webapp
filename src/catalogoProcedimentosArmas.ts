@@ -16,19 +16,25 @@ const regraAtaqueCorpo = `Use a ação normal de Ataque Corpo a Corpo, respeitan
 const regraAtaqueFogo = `Use a ação normal de Ataque à Distância, respeitando alcance, mãos exigidas, proficiência, munição carregada e propriedades da arma. Distâncias: Curto 1,5–3 m; Médio 4,5–9 m; Longo 10,5–18 m; Muito Longo 19,5–27 m. Usar abaixo da distância mínima impõe Desvantagem; acima do alcance máximo é impossível. Escopetas podem atacar uma categoria além do alcance máximo com Desvantagem; Rifles de Precisão em Muito Longo sem Mira Telescópica sofrem Desvantagem. ${regraDurabilidade} A rolagem e o dano permanecem sob controle do jogador; este catálogo não rola nem aplica efeitos.`;
 
 const procedimentos: ProcedimentoArma[] = [
-  ...listarPerfisArma().map(arma => ({
+  ...listarPerfisArma().map(arma => {
+    const regraDurabilidadeArma = arma.durabilidade === 'Indestrutível'
+      ? 'Durabilidade: Indestrutível; não perde Durabilidade.'
+      : regraDurabilidade;
+    const regraAtaqueCorpoArma = `Use a ação normal de Ataque Corpo a Corpo, respeitando alcance Curto, mãos exigidas, proficiência e propriedades da arma. ${regraDurabilidadeArma} A rolagem e o dano permanecem sob controle do jogador; este catálogo não rola nem aplica efeitos.`;
+    return ({
     armaId: arma.id,
     nome: arma.nome,
     categoria: arma.categoria,
     emCombate: [
-      regraAtaqueCorpo,
+      regraAtaqueCorpoArma,
       ...(arma.propriedades.includes('Arremessável') ? ['A arma é Arremessável; o catálogo registra a propriedade, mas o livro não estabelece aqui um custo separado para arremessar.'] : []),
       ...(arma.id === 'motosserra' ? ['Ligar exige Movimento. Ataques com a Motosserra são feitos com Desvantagem. Cada resultado 6 no dano gera outro dado, podendo encadear.'] : []),
       ...(arma.id === 'hatchet' ? ['Indestrutível e Arremessável. Pode Aparar e Contra-Atacar. Em Contra-Ataque, se o alvo estiver Vulnerável ou o golpe causar Dano Massivo, aciona Decepamento; o Narrador resolve conforme a regra da arma.'] : []),
     ],
     foraDeCombate: regraFora,
     referencia: arma.referencia,
-  })),
+  });
+  }),
   ...listarPerfisArmasFogo().map(arma => {
     const especiais = [...arma.propriedades, ...arma.regrasEspeciais];
     const semDisparoUnico = especiais.some(x => /Sem Disparo Único|Rajada Exclusiva/.test(x));

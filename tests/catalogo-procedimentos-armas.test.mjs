@@ -72,3 +72,10 @@ test('S&W M29 aplica o procedimento específico de Poder de Parada', () => {
   assert.match(texto, /Fortitude DT 15/);
   assert.match(texto, /Atordoado até o fim do próximo turno/);
 });
+ 
+test('Hatchet indestrutível não perde Durabilidade ao Aparar', () => {
+  const texto = consultarProcedimentoArma('hatchet').emCombate.join(' ');
+  assert.match(texto, /Durabilidade: Indestrutível/);
+  assert.match(texto, /não perde Durabilidade/);
+  assert.doesNotMatch(texto, /reduza 1 a cada uso de Aparar/);
+});
