@@ -53,7 +53,7 @@ export function calcularDTFabricacaoArmamento(
   raridade: RaridadeFabricacao,
   calibre: CalibreFabricacao,
 ): RegraFabricacaoArmamento {
-  if (!(raridade in dtRaridade) || !(calibre in dtCalibre)) {
+  if (!Object.hasOwn(dtRaridade, raridade) || !Object.hasOwn(dtCalibre, calibre)) {
     throw new Error('Raridade ou calibre de fabricação inválido.');
   }
   const base = dtRaridade[raridade];
