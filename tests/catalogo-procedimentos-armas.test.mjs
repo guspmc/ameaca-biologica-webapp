@@ -64,3 +64,11 @@ test('armas sem Disparo Único não recebem ataque padrão de um cartucho', () =
   }
   assert.doesNotMatch(consultarProcedimentoArma('jmb-hp3').emCombate.join(' '), /não possui Disparo Único/);
 });
+
+test('S&W M29 aplica o procedimento específico de Poder de Parada', () => {
+  const texto = consultarProcedimentoArma('sw-m29').emCombate.join(' ');
+  assert.match(texto, /Poder de Parada/);
+  assert.match(texto, /em Acerto Crítico no Ataque/);
+  assert.match(texto, /Fortitude DT 15/);
+  assert.match(texto, /Atordoado até o fim do próximo turno/);
+});
