@@ -50,3 +50,31 @@ Relação com incidente anterior: em 08/11, o teste humano relatou `crypto.rando
 
 ## Limite explícito de escopo
 Catálogos de armas, peças, munições, proteções, itens e receitas são referência de regras. Não representam posse, equipamento ativo, carregadores, consumo ou transferências. O Inventário ativo continua bloqueado.
+
+
+## Atualização de continuidade — CI e eficiência do desenvolvimento
+
+### CI do commit de correção
+- HEAD confirmado da branch `feat/offline-first-ficha`: `1d1dfb261469eb4b741aa877fb1d95b7e68bced7`.
+- Workflow `42555716681` — Verificação da Ficha offline: **success**. Etapas de instalação, testes e build concluídas.
+- Workflow `42555716658` — Compilação do WebApp: **success**. Etapas de instalação, testes PostgreSQL locais, compilação e verificação de tipos concluídas.
+- A correção da chamada residual de `novoIdCondicao()` para `gerarIdCondicao()` está validada pela CI. A confirmação em Android/WebView permanece pendente para a bateria humana final.
+
+### Diretriz permanente de eficiência e prevenção de retrabalho
+A partir deste ciclo, o desenvolvimento deve otimizar o uso do tempo do usuário e reduzir repetição entre conversas:
+1. Priorizar tarefas pelo impacto e pelas dependências: resolver primeiro bloqueios que destravam várias partes da Ficha; evitar polimento prematuro de módulos que ainda dependem de contratos incompletos.
+2. Agrupar alterações coerentes em ciclos de trabalho, evitando fragmentação excessiva, commits/documentos redundantes e repetição de testes sem mudança relevante.
+3. Auditar uma vez com evidência rastreável. Registrar fonte, páginas/trechos, arquivos, testes e conclusão para não reabrir auditorias já encerradas sem nova evidência, alteração de código ou conflito identificado.
+4. Automatizar validações, testes de regressão, compatibilidade e verificações repetíveis sempre que possível. Reservar testes manuais do usuário para fluxos integrados que realmente dependam de dispositivo, percepção ou decisão humana.
+5. Manter checkpoints objetivos e frequentes, especialmente antes de encerrar uma conversa: estado real, branch/HEAD, commits, arquivos alterados, decisões, testes/CI com IDs e resultados, pendências, riscos e próximo passo exato.
+6. Distinguir claramente PLANEJADO, IMPLEMENTADO, TESTADO AUTOMATICAMENTE, VALIDADO HUMANAMENTE e PENDENTE. Nunca promover uma etapa de estado sem evidência.
+7. Não refazer descoberta ou implementação já concluída. Antes de iniciar uma tarefa, consultar o checkpoint e os artefatos existentes; continuar de onde parou e atualizar apenas o que mudou.
+8. Evitar perfeccionismo sem benefício funcional. Considerar concluído o que estiver fiel ao cânone, integrado ao escopo necessário e coberto por testes adequados; registrar lacunas não definidas sem inventar regras.
+9. O usuário não deve ser convocado para testes intermediários repetitivos. A bateria humana integrada da Ficha fica reservada para quando a implementação estiver completa, imediatamente antes da ativação do Inventário ativo de Personagem.
+10. Preservar o tempo do usuário: pedir decisões apenas quando houver ambiguidade real de cânone/produto ou risco relevante; executar autonomamente tarefas técnicas seguras e reversíveis.
+
+### Regra de retomada entre conversas
+Ao iniciar uma nova conversa, ler o checkpoint mais recente e este protocolo antes de propor trabalho. Confirmar o HEAD da branch ativa e a CI mais recente; identificar o último item efetivamente concluído e seguir do próximo passo, sem repetir etapas já comprovadas. Se o estado remoto divergir do checkpoint, reconciliar a diferença antes de escrever código.
+
+### Próximo passo técnico
+Prosseguir com a integração da progressão persistente ao modelo real da Ficha, começando pela inspeção dos contratos de persistência/backup/validação já existentes. Não iniciar o Inventário ativo e não solicitar bateria humana neste estágio.
