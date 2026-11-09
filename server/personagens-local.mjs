@@ -274,6 +274,10 @@ export async function tratarRotaPersonagensLocal(req, res, url, db, notificarCon
             responder(res, 403, { error: 'A criação ou remoção do estado de Progressão exige o fluxo próprio da Mesa.' });
             return true;
           }
+          if (corpo.data.classe !== dadosAtuaisProgressao.classe || corpo.data.nivel !== dadosAtuaisProgressao.nivel) {
+            responder(res, 403, { error: 'Classe e Nível não podem ser alterados pelo salvamento genérico quando a Progressão persistente está ativa.' });
+            return true;
+          }
           if (typeof corpo.data.classe !== 'string' || !Number.isSafeInteger(corpo.data.nivel)
             || !progressaoNova || progressaoNova.nivelAtual !== corpo.data.nivel
             || !estadoProgressaoPersistenteValido(progressaoNova, corpo.data.classe)) {
@@ -289,10 +293,6 @@ export async function tratarRotaPersonagensLocal(req, res, url, db, notificarCon
           const progressaoAlterada = camposProgressaoProtegidos.some(campo =>
             !isDeepStrictEqual(progressaoAtual[campo], progressaoNova[campo])
           );
-          if (corpo.data.classe !== dadosAtuaisProgressao.classe || corpo.data.nivel !== dadosAtuaisProgressao.nivel) {
-            responder(res, 403, { error: 'Classe e Nível não podem ser alterados pelo salvamento genérico quando a Progressão persistente está ativa.' });
-            return true;
-          }
           if (progressaoAlterada) {
             responder(res, 403, { error: 'Somente o contador de Missões pode ser editado diretamente pelo Jogador; benefícios, Nível, método, Marcos e registros de Morte exigem os fluxos próprios.' });
             return true;
