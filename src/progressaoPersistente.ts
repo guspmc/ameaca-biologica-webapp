@@ -9,6 +9,7 @@ export type EstadoProgressaoPersistente = {
   missoesCompletadas: number;
   marcoNarrativoConcedido: boolean;
   missoesCompletadasNaUltimaMorte: number | null;
+  nivelNaUltimaMorte: number | null;
   marcoNarrativoAposUltimaMorte: boolean;
   penalidadeMorteNivel1: boolean;
   beneficiosPorNivel: { nivel: number; beneficios: BeneficioNivelRegistrado[] }[];
@@ -25,7 +26,7 @@ const objetoSimples = (v: unknown): v is Record<string, unknown> =>
 export function estadoProgressaoPersistenteValido(valor: unknown, classe: string): valor is EstadoProgressaoPersistente {
   const chaves = [
     'versao', 'nivelAtual', 'metodo', 'missoesCompletadas', 'marcoNarrativoConcedido',
-    'missoesCompletadasNaUltimaMorte', 'marcoNarrativoAposUltimaMorte',
+    'missoesCompletadasNaUltimaMorte', 'nivelNaUltimaMorte', 'marcoNarrativoAposUltimaMorte',
     'penalidadeMorteNivel1', 'beneficiosPorNivel',
   ];
   if (!objetoSimples(valor) || Object.keys(valor).sort().join('|') !== [...chaves].sort().join('|')
@@ -38,14 +39,18 @@ export function estadoProgressaoPersistenteValido(valor: unknown, classe: string
       && (!Number.isSafeInteger(valor.missoesCompletadasNaUltimaMorte)
         || (valor.missoesCompletadasNaUltimaMorte as number) < 0
         || (valor.missoesCompletadasNaUltimaMorte as number) > (valor.missoesCompletadas as number)))
+    || (valor.nivelNaUltimaMorte !== null && (!Number.isSafeInteger(valor.nivelNaUltimaMorte)
+      || (valor.nivelNaUltimaMorte as number) < 1 || (valor.nivelNaUltimaMorte as number) > 10))
     || typeof valor.marcoNarrativoAposUltimaMorte !== 'boolean'
     || typeof valor.penalidadeMorteNivel1 !== 'boolean'
     || !Array.isArray(valor.beneficiosPorNivel)
     || !['Agente', 'Autodidata', 'Operador'].includes(classe)) return false;
 
   const houveMorte = valor.missoesCompletadasNaUltimaMorte !== null;
-  if ((!houveMorte && (valor.marcoNarrativoAposUltimaMorte || valor.penalidadeMorteNivel1))
-    || (houveMorte && valor.penalidadeMorteNivel1 !== (valor.nivelAtual === 1))) return false;
+  if (houveMorte !== (valor.nivelNaUltimaMorte !== null)
+    || (!houveMorte && (valor.marcoNarrativoAposUltimaMorte || valor.penalidadeMorteNivel1))
+    || (houveMorte && valor.nivelAtual !== Math.max(1, (valor.nivelNaUltimaMorte as number) - 1))
+    || (houveMorte && valor.penalidadeMorteNivel1 !== (valor.nivelNaUltimaMorte === 1))) return false;
 
   const nivelAtual = valor.nivelAtual as number;
   const registros = valor.beneficiosPorNivel as unknown[];
