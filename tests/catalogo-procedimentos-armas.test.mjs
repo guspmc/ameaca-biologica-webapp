@@ -48,3 +48,10 @@ test('sacar, guardar e restaurar Durabilidade seguem a regra geral da página 48
   assert.match(procedimento.emCombate.join(' '), /reduza 1 a cada uso de Aparar/);
   assert.match(procedimento.emCombate.join(' '), /Ataques e uso comum não gastam Durabilidade/);
 });
+
+test('Bear Commander mantém o lançador integrado como sistema separado', () => {
+  const procedimento = consultarProcedimentoArma('bear-commander');
+  assert.match(procedimento.emCombate.join(' '), /capacidade separada de 1 Cartucho GM 79/);
+  assert.match(procedimento.emCombate.join(' '), /reserva de munição própria/);
+  assert.match(procedimento.emCombate.join(' '), /recarga por Ação Bônus/);
+});
