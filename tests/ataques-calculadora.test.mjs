@@ -20,7 +20,10 @@ test('modo de Ataque usa Defesa do alvo e mantém os resultados críticos oficia
 });
 
 test('calculadora não rola dados nem aplica Dano automaticamente', () => {
-  assert.match(ui, /não rola dados, não registra uma rolagem e não altera a ficha/);
+  assert.match(ui, /sortearDados/);
+  assert.match(ui, /Cada rolagem exige comando explícito/);
+  assert.match(ui, /não altera dados da personagem/);
+  assert.doesNotMatch(ui, /salvarPatchPersonagem|localStorage|aoSalvar/);
   assert.match(ui, /O cálculo de Dano depende da arma equipada e permanece manual/);
   assert.doesNotMatch(ui, /Math\.random|crypto\.getRandomValues/);
 });
