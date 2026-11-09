@@ -49,8 +49,8 @@ export function estadoProgressaoPersistenteValido(valor: unknown, classe: string
   const houveMorte = valor.missoesCompletadasNaUltimaMorte !== null;
   if (houveMorte !== (valor.nivelNaUltimaMorte !== null)
     || (!houveMorte && (valor.marcoNarrativoAposUltimaMorte || valor.penalidadeMorteNivel1))
-    || (houveMorte && valor.nivelAtual !== Math.max(1, (valor.nivelNaUltimaMorte as number) - 1))
-    || (houveMorte && valor.penalidadeMorteNivel1 !== (valor.nivelNaUltimaMorte === 1))) return false;
+    || (houveMorte && (valor.nivelAtual as number) < Math.max(1, (valor.nivelNaUltimaMorte as number) - 1))
+    || (houveMorte && valor.penalidadeMorteNivel1 !== (valor.nivelNaUltimaMorte === 1 && valor.nivelAtual === 1))) return false;
 
   const nivelAtual = valor.nivelAtual as number;
   const registros = valor.beneficiosPorNivel as unknown[];
