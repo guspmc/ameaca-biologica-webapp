@@ -6,6 +6,16 @@ const source = await readFile(new URL('../src/condicoesFicha.ts', import.meta.ur
 const { outputText } = ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2022 } });
 const api = await import('data:text/javascript;base64,' + Buffer.from(outputText).toString('base64'));
 
+
+test('gerador de IDs tolera randomUUID ausente ou não funcional em WebViews', () => {
+  const indisponivel = api.gerarIdCondicao(null);
+  const naoFuncional = api.gerarIdCondicao({ randomUUID: 'não é função' });
+  assert.match(indisponivel, /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/);
+  assert.match(naoFuncional, /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/);
+  const provedor = { randomUUID: () => 'id-nativo' };
+  assert.equal(api.gerarIdCondicao(provedor), 'id-nativo');
+});
+
 test('catálogo cobre Condições e transformações do Arquivo do Jogador', () => {
   for (const id of ['agarrado','amedrontado','atordoado','caido','cego','colapso-viral','corrosao','desacordado','desorientado','enfraquecido','exposto','imobilizado','incapacitado','intoxicado','queimadura','surdo','surpreendido','vulneravel','infectado-especial','cabeca-carmesim']) assert.ok(api.CATALOGO_CONDICOES[id], id);
 });
