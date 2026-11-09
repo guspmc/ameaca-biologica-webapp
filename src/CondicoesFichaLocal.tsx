@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { CATALOGO_CONDICOES, condicoesAtivas, condicoesComEfeitoUnico, encerrarInstanciaCondicao, listaCondicoesValida, adicionarInstanciaCondicao, vulneravelPorPV, type CondicaoId } from './condicoesFicha';
+import { CATALOGO_CONDICOES, condicoesAtivas, condicoesComEfeitoUnico, encerrarInstanciaCondicao, listaCondicoesValida, adicionarInstanciaCondicao, gerarIdCondicao, vulneravelPorPV, type CondicaoId } from './condicoesFicha';
 
 type Props = {
   dados: Record<string, unknown>;
@@ -8,15 +8,6 @@ type Props = {
   aoSalvar: (patch: Record<string, unknown>) => Promise<boolean>;
   origemDados?: 'local' | 'servidor';
 };
-
-function novoIdCondicao(): string {
-  const aleatorio = () => Math.floor(Math.random() * 16).toString(16);
-  return globalThis.crypto?.randomUUID?.() ??
-    'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, caractere => {
-      const valor = Number.parseInt(aleatorio(), 16);
-      return (caractere === 'x' ? valor : (valor & 0x3) | 0x8).toString(16);
-    });
-}
 
 const ICONE_CONDICAO: Record<CondicaoId, string> = {
   agarrado:'🫳', amedrontado:'😨', atordoado:'💫', caido:'⬇️', cego:'🙈', 'colapso-viral':'🧬',
