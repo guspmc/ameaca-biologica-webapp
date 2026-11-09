@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import { sortearDados, validarResultadosFisicos } from '../src/rolagemDados.ts';
+import { calcularTesteManual } from '../src/testes.ts';
 
 test('rolagem virtual usa a fonte aleatória fornecida e respeita os lados do dado', () => {
   const valores = [0, 1, 5, 19];
@@ -31,4 +32,31 @@ test('roladores integrados só são renderizados no modo Automático e não alte
   assert.match(ui, /if \(modo !== 'automatico'\) return null/);
   assert.match(ui, /nenhum resultado altera os dados da personagem/);
   assert.doesNotMatch(ui, /localStorage|salvarPatchPersonagem|aoSalvar/);
+});
+
+
+test('Testes de Perícia e Atributo respeitam resultado natural, Vantagem e Desvantagem', () => {
+  const critico = calcularTesteManual({ valorBase: 2, dt: 25, dado1: 20 });
+  assert.equal(critico.estado, 'critico-sucesso');
+  const falhaCritica = calcularTesteManual({ valorBase: 10, dt: 10, dado1: 1 });
+  assert.equal(falhaCritica.estado, 'falha-critica');
+  assert.match(falhaCritica.detalhe, /Exposto/);
+  const vantagem = calcularTesteManual({ valorBase: 4, dt: 20, dado1: 8, dado2: 17, vantagem: 'vantagem' });
+  assert.equal(vantagem.dadoEscolhido, 17);
+  assert.equal(vantagem.total, 21);
+  assert.equal(vantagem.estado, 'sucesso');
+  const desvantagem = calcularTesteManual({ valorBase: 4, dt: 13, dado1: 8, dado2: 17, vantagem: 'desvantagem' });
+  assert.equal(desvantagem.dadoEscolhido, 8);
+  assert.equal(desvantagem.total, 12);
+  assert.equal(desvantagem.estado, 'falha');
+});
+
+test('calculadora integrada exige ação explícita e respeita preferência física/virtual/mista', async () => {
+  const ui = await readFile(new URL('../src/CalculadoraTesteLocal.tsx', import.meta.url), 'utf8');
+  assert.match(ui, /sortearDados\(quantidadeDados, 20\)/);
+  assert.match(ui, /validarResultadosFisicos/);
+  assert.match(ui, /onClick=\{registrarRolagem\}/);
+  assert.match(ui, /modoDados === 'mistos'/);
+  assert.match(ui, /não altera dados da personagem/);
+  assert.doesNotMatch(ui, /salvarPatchPersonagem|localStorage|aoSalvar/);
 });
