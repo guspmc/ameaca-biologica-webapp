@@ -453,3 +453,24 @@ Esta atualização prevalece sobre qualquer redação anterior incompatível nes
 - **PENDÊNCIAS DE IMPLEMENTAÇÃO:** calculadora de Ataque sem Defesa; cálculo/rolagem de Dano para todas as fórmulas; críticos e margens ampliadas com confirmação do Mestre quando necessária; BI, Origem, Classe, Habilidades e Peças; propriedades e exceções de todos os perfis; ataques universais; interface por modo e testes automatizados.
 - **Ordem:** Combate completo → auditoria e suíte automatizada → bateria humana integrada única → Inventário ativo → Baú/transferências.
 - **Checkpoint de referência:** `docs/checkpoint-combate-catalogos-2026-11-09.md`.
+
+
+## Atualização superveniente — escopo integral da Ficha Offline (09/11/2026)
+
+Esta atualização substitui qualquer ordem anterior incompatível nesta matriz.
+
+- **DECISÃO EXPRESSA DO GUS:** não foi solicitado apenas o Combate. A **FICHA TODA** deve estar implementada e funcional Offline antes de Inventário ativo: criação/identidade, Características, Atributos, Perícias, Habilidades, Progressão, Recursos, Condições, Bio-Infecção, Descanso, Reanimação, Morte, Combate, persistência e backup.
+- **Progressão pertence à Ficha.** Não criar configuração de método de Progressão na Mesa. A Mesa pode fornecer limite de campanha, mas não controla método, contador, benefícios ou nível da Personagem.
+- **Sequência aprovada:** Ficha integral Offline → auditoria e testes automatizados → bateria humana integrada única pelo Gus → correções → Inventário Offline completo com catálogo → Inventário LAN com acesso controlado pelo Mestre → Baú LAN compartilhado → adaptações Linux/Android.
+- **Combate completo é pré-requisito do Inventário ativo.** Não iniciar gestão ativa de itens enquanto a calculadora e procedimentos de combate não estiverem completos.
+- **Criação inicial de Equipamento permanece parte da criação:** `EditorInventarioLocal` no rascunho é planejamento do kit/compras, não Inventário ativo. Não remover esse fluxo sem deliberação.
+- **Ficha não é motor de combate nem de narrativa:** calcula/apresenta dados e registra escolhas expressas; não compara Ataque com Defesa de alvo, não decide acerto, não administra turnos/rodadas nem aplica consequências narrativas.
+- **Achados da auditoria integral (checkpoint `docs/checkpoint-auditoria-ficha-integral-2026-11-09.md`):**
+  - Progressão/Morte têm contratos e validadores, mas não UI/fluxo integrado de aplicação atômica.
+  - Ficha ainda apresenta Nível 1 fixo em partes da interface/revisão.
+  - Descanso Parcial e Reanimação ainda bloqueiam método Virtual.
+  - Texto de Condições ainda descreve acompanhamento LAN pelo Mestre; revisar a autonomia Offline.
+  - Combate permanece “A integrar”.
+  - IndexedDB/fila serializada/backup já existem; integração dos campos novos e regressões ainda precisam ser auditadas.
+- **Estado técnico:** checkpoint foi documental. Nenhuma alteração de código ou teste executado nesta rodada. HEAD-base `21e560a768556a034a25aaf9df3344441b426c36`; CI/status não observados. Sem merge, deploy ou alterações de produção.
+- **Próximo lote:** Progressão Offline integrada, depois Morte, Recursos/Condições/Descanso/Reanimação, Combate integral e auditoria final da Ficha. Frentes independentes podem ser paralelizadas sem editar simultaneamente os mesmos contratos.
