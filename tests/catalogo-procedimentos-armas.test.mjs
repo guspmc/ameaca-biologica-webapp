@@ -38,3 +38,13 @@ test('consulta devolve cópia e não altera o catálogo', () => {
   assert.equal(consultarProcedimentoArma('hatchet').emCombate.includes('alterado'), false);
   assert.equal(consultarProcedimentoArma('inexistente'), null);
 });
+
+test('sacar, guardar e restaurar Durabilidade seguem a regra geral da página 48', () => {
+  const procedimento = consultarProcedimentoArma('bastao');
+  assert.match(procedimento.foraDeCombate, /Interação Gratuita com Objeto/);
+  assert.match(procedimento.foraDeCombate, /duas interações/);
+  assert.match(procedimento.foraDeCombate, /30 minutos em Sala de Descanso/);
+  assert.match(procedimento.foraDeCombate, /Kit de Ferramentas/);
+  assert.match(procedimento.emCombate.join(' '), /reduza 1 a cada uso de Aparar/);
+  assert.match(procedimento.emCombate.join(' '), /Ataques e uso comum não gastam Durabilidade/);
+});
