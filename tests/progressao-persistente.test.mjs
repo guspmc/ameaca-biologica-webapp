@@ -116,3 +116,37 @@ test('registrar Marco Narrativo não concede nível e registra progresso posteri
   assert.equal(estadoProgressaoPersistenteValido(marcoNovo, 'Agente'), true);
   assert.throws(() => registrarMarcoNarrativo({ ...inicial, metodo: 'missoes' }, 'Agente'), /Missões/);
 });
+
+
+test('solicitação de avanço é persistida sem conceder Nível antes do Descanso Completo', async () => {
+  const { solicitarGanhoNivel, pedidoProgressaoPersistenteValido } = await import('../src/progressaoPersistente.ts');
+  const estado = { ...nivel1(), missoesCompletadas: 1 };
+  const pedido = solicitarGanhoNivel(estado, 'Agente');
+  assert.deepEqual(pedido, { nivel: 2, estado: 'aguardando_descanso' });
+  assert.equal(estado.nivelAtual, 1);
+  assert.equal(estado.beneficiosPorNivel.length, 0);
+  assert.equal(pedidoProgressaoPersistenteValido(pedido, estado, 'Agente'), true);
+  assert.equal(pedidoProgressaoPersistenteValido({ ...pedido, nivel: 3 }, estado, 'Agente'), false);
+  assert.throws(() => solicitarGanhoNivel(nivel1(), 'Agente'), /Missões Completadas/);
+});
+
+test('pedido de Progressão após Morte exige novo avanço além do marco registrado', async () => {
+  const { solicitarGanhoNivel } = await import('../src/progressaoPersistente.ts');
+  const aposMorte = {
+    ...nivel1(), missoesCompletadas: 3, missoesCompletadasNaUltimaMorte: 3,
+    nivelNaUltimaMorte: 2,
+  };
+  assert.throws(() => solicitarGanhoNivel(aposMorte, 'Agente'), /nova Missão/);
+  const avancou = { ...aposMorte, missoesCompletadas: 4 };
+  assert.deepEqual(solicitarGanhoNivel(avancou, 'Agente'), { nivel: 2, estado: 'aguardando_descanso' });
+});
+
+test('Descanso Completo confirma o pedido apenas na Sala de Descanso', async () => {
+  const { solicitarGanhoNivel, confirmarDescansoCompletoProgressao } = await import('../src/progressaoPersistente.ts');
+  const estado = { ...nivel1(), missoesCompletadas: 1 };
+  const pedido = solicitarGanhoNivel(estado, 'Agente');
+  assert.throws(() => confirmarDescansoCompletoProgressao(pedido, estado, 'Agente', 'sala_segura'), /Sala de Descanso/);
+  const confirmado = confirmarDescansoCompletoProgressao(pedido, estado, 'Agente', 'sala_descanso');
+  assert.deepEqual(confirmado, { nivel: 2, estado: 'descanso_confirmado' });
+  assert.throws(() => confirmarDescansoCompletoProgressao(confirmado, estado, 'Agente', 'sala_descanso'), /já foi confirmada/);
+});

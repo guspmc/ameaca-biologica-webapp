@@ -1,4 +1,4 @@
-import { HABILIDADES_PROGRESSAO, ganhosProgressaoAte, validarGanhoPericiaProgressao } from './progressaoHabilidades.ts';
+import { HABILIDADES_PROGRESSAO, ganhosProgressaoAte, validarGanhoPericiaProgressao, avaliarDisponibilidadeProgressao } from './progressaoHabilidades.ts';
 import { planejarPerdaNivelPorMorte, type BeneficioNivelRegistrado } from './progressaoMorte.ts';
 
 export type MetodoProgressaoPersistente = 'marco_narrativo' | 'missoes';
@@ -134,4 +134,77 @@ export function registrarMarcoNarrativo(
     marcoNarrativoConcedido: true,
     marcoNarrativoAposUltimaMorte: houveMorte ? true : estado.marcoNarrativoAposUltimaMorte,
   };
+}
+
+
+export type PedidoProgressaoPersistente = {
+  nivel: number;
+  estado: 'aguardando_descanso' | 'descanso_confirmado';
+};
+
+/** Valida solicitação pendente sem conceder Nível nem benefícios. */
+export function pedidoProgressaoPersistenteValido(
+  valor: unknown,
+  progressao: unknown,
+  classe: string,
+): valor is PedidoProgressaoPersistente {
+  if (!estadoProgressaoPersistenteValido(progressao, classe)
+    || !objetoSimples(valor)
+    || Object.keys(valor).sort().join('|') !== 'estado|nivel'
+    || !Number.isSafeInteger(valor.nivel)
+    || (valor.nivel as number) !== progressao.nivelAtual + 1
+    || (valor.nivel as number) > 10
+    || !['aguardando_descanso', 'descanso_confirmado'].includes(String(valor.estado))) return false;
+  const requisito = avaliarDisponibilidadeProgressao({
+    nivelAtual: progressao.nivelAtual,
+    metodo: progressao.metodo,
+    missoesCompletadas: progressao.missoesCompletadas,
+    marcoNarrativoConcedido: progressao.marcoNarrativoConcedido,
+    missoesCompletadasNaUltimaMorte: progressao.missoesCompletadasNaUltimaMorte,
+    marcoNarrativoAposUltimaMorte: progressao.marcoNarrativoAposUltimaMorte,
+    descansoCompletoEmSalaDescanso: true,
+  });
+  return requisito.disponivel && requisito.proximoNivel === valor.nivel;
+}
+
+/** Registra o pedido de avanço quando o requisito de Missões/Marco foi cumprido. */
+export function solicitarGanhoNivel(
+  progressao: EstadoProgressaoPersistente,
+  classe: string,
+): PedidoProgressaoPersistente {
+  if (!estadoProgressaoPersistenteValido(progressao, classe)) {
+    throw new Error('Estado de Progressão inválido.');
+  }
+  const requisito = avaliarDisponibilidadeProgressao({
+    nivelAtual: progressao.nivelAtual,
+    metodo: progressao.metodo,
+    missoesCompletadas: progressao.missoesCompletadas,
+    marcoNarrativoConcedido: progressao.marcoNarrativoConcedido,
+    missoesCompletadasNaUltimaMorte: progressao.missoesCompletadasNaUltimaMorte,
+    marcoNarrativoAposUltimaMorte: progressao.marcoNarrativoAposUltimaMorte,
+    descansoCompletoEmSalaDescanso: true,
+  });
+  if (!requisito.disponivel || requisito.proximoNivel === null) {
+    throw new Error(requisito.motivo);
+  }
+  return { nivel: requisito.proximoNivel, estado: 'aguardando_descanso' };
+}
+
+/** Só confirma a etapa pendente após o salvamento de Descanso Completo na Sala de Descanso. */
+export function confirmarDescansoCompletoProgressao(
+  pedido: unknown,
+  progressao: unknown,
+  classe: string,
+  local: string,
+): PedidoProgressaoPersistente {
+  if (local !== 'sala_descanso') {
+    throw new Error('A Progressão exige Descanso Completo na Sala de Descanso.');
+  }
+  if (!pedidoProgressaoPersistenteValido(pedido, progressao, classe)) {
+    throw new Error('Solicitação de Progressão inválida ou requisito não cumprido.');
+  }
+  if (pedido.estado !== 'aguardando_descanso') {
+    throw new Error('Esta solicitação já foi confirmada ou não aguarda Descanso.');
+  }
+  return { nivel: pedido.nivel, estado: 'descanso_confirmado' };
 }
