@@ -13,7 +13,7 @@ import { estadoTurnoCombateValido, estadoTurnoCombateCompostoLegadoReconhecido }
 import { listaCondicoesValida } from './condicoesFicha.ts';
 import { HABILIDADES_PROGRESSAO, ganhosProgressaoAte, validarProgressaoHabilidades } from './progressaoHabilidades.ts';
 import { usosDescansoCompletoValido } from './usosDescansoCompleto.ts';
-import { estadoProgressaoPersistenteValido } from './progressaoPersistente.ts';
+import { estadoProgressaoPersistenteValido, type EstadoProgressaoPersistente } from './progressaoPersistente.ts';
 
 export type PersonagemValidavel = {
   id: string;
@@ -86,6 +86,46 @@ function objeto(valor: unknown): valor is Record<string, unknown> {
     && (Object.getPrototypeOf(valor) === Object.prototype || Object.getPrototypeOf(valor) === null);
 }
 
+/** Reconstrói os Atributos de criação revertendo o histórico exato da Progressão. */
+function reconstruirAtributosDeCriacao(
+  atuais: Record<string, unknown>,
+  progressao: EstadoProgressaoPersistente,
+): Record<string, number> | null {
+  const base: Record<string, number> = {
+    forca: atuais.forca as number,
+    agilidade: atuais.agilidade as number,
+    vigor: atuais.vigor as number,
+    astucia: atuais.astucia as number,
+  };
+  for (const registro of [...progressao.beneficiosPorNivel].reverse()) {
+    for (const beneficio of [...registro.beneficios].reverse()) {
+      if (beneficio.tipo !== 'atributo') continue;
+      if (base[beneficio.atributo] !== beneficio.valorDepois) return null;
+      base[beneficio.atributo] = beneficio.valorAntes;
+    }
+  }
+  return base;
+}
+
+/** Reverte Pontos de Perícia registrados para conferir a distribuição original da Classe. */
+function reconstruirPericiasDeCriacao(
+  atuais: Record<string, number>,
+  progressao: EstadoProgressaoPersistente,
+  periciaOrigemTreinada: string,
+): Record<string, number> | null {
+  const base = { ...atuais };
+  for (const registro of [...progressao.beneficiosPorNivel].reverse()) {
+    for (const beneficio of [...registro.beneficios].reverse()) {
+      if (beneficio.tipo !== 'pericia') continue;
+      const pontosAtuais = base[beneficio.pericia] ?? 0;
+      const grauAtual = pontosAtuais + (beneficio.pericia === periciaOrigemTreinada ? 1 : 0);
+      if (grauAtual !== beneficio.grauDepois || pontosAtuais < 1) return null;
+      base[beneficio.pericia] = pontosAtuais - 1;
+    }
+  }
+  return base;
+}
+
 function validarDadosFicha(valor: unknown): valor is Record<string, unknown> {
   if (!objeto(valor) || !valorJsonSeguro(valor)) return false;
 
@@ -126,11 +166,29 @@ function validarDadosFicha(valor: unknown): valor is Record<string, unknown> {
       .find(escolha => escolha.nivel === 1)?.habilidadeId;
     if (typeof valor.habilidadeBasica === 'string' && habilidadeNivel1 !== valor.habilidadeBasica) return false;
   }
+  if (progressaoFicha) {
+    if (progressaoFicha.nivelAtual > 1
+      && (!Array.isArray(valor.habilidadesAdquiridas) || typeof valor.habilidadeBasica !== 'string')) return false;
+    if (Array.isArray(valor.habilidadesAdquiridas) && typeof valor.habilidadeBasica === 'string') {
+      const habilidadesHistorico = progressaoFicha.beneficiosPorNivel.flatMap(registro =>
+        registro.beneficios.filter(beneficio => beneficio.tipo === 'habilidade')
+          .map(beneficio => ({ nivel: beneficio.nivel, habilidadeId: beneficio.habilidadeId })),
+      );
+      const esperadas = [{ nivel: 1, habilidadeId: valor.habilidadeBasica }, ...habilidadesHistorico]
+        .sort((a, b) => a.nivel - b.nivel);
+      const registradas = (valor.habilidadesAdquiridas as { nivel: number; habilidadeId: string }[])
+        .map(escolha => ({ nivel: escolha.nivel, habilidadeId: escolha.habilidadeId }))
+        .sort((a, b) => a.nivel - b.nivel);
+      if (JSON.stringify(registradas) !== JSON.stringify(esperadas)) return false;
+    }
+  }
+  let progressaoFicha: EstadoProgressaoPersistente | null = null;
   if ('progressao' in valor) {
     if (typeof valor.classe !== 'string' || !Number.isSafeInteger(valor.nivel)
       || !objeto(valor.progressao)
       || valor.progressao.nivelAtual !== valor.nivel
       || !estadoProgressaoPersistenteValido(valor.progressao, valor.classe)) return false;
+    progressaoFicha = valor.progressao as EstadoProgressaoPersistente;
   }
   if ('usosDescansoCompleto' in valor && !usosDescansoCompletoValido(valor.usosDescansoCompleto)) return false;
   for (const campo of ['pvAtual', 'pvTemporarios', 'saAtual'] as const) {
@@ -184,7 +242,10 @@ function validarDadosFicha(valor: unknown): valor is Record<string, unknown> {
     if (!objeto(valor.atributos)) return false;
     const chavesAtributos = Object.keys(valor.atributos).sort();
     if (chavesAtributos.join('|') !== ['agilidade', 'astucia', 'forca', 'vigor'].join('|')) return false;
-    if (!atributosIniciaisValidos(valor.atributos as never)) return false;
+    const atributosBase = progressaoFicha
+      ? reconstruirAtributosDeCriacao(valor.atributos, progressaoFicha)
+      : valor.atributos as Record<string, number>;
+    if (!atributosBase || !atributosIniciaisValidos(atributosBase as never)) return false;
   }
   if ('periciaOrigemTreinada' in valor) {
     if (typeof valor.periciaOrigemTreinada !== 'string') return false;
@@ -226,11 +287,18 @@ function validarDadosFicha(valor: unknown): valor is Record<string, unknown> {
     && 'periciaOrigemTreinada' in valor && 'distribuicaoPericias' in valor;
   if (contextoPericiasCompleto) {
     const extra = valor.periciaOrigemExtra;
-    if (!distribuicaoPericiasValida(
+    const distribuicaoBase = progressaoFicha
+      ? reconstruirPericiasDeCriacao(
+          valor.distribuicaoPericias as Record<string, number>,
+          progressaoFicha,
+          valor.periciaOrigemTreinada as string,
+        )
+      : valor.distribuicaoPericias as Record<string, number>;
+    if (!distribuicaoBase || !distribuicaoPericiasValida(
       valor.classe as string,
       valor.origem as string,
       valor.periciaOrigemTreinada as string,
-      valor.distribuicaoPericias as Record<string, number>,
+      distribuicaoBase,
       typeof extra === 'string' ? extra : undefined,
     )) return false;
   }

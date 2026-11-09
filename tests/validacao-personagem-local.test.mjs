@@ -348,3 +348,79 @@ test('valida a segunda Perícia do Amnésico como opção de Classe sem Treiname
   assert.equal(validarPersonagemLocal(base({ ...dados, distribuicaoPericias: { Vontade: 3 } })), false);
   assert.equal(validarPersonagemLocal(base({ ...dados, periciaOrigemExtra: 'Investigação' })), false);
 });
+
+
+test('Progressão valida Atributos acima do limite de criação reconstruindo o histórico exato', () => {
+  const dados = {
+    versaoModelo: 1, estadoFicha: 'rascunho', classe: 'Agente', origem: 'Acadêmico',
+    nivel: 3, habilidadeBasica: 'anatomia-de-combate',
+    habilidadesAdquiridas: [
+      { nivel: 1, habilidadeId: 'anatomia-de-combate' },
+      { nivel: 2, habilidadeId: 'nao-vai-escapar' },
+    ],
+    atributos: { forca: 4, agilidade: 2, vigor: 1, astucia: 1 },
+    periciaOrigemTreinada: 'Investigação', periciaOrigemExtra: null,
+    distribuicaoPericias: { Luta: 1 },
+    progressao: {
+      versao: 1, nivelAtual: 3, metodo: 'missoes', missoesCompletadas: 3,
+      marcoNarrativoConcedido: false, missoesCompletadasNaUltimaMorte: null,
+      nivelNaUltimaMorte: null, marcoNarrativoAposUltimaMorte: false,
+      penalidadeMorteNivel1: false,
+      beneficiosPorNivel: [
+        { nivel: 2, beneficios: [{ nivel: 2, tipo: 'habilidade', habilidadeId: 'nao-vai-escapar' }] },
+        { nivel: 3, beneficios: [{ nivel: 3, tipo: 'atributo', atributo: 'forca', valorAntes: 3, valorDepois: 4 }] },
+      ],
+    },
+  };
+  assert.equal(validarPersonagemLocal(base(dados)), true);
+  assert.equal(validarPersonagemLocal(base({ ...dados, atributos: { ...dados.atributos, forca: 3 } })), false);
+  assert.equal(validarPersonagemLocal(base({
+    ...dados,
+    progressao: { ...dados.progressao, beneficiosPorNivel: [
+      dados.progressao.beneficiosPorNivel[0],
+      { nivel: 3, beneficios: [{ nivel: 3, tipo: 'atributo', atributo: 'forca', valorAntes: 2, valorDepois: 3 }] },
+    ] },
+  })), false);
+});
+
+test('Progressão valida Perícias acima do orçamento de criação revertendo somente pontos registrados', () => {
+  const dados = {
+    versaoModelo: 1, estadoFicha: 'rascunho', classe: 'Agente', origem: 'Acadêmico',
+    nivel: 4, habilidadeBasica: 'anatomia-de-combate',
+    habilidadesAdquiridas: [
+      { nivel: 1, habilidadeId: 'anatomia-de-combate' },
+      { nivel: 2, habilidadeId: 'nao-vai-escapar' },
+      { nivel: 4, habilidadeId: 'finalizacao-a-distancia' },
+    ],
+    atributos: { forca: 4, agilidade: 2, vigor: 1, astucia: 1 },
+    periciaOrigemTreinada: 'Investigação', periciaOrigemExtra: null,
+    distribuicaoPericias: { Luta: 2 },
+    progressao: {
+      versao: 1, nivelAtual: 4, metodo: 'missoes', missoesCompletadas: 6,
+      marcoNarrativoConcedido: false, missoesCompletadasNaUltimaMorte: null,
+      nivelNaUltimaMorte: null, marcoNarrativoAposUltimaMorte: false,
+      penalidadeMorteNivel1: false,
+      beneficiosPorNivel: [
+        { nivel: 2, beneficios: [{ nivel: 2, tipo: 'habilidade', habilidadeId: 'nao-vai-escapar' }] },
+        { nivel: 3, beneficios: [{ nivel: 3, tipo: 'atributo', atributo: 'forca', valorAntes: 3, valorDepois: 4 }] },
+        { nivel: 4, beneficios: [
+          { nivel: 4, tipo: 'habilidade', habilidadeId: 'finalizacao-a-distancia' },
+          { nivel: 4, tipo: 'pericia', pericia: 'Luta', grauAntes: 1, grauDepois: 2 },
+        ] },
+      ],
+    },
+  };
+  assert.equal(validarPersonagemLocal(base(dados)), true);
+  assert.equal(validarPersonagemLocal(base({ ...dados, distribuicaoPericias: { Luta: 1 } })), false);
+  assert.equal(validarPersonagemLocal(base({
+    ...dados,
+    progressao: { ...dados.progressao, beneficiosPorNivel: [
+      dados.progressao.beneficiosPorNivel[0],
+      dados.progressao.beneficiosPorNivel[1],
+      { nivel: 4, beneficios: [
+        { nivel: 4, tipo: 'habilidade', habilidadeId: 'finalizacao-a-distancia' },
+        { nivel: 4, tipo: 'pericia', pericia: 'Luta', grauAntes: 0, grauDepois: 1 },
+      ] },
+    ] },
+  })), false);
+});
