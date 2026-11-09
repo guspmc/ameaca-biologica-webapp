@@ -3,13 +3,13 @@
 **Data:** 09/11/2026  
 **Repositório:** `guspmc/ameaca-biologica-webapp`  
 **Branch:** `feat/offline-first-ficha`  
-**HEAD atualizado neste ciclo:** `2a0f8d1eb7ac38a5727a519a522f82b0c2ce5fbb`  
+**HEAD atualizado neste ciclo:** `ed3d5573dde6ad4eaf2705ca16a184bde6c29de2`  
 **Protocolo:** `docs/protocolo-eficiencia-e-continuidade.md`  
 **Escopo:** avanço simultâneo de Progressão, procedimentos de armas, auditoria de catálogos e cobertura de persistência.
 
 ## 1. Estado do repositório e segurança
 
-- **HEAD confirmado:** `32853ab96c0b14340bf4b1e54d8c03e089f40743`.
+- **HEAD confirmado:** `ed3d5573dde6ad4eaf2705ca16a184bde6c29de2`.
 - Nenhum merge para `main`, deploy ou alteração em produção.
 - Nenhum teste humano integrado foi realizado; permanece adiado até a Ficha estar completa.
 - Inventário ativo de Personagem continua bloqueado.
@@ -231,3 +231,11 @@ A comparação com a regra publicada identificou que o procedimento anterior diz
 - **Teste:** commit `8d86ded` em `tests/catalogo-procedimentos-armas.test.mjs`; cobre gatilho, natureza narrativa e ausência de efeito mecânico.
 - **Limite:** a descrição narrativa pertence à resolução do Narrador; o catálogo não cria morte automática, dano adicional ou Condição.
 - **CI:** validar os workflows do HEAD consolidado após esta atualização documental; os workflows anteriormente observados pertenciam a commits anteriores.
+
+
+### 7.12 CI consolidada da rodada
+
+No HEAD `ed3d5573dde6ad4eaf2705ca16a184bde6c29de2`:
+- Build [42627065264](https://github.com/guspmc/ameaca-biologica-webapp/actions/runs/42627065264) — **success**. Etapas incluem testes de regras/permissões em PostgreSQL local, compilação TypeScript/Vite e verificações de tipos.
+- Verificação offline [42627065307](https://github.com/guspmc/ameaca-biologica-webapp/actions/runs/42627065307) — **success**. Testes automatizados e validação do build concluídos.
+- Esses resultados validam o código até `ed3d557`; a atualização deste próprio checkpoint cria um novo HEAD documental e exigirá conferência final dos workflows correspondentes.
