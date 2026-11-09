@@ -57,6 +57,13 @@ export default function ProgressaoFichaLocal({ dados, classe, nivel, origemDados
     </details>;
   }
 
+  if (origemDados === 'servidor') {
+    return <details className="ficha-local-editor progressao-ficha">
+      <summary>Progressão de Personagem · Nível {nivel}</summary>
+      <p>A edição da Progressão nesta etapa está disponível somente na Ficha Offline. A integração LAN exige fluxo próprio de autorização e gravação, que ainda será implementado.</p>
+    </details>;
+  }
+
   if (progressao === undefined) {
     return <details className="ficha-local-editor progressao-ficha" open>
       <summary>Progressão de Personagem</summary>
