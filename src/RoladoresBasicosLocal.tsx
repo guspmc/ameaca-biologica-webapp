@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import type { FacesDado } from './rolagemDados';
 import { sortearDados, validarResultadosFisicos } from './rolagemDados';
 import type { ModoDados, VisibilidadeRolagem } from './funcionamentoFicha';
@@ -21,6 +21,10 @@ export default function RoladoresBasicosLocal({ modo, modoDados, visibilidade, a
   const [resultadoIniciativa, setResultadoIniciativa] = useState('');
   const [resultadoLivre, setResultadoLivre] = useState('');
   const [erro, setErro] = useState('');
+
+  useEffect(() => {
+    setMetodo(modoDados === 'virtuais' ? 'virtual' : 'fisico');
+  }, [modoDados]);
 
   if (modo !== 'automatico') return null;
 
