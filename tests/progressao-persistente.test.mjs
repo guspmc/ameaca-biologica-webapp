@@ -82,3 +82,37 @@ test('estrutura desconhecida, campos extras e contadores inválidos são recusad
   assert.equal(estadoProgressaoPersistenteValido({ ...nivel1(), missoesCompletadas: -1 }, 'Agente'), false);
   assert.throws(() => atualizarContadorMissoes(nivel1(), 'Agente', -1), /inválido/);
 });
+
+
+test('estado inicial da Progressão pertence à Ficha e adota Marco Narrativo como padrão preferencial', async () => {
+  const { criarEstadoProgressaoInicial } = await import('../src/progressaoPersistente.ts');
+  const inicial = criarEstadoProgressaoInicial();
+  assert.equal(inicial.nivelAtual, 1);
+  assert.equal(inicial.metodo, 'marco_narrativo');
+  assert.equal(inicial.marcoNarrativoConcedido, false);
+  assert.equal(estadoProgressaoPersistenteValido(inicial, 'Agente'), true);
+  const alternativo = criarEstadoProgressaoInicial('missoes');
+  assert.equal(alternativo.metodo, 'missoes');
+  assert.equal(estadoProgressaoPersistenteValido(alternativo, 'Operador'), true);
+  assert.throws(() => criarEstadoProgressaoInicial('mesa'), /Método/);
+});
+
+test('registrar Marco Narrativo não concede nível e registra progresso posterior à Morte', async () => {
+  const { criarEstadoProgressaoInicial, registrarMarcoNarrativo } = await import('../src/progressaoPersistente.ts');
+  const inicial = criarEstadoProgressaoInicial();
+  const concedido = registrarMarcoNarrativo(inicial, 'Agente');
+  assert.equal(concedido.marcoNarrativoConcedido, true);
+  assert.equal(concedido.nivelAtual, 1);
+  assert.equal(concedido.beneficiosPorNivel.length, 0);
+  const aposMorte = {
+    ...inicial,
+    missoesCompletadasNaUltimaMorte: 0,
+    nivelNaUltimaMorte: 1,
+    penalidadeMorteNivel1: true,
+  };
+  const marcoNovo = registrarMarcoNarrativo(aposMorte, 'Agente');
+  assert.equal(marcoNovo.marcoNarrativoAposUltimaMorte, true);
+  assert.equal(marcoNovo.nivelAtual, 1);
+  assert.equal(estadoProgressaoPersistenteValido(marcoNovo, 'Agente'), true);
+  assert.throws(() => registrarMarcoNarrativo({ ...inicial, metodo: 'missoes' }, 'Agente'), /Missões/);
+});

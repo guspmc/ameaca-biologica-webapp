@@ -91,3 +91,47 @@ export function atualizarContadorMissoes(
   }
   return { ...structuredClone(estado), missoesCompletadas: quantidade };
 }
+
+ 
+/** Cria o estado inicial da Progressão pertencente à própria Ficha.
+ * Marco Narrativo é o padrão oficial preferencial; Missões permanece opcional.
+ * Não configura nem consulta a Mesa e não concede benefícios.
+ */
+export function criarEstadoProgressaoInicial(
+  metodo: MetodoProgressaoPersistente = 'marco_narrativo',
+): EstadoProgressaoPersistente {
+  if (metodo !== 'marco_narrativo' && metodo !== 'missoes') {
+    throw new Error('Método de Progressão inválido.');
+  }
+  return {
+    versao: 1,
+    nivelAtual: 1,
+    metodo,
+    missoesCompletadas: 0,
+    marcoNarrativoConcedido: false,
+    missoesCompletadasNaUltimaMorte: null,
+    nivelNaUltimaMorte: null,
+    marcoNarrativoAposUltimaMorte: false,
+    penalidadeMorteNivel1: false,
+    beneficiosPorNivel: [],
+  };
+}
+
+/** Registra um Marco comunicado pelo Narrador; não sobe Nível nem aplica benefícios. */
+export function registrarMarcoNarrativo(
+  estado: EstadoProgressaoPersistente,
+  classe: string,
+): EstadoProgressaoPersistente {
+  if (!estadoProgressaoPersistenteValido(estado, classe)) {
+    throw new Error('Estado de Progressão inválido.');
+  }
+  if (estado.metodo !== 'marco_narrativo') {
+    throw new Error('Esta Ficha utiliza contagem de Missões, não Marco Narrativo.');
+  }
+  const houveMorte = estado.nivelNaUltimaMorte !== null;
+  return {
+    ...structuredClone(estado),
+    marcoNarrativoConcedido: true,
+    marcoNarrativoAposUltimaMorte: houveMorte ? true : estado.marcoNarrativoAposUltimaMorte,
+  };
+}
