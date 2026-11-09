@@ -145,3 +145,24 @@ test('substituição troca o conjunto inteiro e mantém o conjunto anterior em c
   assert.equal(segunda.registros.has('nao-gravar'), false);
   assert.deepEqual([...segunda.registros.keys()], ['preservar']);
 });
+
+
+test('IndexedDB preserva Progressão persistente validada ao salvar e reabrir a Ficha', async () => {
+  instalarIndexedDB();
+  const db = await importarPersistencia();
+  const progressao = {
+  versao: 1, nivelAtual: 1, metodo: 'missoes', missoesCompletadas: 0,
+  marcoNarrativoConcedido: false, missoesCompletadasNaUltimaMorte: null,
+  nivelNaUltimaMorte: null, marcoNarrativoAposUltimaMorte: false,
+  penalidadeMorteNivel1: false, beneficiosPorNivel: [],
+};
+  const original = ficha('progressao');
+  original.dados = { versaoModelo: 1, estadoFicha: 'rascunho', classe: 'Agente', nivel: 1, progressao };
+  await db.salvarPersonagem(original);
+  const recuperada = await db.obterPersonagem('progressao');
+  assert.deepEqual(recuperada.dados.progressao, progressao);
+  await assert.rejects(db.salvarPersonagem({
+    ...original,
+    dados: { ...original.dados, progressao: { ...progressao, campoExtra: true } },
+  }), /Ficha inválida/);
+});

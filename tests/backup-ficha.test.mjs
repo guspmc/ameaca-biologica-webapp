@@ -130,3 +130,19 @@ test('backup preserva o planejamento parcial de criação em Nível superior', (
   const restaurado = lerArquivoBackup(serializarBackup(criarBackup([original])));
   assert.deepEqual(restaurado.personagens[0].dados.planejamentoCriacao, original.dados.planejamentoCriacao);
 });
+
+
+test('backup preserva Progressão persistente e recusa estado malformado', () => {
+  const progressao = {
+  versao: 1, nivelAtual: 1, metodo: 'missoes', missoesCompletadas: 0,
+  marcoNarrativoConcedido: false, missoesCompletadasNaUltimaMorte: null,
+  nivelNaUltimaMorte: null, marcoNarrativoAposUltimaMorte: false,
+  penalidadeMorteNivel1: false, beneficiosPorNivel: [],
+};
+  const original = ficha();
+  original.dados = { versaoModelo: 1, estadoFicha: 'rascunho', classe: 'Agente', nivel: 1, progressao };
+  const restaurado = lerArquivoBackup(serializarBackup(criarBackup([original])));
+  assert.deepEqual(restaurado.personagens[0].dados.progressao, progressao);
+  const invalido = { ...original, dados: { ...original.dados, progressao: { ...progressao, campoExtra: true } } };
+  assert.throws(() => criarBackup([invalido]), /fichas inválidas/);
+});
