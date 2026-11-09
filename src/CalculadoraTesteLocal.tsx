@@ -24,9 +24,10 @@ type Props = {
   modoDados: ModoDados;
   origem?: string;
   saDisponivel?: number;
+  aoFalharCriticoAtaque?: () => Promise<boolean>;
 };
 
-export default function CalculadoraTesteLocal({ atributos, treinada, distribuicao, periciaOrigemExtra = '', periciaTentativaErroTreinada = '', temTentativaEErro = false, modoDados, origem = '', saDisponivel = 0 }: Props) {
+export default function CalculadoraTesteLocal({ atributos, treinada, distribuicao, periciaOrigemExtra = '', periciaTentativaErroTreinada = '', temTentativaEErro = false, modoDados, origem = '', saDisponivel = 0, aoFalharCriticoAtaque }: Props) {
   const [tipo, setTipo] = useState<'pericia' | 'atributo' | 'ataque-corpo' | 'ataque-distancia'>('pericia');
   const [pericia, setPericia] = useState('Percepção');
   const [atributo, setAtributo] = useState<keyof AtributosIniciais>('astucia');
@@ -41,6 +42,7 @@ export default function CalculadoraTesteLocal({ atributos, treinada, distribuica
   const [metodo, setMetodo] = useState<'fisico' | 'virtual'>(modoDados === 'virtuais' ? 'virtual' : 'fisico');
   const [dadosConfirmados, setDadosConfirmados] = useState<{ dado1: number; dado2?: number } | null>(null);
   const [erroRolagem, setErroRolagem] = useState('');
+  const [mensagemCondicao, setMensagemCondicao] = useState('');
 
   useEffect(() => {
     setMetodo(modoDados === 'virtuais' ? 'virtual' : 'fisico');
@@ -104,6 +106,11 @@ export default function CalculadoraTesteLocal({ atributos, treinada, distribuica
         : validarResultadosFisicos([dado1, ...(quantidadeDados === 2 ? [dado2] : [])].join(' '), quantidadeDados, 20);
       setDadosConfirmados({ dado1: resultados[0], dado2: resultados[1] });
       setErroRolagem('');
+      setMensagemCondicao('');
+      const resultado = calcularTesteManual({ valorBase: valorTeste, modificador: Number(modificador || 0), dt: Number(dt), dado1: resultados[0], dado2: resultados[1] ?? null, vantagem });
+      if ((tipo === 'ataque-corpo' || tipo === 'ataque-distancia') && resultado.estado === 'falha-critica' && aoFalharCriticoAtaque) {
+        void aoFalharCriticoAtaque().then(salvo => setMensagemCondicao(salvo ? 'Falha Crítica: Exposto ativado automaticamente e salvo na Ficha.' : 'Falha Crítica: não foi possível confirmar o salvamento de Exposto. Confira as Condições da Ficha.'));
+      }
     } catch (problema) {
       setDadosConfirmados(null);
       setErroRolagem(problema instanceof Error ? problema.message : 'Não foi possível registrar o Teste.');
@@ -186,6 +193,7 @@ export default function CalculadoraTesteLocal({ atributos, treinada, distribuica
     </div>}
     {!impossivel && <button type="button" className="botao-claro" onClick={registrarRolagem}>{metodo === 'virtual' ? 'Rolar Teste' : 'Confirmar dados físicos'}</button>}
     {erroRolagem && <p className="offline-erro" role="alert">{erroRolagem}</p>}
+    {mensagemCondicao && <p role="status">{mensagemCondicao}</p>}
     {calculado.erro && <p className="offline-erro" role="alert">{calculado.erro}</p>}
     {calculado.resultado && <div className="offline-status ficha-local-resultado" role="status">
       <strong>{calculado.resultado.estado === 'impossivel' ? 'Sem Teste'
