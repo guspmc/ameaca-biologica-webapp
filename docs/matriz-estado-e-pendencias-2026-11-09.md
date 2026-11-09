@@ -382,3 +382,16 @@ Novo arquivo: `tests/catalogo-armas-auditoria-completa.test.mjs`.
 - **CI:** build [42655459041](https://github.com/guspmc/ameaca-biologica-webapp/actions/runs/42655459041) e verificação offline [42655459252](https://github.com/guspmc/ameaca-biologica-webapp/actions/runs/42655459252), ambos associados ao commit de código `b67548df116db614a047587de46a075c5ecafe67`; estavam em execução no momento do registro. Confirmar conclusão antes de considerar o ciclo validado.
 
 **Regra permanente de processo:** cada ciclo deve atualizar esta matriz e criar checkpoint com SHA, escopo, arquivos, testes, resultados, pendências e próximo passo. O checkpoint deve instruir a próxima sessão a ler a matriz e o checkpoint, confirmar HEAD e inspecionar dependências antes de alterar código. Não avançar sem apresentar o checkpoint ao Gus e obter validação.
+
+
+## Atualização — Roladores básicos da Ficha (09/11/2026)
+
+- **IMPLEMENTADO:** motor de rolagem virtual em `src/rolagemDados.ts`, com `crypto.getRandomValues`, rejeição de valores fora do intervalo uniforme e validação de entradas.
+- **IMPLEMENTADO:** `src/RoladoresBasicosLocal.tsx` oferece rolagem pontual de Iniciativa (`1d20 + AGI`) e Rolador Livre (quantidade e tipo de dado).
+- **IMPLEMENTADO:** dados físicos permitem registrar faces obtidas; dados virtuais geram resultados; em modo Misto o jogador escolhe o método para cada rolagem.
+- **IMPLEMENTADO:** ambos os roladores só são renderizados em modo Automático. A calculadora de Testes existente também foi restringida ao modo Automático; em Misto/Manual os valores, fórmulas e modificadores da Ficha permanecem visíveis.
+- **LIMITE PRESERVADO:** os resultados são apresentados na interface e não alteram PV, SA, BI, inventário ou qualquer estado da personagem. Não há histórico persistido.
+- **PRIVACIDADE:** a preferência Pública/Privada é exibida como configuração, mas a Ficha Offline mantém os resultados no próprio dispositivo e não transmite nem cria histórico compartilhado. Enforcement em leitura/compartilhamento LAN permanece pendente para a integração futura.
+- **PENDENTE:** roladores integrados de Ataque, Dano, Perícia e Atributo; integração dos modificadores e efeitos específicos; enforcement de privacidade no contexto LAN. Não foi criada regra de acerto, dano ou consequência.
+- **TESTES:** `tests/roladores-ficha.test.mjs` cobre fonte aleatória, distribuição sem viés de módulo, validação de resultados físicos e limites de persistência/visibilidade. CI vinculada ao HEAD abaixo ainda em execução no momento deste registro.
+- **Não houve:** merge para `main`, deploy, alteração de produção, teste humano ou alteração de cânone.
