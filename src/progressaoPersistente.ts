@@ -38,7 +38,7 @@ export function estadoProgressaoPersistenteValido(valor: unknown, classe: string
     || (valor.missoesCompletadasNaUltimaMorte !== null
       && (!Number.isSafeInteger(valor.missoesCompletadasNaUltimaMorte)
         || (valor.missoesCompletadasNaUltimaMorte as number) < 0
-        || (valor.missoesCompletadasNaUltimaMorte as number) > (valor.missoesCompletadas as number)))
+        ))
     || (valor.nivelNaUltimaMorte !== null && (!Number.isSafeInteger(valor.nivelNaUltimaMorte)
       || (valor.nivelNaUltimaMorte as number) < 1 || (valor.nivelNaUltimaMorte as number) > 10))
     || typeof valor.marcoNarrativoAposUltimaMorte !== 'boolean'
