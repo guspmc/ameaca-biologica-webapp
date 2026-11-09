@@ -439,3 +439,17 @@ Novo arquivo: `tests/catalogo-armas-auditoria-completa.test.mjs`.
 - **TESTES:** testes estruturais existentes inspecionados; build/suíte não executados nesta auditoria. CI para SHA `411a78efc1b16b85639c72c90d3c053b44e0c63a` permanece pendente/não observada.
 - **PRÓXIMO:** separar rolagem de Ataque da comparação com Defesa; remover menção genérica de Exposto nos Testes comuns; auditar em paralelo catálogo de armas/Peças/Habilidades; implementar cálculo puro de Dano apenas com entradas explícitas.
 - **Checkpoint:** `docs/checkpoint-auditoria-ataque-dano-2026-11-09.md` (commit `755775b0524ddca6c3fd354d4aed8290285d5019`).
+
+
+## Atualização superveniente — Combate completo antes do Inventário (09/11/2026)
+
+Esta atualização prevalece sobre qualquer redação anterior incompatível nesta matriz.
+
+- **DECISÃO EXPRESSA DO GUS:** toda a área de Combate, com todas as armas, ataques universais, fórmulas, modificadores, Peças e exceções, deve estar implementada e funcional antes do Inventário ativo. A Matilda foi apenas exemplo; o escopo inclui as 49 armas do catálogo canônico.
+- **CATÁLOGOS EXISTENTES CONFIRMADOS:** 15 perfis corpo a corpo em `src/catalogoArmas.ts`; 34 perfis de armas de fogo/especiais em `src/catalogoArmasFogo.ts`; procedimentos para ambos em `src/catalogoProcedimentosArmas.ts`; Arma Improvisada e Ataque Desarmado em `src/catalogoProcedimentosAtaquesUniversais.ts`; 31 Peças Extras em `src/catalogoPecas.ts`.
+- **IMPORTANTE:** catálogo e procedimentos existentes são dados/referência, não integração funcional. A seção Combate da Ficha ainda declara Ataques e Dano “A integrar”. O catálogo legado `catalogoArmas.ts` contém três registros de pistolas duplicados do catálogo completo; a integração deve usar os 15 perfis corpo a corpo e os 34 perfis de armas de fogo/especiais sem duplicar IDs.
+- **FICHA NÃO É MOTOR DE COMBATE:** não comparar Ataque com Defesa, decidir acerto, administrar turnos/rodadas, resolver Reações, aplicar dano a alvos/recursos ou resolver consequências narrativas. A Ficha calcula e apresenta; o Mestre decide.
+- **SEM DEPENDÊNCIA DO INVENTÁRIO:** a seleção de um perfil para cálculo não significa posse/equipamento. O futuro Inventário determinará equipar/desequipar, munição carregada e Peças instaladas. Não presumir esses estados. Ataque Desarmado e Arma Improvisada funcionam independentemente de equipamento.
+- **PENDÊNCIAS DE IMPLEMENTAÇÃO:** calculadora de Ataque sem Defesa; cálculo/rolagem de Dano para todas as fórmulas; críticos e margens ampliadas com confirmação do Mestre quando necessária; BI, Origem, Classe, Habilidades e Peças; propriedades e exceções de todos os perfis; ataques universais; interface por modo e testes automatizados.
+- **Ordem:** Combate completo → auditoria e suíte automatizada → bateria humana integrada única → Inventário ativo → Baú/transferências.
+- **Checkpoint de referência:** `docs/checkpoint-combate-catalogos-2026-11-09.md`.
