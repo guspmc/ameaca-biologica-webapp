@@ -15,7 +15,7 @@ const pecas = listarPecasExtras().map(peca => ({
   itemId: peca.id,
   nome: peca.nome,
   tipo: 'peca' as const,
-  emCombate: `O efeito só se aplica quando a peça está instalada em arma compatível: ${peca.efeito} Não instalar, remover ou trocar durante o combate por ausência de procedimento específico.`,
+  emCombate: `O efeito só se aplica quando a peça está instalada em arma compatível: ${peca.efeito} O Arquivo do Jogador não define custo de ação para instalar, remover ou trocar peças durante o combate.`,
   foraDeCombate: `Instalar, remover ou trocar normalmente leva 30 minutos e exige bancada apropriada; não há Teste. O Kit de Ferramentas pode substituir a bancada quando uma regra permitir. Cada peça ocupa 1 Espaço de Peça salvo indicação diferente; a mesma peça não pode beneficiar duas armas ao mesmo tempo. Um personagem pode trabalhar na arma de outro. Compatibilidade: ${peca.compatibilidade.join('; ')}. Efeito: ${peca.efeito}`,
   referencia: peca.referencia,
 }));
