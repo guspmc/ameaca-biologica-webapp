@@ -3,8 +3,8 @@
 ## Estado técnico
 - Repositório: `guspmc/ameaca-biologica-webapp`
 - Branch: `feat/offline-first-ficha`
-- HEAD de código do ciclo: `4e1d67de002b04ee12707b44f71ae5e21f644a9b`
-- Matriz atualizada no commit: `a1adf38871790e87106009ff610775bb882958c5`
+- HEAD de código após a implementação de Exposto: `411a78efc1b16b85639c72c90d3c053b44e0c63a`
+- Matriz atualizada no commit documental subsequente.
 - Ciclo realizado exclusivamente na branch de trabalho.
 - Nenhum merge para `main`, deploy ou alteração de produção.
 - Nenhum teste humano executado; a bateria integrada continua adiada até a Ficha estar completa.
@@ -43,15 +43,16 @@ Completar a rolagem integrada de Testes de Perícia e Testes puros de Atributo n
 - **IMPLEMENTADO:** rolagens integradas de Perícia e Atributo com dados físicos, virtuais e mistos.
 - **TESTES AUTOMATIZADOS:** testes escritos/atualizados; execução da CI deste código ainda precisa ser confirmada.
 - **VALIDADO HUMANAMENTE:** não realizado.
-- **PENDENTE:** CI vinculada ao SHA de código; integração completa de Ataque e Dano; deliberação sobre a automação de Exposto; auditoria integral da Ficha.
+- **IMPLEMENTADO:** integração do gatilho automático de Exposto em Falha Crítica de Ataque na Ficha Automática; salvamento via `aoSalvarRecursos`, preservando histórico e sem duplicar uma instância ativa da mesma Condição.
+- **PENDENTE:** CI vinculada ao SHA `411a78efc1b16b85639c72c90d3c053b44e0c63a`; integração completa de Ataque e Dano; auditoria integral da Ficha.
 
 ## CI
-- SHA de código a validar: `4e1d67de002b04ee12707b44f71ae5e21f644a9b`.
+- SHA de código a validar: `411a78efc1b16b85639c72c90d3c053b44e0c63a`.
 - Estado observado nesta atualização: **PENDENTE DE CONFIRMAÇÃO**. Não declarar build ou suíte Offline como aprovados sem evidência associada a esse SHA.
 - A CI de commits intermediários não substitui a validação do SHA acima.
 
 ## Próxima etapa
-Auditar e integrar Ataque e Dano sem antecipar Inventário ativo: mapear os dados de arma, regras de ataque, resultados naturais, dano e modificadores que já existem; implementar apenas o que tiver contrato e regra confirmados. A seleção/equipamento de armas e consumo de munição permanecem dependentes do módulo de Inventário na ordem aprovada.
+Auditar e integrar Ataque e Dano sem antecipar Inventário ativo: mapear os dados de arma, regras de ataque, resultados naturais, dano e modificadores que já existem; implementar apenas o que tiver contrato e regra confirmados. O gatilho automático de Exposto já está definido e implementado conforme a decisão do Gus. A seleção/equipamento de armas e consumo de munição permanecem dependentes do módulo de Inventário na ordem aprovada.
 
 ## Instrução para a próxima sessão
 Ler este checkpoint e `docs/matriz-estado-e-pendencias-2026-11-09.md`; confirmar branch e HEAD atual; verificar a CI do SHA de código; inspecionar contratos e dependências antes de editar. Não repetir auditorias concluídas nem reabrir decisões aprovadas sem evidência. Apresentar o checkpoint ao Gus e aguardar validação antes de iniciar o próximo ciclo.
