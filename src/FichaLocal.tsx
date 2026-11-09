@@ -25,6 +25,7 @@ import ReanimacaoFichaLocal from './ReanimacaoFichaLocal';
 import PainelAcoesLocal from './PainelAcoesLocal';
 import CondicoesFichaLocal from './CondicoesFichaLocal';
 import PlanejadorHabilidadesCriacaoLocal from './PlanejadorHabilidadesCriacaoLocal';
+import ProgressaoFichaLocal from './ProgressaoFichaLocal';
 import { recursosIniciais } from './recursosFicha';
 import { calcularDerivadosCriacao } from './derivadosCriacao';
 import type { FichaRevisao } from './conferenciaCriacao';
@@ -242,6 +243,7 @@ export default function FichaLocal({ nome, mesa, contextoId, dados, aoFechar, ao
   const reanimacaoPV0EmCurso = reanimacaoValida(estadoReanimacao) && estadoReanimacao.causa === 'pv_zero' && estadoReanimacao.estado !== 'concluida';
   const classe = typeof ficha.classe === 'string' ? ficha.classe : '';
   const origem = typeof ficha.origem === 'string' ? ficha.origem : '';
+  const nivelAtual = Number.isSafeInteger(ficha.nivel) && numero(ficha.nivel) >= 1 && numero(ficha.nivel) <= 10 ? numero(ficha.nivel) : 1;
   const genero = typeof (ficha.identidade as Record<string, unknown> | undefined)?.genero === 'string' ? (ficha.identidade as Record<string, string>).genero : undefined;
   const termo = (valor: string) => termoPersonagem(valor, genero);
   const atributos = ficha.atributos && typeof ficha.atributos === 'object'
@@ -314,7 +316,7 @@ export default function FichaLocal({ nome, mesa, contextoId, dados, aoFechar, ao
     identidade: genero ? { genero } : {},
     nome,
     classe: classe || null,
-    nivel: 1,
+    nivel: nivelAtual,
     forca: numero(atributos.forca),
     agilidade: numero(atributos.agilidade),
     vigor: numero(atributos.vigor),
@@ -368,7 +370,7 @@ export default function FichaLocal({ nome, mesa, contextoId, dados, aoFechar, ao
         <div className="ficha-local-identidade">
           <div className="ficha-local-identidade-principal">
             <h1 id="ficha-local-titulo">{nome}</h1>
-            <p>{classePersonagem(classe || null, genero)} · {termo(origem || 'Origem pendente')} · Nível 1 (criação)</p>
+            <p>{classePersonagem(classe || null, genero)} · {termo(origem || 'Origem pendente')} · Nível {nivelAtual}{nivelAtual === 1 ? ' (criação)' : ''}</p>
             {origem === 'Operário' && typeof ficha.armaOperario === 'string' && <small>Arma escolhida: {ficha.armaOperario}</small>}
           </div>
           <span className="ficha-local-carimbo">DADOS<br/>RESTRITOS</span>
@@ -385,6 +387,8 @@ export default function FichaLocal({ nome, mesa, contextoId, dados, aoFechar, ao
           <div><span className="ficha-local-recurso-icone"><IconeFicha tipo="bio" /></span><small>BIO-INFECÇÃO</small><strong>{biAtual} / {bi}</strong><span>{faseBi.estado === 'colapso' ? 'Colapso Viral' : faseBi.fase ? 'Fase ' + faseBi.fase : 'Fase indisponível'}</span></div>
           <div><span className="ficha-local-recurso-icone"><IconeFicha tipo="defesa" /></span><small>DEFESA</small><strong>{defesa}</strong><span>Sem equipamento</span></div>
         </div>
+        <ProgressaoFichaLocal dados={dados} classe={classe} nivel={nivelAtual} aoSalvar={aoSalvarRecursos} />
+
         <CondicoesFichaLocal dados={dados} pvAtual={recursosAtuais.pvAtual} pvMaximo={pv} aoSalvar={aoSalvarRecursos} origemDados={origemDados} />
 
         <RecursosFichaLocal origemDados={origemDados} autoSalvar={autoSalvar}
@@ -410,7 +414,7 @@ export default function FichaLocal({ nome, mesa, contextoId, dados, aoFechar, ao
           classe={classe}
           pvMaximo={pv}
           saMaximo={sa}
-          nivel={typeof ficha.nivel === 'number' ? ficha.nivel : 1}
+          nivel={nivelAtual}
           modoDados={configuracaoFuncionamento.modoDados}
           aoSalvar={aoSalvarRecursos}
           bloqueado={secoesPendentes.size > 0 || reanimacaoEmCurso}
