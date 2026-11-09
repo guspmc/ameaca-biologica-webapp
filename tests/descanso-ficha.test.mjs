@@ -64,4 +64,6 @@ test('painel respeita método Virtual e salva somente após ação expressa', as
   assert.ok(painelDescanso, 'o painel de Descanso deve permanecer montado na Ficha');
   assert.doesNotMatch(painelDescanso, /\bkey=/, 'o painel não deve ser remontado após o salvamento, preservando a confirmação visual');
   assert.match(painelDescanso, /origemDados=\{origemDados\}/);
+  assert.match(painelDescanso, /aoPrepararPatchCompleto=\{\(\) =>/);
+  assert.match(ui, /\.\.\.\(aoPrepararPatchCompleto\?\.\(\) \?\? \{\}\)/);
 });

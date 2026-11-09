@@ -14,9 +14,10 @@ type Props = {
   bloqueado: boolean;
   origemDados?: 'local' | 'servidor';
   aoSalvar: (patch: Record<string, unknown>) => Promise<boolean>;
+  aoPrepararPatchCompleto?: () => Record<string, unknown>;
 };
 
-export default function DescansoFichaLocal({ dados, classe, pvMaximo, saMaximo, nivel, modoDados, bloqueado, origemDados = 'local', aoSalvar }: Props) {
+export default function DescansoFichaLocal({ dados, classe, pvMaximo, saMaximo, nivel, modoDados, bloqueado, origemDados = 'local', aoSalvar, aoPrepararPatchCompleto }: Props) {
   const [local, setLocal] = useState<LocalDescanso | ''>('');
   const [resultados, setResultados] = useState<string[]>(() => Array.from({ length: Number.isInteger(nivel) && nivel >= 1 && nivel <= 10 ? nivel : 1 }, () => ''));
   const nivelValido = Number.isInteger(nivel) && nivel >= 1 && nivel <= 10;
@@ -36,7 +37,7 @@ export default function DescansoFichaLocal({ dados, classe, pvMaximo, saMaximo, 
     try {
       const atuais = recursosIniciais(dados, pvMaximo, saMaximo);
       const patch: Record<string, unknown> = tipo === 'completo'
-        ? { ...concluirDescansoCompleto(atuais, pvMaximo, saMaximo), usosDescansoCompleto: renovarUsosDescansoCompleto() }
+        ? { ...concluirDescansoCompleto(atuais, pvMaximo, saMaximo), usosDescansoCompleto: renovarUsosDescansoCompleto(), ...(aoPrepararPatchCompleto?.() ?? {}) }
         : concluirDescansoParcial(atuais, resultados.map(Number), dadoVida!, pvMaximo, saMaximo, nivel);
       setOcupado(true); setErro(''); setMensagem('');
       if (!await aoSalvar(patch)) throw new Error('O armazenamento não confirmou a conclusão do Descanso.');

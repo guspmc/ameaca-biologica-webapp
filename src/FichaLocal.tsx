@@ -34,6 +34,7 @@ import { calcularFaseBioInfeccao } from './bioInfeccao';
 import { reanimacaoValida } from './reanimacaoFicha';
 import { adicionarInstanciaCondicao, condicoesAtivas, gerarIdCondicao, listaCondicoesValida } from './condicoesFicha';
 import { classePersonagem, termoPersonagem } from './textoPersonagem';
+import { confirmarDescansoCompletoProgressao, estadoProgressaoPersistenteValido } from './progressaoPersistente';
 
 type DadosFichaLocal = {
   classe?: unknown;
@@ -417,6 +418,13 @@ export default function FichaLocal({ nome, mesa, contextoId, dados, aoFechar, ao
           nivel={nivelAtual}
           modoDados={configuracaoFuncionamento.modoDados}
           aoSalvar={aoSalvarRecursos}
+          aoPrepararPatchCompleto={() => {
+            if (origemDados !== 'local' || dados.pedidoProgressao === undefined || dados.pedidoProgressao === null) return {};
+            if (!estadoProgressaoPersistenteValido(dados.progressao, classe)) {
+              throw new Error('Não foi possível confirmar a Progressão: o histórico está inválido.');
+            }
+            return { pedidoProgressao: confirmarDescansoCompletoProgressao(dados.pedidoProgressao, dados.progressao, classe, 'sala_descanso') };
+          }}
           bloqueado={secoesPendentes.size > 0 || reanimacaoEmCurso}
         />
 
