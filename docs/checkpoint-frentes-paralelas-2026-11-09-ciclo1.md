@@ -256,3 +256,13 @@ A matriz detalha:
 - ordem recomendada de execução e evidências de CI.
 
 A matriz distingue IMPLEMENTADO, TESTADO AUTOMATICAMENTE, AUDITORIA PARCIAL, PENDENTE DE INTEGRAÇÃO, PENDENTE HUMANO e DECISÃO PENDENTE. Não transforma a minuta v2.5 em documento aprovado e não altera o cânone.
+
+
+## 9. Auditoria de armas e cobertura integral de tabelas — 09/11/2026
+
+- Conferidas diretamente no Arquivo do Jogador v1.0 as tabelas e descrições das armas corpo a corpo (pp. 50–51), pistolas (pp. 53–54), escopetas (p. 55), submetralhadoras (p. 56), rifles (p. 57), rifles de precisão (p. 58), Magnums (pp. 59–60) e armas especiais (pp. 60–61).
+- Não foi identificada divergência material nos valores de tabela e exceções individuais examinados.
+- Criado `tests/catalogo-armas-auditoria-completa.test.mjs`, com comparação explícita dos campos de tabela dos 15 perfis corpo a corpo e 34 perfis de armas de fogo/especiais.
+- CI do HEAD `6fabb33c484cf696d2f24cd1e3a2ee9b472bc129`: Offline [42630134785](https://github.com/guspmc/ameaca-biologica-webapp/actions/runs/42630134785) e Build [42630134878](https://github.com/guspmc/ameaca-biologica-webapp/actions/runs/42630134878) — ambos **success**.
+- A matriz detalhada foi atualizada em `docs/matriz-estado-e-pendencias-2026-11-09.md`.
+- Próximo fechamento: matriz de propriedades/procedimentos individuais e cruzamentos com Peças Extras, munições e Habilidades. A auditoria de tabelas não conclui a integração do Combate.
