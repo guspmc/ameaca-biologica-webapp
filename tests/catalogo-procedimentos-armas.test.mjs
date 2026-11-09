@@ -26,6 +26,8 @@ test('propriedades individuais especiais são preservadas', () => {
   assert.match(consultarProcedimentoArma('lanca-chamas-quimico').emCombate.join(' '), /10 unidades/);
   assert.match(consultarProcedimentoArma('lanca-chamas-quimico').emCombate.join(' '), /Reabastecer o reservatório exige Movimento/);
   assert.match(consultarProcedimentoArma('rpg-7').emCombate.join(' '), /Morte Instantânea/);
+  assert.match(consultarProcedimentoArma('gm-79').emCombate.join(' '), /arma fica vazia e a recarga exige Movimento/);
+  assert.match(consultarProcedimentoArma('besta').emCombate.join(' '), /se afastam 1,5 m entre si/);
 });
 
 test('consulta devolve cópia e não altera o catálogo', () => {
