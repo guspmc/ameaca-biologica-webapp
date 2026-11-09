@@ -22,7 +22,9 @@ test('propriedades individuais especiais são preservadas', () => {
   assert.match(consultarProcedimentoArma('motosserra').emCombate.join(' '), /Cada resultado 6/);
   assert.match(consultarProcedimentoArma('punisher').emCombate.join(' '), /Punisher é exceção/);
   assert.match(consultarProcedimentoArma('spark-shot').emCombate.join(' '), /3 Cargas/);
+  assert.match(consultarProcedimentoArma('spark-shot').emCombate.join(' '), /Bateria de Alta Capacidade/);
   assert.match(consultarProcedimentoArma('lanca-chamas-quimico').emCombate.join(' '), /10 unidades/);
+  assert.match(consultarProcedimentoArma('lanca-chamas-quimico').emCombate.join(' '), /Reabastecer o reservatório exige Movimento/);
   assert.match(consultarProcedimentoArma('rpg-7').emCombate.join(' '), /Morte Instantânea/);
 });
 
