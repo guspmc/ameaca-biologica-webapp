@@ -424,3 +424,29 @@ test('Progressão valida Perícias acima do orçamento de criação revertendo s
     ] },
   })), false);
 });
+
+
+test('valida pedido de Progressão vinculado ao próximo Nível e ao requisito já cumprido', () => {
+  const progressao = {
+    versao: 1, nivelAtual: 1, metodo: 'missoes', missoesCompletadas: 1,
+    marcoNarrativoConcedido: false, missoesCompletadasNaUltimaMorte: null,
+    nivelNaUltimaMorte: null, marcoNarrativoAposUltimaMorte: false,
+    penalidadeMorteNivel1: false, beneficiosPorNivel: [],
+  };
+  const dados = {
+    versaoModelo: 1, estadoFicha: 'rascunho', classe: 'Agente', nivel: 1,
+    progressao, pedidoProgressao: { nivel: 2, estado: 'aguardando_descanso' },
+  };
+  assert.equal(validarPersonagemLocal(base(dados)), true);
+  assert.equal(validarPersonagemLocal(base({
+    ...dados, pedidoProgressao: { nivel: 3, estado: 'aguardando_descanso' },
+  })), false);
+  assert.equal(validarPersonagemLocal(base({
+    ...dados, pedidoProgressao: { nivel: 2, estado: 'inventado' },
+  })), false);
+  assert.equal(validarPersonagemLocal(base({
+    versaoModelo: 1, estadoFicha: 'rascunho', classe: 'Agente', nivel: 1,
+    pedidoProgressao: { nivel: 2, estado: 'aguardando_descanso' },
+  })), false);
+  assert.equal(validarPersonagemLocal(base({ ...dados, pedidoProgressao: null })), true);
+});

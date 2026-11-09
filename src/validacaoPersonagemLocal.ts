@@ -13,7 +13,7 @@ import { estadoTurnoCombateValido, estadoTurnoCombateCompostoLegadoReconhecido }
 import { listaCondicoesValida } from './condicoesFicha.ts';
 import { HABILIDADES_PROGRESSAO, ganhosProgressaoAte, validarProgressaoHabilidades } from './progressaoHabilidades.ts';
 import { usosDescansoCompletoValido } from './usosDescansoCompleto.ts';
-import { estadoProgressaoPersistenteValido, type EstadoProgressaoPersistente } from './progressaoPersistente.ts';
+import { estadoProgressaoPersistenteValido, pedidoProgressaoPersistenteValido, type EstadoProgressaoPersistente } from './progressaoPersistente.ts';
 
 export type PersonagemValidavel = {
   id: string;
@@ -164,6 +164,10 @@ function validarDadosFicha(valor: unknown): valor is Record<string, unknown> {
       || valor.progressao.nivelAtual !== valor.nivel
       || !estadoProgressaoPersistenteValido(valor.progressao, valor.classe)) return false;
     progressaoFicha = valor.progressao as EstadoProgressaoPersistente;
+  }
+  if ('pedidoProgressao' in valor && valor.pedidoProgressao !== null) {
+    if (!progressaoFicha || typeof valor.classe !== 'string'
+      || !pedidoProgressaoPersistenteValido(valor.pedidoProgressao, progressaoFicha, valor.classe)) return false;
   }
   if ('habilidadesAdquiridas' in valor) {
     if (!Array.isArray(valor.habilidadesAdquiridas) || typeof valor.classe !== 'string'
