@@ -223,6 +223,7 @@ test('subida só é aplicada em Descanso Completo na Sala de Descanso', () => {
 test('perda de Nível por Morte exige novo avanço posterior à Morte', () => {
   const base = { nivelAtual: 2, metodo: 'missoes', autorizacaoMestre: true, missoesCompletadas: 3, missoesCompletadasNaUltimaMorte: 3, descansoCompletoEmSalaDescanso: true };
   assert.equal(avaliarDisponibilidadeProgressao(base).disponivel, false);
+  assert.equal(avaliarDisponibilidadeProgressao({ ...base, missoesCompletadas: 1 }).disponivel, false);
   assert.equal(avaliarDisponibilidadeProgressao({ ...base, missoesCompletadas: 4 }).disponivel, true);
   const narrativa = { ...base, metodo: 'marco_narrativo', marcoNarrativoConcedido: true };
   assert.equal(avaliarDisponibilidadeProgressao(narrativa).disponivel, false);
