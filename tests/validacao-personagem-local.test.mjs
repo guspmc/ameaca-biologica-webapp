@@ -336,3 +336,15 @@ test('valida Progressão persistente quando presente e exige sincronização com
   assert.equal(validarPersonagemLocal(base({ ...dados, progressao: { ...progressao, campoExtra: true } })), false);
   assert.equal(validarPersonagemLocal(base({ versaoModelo: 1, estadoFicha: 'rascunho' })), true);
 });
+
+
+test('valida a segunda Perícia do Amnésico como opção de Classe sem Treinamento gratuito', () => {
+  const dados = {
+    versaoModelo: 1, estadoFicha: 'rascunho', classe: 'Agente', origem: 'Amnésico',
+    atributos, periciaOrigemTreinada: 'Investigação', periciaOrigemExtra: 'Vontade',
+    distribuicaoPericias: { Vontade: 2 },
+  };
+  assert.equal(validarPersonagemLocal(base(dados)), true);
+  assert.equal(validarPersonagemLocal(base({ ...dados, distribuicaoPericias: { Vontade: 3 } })), false);
+  assert.equal(validarPersonagemLocal(base({ ...dados, periciaOrigemExtra: 'Investigação' })), false);
+});
