@@ -98,3 +98,41 @@ A implementação deverá preservar a distinção entre requisito alcançado e b
 - Nenhuma alteração no cânone.
 - Nenhuma validação humana integrada declarada.
 - Inventário ativo continua bloqueado até fechamento das dependências de ficha/Combate, auditorias, testes automáticos e validação humana integrada.
+
+## 7. Ciclo seguinte — expansões de Inventário e CI — 08/11/2026
+
+### Implementação
+
+Foram adicionados:
+- `src/catalogoExpansoesInventario.ts`
+- `tests/catalogo-expansoes-inventario.test.mjs`
+
+O catálogo registra os dados canônicos da Pochete (+2 Espaços, 3 Moedas Antigas) e da Bolsa (+3 Espaços, 4 Moedas Antigas), além da regra de que os benefícios não se acumulam. A função `calcularBonusExpansaoInventario` retorna somente o maior bônus entre as expansões informadas e rejeita identificadores desconhecidos.
+
+**Limite explícito:** o módulo é catálogo/avaliação de referência. Não registra posse, não cria espaço dedicado, não move itens e não altera a capacidade persistida da Ficha. A regra do Planejamento v2.5, §11.2, de que a expansão ativa ocupa espaço dedicado e que um upgrade Pochete → Bolsa devolve a Pochete antiga como item comum de 1 Espaço continua pendente para o Inventário ativo.
+
+### Auditoria complementar
+
+O catálogo de armas de fogo/especiais foi comparado às pp. 55–61 sem divergência material identificada. As páginas 48 e 73 também confirmam a regra de expansões e seus preços.
+
+O catálogo de compras iniciais em `src/comprasIniciais.ts` continua deliberadamente parcial, com seis opções. Não foi ampliado para todo o preço de equipamentos da p. 73, pois a fonte de criação e o Planejamento v2.5 não estabelecem que todo item com preço esteja disponível para compra durante a criação inicial.
+
+### CI
+
+No HEAD `816e58443941e63c69f3c67584e968135c426395`, os dois workflows concluíram com sucesso:
+- Compilação do WebApp: run [42552103242](https://github.com/guspmc/ameaca-biologica-webapp/actions/runs/42552103242) — `success`.
+- Verificação da ficha offline: run [42552103097](https://github.com/guspmc/ameaca-biologica-webapp/actions/runs/42552103097) — `success`.
+
+Commits do ciclo:
+- `071dd31b4d633e60b74005bcfe4085a7b705f277` — catálogo de expansões.
+- `816e58443941e63c69f3c67584e968135c426395` — testes do catálogo.
+
+### Decisões e pendências preservadas para Progressão
+
+- Decisão do usuário já registrada: progressão por Missões não exige aprovação individual prévia do Mestre; o Jogador inicia a evolução durante Descanso Completo válido; a conclusão das Missões permanece responsabilidade do Mestre.
+- O Planejamento v2.5, §9.1, descreve o método como adotado pela Mesa, mas o tipo atual `MesaLocal` não possui campo de método de Progressão. Não foi recuperada decisão explícita sobre local de configuração ou padrão para Mesas novas/existentes. Não inventar um padrão; o contrato deve receber o método de uma fonte de configuração definida antes da interface final.
+- O Planejamento v2.5, §9.5, contém nota que permitiria aplicar Pontos de Perícia extras em qualquer Classe; o Arquivo do Jogador v1.0, p. 27, restringe esses pontos às Perícias da Classe. O código segue o livro oficial. Não alterar sem decisão expressa de mudança de cânone.
+
+### Segurança e limites
+
+Nenhuma alteração em `main`, merge ou publicação. Nenhum Inventário ativo foi habilitado. Os dois workflows verdes não substituem validação humana integrada.
