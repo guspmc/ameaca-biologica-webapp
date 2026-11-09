@@ -31,6 +31,7 @@ import type { FichaRevisao } from './conferenciaCriacao';
 import { normalizarConfiguracaoFuncionamento, type ConfiguracaoFuncionamento } from './funcionamentoFicha';
 import { calcularFaseBioInfeccao } from './bioInfeccao';
 import { reanimacaoValida } from './reanimacaoFicha';
+import { adicionarInstanciaCondicao, condicoesAtivas, gerarIdCondicao, listaCondicoesValida } from './condicoesFicha';
 import { classePersonagem, termoPersonagem } from './textoPersonagem';
 
 type DadosFichaLocal = {
@@ -117,6 +118,7 @@ export default function FichaLocal({ nome, mesa, contextoId, dados, aoFechar, ao
   const [avisoFechamento, setAvisoFechamento] = useState('');
   const [fecharAposSalvar, setFecharAposSalvar] = useState(false);
   const corpoRef = useRef<HTMLDivElement | null>(null);
+  const salvandoExpostoRef = useRef(false);
   const chavePosicao = 'ameaca-biologica:ficha:posicao:v1:' + (contextoId ?? mesa + ':' + nome);
   const chaveEditores = 'ameaca-biologica:ficha:editores:v1:' + (contextoId ?? mesa + ':' + nome);
   useEffect(() => {
@@ -187,6 +189,30 @@ export default function FichaLocal({ nome, mesa, contextoId, dados, aoFechar, ao
     if (pendente) pendenciasInternas.current.add(secao);
     else pendenciasInternas.current.delete(secao);
   }
+  async function registrarExpostoPorFalhaCritica(): Promise<boolean> {
+    if (configuracaoFuncionamento.modo !== 'automatico' || salvandoExpostoRef.current) return false;
+    salvandoExpostoRef.current = true;
+    try {
+      const condicoesAtuais = dados.condicoes === undefined ? [] : dados.condicoes;
+      if (!listaCondicoesValida(condicoesAtuais)) return false;
+      if (condicoesAtivas(condicoesAtuais).some(item => item.condicao === 'exposto')) return true;
+      const atualizadas = adicionarInstanciaCondicao(condicoesAtuais, {
+        id: gerarIdCondicao(),
+        condicao: 'exposto',
+        fonte: 'Falha Crítica em Ataque',
+        duracao: 'Até o final do próximo turno da criatura',
+        observacao: 'Ativada automaticamente pela Ficha Automática após resultado natural 1 no d20.',
+        estado: 'ativa',
+        encerradaEm: null,
+      });
+      return await aoSalvarRecursos({ condicoes: atualizadas });
+    } catch {
+      return false;
+    } finally {
+      salvandoExpostoRef.current = false;
+    }
+  }
+
   function fecharFicha() {
     if (pendenciasInternas.current.size > 0) {
       const secoes = [...pendenciasInternas.current].join(', ');
@@ -476,7 +502,7 @@ export default function FichaLocal({ nome, mesa, contextoId, dados, aoFechar, ao
             })}
           </div>
           <p className="ficha-local-legenda">O valor exibido soma o Atributo associado e o Treinamento. O Passivo exibido é o normal; Testes Passivos recebem +5 com Vantagem ou -5 com Desvantagem. A circunstância é resolvida pela Mesa. Não some o Atributo novamente ao realizar o Teste.</p>
-          {configuracaoFuncionamento.modo === 'automatico' && <CalculadoraTesteLocal atributos={atributos} treinada={treinada} periciaOrigemExtra={extra} periciaTentativaErroTreinada={extraTentativa} temTentativaEErro={temTentativaEErro} distribuicao={distribuicao} modoDados={configuracaoFuncionamento.modoDados} origem={origem} saDisponivel={recursosAtuais.saAtual} />}
+          {configuracaoFuncionamento.modo === 'automatico' && <CalculadoraTesteLocal atributos={atributos} treinada={treinada} periciaOrigemExtra={extra} periciaTentativaErroTreinada={extraTentativa} temTentativaEErro={temTentativaEErro} distribuicao={distribuicao} modoDados={configuracaoFuncionamento.modoDados} origem={origem} saDisponivel={recursosAtuais.saAtual} aoFalharCriticoAtaque={registrarExpostoPorFalhaCritica} />}
         </section>
 
         <section id="ficha-local-combate" className="ficha-local-secao">
