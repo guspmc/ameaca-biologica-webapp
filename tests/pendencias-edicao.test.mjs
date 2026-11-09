@@ -57,16 +57,19 @@ test('ficha contínua integra revisão local e ativação explícita pelo servid
   assert.match(ficha, /O equipamento inicial foi materializado na ativação/);
 });
 
-test('calculadora manual está integrada à seção de Perícias e não rola nem salva dados', async () => {
+test('calculadora integrada usa rolagem expressa física/virtual e não persiste resultados', async () => {
   const ficha = await ler('FichaLocal.tsx');
   assert.match(ficha, /<CalculadoraTesteLocal atributos=\{atributos\}/);
   const calculadora = await ler('CalculadoraTesteLocal.tsx');
   assert.match(calculadora, /calcularTesteManual/);
   assert.match(calculadora, /modoDados === 'virtuais'/);
-  assert.match(calculadora, /rolagem virtual ainda não foi implementada/);
+  assert.match(calculadora, /sortearDados/);
+  assert.match(calculadora, /validarResultadosFisicos/);
+  assert.match(calculadora, /onClick=\{registrarRolagem\}/);
   assert.match(ficha, /modoDados=\{configuracaoFuncionamento\.modoDados\}/);
   assert.match(calculadora, /resultado físico do d20/i);
-  assert.match(calculadora, /não rola dados, não registra uma rolagem e não altera a ficha/i);
+  assert.match(calculadora, /Cada rolagem exige comando explícito/);
+  assert.match(calculadora, /não altera dados da personagem/i);
   assert.doesNotMatch(calculadora, /Math\.random|aoSalvar|fetch\(/);
 });
 
