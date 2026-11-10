@@ -166,3 +166,16 @@ Implicações:
 - **NÃO IMPLEMENTADO:** vínculo local-LAN; cache local da Ficha LAN; salvamento duplo; abertura offline da Ficha LAN; rota idempotente Local > LAN; sincronização automática; estados de sync na UI.
 - **NÃO TESTADO:** fluxo integrado de cache, desconexão, reautenticação e reconexão.
 - **PENDENTE:** allowlist de campos; política multi-dispositivo; modelo de vínculo/backup; UX de primeiro vínculo e troca de conta.
+
+
+## Política para divergência entre dispositivos — aprovada em 10/11/2026
+
+Gus aprovou a proposta de não escolher automaticamente entre duas cópias locais válidas da mesma personagem quando elas divergirem após uso em dispositivos diferentes.
+
+- Não usar timestamp, revisão LAN ou ordem de reconexão como critério automático para descartar uma das versões.
+- Detectar e sinalizar a divergência entre a cópia local e a versão atualmente persistida no servidor.
+- Preservar ambas as versões até que o conflito seja resolvido, sem sobrescrita silenciosa.
+- A sincronização dessa personagem fica suspensa enquanto a divergência não for resolvida; outras personagens sem conflito podem continuar sincronizando.
+- A resolução deverá permitir comparar as versões e decidir explicitamente qual conteúdo manter, sem apagar a cópia preterida antes de confirmação e sem contornar as validações de Progressão, ativação e Inventário.
+
+A interface exata e a granularidade da resolução (por seção/campo ou escolha integral de uma versão) permanecem pendentes de desenho. Esta aprovação define a política de integridade, não autoriza ainda um mecanismo de mesclagem automática.
