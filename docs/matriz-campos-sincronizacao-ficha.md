@@ -70,3 +70,8 @@ Para rascunhos, a sincronização dos campos de criação deve respeitar o fluxo
 - **APROVADO:** nome da personagem; `configuracaoFuncionamento` após validação server-side; identidade explicitamente excluída da primeira etapa.
 - **NÃO IMPLEMENTADO:** nenhuma rota ou sincronização usa esta matriz.
 - **PENDENTE:** contrato exato da operação idempotente, vínculo local↔LAN, semântica de ausência/exclusão e testes de segurança; detalhar recursos operacionais, combate, identidade e criação em ciclos separados.
+
+
+## Contrato de transporte da primeira allowlist
+
+A operação de sync deverá usar rota POST dedicada, nunca o PUT genérico. O patch será estrito e conterá somente `name` e/ou `configuracaoFuncionamento`; nome exige 2–80 caracteres após normalização, e configuração exige validação server-side pelo validador compartilhado. O pedido inclui `expectedRevision` e UUID `operationId`. Revisão divergente resulta em conflito sem escrita; repetição idêntica recupera recibo, sem duplicar revisão; reutilização do ID com payload diferente é rejeitada. Recibo e atualização devem ser atômicos. Identidade e todos os demais campos continuam excluídos. Detalhes completos em `docs/desenho-tecnico-cache-ficha-lan.md`, seção 9.
