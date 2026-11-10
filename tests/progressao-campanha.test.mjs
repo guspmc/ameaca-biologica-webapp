@@ -116,6 +116,7 @@ test('Morte no Nível 4 reverte a Habilidade e a Perícia do Nível perdido, pre
   assert.equal(patch.pedidoProgressao, null);
   assert.throws(() => aplicarMorteNaFicha({ ...ficha, nivel: 3 }), /Nível atual da Ficha não corresponde/);
   assert.equal(patch.progressao.nivelAtual, 3);
+  assert.equal(patch.progressao.morteLocalNaoConfirmada, true);
   assert.equal(patch.atributos, undefined);
   assert.deepEqual(patch.habilidadesAdquiridas.map(x => x.nivel), [1, 2]);
   assert.equal(patch.distribuicaoPericias.Luta, 0);

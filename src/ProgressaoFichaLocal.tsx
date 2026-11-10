@@ -181,9 +181,10 @@ export default function ProgressaoFichaLocal({ dados, classe, nivel, origemDados
         throw new Error('O armazenamento não confirmou o registro da Morte.');
       }
       const atualizado = patch.progressao as EstadoProgressaoPersistente;
-      setMensagem(atualizado.penalidadeMorteNivel1
-        ? 'Morte registrada. A personagem permanece no Nível 1 e recebe a penalidade de −2 em Testes de Atributo, Perícia e Ataque até recuperar o Nível 2.'
-        : `Morte registrada. A personagem perdeu um Nível e agora está no Nível ${atualizado.nivelAtual}. Habilidade, Atributo e Perícia do Nível perdido foram revertidos conforme o histórico.`);
+      const resumoMorte = atualizado.penalidadeMorteNivel1
+        ? 'A personagem permanece no Nível 1 e recebe a penalidade de −2 em Testes de Atributo, Perícia e Ataque até recuperar o Nível 2.'
+        : `A personagem perdeu um Nível e agora está no Nível ${atualizado.nivelAtual}. Os benefícios do Nível perdido foram revertidos conforme o histórico.`;
+      setMensagem(`Morte registrada localmente. ${resumoMorte} O registro permanece pendente de confirmação do Mestre na LAN.`);
     } catch (e) {
       setErro(e instanceof Error ? e.message : 'Não foi possível registrar a Morte.');
     } finally { setOcupado(false); }
@@ -284,6 +285,7 @@ export default function ProgressaoFichaLocal({ dados, classe, nivel, origemDados
               </div>;
             })()}
           </>}
+    {estado.morteLocalNaoConfirmada && <p className="offline-aviso" role="status">Morte registrada localmente e ainda não confirmada pelo Mestre. Na futura reconciliação LAN, este registro deverá ser revisado; não o trate como Morte confirmada automaticamente.</p>}
     {estado.penalidadeMorteNivel1 && <p className="offline-erro" role="status">Penalidade de Morte ativa: −2 em Testes de Atributo, Perícia e Ataque até recuperar o Nível 2.</p>}
     {estado.nivelNaUltimaMorte !== null && <p>Última Morte registrada no Nível {estado.nivelNaUltimaMorte}. Missões preservadas: {estado.missoesCompletadasNaUltimaMorte} no momento da Morte.</p>}
     {origemDados === 'local' && <button type="button" className="botao-claro" disabled={ocupado} onClick={() => void registrarMorte()}>Registrar Morte da personagem</button>}

@@ -157,6 +157,7 @@ test('registro de Morte no nível 1 ativa penalidade e preserva progresso de Mis
   original.missoesCompletadas = 3;
   const morte = registrarMorteProgressao(original, 'Agente');
   assert.equal(morte.nivelAtual, 1);
+  assert.equal(morte.morteLocalNaoConfirmada, true);
   assert.equal(morte.nivelNaUltimaMorte, 1);
   assert.equal(morte.missoesCompletadasNaUltimaMorte, 3);
   assert.equal(morte.missoesCompletadas, 3);
@@ -170,6 +171,7 @@ test('registro de Morte acima do nível 1 reverte apenas o último nível e pres
   const original = nivel4();
   const morte = registrarMorteProgressao(original, 'Agente');
   assert.equal(morte.nivelAtual, 3);
+  assert.equal(morte.morteLocalNaoConfirmada, true);
   assert.equal(morte.nivelNaUltimaMorte, 4);
   assert.equal(morte.missoesCompletadasNaUltimaMorte, 6);
   assert.equal(morte.missoesCompletadas, 6);

@@ -12,6 +12,7 @@ export type EstadoProgressaoPersistente = {
   nivelNaUltimaMorte: number | null;
   marcoNarrativoAposUltimaMorte: boolean;
   penalidadeMorteNivel1: boolean;
+  morteLocalNaoConfirmada?: boolean;
   beneficiosPorNivel: { nivel: number; beneficios: BeneficioNivelRegistrado[] }[];
 };
 
@@ -29,7 +30,10 @@ export function estadoProgressaoPersistenteValido(valor: unknown, classe: string
     'missoesCompletadasNaUltimaMorte', 'nivelNaUltimaMorte', 'marcoNarrativoAposUltimaMorte',
     'penalidadeMorteNivel1', 'beneficiosPorNivel',
   ];
-  if (!objetoSimples(valor) || Object.keys(valor).sort().join('|') !== [...chaves].sort().join('|')
+  const chavesComMorteLocal = [...chaves, 'morteLocalNaoConfirmada'];
+  const chavesValor = objetoSimples(valor) ? Object.keys(valor).sort().join('|') : '';
+  if (!objetoSimples(valor)
+    || (chavesValor !== [...chaves].sort().join('|') && chavesValor !== chavesComMorteLocal.sort().join('|'))
     || valor.versao !== 1 || !Number.isSafeInteger(valor.nivelAtual)
     || (valor.nivelAtual as number) < 1 || (valor.nivelAtual as number) > 10
     || !['marco_narrativo', 'missoes'].includes(String(valor.metodo))
@@ -43,10 +47,12 @@ export function estadoProgressaoPersistenteValido(valor: unknown, classe: string
       || (valor.nivelNaUltimaMorte as number) < 1 || (valor.nivelNaUltimaMorte as number) > 10))
     || typeof valor.marcoNarrativoAposUltimaMorte !== 'boolean'
     || typeof valor.penalidadeMorteNivel1 !== 'boolean'
+    || (valor.morteLocalNaoConfirmada !== undefined && typeof valor.morteLocalNaoConfirmada !== 'boolean')
     || !Array.isArray(valor.beneficiosPorNivel)
     || !['Agente', 'Autodidata', 'Operador'].includes(classe)) return false;
 
   const houveMorte = valor.missoesCompletadasNaUltimaMorte !== null;
+  if (!houveMorte && valor.morteLocalNaoConfirmada === true) return false;
   if (houveMorte !== (valor.nivelNaUltimaMorte !== null)
     || (!houveMorte && (valor.marcoNarrativoAposUltimaMorte || valor.penalidadeMorteNivel1))
     || (houveMorte && (valor.nivelAtual as number) < Math.max(1, (valor.nivelNaUltimaMorte as number) - 1))
@@ -113,6 +119,7 @@ export function criarEstadoProgressaoInicial(
     nivelNaUltimaMorte: null,
     marcoNarrativoAposUltimaMorte: false,
     penalidadeMorteNivel1: false,
+    morteLocalNaoConfirmada: false,
     beneficiosPorNivel: [],
   };
 }
@@ -236,6 +243,7 @@ export function registrarMorteProgressao(
     marcoNarrativoConcedido: false,
     marcoNarrativoAposUltimaMorte: false,
     penalidadeMorteNivel1: plano.penalidadeMorteNivel1,
+    morteLocalNaoConfirmada: true,
     beneficiosPorNivel: estado.beneficiosPorNivel
       .filter(registro => registro.nivel <= plano.nivelResultante),
   };
