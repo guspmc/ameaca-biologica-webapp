@@ -609,3 +609,5 @@ Esta atualização substitui qualquer ordem anterior incompatível nesta matriz.
 - **PENDENTE:** Bear Commander/lançador integrado, Rajada, Disparo Cadenciado e Perfuração.
 - **TESTES:** adicionados; execução local não realizada. CI pendente.
 - **Checkpoint:** `docs/checkpoint-gm79-2026-11-10.md`.
+
+- **Revisão adicional GM 79:** disparo em Área limpa resultados antigos, não oferece rolagem de Ataque e não permite multiplicador crítico; testes estáticos adicionados.
