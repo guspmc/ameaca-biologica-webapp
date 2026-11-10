@@ -13,7 +13,6 @@ export function consultarModosDisparoArmaFogo(
   coronhaMatildaConfirmada = false,
 ): ModosDisparoArmaFogo {
   const propriedades = perfil.propriedades;
-  const regras = perfil.regrasEspeciais;
   const matildaComCoronha = perfil.id === 'matilda' && coronhaMatildaConfirmada;
   const cadenciado = propriedades.includes('Disparo Cadenciado')
     || (perfil.id === 'matilda' && matildaComCoronha);
