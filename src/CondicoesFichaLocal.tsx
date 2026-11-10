@@ -23,6 +23,8 @@ export default function CondicoesFichaLocal({ dados, pvAtual, pvMaximo, biAtual,
   const ativas = condicoesAtivas(itens);
   const vulneravel = pvMaximo > 0 ? vulneravelPorPV(pvAtual, pvMaximo) : null;
   const colapsoViral = biMaximo > 0 && biAtual >= biMaximo;
+  const desacordado = pvAtual <= 0 || colapsoViral;
+  const ativasVisiveis = ativas.filter(item => !(desacordado && item.condicao === 'desacordado'));
   const tiposAtivos = condicoesComEfeitoUnico(itens);
   const [condicao, setCondicao] = useState<CondicaoId>('agarrado');
   const [fonte, setFonte] = useState('');
@@ -61,15 +63,16 @@ export default function CondicoesFichaLocal({ dados, pvAtual, pvMaximo, biAtual,
   }
 
   return <details className="ficha-local-editor condicoes-ficha">
-    <summary>Condições e efeitos {(ativas.length > 0 || colapsoViral) && <span aria-label={(ativas.length + (colapsoViral ? 1 : 0)) + ' condições ativas'}>{ativas.map(item => ICONE_CONDICAO[item.condicao]).join(' ')}{colapsoViral ? ' ' + ICONE_CONDICAO['colapso-viral'] : ''}</span>}</summary>
-    <p>Registre manualmente apenas Condições cuja origem dependa de regra, fonte ou situação narrativa. Vulnerável e Colapso Viral são derivados dos Recursos e não podem ser ativados ou encerrados manualmente. O histórico é preservado; não há expiração genérica por descanso. {origemDados === 'servidor' ? 'Na LAN, o Mestre acompanha a duração em rodadas separadamente na aba Combate.' : 'Offline, não há contador de rodadas: encerre manualmente as Condições temporárias quando terminarem.'}</p>
+    <summary>Condições e efeitos {(ativasVisiveis.length > 0 || colapsoViral || desacordado) && <span aria-label={(ativasVisiveis.length + (colapsoViral ? 1 : 0) + (desacordado ? 1 : 0)) + ' condições ativas'}>{ativasVisiveis.map(item => ICONE_CONDICAO[item.condicao]).join(' ')}{desacordado ? ' ' + ICONE_CONDICAO.desacordado : ''}{colapsoViral ? ' ' + ICONE_CONDICAO['colapso-viral'] : ''}</span>}</summary>
+    <p>Registre manualmente apenas Condições cuja origem dependa de regra, fonte ou situação narrativa. Vulnerável, Desacordado e Colapso Viral são derivados dos Recursos e não podem ser ativados ou encerrados manualmente. O histórico é preservado; não há expiração genérica por descanso. {origemDados === 'servidor' ? 'Na LAN, o Mestre acompanha a duração em rodadas separadamente na aba Combate.' : 'Offline, não há contador de rodadas: encerre manualmente as Condições temporárias quando terminarem.'}</p>
     <div className="ficha-local-grade">
       <div><small>VULNERÁVEL</small><strong>{vulneravel === null ? 'Não calculável' : vulneravel ? 'Sim' : 'Não'}</strong><p>Derivada dos PV Atuais iguais ou inferiores a 1/5 dos PV Máximos; não é cadastrada manualmente.</p></div>
     </div>
     <h4>Condições ativas</h4>
-    {ativas.length === 0 && !colapsoViral ? <p>Nenhuma Condição ativa.</p> : <ul>
+    {ativasVisiveis.length === 0 && !colapsoViral && !desacordado ? <p>Nenhuma Condição ativa.</p> : <ul>
+      {desacordado && <li><strong>{ICONE_CONDICAO.desacordado} Desacordado</strong> · Fonte: {pvAtual <= 0 ? 'PV Atuais em 0' : 'Colapso Viral'}<p>{CATALOGO_CONDICOES.desacordado.efeito}</p><small>Condição derivada automaticamente; termina quando a fonte de Desacordado for resolvida. Não pode ser encerrada manualmente.</small></li>}
       {colapsoViral && <li><strong>{ICONE_CONDICAO['colapso-viral']} Colapso Viral</strong> · Fonte: BI atual igual ou superior à BI Máxima<p>{CATALOGO_CONDICOES['colapso-viral'].efeito}</p><small>Condição derivada automaticamente; não pode ser encerrada manualmente. A Reanimação específica é iniciada pela Ficha.</small></li>}
-      {ativas.map(item => {
+      {ativasVisiveis.map(item => {
         const regra = CATALOGO_CONDICOES[item.condicao];
         return <li key={item.id}>
           <strong>{ICONE_CONDICAO[item.condicao]} {regra.nome}</strong> · Fonte: {item.fonte}
@@ -84,7 +87,7 @@ export default function CondicoesFichaLocal({ dados, pvAtual, pvMaximo, biAtual,
     <div className="ficha-local-editor">
       <label>Condição
         <select value={condicao} onChange={evento => setCondicao(evento.target.value as CondicaoId)}>
-          {Object.entries(CATALOGO_CONDICOES).filter(([id]) => id !== 'vulneravel' && id !== 'colapso-viral').map(([id, regra]) => <option key={id} value={id}>{regra.nome}</option>)}
+          {Object.entries(CATALOGO_CONDICOES).filter(([id]) => id !== 'vulneravel' && id !== 'colapso-viral' && id !== 'desacordado').map(([id, regra]) => <option key={id} value={id}>{regra.nome}</option>)}
         </select>
       </label>
       <label>Fonte ou causa

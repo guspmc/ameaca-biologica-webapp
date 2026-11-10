@@ -91,3 +91,12 @@ test('Colapso Viral é condição derivada da BI e não pode ser registrada manu
   assert.match(reanimacao, /void iniciar\('colapso_bi'\)/);
   assert.match(reanimacao, /colapsoAutoTentado/);
 });
+
+test('Desacordado é derivado de 0 PV ou Colapso Viral e não pode ser ativado manualmente', async () => {
+  const fs = await import('node:fs/promises');
+  const ui = await fs.readFile(new URL('../src/CondicoesFichaLocal.tsx', import.meta.url), 'utf8');
+  assert.match(ui, /const desacordado = pvAtual <= 0 \|\| colapsoViral/);
+  assert.match(ui, /desacordado && <li>/);
+  assert.match(ui, /id !== 'desacordado'/);
+  assert.match(ui, /Vulnerável, Desacordado e Colapso Viral são derivados/);
+});
