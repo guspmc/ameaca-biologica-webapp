@@ -1,3 +1,5 @@
+import { consultarProcedimentoAtaqueUniversal } from './catalogoProcedimentosAtaquesUniversais';
+
 export type PerfilArma = {
   id: string;
   nome: string;
@@ -125,4 +127,24 @@ export function calcularDanoArma(entrada: EntradaDanoArma): ResultadoDanoArma {
 /** Bônus de Ataque da Origem Operário, apenas com a arma escolhida na criação. */
 export function bonusAtaqueOperario(armaOperarioEscolhida: boolean): number {
   return armaOperarioEscolhida ? 1 : 0;
+}
+
+/** Converte um ataque universal canônico em perfil de cálculo, sem afirmar posse/equipamento. */
+export function consultarPerfilAtaqueUniversal(
+  id: 'arma-improvisada' | 'ataque-desarmado',
+): PerfilArma {
+  const procedimento = consultarProcedimentoAtaqueUniversal(id);
+  const formula = procedimento.danoCorpo?.match(/^\s*(\d+d\d+)/i)?.[1];
+  if (!formula) throw new Error('O ataque universal não possui fórmula de Dano Corpo a Corpo compatível.');
+  return {
+    id: `universal-${id}`,
+    nome: procedimento.nome,
+    categoria: 'corpo-a-corpo',
+    dano: formula,
+    multiplicadorCritico: procedimento.multiplicadorCritico,
+    criticoNatural: 20,
+    atributoDano: 'forca',
+    propriedades: [],
+    referencia: procedimento.referencia,
+  };
 }
