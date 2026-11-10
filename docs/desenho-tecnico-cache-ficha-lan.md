@@ -188,3 +188,98 @@ Gus aprovou a proposta de não escolher automaticamente entre duas cópias locai
 - A resolução deverá permitir comparar as versões e decidir explicitamente qual conteúdo manter, sem apagar a cópia preterida antes de confirmação e sem contornar as validações de Progressão, ativação e Inventário.
 
 A interface exata e a granularidade da resolução (por seção/campo ou escolha integral de uma versão) permanecem pendentes de desenho. Esta aprovação define a política de integridade, não autoriza ainda um mecanismo de mesclagem automática.
+
+
+## 9. Contrato técnico proposto — primeira operação Local > LAN
+
+**Estado:** desenho técnico para implementação; não é código executável nem autorização para alterar o PUT genérico.
+
+### 9.1 Escopo do patch
+
+A operação dedicada aceitará somente:
+- `name` (opcional no patch): string normalizada com `trim()`, entre 2 e 80 caracteres;
+- `configuracaoFuncionamento` (opcional no patch): objeto validado no servidor por `configuracaoFuncionamentoValida()`.
+
+O patch deve conter pelo menos um desses campos. Rejeitar propriedades desconhecidas, tipos inesperados, objetos adicionais no nível raiz e qualquer tentativa de enviar `data` completo, Identidade, Progressão, Recursos, Combate, Inventário ou estado de ativação. A validação de nome deve ser alinhada ao contrato local/UI; não relaxar a validação existente.
+
+O servidor deve aplicar somente os campos presentes:
+- para `name`, atualizar a coluna `nome`;
+- para `configuracaoFuncionamento`, ler `dados_json`, substituir somente essa chave e preservar todas as demais chaves existentes.
+
+Não interpretar campo ausente como exclusão ou reset. Não aplicar valores padrão silenciosamente a um patch inválido.
+
+### 9.2 Rota e autorização
+
+Criar rota específica sob `/api/personagens/:id/sincronizar`, aceitando somente POST. Reutilizar a autenticação atual por sessão/cookie HttpOnly e repetir, dentro da transação, as verificações de:
+- personagem existente e pertencente à conta autenticada;
+- vínculo atual da conta como Jogador na Mesa da personagem;
+- ID de personagem no formato já usado pelas rotas LAN.
+
+Mestre, conta externa, sessão ausente/expirada ou jogador removido não podem sincronizar. Responder sem revelar existência de personagem para conta não autorizada, seguindo o padrão 404 das rotas atuais.
+
+A rota não altera proprietário, Mesa, status de ativação, inventário ou recibos de outros fluxos. O PUT genérico permanece intacto.
+
+### 9.3 Revisão e conflito multi-dispositivo
+
+O pedido deve conter `expectedRevision`, revisão LAN que serviu de base para a cópia local, além de `operationId` UUID.
+
+Dentro de transação SQLite `BEGIN IMMEDIATE`:
+1. revalidar personagem, conta e participação;
+2. verificar se `operationId` já foi recebido;
+3. se for repetição idêntica, devolver o recibo original sem reaplicar alteração;
+4. se o mesmo ID vier com conta/personagem/payload diferentes, rejeitar com conflito;
+5. comparar `expectedRevision` com a revisão atual;
+6. se divergirem, não alterar nada e devolver conflito com a versão LAN atual autorizada, para preservação/comparação explícita das duas cópias;
+7. validar estritamente o patch;
+8. aplicar somente os campos permitidos, incrementar revisão e gravar recibo na mesma transação;
+9. confirmar a transação e só então emitir evento de atualização.
+
+A revisão não dá precedência automática à LAN. Ela detecta que a base mudou. Como a política multi-dispositivo aprovada proíbe escolher automaticamente uma das versões, divergência deve suspender a sincronização daquela personagem e preservar cópia local e cópia LAN.
+
+### 9.4 Recibo idempotente
+
+Criar tabela própria por migration versionada do servidor local (próxima versão após a 11), sem alterar migrations Supabase. O recibo deverá permitir recuperar:
+- `operationId` único;
+- conta, Mesa e personagem;
+- revisão LAN de base;
+- hash determinístico do payload permitido;
+- revisão LAN resultante;
+- instante de confirmação.
+
+A chave de idempotência deve impedir reutilização do mesmo `operationId` em outra conta/personagem. Repetição com o mesmo conteúdo retorna o recibo já confirmado; repetição com conteúdo diferente é rejeitada. Recibo e alteração da personagem precisam ser gravados atomicamente.
+
+A resposta de repetição não deve mandar o cliente substituir seu snapshot local por uma personagem atual possivelmente mais nova; deve identificar a operação/revisão que foi confirmada. O cliente consulta a versão atual separadamente quando necessário.
+
+### 9.5 Respostas e estados de sincronização
+
+Contrato de resultado:
+- **confirmado:** recibo com `operationId`, `expectedRevision` e revisão resultante;
+- **conflito de revisão:** status 409, sem escrita, incluindo versão LAN atual para comparação;
+- **reutilização divergente de operationId:** status 409, sem escrita;
+- **payload inválido:** status 422, sem escrita;
+- **não autorizado/sem sessão:** 401 ou 404 conforme padrão existente.
+
+O cliente só marca o patch como sincronizado quando reconhecer o recibo da operação exata. Falha de transporte mantém o mesmo `operationId` para repetição segura. Um novo patch recebe novo ID. Resposta antiga nunca pode marcar como sincronizada uma edição local posterior.
+
+### 9.6 Testes obrigatórios antes de integrar a UI
+
+1. nome válido, trim, 1 caractere, 81 caracteres e tipo inválido;
+2. configuração válida e inválida (modo, modoDados, visibilidade, preferência ausente, tipo inválido e chave extra);
+3. patch vazio, chave desconhecida, envio de `data` completo e tentativa de alterar Identidade/Progressão/Recursos/Inventário;
+4. sessão ausente/expirada, conta diferente, Mestre e jogador removido;
+5. revisão atualizada por outro dispositivo: 409, sem alteração, com cópia LAN recuperável;
+6. repetição idêntica de operationId: mesmo recibo e nenhuma revisão adicional;
+7. mesmo operationId com payload ou personagem diferente: rejeição;
+8. falha entre gravação da personagem e recibo: rollback integral;
+9. evento Realtime somente depois do commit;
+10. regressão do PUT genérico, ativação, Progressão e inventário.
+
+### 9.7 Pré-condições ainda pendentes para implementação
+
+- Definir vínculo local↔LAN explícito e persistente, sem associação por nome.
+- Definir onde ficam `expectedRevision`, `operationId` pendente e recibos no IndexedDB.
+- Definir como a UI reabre e compara a versão LAN em conflito.
+- Implementar e testar a migration SQLite e a rota dedicada.
+- Integrar salvamento local-first antes de habilitar envio automático.
+
+Nenhuma dessas pré-condições autoriza substituir a política Local > LAN ou escolher automaticamente entre cópias divergentes.
