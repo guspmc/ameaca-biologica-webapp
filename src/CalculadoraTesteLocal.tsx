@@ -164,8 +164,11 @@ export default function CalculadoraTesteLocal({ atributos, treinada, distribuica
   const procedimentoGM79 = perfilFogo?.id === 'gm-79' ? consultarProcedimentoGM79(cartuchoGM79, modoGM79) : null;
   const ataqueEmAreaGM79 = procedimentoGM79?.danoEmArea ?? false;
   const modosArmaFogo = perfilFogo ? consultarModosDisparoArmaFogo(perfilFogo, coronhaMatildaConfirmada) : null;
-  const rajadaSelecionada = modoDisparoAutomatico === 'rajada' && (modosArmaFogo?.rajada ?? false);
-  const cadenciadoSelecionado = modoDisparoAutomatico === 'cadenciado' && (modosArmaFogo?.cadenciado ?? false);
+  const modoDisparoEfetivo = modoDisparoAutomatico === 'normal' && modosArmaFogo && !modosArmaFogo.disparoUnico
+    ? (modosArmaFogo.cadenciado ? 'cadenciado' : modosArmaFogo.rajada ? 'rajada' : 'normal')
+    : modoDisparoAutomatico;
+  const rajadaSelecionada = modoDisparoEfetivo === 'rajada' && (modosArmaFogo?.rajada ?? false);
+  const cadenciadoSelecionado = modoDisparoEfetivo === 'cadenciado' && (modosArmaFogo?.cadenciado ?? false);
   const disparoUnicoIndisponivel = Boolean(modosArmaFogo && !modosArmaFogo.disparoUnico && !rajadaSelecionada && !cadenciadoSelecionado);
   const ataqueEmArea = ataqueEmAreaGM79 || rajadaSelecionada;
   const procedimentoPerfuracao = modosArmaFogo?.perfuracao ?? null;
@@ -255,7 +258,7 @@ export default function CalculadoraTesteLocal({ atributos, treinada, distribuica
       {perfilFogo && modosArmaFogo && (perfilFogo.id === 'matilda' || modosArmaFogo.cadenciado || modosArmaFogo.rajada || !modosArmaFogo.disparoUnico) && <div className="ficha-local-editor">
         {perfilFogo.id === 'matilda' && <label className="ficha-local-opcao"><input type="checkbox" checked={coronhaMatildaConfirmada} onChange={evento => { setCoronhaMatildaConfirmada(evento.target.checked); setModoDisparoAutomatico('normal'); setResultadoDadosDano(''); setResultadoDadosAdicionais(''); setCriticoDano(false); }} /> Confirmar Coronha específica da Matilda instalada</label>}
         <label>Modo de disparo
-          <select value={modoDisparoAutomatico} onChange={evento => { setModoDisparoAutomatico(evento.target.value as 'normal' | 'cadenciado' | 'rajada'); setResultadoDadosDano(''); setResultadoDadosAdicionais(''); setCriticoDano(false); setDadosConfirmados(null); setDado1(''); setDado2(''); }}>
+          <select value={modoDisparoEfetivo} onChange={evento => { setModoDisparoAutomatico(evento.target.value as 'normal' | 'cadenciado' | 'rajada'); setResultadoDadosDano(''); setResultadoDadosAdicionais(''); setCriticoDano(false); setDadosConfirmados(null); setDado1(''); setDado2(''); }}>
             {modosArmaFogo.disparoUnico && <option value="normal">Disparo normal</option>}
             {modosArmaFogo.cadenciado && <option value="cadenciado">Disparo Cadenciado · {modosArmaFogo.cartuchosCadenciado} cartuchos · +2 dados</option>}
             {modosArmaFogo.rajada && <option value="rajada">Rajada · Ação Completa · 10 cartuchos</option>}
