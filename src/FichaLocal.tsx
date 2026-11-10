@@ -241,6 +241,9 @@ export default function FichaLocal({ nome, mesa, contextoId, dados, aoFechar, ao
     }
   }, [autoSalvar, fecharAposSalvar, secoesPendentes, aoFechar]);
   const ficha = dados as DadosFichaLocal;
+  const condicoesAtivasIds = listaCondicoesValida(dados.condicoes)
+    ? [...new Set(condicoesAtivas(dados.condicoes).map(item => item.condicao))]
+    : [];
   const estadoReanimacao = (dados as Record<string, unknown>).reanimacao;
   const reanimacaoEmCurso = reanimacaoValida(estadoReanimacao) && estadoReanimacao.estado !== 'concluida';
   const reanimacaoPV0EmCurso = reanimacaoValida(estadoReanimacao) && estadoReanimacao.causa === 'pv_zero' && estadoReanimacao.estado !== 'concluida';
@@ -526,7 +529,7 @@ export default function FichaLocal({ nome, mesa, contextoId, dados, aoFechar, ao
             })}
           </div>
           <p className="ficha-local-legenda">O valor exibido soma o Atributo associado e o Treinamento. O Passivo exibido é o normal; Testes Passivos recebem +5 com Vantagem ou -5 com Desvantagem. A circunstância é resolvida pela Mesa. Não some o Atributo novamente ao realizar o Teste.</p>
-          {configuracaoFuncionamento.modo === 'automatico' && <CalculadoraTesteLocal escopo="testes" atributos={atributos} treinada={treinada} periciaOrigemExtra={extra} periciaTentativaErroTreinada={extraTentativa} temTentativaEErro={temTentativaEErro} distribuicao={distribuicao} modoDados={configuracaoFuncionamento.modoDados} origem={origem} saDisponivel={recursosAtuais.saAtual} penalidadeMorteNivel1={penalidadeMorteNivel1} />}
+          {configuracaoFuncionamento.modo === 'automatico' && <CalculadoraTesteLocal escopo="testes" atributos={atributos} treinada={treinada} periciaOrigemExtra={extra} periciaTentativaErroTreinada={extraTentativa} temTentativaEErro={temTentativaEErro} distribuicao={distribuicao} modoDados={configuracaoFuncionamento.modoDados} origem={origem} saDisponivel={recursosAtuais.saAtual} penalidadeMorteNivel1={penalidadeMorteNivel1} condicoesAtivas={condicoesAtivasIds} />}
         </section>
 
         <section id="ficha-local-combate" className="ficha-local-secao">
@@ -562,7 +565,7 @@ export default function FichaLocal({ nome, mesa, contextoId, dados, aoFechar, ao
           <div className="ficha-local-grade">
             <div><small>MODIFICADOR DE INICIATIVA</small><strong>+{numero(atributos.agilidade)}</strong><p>AGI da personagem. A rolagem pontual fica disponível no modo Automático; a ordem do Encontro pertence ao Painel do Mestre.</p></div>
           </div>
-          {configuracaoFuncionamento.modo === 'automatico' && <CalculadoraTesteLocal escopo="ataques" atributos={atributos} treinada={treinada} periciaOrigemExtra={extra} periciaTentativaErroTreinada={extraTentativa} temTentativaEErro={temTentativaEErro} distribuicao={distribuicao} modoDados={configuracaoFuncionamento.modoDados} origem={origem} saDisponivel={recursosAtuais.saAtual} aoFalharCriticoAtaque={registrarExpostoPorFalhaCritica} armaOperario={armaOperario} penalidadeMorteNivel1={penalidadeMorteNivel1} bonusAtaqueBI={faseBi.bonusTesteAtaque ?? 0} desvantagemBI={faseBi.desvantagemAtaquesETestes === true} />}
+          {configuracaoFuncionamento.modo === 'automatico' && <CalculadoraTesteLocal escopo="ataques" atributos={atributos} treinada={treinada} periciaOrigemExtra={extra} periciaTentativaErroTreinada={extraTentativa} temTentativaEErro={temTentativaEErro} distribuicao={distribuicao} modoDados={configuracaoFuncionamento.modoDados} origem={origem} saDisponivel={recursosAtuais.saAtual} aoFalharCriticoAtaque={registrarExpostoPorFalhaCritica} armaOperario={armaOperario} penalidadeMorteNivel1={penalidadeMorteNivel1} bonusAtaqueBI={faseBi.bonusTesteAtaque ?? 0} desvantagemBI={faseBi.desvantagemAtaquesETestes === true} condicoesAtivas={condicoesAtivasIds} />}
           <p className="ficha-local-aviso">O painel registra usos de Ação, Movimento, Ação Bônus, Reação, Interação Gratuita, Esforço e gastos de Manobra; ele não presume gatilhos nem aplica efeitos. PV, SA e BI continuam administrados nos painéis próprios. A Ficha Automática disponibiliza a consulta de perfis de armas, o Teste de Ataque e o cálculo manual de Dano; nenhum resultado altera PV. As demais modalidades de Ficha não exibem roladores nem calculadoras: o controle de munição e recarga será integrado ao Inventário, respeitando as regras de cada arma. Iniciativa da Mesa, propriedades operacionais das armas e consumo de munição permanecem pendentes. As Condições registradas são informativas e dependem da aplicação das regras pela Mesa.</p>
         </section>
 
