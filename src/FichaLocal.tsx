@@ -516,7 +516,7 @@ export default function FichaLocal({ nome, mesa, contextoId, dados, aoFechar, ao
           {temTentativaEErro && <div className="ficha-local-pontos"><span>Perícia adicional — Tentativa e Erro</span><strong>{extraTentativa || 'Escolha pendente'}</strong></div>}
           <div className="ficha-local-pericias">
             {listaPericias.map(pericia => {
-              const grau = Math.min(2, Math.max(0, numero(distribuicao[pericia]) + (pericia === treinada ? 1 : 0) + (pericia === extra ? 1 : 0) + (pericia === extraTentativa ? 1 : 0)));
+              const grau = Math.min(2, Math.max(0, numero(distribuicao[pericia]) + (pericia === treinada ? 1 : 0) + (pericia === extraTentativa ? 1 : 0)));
               const rotulo = grau === 2 ? 'Mestre' : grau === 1 ? 'Treinada' : 'Não Treinada';
               const atributo = ATRIBUTO_PERICIA[pericia];
               const totalBase = valorBasePericia(pericia, atributos, treinada || null, distribuicao, extra || null, extraTentativa || null);

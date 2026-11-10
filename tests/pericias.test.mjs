@@ -38,3 +38,10 @@ test('valor base da Perícia soma seu Atributo associado e o Treinamento uma ún
   assert.equal(valorPassivoPericia('Medicina',atributos,null,{Medicina:2}),15);
   assert.throws(()=>valorBasePericia('Perícia inventada',atributos,null,{}),/Perícia desconhecida/);
 });
+
+test('segunda Perícia do Amnésico amplia opções, mas não concede Treinamento na Ficha', async () => {
+  const ficha = await readFile(new URL('../src/FichaLocal.tsx', import.meta.url), 'utf8');
+  assert.match(ficha, /const grau = Math\.min\(2, Math\.max\(0, numero\(distribuicao\[pericia\]\) \+ \(pericia === treinada \? 1 : 0\) \+ \(pericia === extraTentativa \? 1 : 0\)\)\);/);
+  assert.doesNotMatch(ficha, /pericia === extra \? 1 : 0/);
+  assert.equal(grauPericia('Medicina', null, {}, 'Medicina'), 0);
+});
