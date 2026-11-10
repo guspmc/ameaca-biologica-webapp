@@ -491,3 +491,42 @@ Implementar o primeiro incremento isolado do modelo de vínculo local↔LAN apro
 2. Tornar a identidade do vínculo imutável após criação, com operação de atualização restrita a metadados.
 3. Testar atomicidade de atualização do vínculo e do snapshot local antes de começar o fluxo de cache LAN.
 4. Em paralelo, continuar a auditoria funcional dos módulos da Ficha, priorizando lacunas que impedem considerá-la concluída antes do Inventário.
+
+
+---
+
+## Continuação — identidade imutável dos vínculos LAN
+
+**Data:** 10/11/2026  
+**HEAD do código consultado:** `f0ce3a8e47ff3571f9b315c0b5204f0ffdcd9969`
+
+### Ajuste implementado
+
+A primeira API de gravação do vínculo usava `put()` diretamente e, portanto, permitia substituir a identidade remota de um registro existente. Isso foi identificado na revisão e corrigido antes de qualquer integração com a UI.
+
+- A criação agora usa operação add-only (`criarVinculoLan`), que não substitui um vínculo existente.
+- A atualização passa por `salvarMetadadosVinculoLan`, que lê o registro dentro da transação `readwrite`, exige a `remoteKey` esperada e atualiza somente revisão-base, estado, operação pendente e snapshot de conflito.
+- A função pura `atualizarMetadadosVinculoLan` preserva localId, conta, Mesa, personagem remoto e remoteKey.
+- Revisão-base não pode retroceder.
+- Propriedades adicionais fornecidas ao objeto de metadados são ignoradas; não entram no registro.
+- A exclusão do vínculo continua separada da exclusão da Ficha local.
+
+### Testes escritos
+
+Foram adicionados testes para:
+- preservação da identidade local/remota;
+- rejeição de remoteKey divergente;
+- rejeição efetiva de tentativa de reatribuir conta/personagem e de inserir credencial;
+- rejeição de regressão da revisão-base.
+
+### Estado
+
+- **IMPLEMENTADO:** API add-only de criação e atualização restrita de metadados.
+- **TESTES ESCRITOS:** validação e imutabilidade da identidade.
+- **TESTADO:** workflows GitHub Actions ainda em execução na última consulta; não declarar aprovação até conclusão no HEAD correspondente.
+- **PENDENTE:** teste de integração real de CRUD/índice único em IndexedDB, atomicidade entre registro de Ficha e vínculo, e fluxo de criação autenticada.
+- **NÃO IMPLEMENTADO:** integração Local-first ou sincronização LAN.
+
+### Observação de qualidade
+
+O teste atual da migração usa IndexedDB simulado e comprova a lógica de upgrade/store declarada, mas não substitui teste em navegador com IndexedDB real. A colisão do índice único e as transações reais ainda precisam de cobertura de integração.
