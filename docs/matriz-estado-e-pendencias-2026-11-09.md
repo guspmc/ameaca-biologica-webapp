@@ -596,7 +596,7 @@ Esta atualização substitui qualquer ordem anterior incompatível nesta matriz.
 - **IMPLEMENTADO:** a calculadora permite selecionar o modo/fórmula, sem consumir Cargas/Combustível nem controlar sequência de turnos ou Movimento.
 - **IMPLEMENTADO:** orientação específica para a Motosserra: informar no campo de Dados adicionais a soma de todos os dados extras gerados por cada 6, incluindo encadeamentos.
 - **TESTES ADICIONADOS:** verificações estáticas dos seletores e instruções; execução local não realizada.
-- **PENDENTE:** efeitos de Spark Shot, gestão de Cargas/Combustível, GM 79 e cartuchos especiais, RPG-7, Perfuração, Rajada e Disparo Cadenciado.
+- **PENDENTE:** efeitos da Spark Shot, gestão de Cargas/Combustível, resolução dos cartuchos GM 79, RPG-7 e gestão automática de munição/estados.
 - **CI:** pendente para o novo HEAD. Sem teste humano, merge, publicação ou alteração de produção.
 - **Checkpoint:** `docs/checkpoint-modos-especiais-dano-2026-11-10.md`.
 
@@ -606,7 +606,7 @@ Esta atualização substitui qualquer ordem anterior incompatível nesta matriz.
 - **COBERTURA:** Ácido direto/área; Explosivo área; Incendiário direto/área. Exibe raios, DTs, consequências e ausência de Crítico em área.
 - **LIMITES:** não resolve Testes dos alvos, metade/integral, Queimadura, munição, recarga ou PV. Dano-base 4d6 é informado manualmente.
 - **RPG-7:** permanece como Morte Instantânea com exceções por tipo de criatura; sem fórmula inventada.
-- **PENDENTE:** Bear Commander/lançador integrado, Rajada, Disparo Cadenciado e Perfuração.
+- **PENDENTE:** Bear Commander/lançador integrado.
 - **TESTES:** adicionados; execução local não realizada. CI pendente.
 - **Checkpoint:** `docs/checkpoint-gm79-2026-11-10.md`.
 
