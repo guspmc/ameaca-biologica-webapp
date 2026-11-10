@@ -175,6 +175,9 @@ export function aplicarMorteNaFicha(dados: Record<string, unknown>): Record<stri
   const classe = dados.classe;
   const estado = dados.progressao as EstadoProgressaoPersistente;
   const nivelPerdido = estado.nivelAtual;
+  if (dados.nivel !== nivelPerdido) {
+    throw new Error('O Nível atual da Ficha não corresponde ao histórico de Progressão; Morte bloqueada.');
+  }
   const registro = nivelPerdido > 1 ? estado.beneficiosPorNivel[nivelPerdido - 2] : null;
   let habilidadesAtualizadas: EscolhaHabilidadeProgressao[] | undefined;
   let atributosAtualizados: Record<string, number> | undefined;

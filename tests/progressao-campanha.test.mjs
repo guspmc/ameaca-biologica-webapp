@@ -99,7 +99,7 @@ test('Morte no Nível 4 reverte a Habilidade e a Perícia do Nível perdido, pre
     ] },
   ];
   const ficha = {
-    classe: 'Agente', nivel: 4, progressao, pedidoProgressao: null,
+    classe: 'Agente', nivel: 4, progressao, pedidoProgressao: { estado: 'solicitado' },
     habilidadeBasica: 'anatomia-de-combate',
     habilidadesAdquiridas: [
       { nivel: 1, habilidadeId: 'anatomia-de-combate' },
@@ -113,6 +113,8 @@ test('Morte no Nível 4 reverte a Habilidade e a Perícia do Nível perdido, pre
   const original = structuredClone(ficha);
   const patch = aplicarMorteNaFicha(ficha);
   assert.equal(patch.nivel, 3);
+  assert.equal(patch.pedidoProgressao, null);
+  assert.throws(() => aplicarMorteNaFicha({ ...ficha, nivel: 3 }), /Nível atual da Ficha não corresponde/);
   assert.equal(patch.progressao.nivelAtual, 3);
   assert.equal(patch.atributos, undefined);
   assert.deepEqual(patch.habilidadesAdquiridas.map(x => x.nivel), [1, 2]);
@@ -157,4 +159,11 @@ test('Morte no Nível 3 reverte o Atributo exato registrado', async () => {
   assert.equal(patch.nivel, 2);
   assert.equal(patch.atributos.forca, 2);
   assert.equal(patch.progressao.beneficiosPorNivel.length, 1);
+});
+
+test('Morte pode cancelar pedido de Progressão pendente e botão não fica bloqueado pelo pedido', async () => {
+  const fs = await import('node:fs/promises');
+  const ui = await fs.readFile(new URL('../src/ProgressaoFichaLocal.tsx', import.meta.url), 'utf8');
+  assert.match(ui, /pedido de Progressão pendente será cancelado/);
+  assert.match(ui, /disabled=\{ocupado\} onClick=\{\(\) => void registrarMorte\(\)\}/);
 });

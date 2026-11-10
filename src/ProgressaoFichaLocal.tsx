@@ -172,7 +172,7 @@ export default function ProgressaoFichaLocal({ dados, classe, nivel, origemDados
 
   async function registrarMorte() {
     if (ocupado || origemDados !== 'local') return;
-    const confirmacao = window.confirm('Registrar a Morte desta personagem? A Ficha perderá 1 Nível e reverterá os benefícios exatos desse Nível. O histórico de Missões será preservado. Esta ação só deve ser confirmada após a decisão narrativa correspondente.');
+    const confirmacao = window.confirm('Registrar a Morte desta personagem? A Ficha perderá 1 Nível e reverterá os benefícios exatos desse Nível. O histórico de Missões será preservado e qualquer pedido de Progressão pendente será cancelado. Confirme somente após a decisão narrativa correspondente.');
     if (!confirmacao) return;
     setOcupado(true); setErro(''); setMensagem('');
     try {
@@ -286,7 +286,7 @@ export default function ProgressaoFichaLocal({ dados, classe, nivel, origemDados
           </>}
     {estado.penalidadeMorteNivel1 && <p className="offline-erro" role="status">Penalidade de Morte ativa: −2 em Testes de Atributo, Perícia e Ataque até recuperar o Nível 2.</p>}
     {estado.nivelNaUltimaMorte !== null && <p>Última Morte registrada no Nível {estado.nivelNaUltimaMorte}. Missões preservadas: {estado.missoesCompletadasNaUltimaMorte} no momento da Morte.</p>}
-    {origemDados === 'local' && <button type="button" className="botao-claro" disabled={ocupado || pedido !== null} onClick={() => void registrarMorte()}>Registrar Morte da personagem</button>}
+    {origemDados === 'local' && <button type="button" className="botao-claro" disabled={ocupado} onClick={() => void registrarMorte()}>Registrar Morte da personagem</button>}
     {estado.beneficiosPorNivel.length > 0 && <p>Histórico de benefícios registrado: {estado.beneficiosPorNivel.length} nível(is) com escolhas preservadas.</p>}
     {erro && <p className="offline-erro" role="alert">{erro}</p>}
     {mensagem && <p className="offline-status" role="status">{mensagem}</p>}
