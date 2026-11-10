@@ -283,3 +283,34 @@ A resolução deverá permitir comparar as versões e escolher explicitamente o 
 - **NÃO TESTADO:** detecção, preservação e resolução de conflito multi-dispositivo.
 
 Nenhum código, banco ou migration foi alterado neste ciclo.
+
+
+---
+
+## Sexto ciclo — matriz preliminar de campos de sincronização
+
+**Data:** 10/11/2026  
+**HEAD documental anterior:** `91170fc2cd8f2629c1bc01ba9cedf20a746544cc`  
+**CI desse HEAD:** `validar` sucesso; `TypeScript e Vite` sucesso; `Supabase Preview` ignorado (esperado).
+
+### Auditoria de campos
+
+Inspecionados `FichaLocal.tsx`, `ConexaoServidorLocal.tsx`, `validacaoPersonagemLocal.ts`, `server/personagens-local.mjs` e `inventarioAtivo.ts`.
+
+A UI separa salvamento de Identidade, Características, Atributos/Perícias, Inventário, Configuração de Funcionamento e Recursos. O servidor atual protege campos de criação/equipamento inicial em ficha ativa e impede alterações genéricas nas propriedades protegidas da Progressão. Somente `progressao.missoesCompletadas` é explicitamente editável pelo PUT atual; benefícios, Nível, método, Marcos e registros de Morte permanecem protegidos. Economia de Ações e estado do turno têm validações cruzadas com SA. Inventário materializado fica separado do JSON geral e é gravado no fluxo de ativação.
+
+A validação local existente não equivale automaticamente a validação server-side. Em especial, identidade e vários recursos operacionais precisam de schema/validação explícita no servidor antes de serem incluídos em allowlist.
+
+### Documento criado
+
+Criado `docs/matriz-campos-sincronizacao-ficha.md`, com matriz preliminar por campo/grupo e distinção entre rascunho e ficha ativa. A proposta inicial é conservadora: nome e configuração de funcionamento como candidatos à primeira etapa, identidade somente após schema server-side; recursos, combate e demais domínios ficam pendentes de operações tipadas. Criação em rascunho deve continuar respeitando conferência/ativação; ficha ativa não pode alterar campos protegidos por sincronização genérica.
+
+### Classificação
+
+- **EVIDÊNCIA:** separação de callbacks na UI; proteções atuais de campos de criação e Progressão; agregado SA/economia/turno; inventário materializado separado.
+- **PROPOSTA, NÃO APROVADA:** matriz e primeira allowlist estreita descritas no novo documento.
+- **IMPLEMENTADO:** nenhuma alteração de código, banco ou rota.
+- **PENDENTE:** aprovação da primeira allowlist; validação server-side dos campos candidatos; detalhamento de recursos operacionais, combate, identidade e sincronização de criação.
+- **NÃO TESTADO:** nenhum teste de sync Local > LAN, pois a integração ainda não existe.
+
+**Próximo passo:** submeter a proposta inicial de allowlist para decisão antes de implementar qualquer endpoint ou alterar o fluxo de salvamento.
