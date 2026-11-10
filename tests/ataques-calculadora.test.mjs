@@ -25,7 +25,7 @@ test('calculadora não rola dados nem aplica Dano automaticamente', () => {
   assert.match(ui, /Cada rolagem exige comando explícito/);
   assert.match(ui, /não altera dados da personagem/);
   assert.doesNotMatch(ui, /salvarPatchPersonagem|localStorage|aoSalvar/);
-  assert.match(ui, /O cálculo de Dano depende da arma equipada e permanece manual/);
+  assert.match(ui, /O cálculo de Dano permanece manual/);
   assert.doesNotMatch(ui, /Math\.random|crypto\.getRandomValues/);
 });
 
