@@ -59,6 +59,8 @@ type DadosFichaLocal = {
   saAtual?: unknown;
   nivel?: unknown;
   reanimacao?: unknown;
+  progressao?: unknown;
+  pedidoProgressao?: unknown;
   economiaAcoes?: unknown;
 };
 
