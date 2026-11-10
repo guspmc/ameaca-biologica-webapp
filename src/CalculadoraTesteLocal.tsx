@@ -7,7 +7,7 @@ import { CATALOGO_CONDICOES, type CondicaoId } from './condicoesFicha';
 import { sortearDados, validarResultadosFisicos } from './rolagemDados';
 import type { ModoDados } from './funcionamentoFicha';
 import type { AtributosIniciais } from './atributosCriacao';
-import { listarPerfisArma, consultarPerfilArma, bonusAtaqueOperario, calcularDanoArma, possuiFormulaDanoConvencional } from './catalogoArmas';
+import { listarPerfisArma, consultarPerfilArma, bonusAtaqueOperario, calcularDanoArma, possuiFormulaDanoConvencional, consultarPerfilAtaqueUniversal } from './catalogoArmas';
 import { listarPerfisArmasFogo, consultarPerfilArmaFogo } from './catalogoArmasFogo';
 
 const PERICIAS = Object.keys(ATRIBUTO_PERICIA);
@@ -82,13 +82,14 @@ export default function CalculadoraTesteLocal({ atributos, treinada, distribuica
     atributo: atributoAssociado ?? atributo,
     tipoAtaque: tipo === 'ataque-corpo' ? 'corpo-a-corpo' : tipo === 'ataque-distancia' ? 'distancia' : undefined,
   });
-  const perfilCorpo = tipo === 'ataque-corpo' && armaId ? consultarPerfilArma(armaId) : null;
+  const perfilCorpo = tipo === 'ataque-corpo' && armaId ? (armaId.startsWith('universal:') ? consultarPerfilAtaqueUniversal(armaId.slice('universal:'.length) as 'arma-improvisada' | 'ataque-desarmado') : consultarPerfilArma(armaId)) : null;
   const perfilFogo = tipo === 'ataque-distancia' && armaId ? consultarPerfilArmaFogo(armaId) : null;
   const perfilSelecionado = perfilCorpo ?? perfilFogo;
   const armaOperarioEscolhida = origem === 'Operário' && perfilCorpo?.nome === armaOperario;
   const bonusOperario = tipo === 'ataque-corpo' ? bonusAtaqueOperario(armaOperarioEscolhida) : 0;
   const valorTeste = valorBase + bonusOrigem + bonusTentativa + modificadorAtaqueBI + bonusOperario + (penalidadeMorteNivel1 ? -2 : 0);
-  const existeDesvantagem = desvantagemBI || desvantagensCondicao.length > 0;
+  const desvantagemDesarmado = perfilCorpo?.id === 'universal-ataque-desarmado';
+  const existeDesvantagem = desvantagemBI || desvantagensCondicao.length > 0 || desvantagemDesarmado;
   const vantagemEfetiva: VantagemTeste = existeDesvantagem
     ? (vantagem === 'vantagem' ? 'normal' : 'desvantagem')
     : vantagem;
@@ -216,9 +217,11 @@ export default function CalculadoraTesteLocal({ atributos, treinada, distribuica
         <select value={armaId} onChange={evento => { setArmaId(evento.target.value); setResultadoDadosDano(''); setCriticoDano(false); }}>
           <option value="">Sem perfil selecionado</option>
           {perfisDisponiveis.map(perfil => <option key={perfil.id} value={perfil.id}>{perfil.nome}</option>)}
+          {tipo === 'ataque-corpo' && <><option value="universal:arma-improvisada">Arma Improvisada</option><option value="universal:ataque-desarmado">Ataque Desarmado</option></>}
         </select>
       </label>
-      <small>A seleção consulta o catálogo; não confirma posse, equipamento, munição ou proficiência e não altera o Inventário.</small>
+      <small>A seleção consulta um perfil de arma ou ataque universal; não confirma posse, equipamento, munição ou proficiência e não altera o Inventário.</small>
+      {desvantagemDesarmado && <p className="ficha-local-aviso" role="status">Ataque Desarmado: Desvantagem padrão aplicada. Uma Vantagem válida pode anulá-la, conforme a regra.</p>}
       {perfilSelecionado && <div className="ficha-local-grade">
         <div><small>PERFIL</small><strong>{perfilSelecionado.nome}</strong><p>{perfilSelecionado.categoria === 'corpo-a-corpo' ? 'Corpo a Corpo' : ('categoria' in perfilSelecionado ? perfilSelecionado.categoria : 'Arma de Fogo')}</p></div>
         <div><small>DANO / CRÍTICO</small><strong>{perfilSelecionado.dano ?? 'Regra específica'}</strong><p>{perfilCorpo ? `Crítico ${perfilCorpo.criticoNatural === 19 ? '19–20' : '20'} ×${perfilCorpo.multiplicadorCritico}` : `Crítico ${perfilFogo?.critico ?? 'conforme regra específica'}`}</p></div>
