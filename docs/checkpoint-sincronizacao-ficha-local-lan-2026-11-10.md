@@ -89,3 +89,22 @@ A inspeção foi aprofundada em `src/persistenciaFicha.ts`, `src/servidorLocal.t
 5. A sincronização precisa preservar os mecanismos locais de geração, fila serializada e proteção contra gravações concorrentes; a versão local confirmada não pode ser substituída por resposta LAN antiga.
 
 **Conclusão deste complemento:** há dois caminhos de persistência separados — Ficha Offline em IndexedDB e personagem de Mesa no SQLite LAN. A integração entre eles ainda não existe. A arquitetura deve criar uma ponte explícita, autenticada e transacional; não fundir os dois módulos nem enfraquecer o contrato de ativação por conveniência.
+
+
+### Testes existentes relevantes
+
+- `tests/cliente-servidor-local.test.mjs` exercita cadastro/login, criação/consulta/atualização de rascunho, revisão crescente, persistência, rejeição HTTP 409 para revisão antiga e exclusão.
+- O teste confirma que o contrato LAN atual preserva a cópia do servidor diante de uma tentativa de gravação com revisão antiga — comportamento correto para o fluxo atual de rascunho, mas diferente da nova regra Local > LAN.
+- `tests/origem-salvamento-ficha.test.mjs` verifica mensagens que distinguem confirmação local de confirmação do servidor em componentes específicos. Não comprova salvamento duplo nem sincronização de reconexão.
+- Esses testes existentes são evidência de cobertura dos fluxos separados. Não foram executados manualmente nesta auditoria; a CI disparada pelos commits documentais ainda estava em andamento no momento deste registro.
+
+### Próxima decisão técnica recomendada (sem alterar o contrato funcional)
+
+Antes de codificar a ponte, especificar:
+- como uma ficha local é vinculada a uma personagem/mesa autenticada no servidor;
+- como a versão local inicializa ou substitui o rascunho correspondente sem confundir IDs UUID locais e IDs hexadecimais LAN;
+- como tratar personagem já ativa, respeitando os fluxos próprios de Progressão e Inventário e sem enfraquecer as proteções existentes;
+- como o servidor registra uma operação de sincronização idempotente e aceita a versão local autoritativa sem usar a revisão LAN como critério de precedência;
+- como a interface apresenta confirmação local e sincronização LAN separadamente.
+
+**Não iniciar endpoint de sobrescrita irrestrita.** A solução deve limitar a sincronização à personagem do jogador autenticado, ao vínculo atual com a Mesa e ao conjunto de dados que a Ficha pode legitimamente editar.
