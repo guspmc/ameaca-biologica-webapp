@@ -132,7 +132,7 @@ export default function CalculadoraTesteLocal({ atributos, treinada, distribuica
   }
 
   return <details className="ficha-local-editor calculadora-teste">
-    <summary>Conferir Teste</summary>
+    <summary>{escopo === 'ataques' ? 'Conferir Ataque' : 'Conferir Teste'}</summary>
     {penalidadeMorteNivel1 && <p className="ficha-local-aviso" role="status">Penalidade por Morte no Nível 1: −2 aplicada a este Teste de Atributo, Perícia ou Ataque até recuperar o Nível 2.</p>}
     {desvantagemBI && <p className="ficha-local-aviso" role="status">5ª Fase da BI: Desvantagem aplicada a este Teste. Uma Vantagem e uma Desvantagem se anulam normalmente.</p>}
     {modificadorAtaqueBI !== 0 && <p className="ficha-local-legenda">Bônus de Ataque pela Bio-Infecção: +{modificadorAtaqueBI}.</p>}
@@ -145,7 +145,7 @@ export default function CalculadoraTesteLocal({ atributos, treinada, distribuica
     </label>}
     {(tipo === 'ataque-corpo' || tipo === 'ataque-distancia') && <p>20 natural: acerto automático e Crítico, multiplicado pelo fator da arma; fecha as Reações defensivas normais. 1 natural: Falha Crítica e aplica Exposto, salvo regra específica. O cálculo de Dano depende da arma equipada e permanece manual.</p>}
 
-    <label>Tipo de Teste
+    <label>{escopo === 'ataques' ? 'Tipo de Ataque' : 'Tipo de Teste'}
       <select value={tipo} onChange={evento => mudarTipo(evento.target.value as 'pericia' | 'atributo' | 'ataque-corpo' | 'ataque-distancia')}>
         {escopo === 'testes' && <><option value="pericia">Teste de Perícia</option><option value="atributo">Teste puro de Atributo</option></>}
         {escopo === 'ataques' && <><option value="ataque-corpo">Ataque Corpo a Corpo · Luta</option><option value="ataque-distancia">Ataque à distância · Pontaria</option></>}
@@ -206,7 +206,7 @@ export default function CalculadoraTesteLocal({ atributos, treinada, distribuica
         <input type="number" min="1" max="20" step="1" value={dado2} onChange={evento => { setDado2(evento.target.value); setDadosConfirmados(null); }} placeholder="1–20" />
       </label>}
     </div>}
-    {!impossivel && <button type="button" className="botao-claro" onClick={registrarRolagem}>{metodo === 'virtual' ? 'Rolar Teste' : 'Confirmar dados físicos'}</button>}
+    {!impossivel && <button type="button" className="botao-claro" onClick={registrarRolagem}>{metodo === 'virtual' ? (escopo === 'ataques' ? 'Rolar Ataque' : 'Rolar Teste') : (escopo === 'ataques' ? 'Confirmar dados do Ataque' : 'Confirmar dados físicos')}</button>}
     {erroRolagem && <p className="offline-erro" role="alert">{erroRolagem}</p>}
     {mensagemCondicao && <p role="status">{mensagemCondicao}</p>}
     {calculado.erro && <p className="offline-erro" role="alert">{calculado.erro}</p>}
@@ -218,7 +218,7 @@ export default function CalculadoraTesteLocal({ atributos, treinada, distribuica
         : calculado.resultado.estado === 'sucesso' ? 'Sucesso'
         : 'Falha'}</strong>
       <p>{calculado.resultado.detalhe}</p>
-      {calculado.resultado.total !== null && <p>Dado escolhido: {calculado.resultado.dadoEscolhido} · Valor base: {valorTeste} · Modificador: {Number(modificador || 0)} · Total: {calculado.resultado.total} · DT: {calculado.resultado.dt}</p>}
+      {calculado.resultado.total !== null && <p>Dado escolhido: {calculado.resultado.dadoEscolhido} · Valor base: {valorTeste} · Modificador: {Number(modificador || 0)} · Total: {calculado.resultado.total} · {escopo === 'ataques' ? 'Defesa' : 'DT'}: {calculado.resultado.dt}</p>}
     </div>}
   </details>;
 }
