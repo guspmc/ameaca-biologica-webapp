@@ -88,3 +88,10 @@ test('perfis com fórmulas especiais não recebem cálculo genérico', () => {
   assert.match(ui, /formulaDanoConvencional/);
   assert.match(ui, /fórmula ou condição especial de Dano/);
 });
+
+
+test('resultado do Ataque preenche automaticamente o estado de Crítico no cálculo de Dano', () => {
+  assert.match(ui, /const ataqueFoiCritico = ehAtaque/);
+  assert.match(ui, /if \(ehAtaque\) setCriticoDano\(ataqueFoiCritico\)/);
+  assert.match(ui, /setCriticoDano\(false\)/);
+});
