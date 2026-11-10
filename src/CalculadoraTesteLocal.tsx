@@ -2,6 +2,8 @@ import { useEffect, useMemo, useState } from 'react';
 import { ATRIBUTO_PERICIA, bonusTentativaErro, valorBasePericia } from './pericias';
 import { bonusCondicionalOrigemTeste } from './efeitosOrigens';
 import { calcularTesteManual, calcularRolagemAtaqueManual, type VantagemTeste } from './testes';
+import { condicoesQueImpoemDesvantagem } from './condicoesCalculadora';
+import { CATALOGO_CONDICOES, type CondicaoId } from './condicoesFicha';
 import { sortearDados, validarResultadosFisicos } from './rolagemDados';
 import type { ModoDados } from './funcionamentoFicha';
 import type { AtributosIniciais } from './atributosCriacao';
@@ -32,9 +34,10 @@ type Props = {
   penalidadeMorteNivel1?: boolean;
   bonusAtaqueBI?: number;
   desvantagemBI?: boolean;
+  condicoesAtivas?: CondicaoId[];
 };
 
-export default function CalculadoraTesteLocal({ atributos, treinada, distribuicao, periciaOrigemExtra = '', periciaTentativaErroTreinada = '', temTentativaEErro = false, modoDados, origem = '', saDisponivel = 0, aoFalharCriticoAtaque, penalidadeMorteNivel1 = false, bonusAtaqueBI = 0, desvantagemBI = false, escopo = 'testes', armaOperario = '' }: Props) {
+export default function CalculadoraTesteLocal({ atributos, treinada, distribuicao, periciaOrigemExtra = '', periciaTentativaErroTreinada = '', temTentativaEErro = false, modoDados, origem = '', saDisponivel = 0, aoFalharCriticoAtaque, penalidadeMorteNivel1 = false, bonusAtaqueBI = 0, desvantagemBI = false, condicoesAtivas = [], escopo = 'testes', armaOperario = '' }: Props) {
   const [tipo, setTipo] = useState<'pericia' | 'atributo' | 'ataque-corpo' | 'ataque-distancia'>(escopo === 'ataques' ? 'ataque-corpo' : 'pericia');
   const [pericia, setPericia] = useState('Percepção');
   const [armaId, setArmaId] = useState(() => escopo === 'ataques' && origem === 'Operário' ? listarPerfisArma().find(perfil => perfil.nome === armaOperario)?.id ?? '' : '');
@@ -72,13 +75,21 @@ export default function CalculadoraTesteLocal({ atributos, treinada, distribuica
   });
   const bonusTentativa = temTentativaEErro && testeDePericia ? bonusTentativaErro(periciaEfetiva, treinada || null, distribuicao, periciaOrigemExtra || null, periciaTentativaErroTreinada || null) : 0;
   const modificadorAtaqueBI = tipo === 'ataque-corpo' || tipo === 'ataque-distancia' ? bonusAtaqueBI : 0;
+  const desvantagensCondicao = condicoesQueImpoemDesvantagem(condicoesAtivas, {
+    escopo,
+    tipoTeste: testeDePericia ? 'pericia' : 'atributo',
+    pericia: periciaEfetiva,
+    atributo: atributoAssociado ?? atributo,
+    tipoAtaque: tipo === 'ataque-corpo' ? 'corpo-a-corpo' : tipo === 'ataque-distancia' ? 'distancia' : undefined,
+  });
   const perfilCorpo = tipo === 'ataque-corpo' && armaId ? consultarPerfilArma(armaId) : null;
   const perfilFogo = tipo === 'ataque-distancia' && armaId ? consultarPerfilArmaFogo(armaId) : null;
   const perfilSelecionado = perfilCorpo ?? perfilFogo;
   const armaOperarioEscolhida = origem === 'Operário' && perfilCorpo?.nome === armaOperario;
   const bonusOperario = tipo === 'ataque-corpo' ? bonusAtaqueOperario(armaOperarioEscolhida) : 0;
   const valorTeste = valorBase + bonusOrigem + bonusTentativa + modificadorAtaqueBI + bonusOperario + (penalidadeMorteNivel1 ? -2 : 0);
-  const vantagemEfetiva: VantagemTeste = desvantagemBI
+  const existeDesvantagem = desvantagemBI || desvantagensCondicao.length > 0;
+  const vantagemEfetiva: VantagemTeste = existeDesvantagem
     ? (vantagem === 'vantagem' ? 'normal' : 'desvantagem')
     : vantagem;
   useEffect(() => {
@@ -183,6 +194,7 @@ export default function CalculadoraTesteLocal({ atributos, treinada, distribuica
     <summary>{escopo === 'ataques' ? 'Conferir Ataque' : 'Conferir Teste'}</summary>
     {penalidadeMorteNivel1 && <p className="ficha-local-aviso" role="status">Penalidade por Morte no Nível 1: −2 aplicada a este Teste de Atributo, Perícia ou Ataque até recuperar o Nível 2.</p>}
     {desvantagemBI && <p className="ficha-local-aviso" role="status">5ª Fase da BI: Desvantagem aplicada a este Teste. Uma Vantagem e uma Desvantagem se anulam normalmente.</p>}
+    {desvantagensCondicao.length > 0 && <p className="ficha-local-aviso" role="status">Desvantagem por Condição ativa: {desvantagensCondicao.map(id => CATALOGO_CONDICOES[id].nome).join(', ')}. Uma Vantagem e uma Desvantagem se anulam normalmente; fontes iguais não acrescentam dados adicionais.</p>}
     {modificadorAtaqueBI !== 0 && <p className="ficha-local-legenda">Bônus de Ataque pela Bio-Infecção: +{modificadorAtaqueBI}.</p>}
     <p>{modoDados === 'fisicos' ? 'Modo Físicos: informe o resultado obtido nos dados.' : modoDados === 'virtuais' ? 'Modo Virtuais: o aplicativo gera os dados somente quando você solicitar.' : 'Modo Mistos: escolha o método para este Teste.'} Cada rolagem exige comando explícito. O resultado é apenas informativo e não altera dados da personagem.</p>
     {modoDados === 'mistos' && <label>Método desta rolagem
