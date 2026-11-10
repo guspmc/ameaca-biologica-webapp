@@ -67,3 +67,24 @@ test('margem crítica usa o perfil consultado e não automatiza dano', () => {
   assert.match(ui, /O cálculo de Dano permanece manual/);
   assert.doesNotMatch(ui, /aoSalvarRecursos|salvarPatchPersonagem/);
 });
+
+
+test('calculadora manual de Dano usa resultados informados e atributos do perfil', () => {
+  assert.match(ui, /calcularDanoArma/);
+  assert.match(ui, /Soma dos Dados de Dano/);
+  assert.match(ui, /atributoDano = tipo === 'ataque-corpo' \? atributos\.forca : atributos\.agilidade/);
+  assert.match(ui, /Aplicar Acerto Crítico/);
+  assert.match(ui, /Dano calculado:/);
+  assert.match(ui, /não rola dados nem altera PV/);
+});
+
+test('Dano do Operário preserva FOR adicional fora do multiplicador crítico', () => {
+  assert.match(ui, /armaOperarioEscolhida/);
+  assert.match(ui, /FOR adicional; esse bônus não é multiplicado no Crítico/);
+  assert.match(ui, /bonusOperarioNaoMultiplicado/);
+});
+
+test('perfis com fórmulas especiais não recebem cálculo genérico', () => {
+  assert.match(ui, /formulaDanoConvencional/);
+  assert.match(ui, /fórmula ou condição especial de Dano/);
+});
