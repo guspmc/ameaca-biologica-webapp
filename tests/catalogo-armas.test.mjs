@@ -105,6 +105,9 @@ test('dado adicional já rolado pode ser incluído sem rolagem automática', () 
   const resultado = calcularDanoArma({ dadosRolados: 6, dadosAdicionais: 4, valorAtributo: 2, critico: false, perfil });
   assert.equal(resultado.total, 12);
   assert.throws(() => calcularDanoArma({ dadosRolados: -1, valorAtributo: 2, critico: false, perfil }));
+  assert.throws(() => calcularDanoArma({ dadosRolados: 2.5, valorAtributo: 2, critico: false, perfil }));
+  assert.throws(() => calcularDanoArma({ dadosRolados: 2, valorAtributo: 1.5, critico: false, perfil }));
+  assert.throws(() => calcularDanoArma({ dadosRolados: 2, valorAtributo: 2, critico: true, perfil: { ...perfil, multiplicadorCritico: 0 } }));
 });
 
 
