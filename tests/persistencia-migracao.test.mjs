@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 
 function instalarIndexedDBComBancoV1(registrosIniciais) {
   const registros = new Map(registrosIniciais.map(item => [item.id, structuredClone(item)]));
-  let versaoBanco = 2;
+  let versaoBanco = 1;
   const stores = new Set(['personagens']);
   let indiceRemotoUnico = false;
 
