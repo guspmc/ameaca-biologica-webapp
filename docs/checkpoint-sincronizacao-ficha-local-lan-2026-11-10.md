@@ -219,3 +219,41 @@ Se autenticação ou autorização não puderem ser confirmadas, a cópia local 
 - **NÃO TESTADO:** abertura offline da Ficha LAN e reconexão/sincronização integrada.
 
 Nenhum código, migration ou endpoint foi alterado neste ciclo; somente decisões e documentação foram atualizadas.
+
+
+---
+
+## Quarto ciclo — desenho técnico do cache local LAN
+
+**Data:** 10/11/2026  
+**HEAD de código consultado:** `c10e9f8e3e6c4a2ff8c185ad59fdd4824ba64ef0`  
+**CI do checkpoint anterior `1678a96e99e9aa295add4dcddc2357f2084563e7`:** `TypeScript e Vite` sucesso; `validar` sucesso; `Supabase Preview` ignorado (esperado).
+
+### Auditoria adicional
+
+- `src/main.tsx` confirma duas entradas: `FichaOfflineApp` por padrão e `ConexaoServidorLocal` quando `?servidor=local`.
+- `src/persistenciaFicha.ts` usa IndexedDB versão 2/store `personagens`; `PersonagemLocal` contém UUID local, geração, nome, datas e dados, mas não possui vínculo de conta/Mesa/personagem LAN.
+- `salvarPatchPersonagem` confirma gravação transacional local, compara geração e valores-base das chaves alteradas e recusa conflito na mesma chave.
+- `ConexaoServidorLocal.abrirFicha` valida a personagem consultada e persiste em localStorage somente o contexto de navegação (conta, Mesa, personagem LAN).
+- `ConexaoServidorLocal.salvarDadosFicha` serializa salvamentos, monta snapshot completo sobre os dados LAN em memória e envia PUT com `expectedRevision`.
+- `src/servidorLocal.ts` envia `{ name, data, expectedRevision }`; a rota atual não usa IndexedDB.
+- `server/personagens-local.mjs` revalida sessão, autoria e vínculo atual como Jogador. O PUT exige revisão e mantém proteções próprias para Progressão, economia/turno e campos de criação/equipamento de personagens ativas.
+- A rota atual não contém allowlist geral de campos para sincronização autoritativa; não se deve presumir que o snapshot inteiro seja seguro para sobrescrever.
+
+### Documento criado
+
+Foi criado `docs/desenho-tecnico-cache-ficha-lan.md`, com proposta de arquitetura e plano incremental. O documento distingue evidências do código, decisões já aprovadas, proposta ainda não aprovada e questões abertas. Não houve alteração de código, banco ou migration.
+
+### CI documental
+
+No commit `1678a96e99e9aa295add4dcddc2357f2084563e7`, os checks `TypeScript e Vite` e `validar` concluíram com sucesso; `Supabase Preview` foi ignorado conforme esperado.
+
+### Classificação após o quarto ciclo
+
+- **DECIDIDO:** Local > LAN; Ficha continua offline no mesmo dispositivo/navegador; sem credenciais persistidas; reautenticação e autorização antes de sincronizar; Baú/transferências LAN-only.
+- **IMPLEMENTADO:** fluxos separados Offline/LAN, IndexedDB local, SQLite LAN, autenticação por cookie HttpOnly, revisão otimista no PUT, proteções de autoria/Mesa e salvamento local transacional por patch.
+- **PROPOSTO, NÃO IMPLEMENTADO:** vínculo local-LAN, cache, local-first no fluxo LAN, endpoint de sync dedicado/idempotente, reconexão automática e estados separados na UI.
+- **PENDENTE:** matriz de campos sincronizáveis, tratamento de duas cópias locais em dispositivos diferentes, modelo de vínculo/backup, UX de primeiro vínculo e troca de conta.
+- **NÃO TESTADO:** qualquer fluxo integrado de cache, desconexão, reautenticação e sincronização.
+
+**Próximo passo recomendado:** resolver as duas questões de autoridade que afetam a integridade antes de programar: (a) como tratar duas cópias locais válidas em dispositivos diferentes; (b) quais campos operacionais podem ser sincronizados em ficha ativa, sem contornar Progressão, ativação e Inventário.
