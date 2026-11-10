@@ -17,7 +17,7 @@ test('calculadora oferece Ataque Corpo a Corpo com Luta e Ataque à distância c
 test('modo de Ataque usa Defesa do alvo e mantém os resultados críticos oficiais', () => {
   assert.match(ui, /Defesa do alvo/);
   assert.match(ui, /20 natural: acerto automático e Crítico/);
-  assert.match(ui, /1 natural: Falha Crítica e aplica Exposto/);
+  assert.match(ui, /1 natural: Falha Crítica; Exposto é ativado automaticamente somente no modo Automático/);
 });
 
 test('calculadora não rola dados nem aplica Dano automaticamente', () => {
