@@ -105,8 +105,11 @@ export type ResultadoDanoArma = {
 /** Recebe resultados já rolados. Nunca gera dados; respeita a exceção de Operário no crítico. */
 export function calcularDanoArma(entrada: EntradaDanoArma): ResultadoDanoArma {
   const { dadosRolados, valorAtributo, critico, perfil, armaOperarioEscolhida = false, dadosAdicionais = 0 } = entrada;
-  if (![dadosRolados, valorAtributo, dadosAdicionais].every(Number.isFinite) || dadosRolados < 0 || valorAtributo < 0 || dadosAdicionais < 0) {
-    throw new Error('Dano rolado, Atributo e dados adicionais precisam ser valores não negativos.');
+  if (![dadosRolados, valorAtributo, dadosAdicionais].every(Number.isSafeInteger) || dadosRolados < 0 || valorAtributo < 0 || dadosAdicionais < 0) {
+    throw new Error('Dano rolado, Atributo e dados adicionais precisam ser inteiros não negativos.');
+  }
+  if (!Number.isSafeInteger(perfil.multiplicadorCritico) || perfil.multiplicadorCritico < 1) {
+    throw new Error('O multiplicador crítico do perfil precisa ser um inteiro positivo.');
   }
   const dados = dadosRolados + dadosAdicionais;
   const multiplicador = critico ? perfil.multiplicadorCritico : 1;
