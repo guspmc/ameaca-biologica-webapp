@@ -20,3 +20,8 @@ Arquivo do Jogador v1.0, Capítulo 3 — Arsenal e Equipamentos, pp. 60 e 65. Ca
 - RPG-7 mantém Morte Instantânea e exceções descritas no perfil; não se inventa fórmula de Dano.
 - Bear Commander com lançador integrado, modos Rajada/Disparo Cadenciado e Perfuração seguem pendentes de integração.
 - Sem merge, publicação, teste humano ou alteração de produção.
+
+## Correção durante revisão
+- A seleção de disparo em Área agora remove resultados antigos de Ataque, não oferece botão de rolagem de Ataque e força o cálculo sem Crítico.
+- O efeito React foi posicionado após a derivação do estado de Área para evitar referência antes da inicialização.
+- Teste estático adicional verifica ausência de rolagem de Ataque e Crítico em Área.
