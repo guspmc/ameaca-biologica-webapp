@@ -85,7 +85,7 @@ test('a tela de Progressão oferece escolhas após Descanso Completo e salva os 
   assert.match(ui, /origemDados === 'servidor'/);
 });
 
-test('Morte reverte Habilidade, Atributo e Perícia do último Nível como operação única', async () => {
+test('Morte no Nível 4 reverte a Habilidade e a Perícia do Nível perdido, preservando benefícios anteriores', async () => {
   const { aplicarMorteNaFicha } = await import('../src/progressaoCampanha.ts');
   const progressao = criarEstadoProgressaoInicial('missoes');
   progressao.missoesCompletadas = 6;
@@ -114,7 +114,7 @@ test('Morte reverte Habilidade, Atributo e Perícia do último Nível como opera
   const patch = aplicarMorteNaFicha(ficha);
   assert.equal(patch.nivel, 3);
   assert.equal(patch.progressao.nivelAtual, 3);
-  assert.equal(patch.atributos.forca, 3);
+  assert.equal(patch.atributos, undefined);
   assert.deepEqual(patch.habilidadesAdquiridas.map(x => x.nivel), [1, 2]);
   assert.equal(patch.distribuicaoPericias.Luta, 0);
   assert.equal(patch.progressao.beneficiosPorNivel.length, 2);
@@ -134,4 +134,27 @@ test('Morte bloqueia reversão se um valor da ficha divergir do benefício regis
     periciaOrigemTreinada: 'Investigação', distribuicaoPericias: {},
   };
   assert.throws(() => aplicarMorteNaFicha(ficha), /Habilidade atual não corresponde/);
+});
+
+test('Morte no Nível 3 reverte o Atributo exato registrado', async () => {
+  const { aplicarMorteNaFicha } = await import('../src/progressaoCampanha.ts');
+  const progressao = criarEstadoProgressaoInicial('missoes');
+  progressao.missoesCompletadas = 3;
+  progressao.nivelAtual = 3;
+  progressao.beneficiosPorNivel = [
+    { nivel: 2, beneficios: [{ nivel: 2, tipo: 'habilidade', habilidadeId: 'nao-vai-escapar' }] },
+    { nivel: 3, beneficios: [{ nivel: 3, tipo: 'atributo', atributo: 'forca', valorAntes: 2, valorDepois: 3 }] },
+  ];
+  const ficha = {
+    classe: 'Agente', nivel: 3, progressao, habilidadeBasica: 'anatomia-de-combate',
+    habilidadesAdquiridas: [
+      { nivel: 1, habilidadeId: 'anatomia-de-combate' },
+      { nivel: 2, habilidadeId: 'nao-vai-escapar' },
+    ],
+    atributos: { forca: 3, agilidade: 2, vigor: 2, astucia: 2 },
+  };
+  const patch = aplicarMorteNaFicha(ficha);
+  assert.equal(patch.nivel, 2);
+  assert.equal(patch.atributos.forca, 2);
+  assert.equal(patch.progressao.beneficiosPorNivel.length, 1);
 });
