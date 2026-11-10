@@ -130,3 +130,35 @@ A proposta Supabase `supabase/proposals/inventario-instancias.sql` e seus testes
 ### Escopo ainda não especificado
 
 Antes de codificar, cruzar cada operação com o Arquivo do Jogador e definir a matriz de comandos autorizados por modo Automático/Misto/Manual. Baú e transferências continuam fora deste escopo e proibidos offline. Esta auditoria não autoriza efeitos de uso/equipamento, munição, durabilidade ou descarte que não estejam definidos nas fontes canônicas.
+
+
+## Matriz preliminar de operações — regras canônicas do Inventário
+
+**Fonte consultada:** Arquivo do Jogador v1.0, Capítulo 3 (Arsenal e Equipamentos) e Capítulo 4 (Regras e Combate). Esta matriz transcreve limites funcionais; não cria ações novas.
+
+| Operação / dado | Regra sustentada pelo Arquivo do Jogador | Implicação para o app |
+|---|---|---|
+| Capacidade | 4 + FOR Espaços; Mochileiro +1; expansão Bolsa +3 ou Pochete +2; Bolsa e Pochete não acumulam. Itens Característicos não ocupam Espaços e não podem ser descartados voluntariamente. | Capacidade deve ser derivada de atributos/origem/expansão; não aceitar capacidade arbitrária enviada pelo cliente. Bloquear descarte voluntário de Característicos. |
+| Excesso | Não é possível exceder o limite. Com espaços cheios, a personagem só pode examinar itens; não pode realizar outra Ação enquanto estiver com o item excedente em mãos. | O app precisa distinguir item carregado/excedente em mãos e inventário organizado. A regra não autoriza simplesmente salvar um snapshot com ocupação acima da capacidade. |
+| Espaços omitidos | Item sem valor próprio ocupa 1 Espaço, salvo regra específica. | O catálogo deve fornecer Espaços validados; não assumir 0 quando o dado estiver ausente. |
+| Organizar | O Livro define capacidade e Espaços, mas não especifica no trecho consultado uma ação/tempo universal para reorganizar posições abstratas na grade. | A grade/posições são uma convenção de interface; não cobrar ação/turno nem inventar custo sem regra aprovada. |
+| Sacar/guardar arma | Cada sacar ou guardar arma usa uma Interação Gratuita com Objeto; guardar uma e sacar outra são duas interações. | Equipamento em mãos precisa ser estado separado da mera posição na grade; respeitar limite por turno se o app vier a acompanhar ações. |
+| Equipar/lanterna | Cada ato de sacar, equipar, ligar ou desligar é uma interação separada, salvo regra específica. Exemplos específicos podem alterar isso (lanterna sempre equipada etc.). | Comandos separados, definidos por tipo de item; não agrupar ações diferentes num único botão que simule custo único. |
+| Durabilidade | Normalmente só perde Durabilidade ao Aparar; ataques e uso comum não gastam. Em 0 não pode Aparar, mas demais funções permanecem, salvo regra específica. Manutenção de 30 minutos em Sala de Descanso ou Kit de Ferramentas restaura máxima. | Não degradar durabilidade ao usar/atacar genericamente. O comando Aparar e as exceções precisam ser integrados ao Combate, não inferidos no Inventário. |
+| Munição | Armas possuem capacidade de pente e propriedades próprias; Peças como Pentes Estendidos alteram capacidade máxima. Recarga é definida por arma e varia entre tipos. | Capacidade máxima deve vir da arma + Peças compatíveis; não há uma regra única de custo de recarga. Consumo por disparo/modo depende das regras de combate e da arma. |
+| Peças Extras | Cada Peça ocupa Espaço de Peça compatível; uma Peça não beneficia duas armas. Instalar/remover/trocar normalmente leva 30 minutos e exige bancada apropriada, salvo regra que permita Kit de Ferramentas. | Exige vínculo Peça↔arma e compatibilidade/capacidade; operação deve respeitar tempo e requisitos, sem ser confundida com movimentação simples na grade. |
+| Baú/transferência | Fora do escopo deste incremento e da operação offline aprovada. | Nenhuma transferência ou mutação de estado compartilhado no modo Offline. |
+
+### Campos de domínio necessários antes da rota ativa
+
+A entidade de Inventário precisa distinguir, no mínimo, exemplar e catálogo, quantidade, Espaços, localização/posição, estado próprio, arma equipada/em mãos, munição atual/máxima, Peças instaladas e vínculo de expansão. Nem todos esses campos estão presentes no snapshot atual de consulta. Não alterar o esquema até confirmar o mapeamento integral dos itens oficiais e as decisões ainda não especificadas.
+
+### Decisões ainda abertas
+
+1. Se a grade representa apenas organização visual ou também posição/alcance para alguma regra da Mesa.
+2. Como representar arma sacada/em mãos sem confundir com posição no Inventário.
+3. Como o app registra interações gratuitas por turno, dado que a economia de Combate atual não integra diretamente o Inventário.
+4. Qual conjunto mínimo de comandos ativos será implementado primeiro (organizar, equipar, sacar/guardar, usar, consumir, recarregar, instalar Peça), e quais ficam fora.
+5. Como o modo Manual/Misto deve registrar consumo de munição sem automatizar ações que o grupo decide manualmente.
+
+Nenhum desses pontos deve ser resolvido por inferência durante a implementação.
