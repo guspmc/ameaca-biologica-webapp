@@ -669,3 +669,44 @@ Na última consulta, os workflows disparados para o commit `576fae4` ainda estav
 ### CI
 
 Os workflows da branch continuam sem conclusão observada na última consulta. O commit mais recente da matriz dispara nova verificação; não declarar build/teste aprovado até receber conclusão no HEAD correspondente.
+
+
+---
+
+## Incremento 2 — fronteira real de persistência LAN do Inventário
+
+**Data:** 10/11/2026  
+**HEAD de código consultado:** `1c849b75e0e95c16eeaf0dba362836c607b9da00`  
+**Commit da matriz atualizada:** `6d865fef45ceaad88ed0d3818bb3a23a165f8de1`
+
+### Inspeção realizada
+
+- `server/index.mjs`: SQLite em WAL, chaves estrangeiras habilitadas e roteamento para autenticação, Mesas e personagens.
+- `server/personagens-local.mjs`: leitura de `inventario_json`, ativação transacional do rascunho e PUT genérico protegido.
+- `src/servidorLocal.ts`: cliente LAN possui consulta, criação, ativação, exclusão e atualização genérica de personagem; não possui métodos para operações do Inventário ativo.
+- `src/organizacaoInventario.ts` e `src/PainelOrganizacaoLocal.tsx`: lógica de prévia/consentimento/recibo e UI existem, mas a porta é injetada e os testes usam fixture de QA.
+- `supabase/proposals/inventario-instancias.sql`: proposta separada com tabelas/RPC privadas e testes PostgreSQL; não é parte do backend SQLite/LAN.
+
+### Estado correto
+
+- **IMPLEMENTADO:** materialização inicial e persistência de `inventario_json` durante ativação LAN, com revisão, autorização, transação e recibo.
+- **IMPLEMENTADO:** regras puras de organização e protocolo de recuperação/idempotência no cliente/QA.
+- **PENDENTE:** leitura operacional e comandos do Inventário ativo no servidor LAN; adapter real para a porta de organização; UI integrada à Ficha ativa; testes de autorização, concorrência, repetição e falha de rede no SQLite.
+- **NÃO AUTORIZADO:** reaproveitar PUT genérico para substituir o snapshot completo; aplicar proposta Supabase; expor Baú/transferência no modo Offline.
+
+### Direção técnica recomendada (ainda não implementada)
+
+Criar serviço/rota dedicada para operações do Inventário ativo, usando revisão esperada e ID idempotente de operação. A transação deve revalidar sessão, papel de Jogador, vínculo atual à Mesa, personagem ativa, snapshot válido, exemplar e pré-condições do comando; aplicar somente a operação autorizada; persistir snapshot/revisão/recibo atomicamente; emitir sinal Realtime após commit. O cliente deve consultar novamente o snapshot autorizado após confirmação ou resposta ambígua. O endpoint não deve aceitar snapshot arbitrário do cliente nem permitir comandos fora da matriz canônica.
+
+A matriz de comandos e seus efeitos exatos ainda depende de cruzamento com o Arquivo do Jogador v1.0. Não codificar operações de uso/equipamento, munição, durabilidade ou descarte por inferência.
+
+### CI
+
+Na consulta atual, os workflows dos commits `1c849b7`, `03bb173`, `bb48c48`, `8c36ca1` e `62e3fc2` permanecem em fila. Não há conclusão aprovada ou falha confirmada para o HEAD mais recente. A fila crescente impede atribuir aprovação aos testes escritos.
+
+### Próxima etapa
+
+1. Conferir o Arquivo do Jogador v1.0 e a minuta de Planejamento v2.6 apenas como material de referência; respeitar v2.5 até validação explícita de nova versão.
+2. Extrair uma matriz de operações do Inventário (pré-condições, campos alterados, modo permitido, efeitos e confirmação) sem inventar regra.
+3. Inspecionar o esquema real SQLite de personagens/ativação e testes de servidor para desenhar a menor extensão transacional.
+4. Em paralelo, preparar testes de rota/serviço LAN com duas contas e cenários de revisão/duplicidade, antes de implementar.
