@@ -576,3 +576,16 @@ Esta atualização substitui qualquer ordem anterior incompatível nesta matriz.
 - **CI:** workflows associados ao ciclo estavam em fila na última consulta. Aguardar resultado para o HEAD final; não declarar aprovação antecipada.
 - **Checkpoint:** `docs/checkpoint-condicoes-ficha-2026-11-10.md`.
 - Sem merge para `main`, deploy, alteração de produção ou teste humano.
+
+
+## Atualização — ataques universais e dados adicionais de Dano (10/11/2026)
+
+- **IMPLEMENTADO:** `consultarPerfilAtaqueUniversal()` deriva perfis de cálculo de Arma Improvisada e Ataque Desarmado diretamente do catálogo de procedimentos canônicos.
+- **IMPLEMENTADO:** calculadora de Ataques oferece os dois ataques universais; fórmulas 1d6 + FOR (×2) e 1d4 + FOR (×3) respeitadas.
+- **IMPLEMENTADO:** Ataque Desarmado aplica Desvantagem padrão e permite cancelamento por Vantagem válida.
+- **IMPLEMENTADO:** cálculo manual de Dano aceita soma de Dados adicionais já rolados; nenhuma Peça/Habilidade é presumida como instalada/ativa.
+- **TESTES ADICIONADOS:** testes de perfil universal, Dano Crítico e integração da interface; execução local não realizada.
+- **PENDENTE:** Coronhada depende de elegibilidade validada da arma; Peças/Habilidades instaladas dependem de Inventário/equipamento ativo; armas com fórmulas especiais e modos de disparo exigem tratamento individual; não se automatiza acerto/Defesa/Reações/Dano Massivo/RD/BI/PV.
+- **CI:** verificar workflows do HEAD final antes de declarar sucesso.
+- **Checkpoint:** `docs/checkpoint-ataques-universais-dano-2026-11-10.md`.
+- Sem merge, publicação, alteração da `main` ou produção.
