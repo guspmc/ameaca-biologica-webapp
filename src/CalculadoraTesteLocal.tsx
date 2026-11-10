@@ -114,6 +114,8 @@ export default function CalculadoraTesteLocal({ atributos, treinada, distribuica
     setTipo(valor);
     setDadosConfirmados(null);
     setErroRolagem('');
+    setResultadoDadosDano('');
+    setCriticoDano(false);
     if (valor === 'ataque-corpo') {
       setPericia('Luta');
       setArmaId(origem === 'Operário' ? listarPerfisArma().find(perfil => perfil.nome === armaOperario)?.id ?? '' : '');
@@ -160,7 +162,11 @@ export default function CalculadoraTesteLocal({ atributos, treinada, distribuica
       setErroRolagem('');
       setMensagemCondicao('');
       const resultado = calcularTesteManual({ valorBase: valorTeste, modificador: Number(modificador || 0), dt: Number(dt), dado1: resultados[0], dado2: resultados[1] ?? null, vantagem: vantagemEfetiva });
-      if ((tipo === 'ataque-corpo' || tipo === 'ataque-distancia') && resultado.estado === 'falha-critica' && aoFalharCriticoAtaque) {
+      const ehAtaque = tipo === 'ataque-corpo' || tipo === 'ataque-distancia';
+      const ataqueFoiCritico = ehAtaque && resultado.dadoEscolhido !== null && resultado.dadoEscolhido !== undefined
+        && (resultado.dadoEscolhido === 20 || (limiteCritico !== null && resultado.dadoEscolhido >= limiteCritico && resultado.total !== null && resultado.dt !== null && resultado.total >= resultado.dt));
+      if (ehAtaque) setCriticoDano(ataqueFoiCritico);
+      if (ehAtaque && resultado.estado === 'falha-critica' && aoFalharCriticoAtaque) {
         void aoFalharCriticoAtaque().then(salvo => setMensagemCondicao(salvo ? 'Falha Crítica: Exposto ativado automaticamente e salvo na Ficha.' : 'Falha Crítica: não foi possível confirmar o salvamento de Exposto. Confira as Condições da Ficha.'));
       }
     } catch (problema) {
