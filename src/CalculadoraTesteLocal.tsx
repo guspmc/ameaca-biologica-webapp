@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { ATRIBUTO_PERICIA, bonusTentativaErro, valorBasePericia } from './pericias';
 import { bonusCondicionalOrigemTeste } from './efeitosOrigens';
-import { calcularTesteManual, type VantagemTeste } from './testes';
+import { calcularTesteManual, calcularRolagemAtaqueManual, type VantagemTeste } from './testes';
 import { sortearDados, validarResultadosFisicos } from './rolagemDados';
 import type { ModoDados } from './funcionamentoFicha';
 import type { AtributosIniciais } from './atributosCriacao';
@@ -108,7 +108,7 @@ export default function CalculadoraTesteLocal({ atributos, treinada, distribuica
     } catch (problema) {
       return { resultado: null, erro: problema instanceof Error ? problema.message : 'Valores inválidos.' };
     }
-  }, [impossivel, valorTeste, modificador, dt, dadosConfirmados, vantagemEfetiva]);
+  }, [escopo, impossivel, valorTeste, modificador, dt, dadosConfirmados, vantagemEfetiva]);
 
   function mudarTipo(valor: 'pericia' | 'atributo' | 'ataque-corpo' | 'ataque-distancia') {
     setTipo(valor);
@@ -187,7 +187,7 @@ export default function CalculadoraTesteLocal({ atributos, treinada, distribuica
         <option value="virtual">Dados virtuais</option>
       </select>
     </label>}
-    {(tipo === 'ataque-corpo' || tipo === 'ataque-distancia') && <p>20 natural: acerto automático e Crítico; fecha as Reações defensivas normais. 1 natural: Falha Crítica e aplica Exposto, salvo regra específica. A margem de Crítico e o multiplicador dependem do perfil consultado. O cálculo de Dano permanece manual.</p>}
+    {(tipo === 'ataque-corpo' || tipo === 'ataque-distancia') && <p>20 natural: Acerto Crítico automático e fecha as Reações defensivas normais. 1 natural: Falha Crítica; Exposto é ativado automaticamente somente no modo Automático. A Ficha apresenta a rolagem e o total, sem comparar com a Defesa ou decidir acerto/erro. {limiteCritico === 19 ? 'Este perfil tem margem 19–20: em 19 natural, confira na mesa se o total alcança a Defesa antes de aplicar o Crítico.' : ''} O cálculo de Dano permanece manual.</p>}
 
     <label>{escopo === 'ataques' ? 'Tipo de Ataque' : 'Tipo de Teste'}
       <select value={tipo} onChange={evento => mudarTipo(evento.target.value as 'pericia' | 'atributo' | 'ataque-corpo' | 'ataque-distancia')}>
@@ -286,14 +286,14 @@ export default function CalculadoraTesteLocal({ atributos, treinada, distribuica
     {calculado.resultado && <div className="offline-status ficha-local-resultado" role="status">
       <strong>{calculado.resultado.estado === 'impossivel' ? 'Sem Teste'
         : calculado.resultado.estado === 'incompleto' ? 'Aguardando dados'
-        : calculado.resultado.estado === 'critico-sucesso' ? 'Sucesso automático · 20 natural'
+        : calculado.resultado.estado === 'critico-sucesso' ? (escopo === 'ataques' ? 'Acerto Crítico · 20 natural' : 'Sucesso automático · 20 natural')
         : calculado.resultado.estado === 'falha-critica' ? 'Falha Crítica · 1 natural'
         : calculado.resultado.estado === 'sucesso' ? 'Sucesso'
         : 'Falha'}</strong>
       <p>{calculado.resultado.detalhe}</p>
       {resultadoAtaqueCritico && <p><strong>Acerto Crítico</strong>{multiplicadorCritico ? ` · multiplicador ×${multiplicadorCritico}` : ' · consulte a regra específica do perfil'}</p>}
       {bonusOperario > 0 && <p>Bônus da Origem Operário: +{bonusOperario} no Ataque.</p>}
-      {calculado.resultado.total !== null && <p>Dado escolhido: {calculado.resultado.dadoEscolhido} · Valor base: {valorTeste} · Modificador: {Number(modificador || 0)} · Total: {calculado.resultado.total} · {escopo === 'ataques' ? 'Defesa' : 'DT'}: {calculado.resultado.dt}</p>}
+      {calculado.resultado.total !== null && <p>Dado escolhido: {calculado.resultado.dadoEscolhido} · Valor base: {valorTeste} · Modificador: {Number(modificador || 0)} · Total: {calculado.resultado.total} · {escopo === 'ataques' ? 'Compare com a Defesa do alvo na mesa.' : `DT: ${calculado.resultado.dt}`}</p>}
     </div>}
   </details>;
 }
