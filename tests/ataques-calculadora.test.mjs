@@ -138,3 +138,15 @@ test('GM 79 em Área não oferece rolagem de Ataque nem permite multiplicador cr
   assert.match(ui, /critico: criticoDano && !ataqueEmAreaGM79/);
   assert.match(ui, /Disparo em Área da GM 79: não existe Teste de Ataque/);
 });
+
+test('Rajada é procedimento em área sem rolagem de Ataque ou Crítico', () => {
+  assert.match(ui, /Rajada: não existe Teste de Ataque/);
+  assert.match(ui, /Todos os alvos no cone de 4,5 m, inclusive aliados, fazem Reflexos DT 12/);
+  assert.match(ui, /const ataqueEmArea = ataqueEmAreaGM79 \|\| rajadaSelecionada/);
+});
+
+test('Disparo Cadenciado e Perfuração exibem procedimentos sem assumir equipamento', () => {
+  assert.match(ui, /Disparo Cadenciado usa Ataque normal e acrescenta \+2 Dados de Dano/);
+  assert.match(ui, /Confirmar Coronha específica da Matilda instalada/);
+  assert.match(ui, /A calculadora não controla a Linha, os alvos subsequentes/);
+});
