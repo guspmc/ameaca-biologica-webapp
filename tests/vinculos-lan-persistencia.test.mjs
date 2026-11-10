@@ -71,7 +71,7 @@ function instalarIndexedDBTransacional() {
           tx.error = new Error('Transação abortada');
         },
       };
-      setImmediate(() => {
+      setImmediate(() => setImmediate(() => {
         if (abortada) {
           tx.onabort?.();
           return;
@@ -103,7 +103,7 @@ function instalarIndexedDBTransacional() {
           }
         }
         tx.oncomplete?.();
-      });
+      }));
       return tx;
     },
   };
