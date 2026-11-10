@@ -132,3 +132,9 @@ test('GM 79 apresenta procedimentos de cartuchos e modos direto/área', () => {
   assert.match(ui, /Todo disparo deixa a GM 79 vazia; recarga por Movimento/);
   assert.match(ui, /Disparo em Área: sem Acerto Crítico/);
 });
+
+test('GM 79 em Área não oferece rolagem de Ataque nem permite multiplicador crítico', () => {
+  assert.match(ui, /!ataqueEmAreaGM79 && <button type="button" className="botao-claro" onClick={registrarRolagem}/);
+  assert.match(ui, /critico: criticoDano && !ataqueEmAreaGM79/);
+  assert.match(ui, /Disparo em Área da GM 79: não existe Teste de Ataque/);
+});
