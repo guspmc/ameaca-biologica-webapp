@@ -264,10 +264,10 @@ export default function CalculadoraTesteLocal({ atributos, treinada, distribuica
     {escopo === 'testes' && <label>DT
       <input type="number" min="1" step="1" value={dt} disabled={impossivel} onChange={evento => setDt(evento.target.value)} placeholder="Ex.: 15" />
     </label>}
-    <label className="ficha-local-opcao">
+    {escopo === 'testes' && <label className="ficha-local-opcao">
       <input type="checkbox" checked={impossivel} onChange={evento => { setImpossivel(evento.target.checked); setDado1(''); setDado2(''); setDadosConfirmados(null); setErroRolagem(''); }} />
       Impossível — sem Teste
-    </label>
+    </label>}
     <label>Condição da rolagem
       <select value={vantagem} disabled={impossivel} onChange={evento => { setVantagem(evento.target.value as VantagemTeste); setDado1(''); setDado2(''); setDadosConfirmados(null); setErroRolagem(''); }}>
         <option value="normal">Normal · 1d20</option>
