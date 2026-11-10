@@ -710,3 +710,47 @@ Na consulta atual, os workflows dos commits `1c849b7`, `03bb173`, `bb48c48`, `8c
 2. Extrair uma matriz de operações do Inventário (pré-condições, campos alterados, modo permitido, efeitos e confirmação) sem inventar regra.
 3. Inspecionar o esquema real SQLite de personagens/ativação e testes de servidor para desenhar a menor extensão transacional.
 4. Em paralelo, preparar testes de rota/serviço LAN com duas contas e cenários de revisão/duplicidade, antes de implementar.
+
+
+---
+
+## Incremento 3 — matriz de operações canônicas do Inventário
+
+**Data:** 10/11/2026  
+**Fonte normativa consultada:** Arquivo do Jogador v1.0, Capítulos 3 e 4.
+
+### Trabalho
+
+A matriz funcional recebeu uma tabela preliminar de operações e limites canônicos para orientar o desenho do Inventário ativo.
+
+### Regras confirmadas na fonte
+
+- Capacidade base: 4 + FOR Espaços; Mochileiro concede +1; Bolsa +3 e Pochete +2; Bolsa e Pochete não acumulam.
+- Característicos não ocupam Espaços e não podem ser descartados voluntariamente.
+- Não se pode exceder capacidade; a regra do item excedente em mãos não autoriza salvar sobrecarga arbitrária.
+- Item sem Espaços próprios ocupa 1, salvo regra específica.
+- Sacar e guardar arma são interações distintas; guardar uma arma e sacar outra são duas interações.
+- Sacar, equipar, ligar e desligar são atos separados, salvo regra específica do item.
+- Durabilidade normalmente só diminui ao Aparar; ataque/uso comum não a consome. Durabilidade 0 impede Aparar, mas não elimina outras funções salvo regra específica.
+- Manutenção de 30 minutos em Sala de Descanso ou com Kit de Ferramentas restaura Durabilidade máxima.
+- Capacidade do pente, Peças compatíveis e custo de recarga dependem da arma e das regras específicas; não existe um único custo universal.
+- Peças Extras exigem compatibilidade, ocupam Espaço de Peça e normalmente levam 30 minutos em bancada apropriada para instalar/remover/trocar.
+
+### Limites e lacunas
+
+- A grade/posições são atualmente convenção de UI; o trecho normativo não define custo universal para reorganização abstrata da grade.
+- O snapshot atual de consulta não contém necessariamente todos os campos para equipamento em mãos, arma equipada, munição atual/máxima e Peças instaladas.
+- A integração de munição e propriedades operacionais de armas com Combate ainda está pendente.
+- O modo Manual/Misto precisa ser respeitado; não automatizar ações ou consumos que dependem da decisão do grupo.
+- Baú e transferência permanecem excluídos do Offline.
+
+### Classificação
+
+- **CONSULTADO:** regras de Inventário e equipamento do Arquivo do Jogador v1.0.
+- **DOCUMENTADO:** matriz preliminar de operações em `docs/matriz-auditoria-funcional-ficha.md`.
+- **PENDENTE DE DECISÃO:** semântica de grade, estado de arma em mãos, interação com economia de turno, primeiro conjunto de comandos e registro de munição em Manual/Misto.
+- **NÃO IMPLEMENTADO NESTE CICLO:** nenhuma rota, migration ou UI operacional foi criada.
+
+### Próximo passo
+
+Antes de implementar a rota SQLite, definir com base no Planejamento aprovado quais operações fazem parte do primeiro incremento e resolver apenas as ambiguidades indispensáveis. Em paralelo, preparar contratos de teste para autorização, revisão, idempotência e resposta interrompida, sem inventar efeitos de jogo.
