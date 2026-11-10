@@ -599,3 +599,13 @@ Esta atualização substitui qualquer ordem anterior incompatível nesta matriz.
 - **PENDENTE:** efeitos de Spark Shot, gestão de Cargas/Combustível, GM 79 e cartuchos especiais, RPG-7, Perfuração, Rajada e Disparo Cadenciado.
 - **CI:** pendente para o novo HEAD. Sem teste humano, merge, publicação ou alteração de produção.
 - **Checkpoint:** `docs/checkpoint-modos-especiais-dano-2026-11-10.md`.
+
+## Atualização — procedimentos manuais GM 79 (10/11/2026)
+
+- **IMPLEMENTADO:** `src/procedimentosGM79.ts` e seletor de cartucho/modo na calculadora.
+- **COBERTURA:** Ácido direto/área; Explosivo área; Incendiário direto/área. Exibe raios, DTs, consequências e ausência de Crítico em área.
+- **LIMITES:** não resolve Testes dos alvos, metade/integral, Queimadura, munição, recarga ou PV. Dano-base 4d6 é informado manualmente.
+- **RPG-7:** permanece como Morte Instantânea com exceções por tipo de criatura; sem fórmula inventada.
+- **PENDENTE:** Bear Commander/lançador integrado, Rajada, Disparo Cadenciado e Perfuração.
+- **TESTES:** adicionados; execução local não realizada. CI pendente.
+- **Checkpoint:** `docs/checkpoint-gm79-2026-11-10.md`.
