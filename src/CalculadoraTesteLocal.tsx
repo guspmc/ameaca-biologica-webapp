@@ -42,6 +42,7 @@ export default function CalculadoraTesteLocal({ atributos, treinada, distribuica
   const [pericia, setPericia] = useState('Percepção');
   const [armaId, setArmaId] = useState(() => escopo === 'ataques' && origem === 'Operário' ? listarPerfisArma().find(perfil => perfil.nome === armaOperario)?.id ?? '' : '');
   const [resultadoDadosDano, setResultadoDadosDano] = useState('');
+  const [resultadoDadosAdicionais, setResultadoDadosAdicionais] = useState('');
   const [criticoDano, setCriticoDano] = useState(false);
   const [atributo, setAtributo] = useState<keyof AtributosIniciais>('astucia');
   const [dt, setDt] = useState('12');
@@ -131,6 +132,7 @@ export default function CalculadoraTesteLocal({ atributos, treinada, distribuica
     setDadosConfirmados(null);
     setErroRolagem('');
     setResultadoDadosDano('');
+    setResultadoDadosAdicionais('');
     setCriticoDano(false);
     if (valor === 'ataque-corpo') {
       setPericia('Luta');
@@ -156,16 +158,18 @@ export default function CalculadoraTesteLocal({ atributos, treinada, distribuica
   const calculoDano = useMemo(() => {
     if (!formulaDanoConvencional || !resultadoDadosDano.trim() || !perfilSelecionado || multiplicadorCritico === null) return null;
     const valor = Number(resultadoDadosDano);
+    const adicionais = resultadoDadosAdicionais.trim() === '' ? 0 : Number(resultadoDadosAdicionais);
     if (!Number.isInteger(valor) || valor < 0) return { erro: 'Informe a soma inteira e não negativa dos Dados de Dano.' };
+    if (!Number.isInteger(adicionais) || adicionais < 0) return { erro: 'Informe a soma inteira e não negativa dos Dados adicionais, ou deixe o campo vazio.' };
     try {
       const perfilCalculo = perfilCorpo ?? {
         id: perfilFogo!.id, nome: perfilFogo!.nome, categoria: 'arma-fogo' as const,
         dano: perfilFogo!.dano!, multiplicadorCritico, criticoNatural: limiteCritico === 19 ? 19 as const : 20 as const,
         atributoDano: 'agilidade' as const, propriedades: perfilFogo!.propriedades, referencia: perfilFogo!.referencia,
       };
-      return { resultado: calcularDanoArma({ dadosRolados: valor, valorAtributo: atributoDano, critico: criticoDano, perfil: perfilCalculo, armaOperarioEscolhida }) };
+      return { resultado: calcularDanoArma({ dadosRolados: valor, valorAtributo: atributoDano, critico: criticoDano, perfil: perfilCalculo, armaOperarioEscolhida, dadosAdicionais: adicionais }) };
     } catch (problema) { return { erro: problema instanceof Error ? problema.message : 'Não foi possível calcular o Dano.' }; }
-  }, [formulaDanoConvencional, resultadoDadosDano, perfilSelecionado, multiplicadorCritico, perfilCorpo, perfilFogo, limiteCritico, atributoDano, criticoDano, armaOperarioEscolhida]);
+  }, [formulaDanoConvencional, resultadoDadosDano, resultadoDadosAdicionais, perfilSelecionado, multiplicadorCritico, perfilCorpo, perfilFogo, limiteCritico, atributoDano, criticoDano, armaOperarioEscolhida]);
 
   function registrarRolagem() {
     try {
@@ -236,6 +240,10 @@ export default function CalculadoraTesteLocal({ atributos, treinada, distribuica
         <label>Soma dos Dados de Dano ({perfilSelecionado.dano})
           <input type="number" min="0" step="1" value={resultadoDadosDano} onChange={evento => setResultadoDadosDano(evento.target.value)} placeholder="Resultado somado dos dados" />
         </label>
+        <label>Soma de Dados adicionais já rolados (opcional)
+          <input type="number" min="0" step="1" value={resultadoDadosAdicionais} onChange={evento => setResultadoDadosAdicionais(evento.target.value)} placeholder="Ex.: +1d4 de Peça ou Habilidade" />
+        </label>
+        <small>Use este campo somente depois de rolar os dados adicionais previstos por uma Peça, Habilidade ou modo de disparo válido. A calculadora não presume que você os possui.</small>
         <p>Atributo aplicado: {tipo === 'ataque-corpo' ? 'FOR' : 'AGI'} (+{atributoDano}).</p>
         {armaOperarioEscolhida && <p>Operário: o Dano recebe FOR adicional; esse bônus não é multiplicado no Crítico.</p>}
         <label className="ficha-local-opcao"><input type="checkbox" checked={criticoDano} onChange={evento => setCriticoDano(evento.target.checked)} /> Aplicar Acerto Crítico (×{multiplicadorCritico})</label>
