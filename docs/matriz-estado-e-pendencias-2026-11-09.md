@@ -564,3 +564,15 @@ Esta atualização substitui qualquer ordem anterior incompatível nesta matriz.
 - **PENDENTE:** execução dos workflows CI associados ao novo HEAD; revisão de todas as exceções de armas, integração de modificadores explicitamente informados e fluxo completo de Dano.
 - **VALIDADO HUMANAMENTE:** pendente, reservado à bateria integrada da Ficha completa.
 - Sem merge para `main`, deploy, alteração de produção ou testes humanos isolados.
+
+
+## Atualização — integração parcial das Condições na Ficha Offline (10/11/2026)
+
+- **IMPLEMENTADO:** criado `src/condicoesCalculadora.ts` para calcular Desvantagens da própria personagem em Ataques e Testes de acordo com o Arquivo do Jogador v1.0: Caído, Cego, Imobilizado, Intoxicado, Desorientado, Enfraquecido e Infectado Especial nos contextos aplicáveis.
+- **IMPLEMENTADO:** a calculadora combina as Desvantagens de Condições com a 5ª Fase da BI e com a escolha manual de Vantagem/Desvantagem; uma Vantagem e uma Desvantagem se anulam normalmente, e fontes iguais não acrescentam dados.
+- **IMPLEMENTADO:** Defesa atual da Ficha considera Exposto (−2) e Desorientado (retira a contribuição de AGI), preservando a Defesa base derivada.
+- **TESTES ADICIONADOS:** `tests/condicoes-calculadora.test.mjs` cobre regras por tipo de Ataque/Teste, exceções de Intoxicado/Enfraquecido, cancelamento e Defesa ajustada. **Execução local não realizada.**
+- **LIMITES:** Condições do alvo, percepção de Amedrontado, testes exclusivamente visuais/auditivos, bloqueio de Ações/Reações, duração por turno, Movimento e Dano contínuo não foram automatizados; dependem de contexto/controle da mesa ou de módulos ainda não implementados.
+- **CI:** workflows associados ao ciclo estavam em fila na última consulta. Aguardar resultado para o HEAD final; não declarar aprovação antecipada.
+- **Checkpoint:** `docs/checkpoint-condicoes-ficha-2026-11-10.md`.
+- Sem merge para `main`, deploy, alteração de produção ou teste humano.
