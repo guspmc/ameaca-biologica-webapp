@@ -182,7 +182,7 @@ export default function CalculadoraTesteLocal({ atributos, treinada, distribuica
       <small>A seleção consulta o catálogo; não confirma posse, equipamento, munição ou proficiência e não altera o Inventário.</small>
       {perfilSelecionado && <div className="ficha-local-grade">
         <div><small>PERFIL</small><strong>{perfilSelecionado.nome}</strong><p>{perfilSelecionado.categoria === 'corpo-a-corpo' ? 'Corpo a Corpo' : ('categoria' in perfilSelecionado ? perfilSelecionado.categoria : 'Arma de Fogo')}</p></div>
-        <div><small>DANO / CRÍTICO</small><strong>{perfilSelecionado.dano ?? 'Regra específica'}</strong><p>{perfilCorpo ? `Crítico ${perfilCorpo.criticoNatural}–20 ×${perfilCorpo.multiplicadorCritico}` : `Crítico ${perfilFogo?.critico ?? 'conforme regra específica'}`}</p></div>
+        <div><small>DANO / CRÍTICO</small><strong>{perfilSelecionado.dano ?? 'Regra específica'}</strong><p>{perfilCorpo ? `Crítico ${perfilCorpo.criticoNatural === 19 ? '19–20' : '20'} ×${perfilCorpo.multiplicadorCritico}` : `Crítico ${perfilFogo?.critico ?? 'conforme regra específica'}`}</p></div>
         <div><small>ALCANCE / RECARGA</small><strong>{perfilFogo?.alcance ?? perfilCorpo?.alcance ?? '—'}</strong><p>{perfilFogo?.recarga ?? perfilCorpo?.recarga ?? '—'}</p></div>
         {(perfilSelecionado.propriedades.length > 0 || ('regrasEspeciais' in perfilSelecionado && (perfilSelecionado.regrasEspeciais?.length ?? 0) > 0)) && <div><small>PROPRIEDADES</small><p>{perfilSelecionado.propriedades.join(' · ')}</p>{'regrasEspeciais' in perfilSelecionado && perfilSelecionado.regrasEspeciais?.map((regra, i) => <p key={i}>{regra}</p>)}</div>}
         <small>{perfilSelecionado.referencia}</small>
