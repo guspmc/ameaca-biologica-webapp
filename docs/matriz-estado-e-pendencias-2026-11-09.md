@@ -552,3 +552,15 @@ Esta atualização substitui qualquer ordem anterior incompatível nesta matriz.
 - **CI:** ambos os workflows do commit `66b33b065e513a5f3e3819c4134882de4b055784` concluíram com sucesso. Para o HEAD de código `3a81c7b...`, workflows `42732336629` (Offline) e `42732336648` (compilação) permanecem em execução na última consulta. **CI do HEAD atual pendente.**
 - **HEAD de código/testes:** `3a81c7bb223db4f183aea13fa55d1301cf0f3691`.
 - Sem teste humano, merge, deploy ou alteração de produção/Supabase.
+
+
+## Atualização — separação da rolagem de Ataque e Testes comuns (10/11/2026)
+
+- **IMPLEMENTADO:** `src/testes.ts` agora oferece `calcularRolagemAtaqueManual()`, que valida os dados, aplica Normal/Vantagem/Desvantagem e apresenta dado natural + total sem DT, comparação com Defesa ou classificação de acerto/erro do alvo.
+- **IMPLEMENTADO:** `src/CalculadoraTesteLocal.tsx` usa o avaliador separado quando o escopo é Ataques; a seção não solicita Defesa nem apresenta controle “Impossível — sem Teste”. A comparação com Defesa fica expressamente a cargo da mesa.
+- **IMPLEMENTADO:** resultado 20 natural continua marcado como Acerto Crítico automático. Perfis com margem 19–20 exibem orientação para conferir na mesa se o total alcança a Defesa antes de aplicar o Crítico; a Ficha não tenta resolver essa condição sem conhecer a Defesa.
+- **IMPLEMENTADO:** o texto genérico de Falha Crítica em `calcularTesteManual()` não associa Exposto automaticamente. O callback existente de Exposto continua limitado à Falha Crítica em Ataque e à guarda do modo Automático na Ficha.
+- **TESTES ADICIONADOS/ATUALIZADOS:** `tests/roladores-ficha.test.mjs` cobre cálculo de Ataque sem Defesa e a ausência de Exposto no texto genérico; `tests/ataques-calculadora.test.mjs` verifica a separação e a ausência do campo de Defesa.
+- **PENDENTE:** execução dos workflows CI associados ao novo HEAD; revisão de todas as exceções de armas, integração de modificadores explicitamente informados e fluxo completo de Dano.
+- **VALIDADO HUMANAMENTE:** pendente, reservado à bateria integrada da Ficha completa.
+- Sem merge para `main`, deploy, alteração de produção ou testes humanos isolados.
