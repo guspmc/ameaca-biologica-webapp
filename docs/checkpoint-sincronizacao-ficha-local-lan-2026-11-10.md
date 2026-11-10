@@ -643,3 +643,29 @@ Na última consulta, os workflows disparados para o commit `576fae4` ainda estav
 - Auditar o contrato completo do domínio de organização e as rotas/serviços do servidor, identificando quais operações estão prontas para integração e quais ainda são apenas lógica isolada.
 - Continuar a matriz de Características, Identidade, Atributos/Perícias e Habilidades.
 - Retomar CI no HEAD atual antes de qualquer nova alteração de código.
+
+
+---
+
+## Continuação — auditoria de criação da Ficha
+
+**Data:** 10/11/2026  
+**HEAD de auditoria:** `03bb173a4cacfb04ea665d45777223c946dd0eb1`
+
+### Evidências adicionais
+
+- **Identidade:** editor narrativo e salvamento local estão cobertos; a sincronização LAN genérica permanece bloqueada por decisão de allowlist.
+- **Atributos e Perícias:** editor e regras de distribuição têm testes de domínio e de integridade da criação, incluindo treinamento de Origem e casos especiais.
+- **Habilidades:** catálogo, pré-requisitos, ramos, graus e progressão têm cobertura ampla. Planejamento não deve ser confundido com aplicação de ganhos.
+- **Revisão/Ativação:** existem testes para pendências, conferência no servidor, ativação explícita, teto da Mesa, recibo e recuperação de resposta perdida.
+
+### Classificação
+
+- **IMPLEMENTADO:** base dos editores de criação, revisão e ativação, conforme módulos e testes consultados.
+- **COBERTURA AUTOMATIZADA EXISTENTE:** os arquivos de teste citados na matriz cobrem domínio e parte dos contratos de interface/servidor.
+- **PENDENTE:** validação manual E2E em navegador e duas contas reais; integração LAN de Identidade e Progressão; fluxo local-first ainda não implementado.
+- **NÃO JUSTIFICADO:** reescrever os editores de criação sem evidência de defeito. Priorizar integração e testes de ponta a ponta.
+
+### CI
+
+Os workflows da branch continuam sem conclusão observada na última consulta. O commit mais recente da matriz dispara nova verificação; não declarar build/teste aprovado até receber conclusão no HEAD correspondente.
