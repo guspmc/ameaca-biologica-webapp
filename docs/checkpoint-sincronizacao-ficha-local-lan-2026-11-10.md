@@ -368,3 +368,43 @@ Após a aprovação da primeira allowlist, `docs/desenho-tecnico-cache-ficha-lan
 **Commit documental:** `feea982faee0a246223a77a6c84f81c21885df5c`.
 
 Nenhum arquivo de implementação foi alterado. O próximo ciclo deverá especificar a operação restrita e o vínculo local↔LAN antes de criar rota ou migration.
+
+
+---
+
+## Ciclo — contrato idempotente da primeira operação Local > LAN
+
+**Data:** 10/11/2026  
+**Branch:** `feat/offline-first-ficha`  
+**Commit de desenho:** `681a04e638b3050e1b66aa1fa419ed48a87fdb1c`
+
+### Trabalho realizado
+
+Foi especificado em `docs/desenho-tecnico-cache-ficha-lan.md` o contrato proposto para a operação dedicada de sincronização:
+- patch estrito limitado a `name` e `configuracaoFuncionamento`;
+- validação server-side e preservação de todos os demais campos;
+- autenticação, autoria e participação atual como Jogador revalidadas dentro da transação;
+- `expectedRevision` para detectar divergência multi-dispositivo;
+- `operationId` idempotente e recibo persistido atomicamente;
+- conflito 409 sem escrita e com cópia LAN recuperável;
+- testes de autorização, payload, idempotência, rollback e regressão.
+
+### Evidência técnica usada
+
+- O servidor local usa SQLite e migrations versionadas 1–11 em `server/auth-local.mjs`.
+- A rota de personagens já usa sessão autenticada, valida autoria e papel atual de Jogador.
+- O PUT genérico usa `expectedRevision` e protege campos de criação, Progressão e estado de Combate; ele não será alterado para suportar o sync.
+- `src/funcionamentoFicha.ts` exporta `configuracaoFuncionamentoValida()`, que valida modo, modoDados, visibilidade e conjunto exato das preferências de automação.
+- O cliente LAN atual envia snapshot completo pelo PUT; a rota nova não deve reutilizar esse payload amplo.
+
+### Estado
+
+- **DECIDIDO/APROVADO:** primeira allowlist (Nome e Configuração de Funcionamento após validação server-side; Identidade excluída); Local > LAN; política de conflito entre dispositivos.
+- **IMPLEMENTADO:** documentação do contrato técnico.
+- **NÃO IMPLEMENTADO:** migration SQLite, tabela de recibos, endpoint POST de sync, cliente dedicado, vínculo local↔LAN, salvamento local-first e UI de conflito.
+- **TESTADO:** ainda não há teste de implementação do contrato. CI do HEAD documental anterior foi consultada separadamente; não representa teste desse contrato.
+- **PENDENTE:** fechar o modelo do vínculo e a persistência local de revisão/operationId; depois implementar migration e rota em ciclo isolado.
+
+### Próxima etapa
+
+Definir e implementar o vínculo local↔LAN e o modelo IndexedDB sem inferência por nome, incluindo compatibilidade com fichas Offline independentes, importação/exportação e troca de conta. Só então ligar a operação de sync à UI.
