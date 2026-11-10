@@ -105,3 +105,9 @@ test('Ataque Desarmado e Arma Improvisada estão disponíveis na calculadora', (
   assert.match(ui, /desvantagemDesarmado = perfilCorpo\?\.id === 'universal-ataque-desarmado'/);
   assert.match(ui, /Ataque Desarmado: Desvantagem padrão aplicada/);
 });
+
+test('cálculo manual aceita soma de Dados adicionais já rolados sem presumir Peças instaladas', () => {
+  assert.match(ui, /Soma de Dados adicionais já rolados \(opcional\)/);
+  assert.match(ui, /dadosAdicionais: adicionais/);
+  assert.match(ui, /A calculadora não presume que você os possui/);
+});
