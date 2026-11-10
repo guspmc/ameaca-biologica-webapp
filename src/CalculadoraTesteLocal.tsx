@@ -5,7 +5,7 @@ import { calcularTesteManual, calcularRolagemAtaqueManual, type VantagemTeste } 
 import { sortearDados, validarResultadosFisicos } from './rolagemDados';
 import type { ModoDados } from './funcionamentoFicha';
 import type { AtributosIniciais } from './atributosCriacao';
-import { listarPerfisArma, consultarPerfilArma, bonusAtaqueOperario, calcularDanoArma } from './catalogoArmas';
+import { listarPerfisArma, consultarPerfilArma, bonusAtaqueOperario, calcularDanoArma, possuiFormulaDanoConvencional } from './catalogoArmas';
 import { listarPerfisArmasFogo, consultarPerfilArmaFogo } from './catalogoArmasFogo';
 
 const PERICIAS = Object.keys(ATRIBUTO_PERICIA);
@@ -139,7 +139,7 @@ export default function CalculadoraTesteLocal({ atributos, treinada, distribuica
   const limiteCritico = perfilCorpo?.criticoNatural ?? (criticoTexto ? (/19\s*[–-]\s*20/.test(criticoTexto) ? 19 : 20) : null);
   const multiplicadorCritico = perfilCorpo?.multiplicadorCritico ?? (criticoTexto ? Number(criticoTexto.match(/x\s*(\d+)/i)?.[1] ?? 1) : null);
   const resultadoAtaqueCritico = escopo === 'ataques' && calculado.resultado?.dadoEscolhido === 20;
-  const formulaDanoConvencional = perfilSelecionado?.dano && /^(\\d+)d(\\d+)$/i.test(perfilSelecionado.dano) ? perfilSelecionado.dano : null;
+  const formulaDanoConvencional = perfilSelecionado?.dano && possuiFormulaDanoConvencional(perfilSelecionado.dano) ? perfilSelecionado.dano : null;
   const atributoDano = tipo === 'ataque-corpo' ? atributos.forca : atributos.agilidade;
   const calculoDano = useMemo(() => {
     if (!formulaDanoConvencional || !resultadoDadosDano.trim() || !perfilSelecionado || multiplicadorCritico === null) return null;
