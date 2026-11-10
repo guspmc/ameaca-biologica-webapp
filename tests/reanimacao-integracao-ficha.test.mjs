@@ -20,7 +20,7 @@ test('painel de Reanimação está integrado à ficha contínua e aos salvamento
 test('painel inicia Colapso Viral automaticamente sem presumir rolagens ou avançar turnos', () => {
   assert.match(painel, /resultadoValido/);
   assert.match(painel, /informe dois resultados físicos de d20/);
-  assert.match(painel, /rolagem virtual ainda não está implementada/);
+  assert.match(painel, /sortearDados\(vantagem \? 2 : 1, 20\)/);
   assert.match(painel, /Colapso Viral e a Reanimação específica são iniciados automaticamente/);
   assert.match(painel, /void iniciar\('colapso_bi'\)/);
   assert.match(painel, /não avança turnos/);
@@ -45,7 +45,10 @@ test('cura em 0 PV é direcionada à acumulação da Reanimação, sem botão de
 
 test('Teste de Medicina também permite registrar resultado crítico de 1 natural', () => {
   assert.match(painel, /Registrar falha crítica \(1 natural\)/);
-  assert.match(painel, /1 natural no Teste de Medicina: Falha Crítica e Exposto para quem realizou o Teste/);
+  assert.match(painel, /1 natural no Teste de Medicina: Falha Crítica/);
+  assert.match(painel, /não ativa Exposto automaticamente/);
+  assert.match(painel, /Teste de Medicina DT 15 na própria Ficha/);
+  assert.doesNotMatch(painel, /Falha Crítica e Exposto para quem realizou o Teste/);
 });
 
 test('1 natural sinaliza Falha Crítica e Exposto sem administrar a Condição automaticamente', () => {
@@ -84,4 +87,10 @@ test('0 PV inicia automaticamente o estado de Reanimação, aguardando o próxim
   assert.match(painel, /recursos\.pvAtual > 0/);
   assert.match(painel, /aguardando_proximo_turno/);
   assert.match(painel, /Iniciar Testes no próximo turno/);
+});
+
+test('Reanimação virtual não é bloqueada e Teste de Medicina comum não ativa Exposto', () => {
+  assert.doesNotMatch(painel, /bloqueioVirtual/);
+  assert.match(painel, /sortearDados\(vantagem \? 2 : 1, 20\)/);
+  assert.match(painel, /não ativa Exposto automaticamente/);
 });

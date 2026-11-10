@@ -53,7 +53,6 @@ export default function ReanimacaoFichaLocal({ dados, recursos, origem, pvMaximo
     && (vantagem ? segundoDado.trim() !== '' && dadoValido(segundo) : segundoDado.trim() === ''));
   const estadoAtivo = reanimacao?.estado === 'em_andamento';
   const estadoPV0 = reanimacao?.causa === 'pv_zero' && ['aguardando_proximo_turno', 'em_andamento'].includes(reanimacao.estado);
-  const bloqueioVirtual = modoDados === 'virtuais';
 
   async function persistir(proxima: Reanimacao, recursosPatch: Partial<RecursosAtuais> = {}) {
     if (ocupado || bloqueado) return;
@@ -91,7 +90,7 @@ export default function ReanimacaoFichaLocal({ dados, recursos, origem, pvMaximo
   }, [recursos.pvAtual, recursos.biAtual, biMaximo, podeIniciarPV, bloqueado, ocupado]);
 
   async function registrarTeste() {
-    if (!reanimacao || !estadoAtivo || bloqueioVirtual || !resultadoValido) return;
+    if (!reanimacao || !estadoAtivo || !resultadoValido) return;
     try {
       const resultados = metodo === 'virtual'
         ? (vantagem ? sortearDados(2, 20) as [number, number] : sortearDados(1, 20)[0])
@@ -124,7 +123,7 @@ export default function ReanimacaoFichaLocal({ dados, recursos, origem, pvMaximo
     if (!reanimacao) return;
     try {
       await persistir(concederAjudaMedicina(reanimacao, sucesso));
-      if (falhaCritica) setMensagem('1 natural no Teste de Medicina: Falha Crítica e Exposto para quem realizou o Teste. Registre a Condição na ficha dessa pessoa; o painel da personagem em Reanimação não administra Condições automaticamente.');
+      if (falhaCritica) setMensagem('1 natural no Teste de Medicina: Falha Crítica. Por ser um Teste comum de Perícia, não ativa Exposto automaticamente; essa ativação automática é restrita a Falha Crítica em Ataque.');
     } catch (e) { setErro(e instanceof Error ? e.message : 'Não foi possível registrar o Teste de Medicina.'); }
   }
 
@@ -168,14 +167,12 @@ export default function ReanimacaoFichaLocal({ dados, recursos, origem, pvMaximo
       {reanimacao.estado === 'aguardando_proximo_turno' && <button type="button" className="acao" disabled={ocupado || bloqueado} onClick={() => void iniciarProximoTurno()}>Iniciar Testes no próximo turno <span>→</span></button>}
       {estadoPV0 && <>
         <h4>Primeiros Socorros · Medicina DT 15</h4>
-        <p>Registre o resultado final do Teste, já considerando Treinamento e modificadores. Sucesso concede Vantagem ao próximo Teste de Reanimação.</p>
-        {bloqueioVirtual
-          ? <p>O método está em Virtual, mas a rolagem virtual ainda não está implementada; não registre resultado de Medicina por este painel.</p>
-          : <div className="recursos-controles">
-            <button type="button" disabled={ocupado || bloqueado} onClick={() => void registrarMedicina(true)}>Registrar sucesso</button>
-            <button type="button" disabled={ocupado || bloqueado} onClick={() => void registrarMedicina(false)}>Registrar falha</button>
-            <button type="button" disabled={ocupado || bloqueado} onClick={() => void registrarMedicina(false, true)}>Registrar falha crítica (1 natural)</button>
-          </div>}
+        <p>O ajudante realiza o Teste de Medicina DT 15 na própria Ficha, considerando seu Atributo, Treinamento e modificadores. Registre aqui apenas o resultado final. Sucesso concede Vantagem ao próximo Teste de Reanimação.</p>
+        <div className="recursos-controles">
+          <button type="button" disabled={ocupado || bloqueado} onClick={() => void registrarMedicina(true)}>Registrar sucesso</button>
+          <button type="button" disabled={ocupado || bloqueado} onClick={() => void registrarMedicina(false)}>Registrar falha</button>
+          <button type="button" disabled={ocupado || bloqueado} onClick={() => void registrarMedicina(false, true)}>Registrar falha crítica (1 natural)</button>
+        </div>
         <label>Cura recebida enquanto estava em 0 PV
           <input type="number" min="0" step="1" value={cura} disabled={ocupado || bloqueado} onChange={e => setCura(e.target.value)}/>
         </label>
