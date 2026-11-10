@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { sortearDados } from './rolagemDados';
 import {
   acumularCuraDuranteReanimacao,
   concederAjudaMedicina,
@@ -30,6 +31,8 @@ export default function ReanimacaoFichaLocal({ dados, recursos, origem, pvMaximo
     : reanimacaoValida(dados.reanimacao) ? dados.reanimacao : null;
   const [reanimacao, setReanimacao] = useState<Reanimacao | null>(inicial);
   useEffect(() => { setReanimacao(inicial); }, [inicial]);
+  const [metodo, setMetodo] = useState<'fisico' | 'virtual'>(modoDados === 'virtuais' ? 'virtual' : 'fisico');
+  useEffect(() => { setMetodo(modoDados === 'virtuais' ? 'virtual' : 'fisico'); }, [modoDados]);
   const [primeiroDado, setPrimeiroDado] = useState('');
   const [segundoDado, setSegundoDado] = useState('');
   const [cura, setCura] = useState('1');
@@ -45,8 +48,8 @@ export default function ReanimacaoFichaLocal({ dados, recursos, origem, pvMaximo
   const primeiro = Number(primeiroDado);
   const segundo = Number(segundoDado);
   const dadoValido = (n: number) => Number.isSafeInteger(n) && n >= 1 && n <= 20;
-  const resultadoValido = primeiroDado.trim() !== '' && dadoValido(primeiro)
-    && (vantagem ? segundoDado.trim() !== '' && dadoValido(segundo) : segundoDado.trim() === '');
+  const resultadoValido = metodo === 'virtual' || (primeiroDado.trim() !== '' && dadoValido(primeiro)
+    && (vantagem ? segundoDado.trim() !== '' && dadoValido(segundo) : segundoDado.trim() === ''));
   const estadoAtivo = reanimacao?.estado === 'em_andamento';
   const estadoPV0 = reanimacao?.causa === 'pv_zero' && ['aguardando_proximo_turno', 'em_andamento'].includes(reanimacao.estado);
   const bloqueioVirtual = modoDados === 'virtuais';
@@ -82,7 +85,9 @@ export default function ReanimacaoFichaLocal({ dados, recursos, origem, pvMaximo
   async function registrarTeste() {
     if (!reanimacao || !estadoAtivo || bloqueioVirtual || !resultadoValido) return;
     try {
-      const resultados = vantagem ? [primeiro, segundo] as [number, number] : primeiro;
+      const resultados = metodo === 'virtual'
+        ? (vantagem ? sortearDados(2, 20) as [number, number] : sortearDados(1, 20)[0])
+        : vantagem ? [primeiro, segundo] as [number, number] : primeiro;
       const resultado = resolverTesteReanimacao(reanimacao, resultados, pvMaximo, origem === 'Cobaia');
       const recursosPatch = resultado.pvAoDespertar === null ? {} : { pvAtual: resultado.pvAoDespertar };
       await persistir(resultado.reanimacao, recursosPatch);
@@ -92,7 +97,9 @@ export default function ReanimacaoFichaLocal({ dados, recursos, origem, pvMaximo
       else if (resultado.transformacaoPendente) avisos.push('Três falhas: retorno como Zumbi Especial pendente para o próximo turno.');
       else if (resultado.pvAoDespertar !== null) avisos.push(`Três sucessos: personagem desperta com ${resultado.pvAoDespertar} PV.`);
       else if (resultado.reanimacao.estado === 'desacordada_ate_reducao_bi') avisos.push('Três sucessos: permanece Desacordada até a BI ficar abaixo do máximo.');
-      if (avisos.length) setMensagem(avisos.join(' '));
+      const faces = Array.isArray(resultados) ? resultados.join(' e ') : String(resultados);
+      const resultadoExibido = metodo === 'virtual' ? `Rolagem virtual: ${faces}.` : `Dados físicos registrados: ${faces}.`;
+      setMensagem([resultadoExibido, ...avisos].join(' '));
     } catch (e) { setErro(e instanceof Error ? e.message : 'Resultado de Reanimação inválido.'); }
   }
 
@@ -164,17 +171,15 @@ export default function ReanimacaoFichaLocal({ dados, recursos, origem, pvMaximo
         </label>
         <button type="button" className="botao-claro" disabled={ocupado || bloqueado} onClick={() => void registrarCura()}>Acumular cura sem despertar</button>
       </>}
-      {estadoAtivo && (bloqueioVirtual
-        ? <p>O método de dados está em Virtual, mas a rolagem virtual ainda não está implementada. Nenhum resultado será presumido.</p>
-        : <>
+      {estadoAtivo && <>
           <h4>Teste de Reanimação · 1d20 contra DT 12</h4>
-          {vantagem && <p>Vantagem ativa: informe dois resultados de d20; será considerado o melhor.</p>}
-          <div className="recursos-controles">
+          {vantagem && <p>Vantagem ativa: {metodo === 'virtual' ? 'a Ficha rolará dois d20 e usará o melhor.' : 'informe dois resultados físicos de d20; será considerado o melhor.'}</p>}
+          {metodo === 'fisico' ? <div className="recursos-controles">
             <label>Resultado do d20<input type="number" min="1" max="20" step="1" value={primeiroDado} disabled={ocupado || bloqueado} onChange={e => setPrimeiroDado(e.target.value)}/></label>
             {vantagem && <label>Segundo d20<input type="number" min="1" max="20" step="1" value={segundoDado} disabled={ocupado || bloqueado} onChange={e => setSegundoDado(e.target.value)}/></label>}
-          </div>
-          <button type="button" className="acao" disabled={ocupado || bloqueado || !resultadoValido} onClick={() => void registrarTeste()}>Registrar resultado do Teste <span>→</span></button>
-        </>)} 
+          </div> : <p>{vantagem ? 'A Ficha rolará virtualmente dois d20 e usará o melhor.' : 'A Ficha rolará virtualmente um d20.'}</p>}
+          <button type="button" className="acao" disabled={ocupado || bloqueado || !resultadoValido} onClick={() => void registrarTeste()}>{metodo === 'virtual' ? 'Rolar e registrar Teste' : 'Registrar resultado do Teste'} <span>→</span></button>
+        </>}
       {reanimacao.estado === 'desacordada_ate_reducao_bi' && <button type="button" className="acao" disabled={ocupado || bloqueado || recursos.biAtual >= biMaximo} onClick={() => void encerrarColapso()}>Confirmar BI abaixo do máximo e encerrar <span>→</span></button>}
       {reanimacao.estado === 'morte_a_registrar' && <p>A regra sinaliza morte após três falhas. O registro e as consequências de campanha permanecem sob responsabilidade do Mestre.</p>}
       {reanimacao.estado === 'transformacao_no_proximo_turno' && <p>A regra determina o retorno como Zumbi Especial no próximo turno. A ficha não altera o controle da personagem nem aplica a transformação automaticamente.</p>}

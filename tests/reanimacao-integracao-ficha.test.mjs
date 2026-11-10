@@ -70,3 +70,10 @@ test('descanso não restaura PV enquanto Reanimação ou transformação estiver
   assert.match(ficha, /bloqueado=\{secoesPendentes\.size > 0 \|\| reanimacaoEmCurso\}/);
   assert.match(descanso, /bloqueado/);
 });
+
+test('Reanimação respeita dados físicos, virtuais e mistos sem presumir resultados', () => {
+  assert.match(painel, /sortearDados\(2, 20\)/);
+  assert.match(painel, /modoDados === 'mistos'/);
+  assert.match(painel, /Rolar e registrar Teste/);
+  assert.match(painel, /Dados físicos registrados/);
+});
