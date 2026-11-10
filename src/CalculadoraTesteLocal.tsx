@@ -87,10 +87,14 @@ export default function CalculadoraTesteLocal({ atributos, treinada, distribuica
     setDado2('');
     setErroRolagem('');
   }, [vantagemEfetiva]);
-  const formula = tipo === 'ataque-corpo' ? 'Ataque Corpo a Corpo: 1d20 + Luta contra a Defesa do alvo.'
-    : tipo === 'ataque-distancia' ? 'Ataque à distância: 1d20 + Pontaria contra a Defesa do alvo.'
+  const formula = tipo === 'ataque-corpo' ? 'Ataque Corpo a Corpo: 1d20 + Luta.'
+    : tipo === 'ataque-distancia' ? 'Ataque à distância: 1d20 + Pontaria.'
     : tipo === 'pericia' ? 'Perícia já inclui o Atributo.' : 'Teste puro de Atributo.';
   const calculado = useMemo(() => {
+    if (escopo === 'ataques') {
+      try { return { resultado: calcularRolagemAtaqueManual({ valorBase: valorTeste, modificador: Number(modificador || 0), dado1: dadosConfirmados?.dado1 ?? null, dado2: dadosConfirmados?.dado2 ?? null, vantagem: vantagemEfetiva }), erro: '' }; }
+      catch (problema) { return { resultado: null, erro: problema instanceof Error ? problema.message : 'Valores inválidos.' }; }
+    }
     if (impossivel) return { resultado: calcularTesteManual({ valorBase: valorTeste, modificador: Number(modificador || 0), dt: null }), erro: '' };
     if (!dt.trim()) return { resultado: null, erro: '' };
     try {
@@ -134,8 +138,7 @@ export default function CalculadoraTesteLocal({ atributos, treinada, distribuica
   const criticoTexto = perfilFogo?.critico ?? null;
   const limiteCritico = perfilCorpo?.criticoNatural ?? (criticoTexto ? (/19\s*[–-]\s*20/.test(criticoTexto) ? 19 : 20) : null);
   const multiplicadorCritico = perfilCorpo?.multiplicadorCritico ?? (criticoTexto ? Number(criticoTexto.match(/x\s*(\d+)/i)?.[1] ?? 1) : null);
-  const resultadoAtaqueCritico = escopo === 'ataques' && calculado.resultado?.dadoEscolhido !== null && calculado.resultado?.dadoEscolhido !== undefined
-    && (calculado.resultado.dadoEscolhido === 20 || (limiteCritico !== null && calculado.resultado.dadoEscolhido >= limiteCritico && calculado.resultado.total !== null && calculado.resultado.dt !== null && calculado.resultado.total >= calculado.resultado.dt));
+  const resultadoAtaqueCritico = escopo === 'ataques' && calculado.resultado?.dadoEscolhido === 20;
   const formulaDanoConvencional = perfilSelecionado?.dano && /^(\\d+)d(\\d+)$/i.test(perfilSelecionado.dano) ? perfilSelecionado.dano : null;
   const atributoDano = tipo === 'ataque-corpo' ? atributos.forca : atributos.agilidade;
   const calculoDano = useMemo(() => {
@@ -161,10 +164,11 @@ export default function CalculadoraTesteLocal({ atributos, treinada, distribuica
       setDadosConfirmados({ dado1: resultados[0], dado2: resultados[1] });
       setErroRolagem('');
       setMensagemCondicao('');
-      const resultado = calcularTesteManual({ valorBase: valorTeste, modificador: Number(modificador || 0), dt: Number(dt), dado1: resultados[0], dado2: resultados[1] ?? null, vantagem: vantagemEfetiva });
       const ehAtaque = tipo === 'ataque-corpo' || tipo === 'ataque-distancia';
-      const ataqueFoiCritico = ehAtaque && resultado.dadoEscolhido !== null && resultado.dadoEscolhido !== undefined
-        && (resultado.dadoEscolhido === 20 || (limiteCritico !== null && resultado.dadoEscolhido >= limiteCritico && resultado.total !== null && resultado.dt !== null && resultado.total >= resultado.dt));
+      const resultado = ehAtaque
+        ? calcularRolagemAtaqueManual({ valorBase: valorTeste, modificador: Number(modificador || 0), dado1: resultados[0], dado2: resultados[1] ?? null, vantagem: vantagemEfetiva })
+        : calcularTesteManual({ valorBase: valorTeste, modificador: Number(modificador || 0), dt: Number(dt), dado1: resultados[0], dado2: resultados[1] ?? null, vantagem: vantagemEfetiva });
+      const ataqueFoiCritico = ehAtaque && resultado.dadoEscolhido === 20;
       if (ehAtaque) setCriticoDano(ataqueFoiCritico);
       if (ehAtaque && resultado.estado === 'falha-critica' && aoFalharCriticoAtaque) {
         void aoFalharCriticoAtaque().then(salvo => setMensagemCondicao(salvo ? 'Falha Crítica: Exposto ativado automaticamente e salvo na Ficha.' : 'Falha Crítica: não foi possível confirmar o salvamento de Exposto. Confira as Condições da Ficha.'));
@@ -257,9 +261,9 @@ export default function CalculadoraTesteLocal({ atributos, treinada, distribuica
     <label>Modificador circunstancial
       <input type="number" step="1" value={modificador} onChange={evento => setModificador(evento.target.value)} />
     </label>
-    <label>{tipo === 'ataque-corpo' || tipo === 'ataque-distancia' ? 'Defesa do alvo' : 'DT'}
+    {escopo === 'testes' && <label>DT
       <input type="number" min="1" step="1" value={dt} disabled={impossivel} onChange={evento => setDt(evento.target.value)} placeholder="Ex.: 15" />
-    </label>
+    </label>}
     <label className="ficha-local-opcao">
       <input type="checkbox" checked={impossivel} onChange={evento => { setImpossivel(evento.target.checked); setDado1(''); setDado2(''); setDadosConfirmados(null); setErroRolagem(''); }} />
       Impossível — sem Teste
@@ -288,6 +292,7 @@ export default function CalculadoraTesteLocal({ atributos, treinada, distribuica
         : calculado.resultado.estado === 'incompleto' ? 'Aguardando dados'
         : calculado.resultado.estado === 'critico-sucesso' ? (escopo === 'ataques' ? 'Acerto Crítico · 20 natural' : 'Sucesso automático · 20 natural')
         : calculado.resultado.estado === 'falha-critica' ? 'Falha Crítica · 1 natural'
+        : calculado.resultado.estado === 'rolagem-ataque' ? 'Rolagem de Ataque'
         : calculado.resultado.estado === 'sucesso' ? 'Sucesso'
         : 'Falha'}</strong>
       <p>{calculado.resultado.detalhe}</p>
