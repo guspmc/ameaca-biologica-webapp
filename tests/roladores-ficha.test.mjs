@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import { sortearDados, validarResultadosFisicos } from '../src/rolagemDados.ts';
-import { calcularTesteManual } from '../src/testes.ts';
+import { calcularTesteManual, calcularRolagemAtaqueManual } from '../src/testes.ts';
 
 test('rolagem virtual usa a fonte aleatória fornecida e respeita os lados do dado', () => {
   const valores = [0, 1, 5, 19];
@@ -40,7 +40,7 @@ test('Testes de Perícia e Atributo respeitam resultado natural, Vantagem e Desv
   assert.equal(critico.estado, 'critico-sucesso');
   const falhaCritica = calcularTesteManual({ valorBase: 10, dt: 10, dado1: 1 });
   assert.equal(falhaCritica.estado, 'falha-critica');
-  assert.match(falhaCritica.detalhe, /Exposto/);
+  assert.doesNotMatch(falhaCritica.detalhe, /Exposto/);
   const vantagem = calcularTesteManual({ valorBase: 4, dt: 20, dado1: 8, dado2: 17, vantagem: 'vantagem' });
   assert.equal(vantagem.dadoEscolhido, 17);
   assert.equal(vantagem.total, 21);
@@ -77,4 +77,18 @@ test('a Falha Crítica não aciona Exposto automático em Teste comum de Períci
   const ui = await readFile(new URL('../src/CalculadoraTesteLocal.tsx', import.meta.url), 'utf8');
   assert.match(ui, /const ehAtaque = tipo === 'ataque-corpo' \|\| tipo === 'ataque-distancia'/);
   assert.match(ui, /if \(ehAtaque && resultado\.estado === 'falha-critica'/);
+});
+
+
+test('rolagem de Ataque apresenta natural e total sem comparar Defesa ou decidir acerto', () => {
+  const normal = calcularRolagemAtaqueManual({ valorBase: 7, modificador: 2, dado1: 12 });
+  assert.equal(normal.estado, 'rolagem-ataque');
+  assert.equal(normal.total, 21);
+  assert.equal(normal.dt, null);
+  assert.match(normal.detalhe, /Compare o total com a Defesa do alvo na mesa/);
+  const critico = calcularRolagemAtaqueManual({ valorBase: 7, dado1: 20 });
+  assert.equal(critico.estado, 'critico-sucesso');
+  const falha = calcularRolagemAtaqueManual({ valorBase: 7, dado1: 1 });
+  assert.equal(falha.estado, 'falha-critica');
+  assert.doesNotMatch(falha.detalhe, /Exposto/);
 });
