@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { estadoProgressaoPersistenteValido, atualizarContadorMissoes } from '../src/progressaoPersistente.ts';
+import { estadoProgressaoPersistenteValido, atualizarContadorMissoes, criarEstadoProgressaoInicial } from '../src/progressaoPersistente.ts';
 
 const nivel1 = () => ({
   versao: 1, nivelAtual: 1, metodo: 'missoes', missoesCompletadas: 0,
