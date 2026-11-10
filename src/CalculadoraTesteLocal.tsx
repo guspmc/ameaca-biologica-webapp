@@ -24,14 +24,14 @@ type Props = {
   modoDados: ModoDados;
   origem?: string;
   saDisponivel?: number;
+  escopo?: 'testes' | 'ataques';
   aoFalharCriticoAtaque?: () => Promise<boolean>;
   penalidadeMorteNivel1?: boolean;
   bonusAtaqueBI?: number;
   desvantagemBI?: boolean;
 };
 
-export default function CalculadoraTesteLocal({ atributos, treinada, distribuicao, periciaOrigemExtra = '', periciaTentativaErroTreinada = '', temTentativaEErro = false, modoDados, origem = '', saDisponivel = 0, aoFalharCriticoAtaque, penalidadeMorteNivel1 = false, bonusAtaqueBI = 0, desvantagemBI = false }: Props) {
-  const [tipo, setTipo] = useState<'pericia' | 'atributo' | 'ataque-corpo' | 'ataque-distancia'>('pericia');
+export default function CalculadoraTesteLocal({ atributos, treinada, distribuicao, periciaOrigemExtra = '', periciaTentativaErroTreinada = '', temTentativaEErro = false, modoDados, origem = '', saDisponivel = 0, aoFalharCriticoAtaque, penalidadeMorteNivel1 = false, bonusAtaqueBI = 0, desvantagemBI = false, escopo = 'testes' }: Props) {\n  const [tipo, setTipo] = useState<'pericia' | 'atributo' | 'ataque-corpo' | 'ataque-distancia'>(escopo === 'ataques' ? 'ataque-corpo' : 'pericia');
   const [pericia, setPericia] = useState('Percepção');
   const [atributo, setAtributo] = useState<keyof AtributosIniciais>('astucia');
   const [dt, setDt] = useState('12');
@@ -146,10 +146,8 @@ export default function CalculadoraTesteLocal({ atributos, treinada, distribuica
 
     <label>Tipo de Teste
       <select value={tipo} onChange={evento => mudarTipo(evento.target.value as 'pericia' | 'atributo' | 'ataque-corpo' | 'ataque-distancia')}>
-        <option value="pericia">Teste de Perícia</option>
-        <option value="ataque-corpo">Ataque Corpo a Corpo · Luta</option>
-        <option value="ataque-distancia">Ataque à distância · Pontaria</option>
-        <option value="atributo">Teste puro de Atributo</option>
+        {escopo === 'testes' && <><option value="pericia">Teste de Perícia</option><option value="atributo">Teste puro de Atributo</option></>}
+        {escopo === 'ataques' && <><option value="ataque-corpo">Ataque Corpo a Corpo · Luta</option><option value="ataque-distancia">Ataque à distância · Pontaria</option></>}
       </select>
     </label>
     {tipo === 'pericia'
