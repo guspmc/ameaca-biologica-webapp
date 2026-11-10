@@ -1,7 +1,7 @@
 # Desenho técnico proposto — cache local e sincronização da Ficha LAN
 
 **Data:** 10/11/2026  
-**Status:** proposta técnica para revisão; não implementada e ainda não aprovada como arquitetura final.  
+**Status:** proposta técnica para revisão; não implementada e ainda não aprovada como arquitetura final. A primeira allowlist funcional foi aprovada em 10/11/2026 e está registrada na seção 4.1.  
 **Base de código inspecionada:** branch `feat/offline-first-ficha`; HEAD consultado antes deste documento: `1678a96e99e9aa295add4dcddc2357f2084563e7`.
 
 Este desenho traduz as decisões já confirmadas por Gus em uma proposta incremental. Não altera o cânone do RPG, não aprova a minuta do Planejamento v2.6 e não autoriza alterações no branch principal.
@@ -112,7 +112,7 @@ Não criar endpoint de sobrescrita irrestrita. Não remover a proteção de revi
 
 A interface `FichaLocal` chama adaptadores distintos para Identidade, Características, Atributos/Perícias, Inventário, Configuração de Funcionamento e Recursos. O servidor atual tem regras específicas para Progressão, Economia de Ações, turno, criação e equipamento inicial.
 
-Isso ainda não define uma allowlist segura de sincronização. Antes de habilitar sync para personagens ativas, construir uma matriz explícita:
+A primeira allowlist funcional já foi aprovada, mas isso não aprova a arquitetura completa de sincronização. Antes de habilitar sync para personagens ativas, construir uma matriz explícita:
 
 | Grupo | Evidência atual | Tratamento proposto |
 |---|---|---|
@@ -126,6 +126,15 @@ Isso ainda não define uma allowlist segura de sincronização. Antes de habilit
 | Estado de ativação/recibos | Controlado pelo servidor | Nunca aceitar do snapshot local como autoridade |
 
 A tabela é orientação de análise, não uma allowlist já aprovada. Os nomes exatos e as estruturas de cada campo precisam ser conferidos com os tipos/validadores e com as regras oficiais antes de implementação.
+
+### 4.1 Primeira allowlist aprovada em 10/11/2026
+
+O responsável aprovou o seguinte escopo inicial para sincronização restrita:
+- **Nome da personagem:** permitido, com validação server-side alinhada ao limite de 2–80 caracteres já exigido pela interface e pelo armazenamento local.
+- **`configuracaoFuncionamento`:** permitido somente após o servidor executar o validador compartilhado `configuracaoFuncionamentoValida()` (ou validação equivalente sem divergência) e os testes cobrirem entradas válidas e inválidas.
+- **`identidade`:** expressamente fora da primeira allowlist; depende de schema e validação server-side específicos.
+
+Esta decisão não autoriza enviar o objeto completo da Ficha, não torna o PUT genérico uma rota de sync e não libera nenhum outro campo. O endpoint dedicado deverá aceitar somente patches explícitos desses campos, validar sessão/autoria/vínculo de Jogador na Mesa, registrar operação idempotente e preservar a cópia local. O contrato exato de rota, payload, recibo e persistência ainda será especificado antes da implementação.
 
 ## 5. Acesso offline e segurança
 
@@ -161,11 +170,11 @@ Implicações:
 
 ## 8. Classificação
 
-- **DECIDIDO:** Ficha local prevalece; salvamento local-first; reconexão automática; uso offline no mesmo dispositivo/navegador sem guardar credenciais; reautenticação antes de sincronizar; Baú/transferências compartilhadas LAN-only.
+- **DECIDIDO:** Ficha local prevalece; salvamento local-first; reconexão automática; uso offline no mesmo dispositivo/navegador sem guardar credenciais; reautenticação antes de sincronizar; Baú/transferências compartilhadas LAN-only; política de divergência multi-dispositivo; primeira allowlist (nome e `configuracaoFuncionamento` após validação server-side; identidade excluída).
 - **IMPLEMENTADO:** persistência IndexedDB Offline; persistência LAN em SQLite; autenticação por cookie HttpOnly; PUT LAN com revisão otimista; validação de autoria/Mesa; fila de salvamento LAN; transação local com geração e conflito por chave.
 - **NÃO IMPLEMENTADO:** vínculo local-LAN; cache local da Ficha LAN; salvamento duplo; abertura offline da Ficha LAN; rota idempotente Local > LAN; sincronização automática; estados de sync na UI.
 - **NÃO TESTADO:** fluxo integrado de cache, desconexão, reautenticação e reconexão.
-- **PENDENTE:** allowlist de campos; política multi-dispositivo; modelo de vínculo/backup; UX de primeiro vínculo e troca de conta.
+- **PENDENTE:** contrato exato da operação idempotente para a primeira allowlist; modelo de vínculo/backup; UX de primeiro vínculo e troca de conta; demais campos operacionais e de criação.
 
 
 ## Política para divergência entre dispositivos — aprovada em 10/11/2026
