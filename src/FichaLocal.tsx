@@ -419,6 +419,7 @@ export default function FichaLocal({ nome, mesa, contextoId, dados, aoFechar, ao
           saMaximo={sa}
           nivel={nivelAtual}
           modoDados={configuracaoFuncionamento.modoDados}
+          modo={configuracaoFuncionamento.modo}
           aoSalvar={aoSalvarRecursos}
           aoPrepararPatchCompleto={() => {
             if (origemDados !== 'local' || dados.pedidoProgressao === undefined || dados.pedidoProgressao === null) return {};
@@ -443,6 +444,7 @@ export default function FichaLocal({ nome, mesa, contextoId, dados, aoFechar, ao
           pvMaximo={pv}
           biMaximo={bi}
           modoDados={configuracaoFuncionamento.modoDados}
+          modo={configuracaoFuncionamento.modo}
           aoSalvar={aoSalvarRecursos}
           bloqueado={secoesPendentes.size > 0}
         />

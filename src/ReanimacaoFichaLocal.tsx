@@ -11,7 +11,7 @@ import {
   type Reanimacao,
 } from './reanimacaoFicha';
 import type { RecursosAtuais } from './recursosFicha';
-import type { ModoDados } from './funcionamentoFicha';
+import type { ModoDados, ModoFuncionamento } from './funcionamentoFicha';
 
 type Props = {
   dados: Record<string, unknown>;
@@ -20,19 +20,20 @@ type Props = {
   pvMaximo: number;
   biMaximo: number;
   modoDados: ModoDados;
+  modo: ModoFuncionamento;
   bloqueado: boolean;
   origemDados?: 'local' | 'servidor';
   aoSalvar: (patch: Record<string, unknown>) => Promise<boolean>;
 };
 
-export default function ReanimacaoFichaLocal({ dados, recursos, origem, pvMaximo, biMaximo, modoDados, bloqueado, origemDados = 'local', aoSalvar }: Props) {
+export default function ReanimacaoFichaLocal({ dados, recursos, origem, pvMaximo, biMaximo, modoDados, modo, bloqueado, origemDados = 'local', aoSalvar }: Props) {
   const inicial = dados.reanimacao === null || dados.reanimacao === undefined
     ? null
     : reanimacaoValida(dados.reanimacao) ? dados.reanimacao : null;
   const [reanimacao, setReanimacao] = useState<Reanimacao | null>(inicial);
   useEffect(() => { setReanimacao(inicial); }, [inicial]);
-  const [metodo, setMetodo] = useState<'fisico' | 'virtual'>(modoDados === 'virtuais' ? 'virtual' : 'fisico');
-  useEffect(() => { setMetodo(modoDados === 'virtuais' ? 'virtual' : 'fisico'); }, [modoDados]);
+  const [metodo, setMetodo] = useState<'fisico' | 'virtual'>(modo === 'automatico' && modoDados === 'virtuais' ? 'virtual' : 'fisico');
+  useEffect(() => { setMetodo(modo === 'automatico' && modoDados === 'virtuais' ? 'virtual' : 'fisico'); }, [modo, modoDados]);
   const [primeiroDado, setPrimeiroDado] = useState('');
   const [segundoDado, setSegundoDado] = useState('');
   const [cura, setCura] = useState('1');
@@ -49,7 +50,8 @@ export default function ReanimacaoFichaLocal({ dados, recursos, origem, pvMaximo
   const primeiro = Number(primeiroDado);
   const segundo = Number(segundoDado);
   const dadoValido = (n: number) => Number.isSafeInteger(n) && n >= 1 && n <= 20;
-  const resultadoValido = metodo === 'virtual' || (primeiroDado.trim() !== '' && dadoValido(primeiro)
+  const rolagemVirtualAtiva = modo === 'automatico' && metodo === 'virtual';
+  const resultadoValido = rolagemVirtualAtiva || (primeiroDado.trim() !== '' && dadoValido(primeiro)
     && (vantagem ? segundoDado.trim() !== '' && dadoValido(segundo) : segundoDado.trim() === ''));
   const estadoAtivo = reanimacao?.estado === 'em_andamento';
   const estadoPV0 = reanimacao?.causa === 'pv_zero' && ['aguardando_proximo_turno', 'em_andamento'].includes(reanimacao.estado);
@@ -92,7 +94,7 @@ export default function ReanimacaoFichaLocal({ dados, recursos, origem, pvMaximo
   async function registrarTeste() {
     if (!reanimacao || !estadoAtivo || !resultadoValido) return;
     try {
-      const resultados = metodo === 'virtual'
+      const resultados = rolagemVirtualAtiva
         ? (vantagem ? sortearDados(2, 20) as [number, number] : sortearDados(1, 20)[0])
         : vantagem ? [primeiro, segundo] as [number, number] : primeiro;
       const resultado = resolverTesteReanimacao(reanimacao, resultados, pvMaximo, origem === 'Cobaia');
@@ -105,7 +107,7 @@ export default function ReanimacaoFichaLocal({ dados, recursos, origem, pvMaximo
       else if (resultado.pvAoDespertar !== null) avisos.push(`Três sucessos: personagem desperta com ${resultado.pvAoDespertar} PV.`);
       else if (resultado.reanimacao.estado === 'desacordada_ate_reducao_bi') avisos.push('Três sucessos: permanece Desacordada até a BI ficar abaixo do máximo.');
       const faces = Array.isArray(resultados) ? resultados.join(' e ') : String(resultados);
-      const resultadoExibido = metodo === 'virtual' ? `Rolagem virtual: ${faces}.` : `Dados físicos registrados: ${faces}.`;
+      const resultadoExibido = rolagemVirtualAtiva ? `Rolagem virtual: ${faces}.` : `Dados físicos registrados: ${faces}.`;
       setMensagem([resultadoExibido, ...avisos].join(' '));
     } catch (e) { setErro(e instanceof Error ? e.message : 'Resultado de Reanimação inválido.'); }
   }
@@ -144,8 +146,9 @@ export default function ReanimacaoFichaLocal({ dados, recursos, origem, pvMaximo
   return <details className="ficha-local-editor reanimacao-ficha" open={!!reanimacao}>
     <summary>Reanimação e estados críticos</summary>
     <p>Ao atingir a BI Máxima, o Colapso Viral e a Reanimação específica são iniciados automaticamente; a Ficha não avança turnos nem decide a narrativa de morte ou transformação.</p>
-    {modoDados === 'mistos' && <label>Método deste Teste<select value={metodo} onChange={e => { setMetodo(e.target.value as 'fisico' | 'virtual'); setPrimeiroDado(''); setSegundoDado(''); }}><option value="fisico">Dados físicos</option><option value="virtual">Dados virtuais</option></select></label>}
-    {modoDados !== 'mistos' && <p>Método: {modoDados === 'fisicos' ? 'Dados físicos' : 'Dados virtuais'}.</p>}
+    {modo === 'automatico' && modoDados === 'mistos' && <label>Método deste Teste<select value={metodo} onChange={e => { setMetodo(e.target.value as 'fisico' | 'virtual'); setPrimeiroDado(''); setSegundoDado(''); }}><option value="fisico">Dados físicos</option><option value="virtual">Dados virtuais</option></select></label>}
+    {modo === 'automatico' && modoDados !== 'mistos' && <p>Método: {modoDados === 'fisicos' ? 'Dados físicos' : 'Dados virtuais'}.</p>}
+    {modo !== 'automatico' && <p>Modo {modo === 'misto' ? 'Misto' : 'Manual'}: roladores integrados ocultos. Informe abaixo o resultado obtido fora da Ficha.</p>}
     {bloqueado && <p role="status">Salve ou descarte outras alterações pendentes da ficha antes de alterar a Reanimação.</p>}
     {!reanimacao && <>
       {podeIniciarPV && <button type="button" className="acao" disabled={ocupado || bloqueado} onClick={() => void iniciar('pv_zero')}>Tentar registrar estado de 0 PV <span>→</span></button>}
@@ -180,12 +183,12 @@ export default function ReanimacaoFichaLocal({ dados, recursos, origem, pvMaximo
       </>}
       {estadoAtivo && <>
           <h4>Teste de Reanimação · 1d20 contra DT 12</h4>
-          {vantagem && <p>Vantagem ativa: {metodo === 'virtual' ? 'a Ficha rolará dois d20 e usará o melhor.' : 'informe dois resultados físicos de d20; será considerado o melhor.'}</p>}
-          {metodo === 'fisico' ? <div className="recursos-controles">
+          {vantagem && <p>Vantagem ativa: {rolagemVirtualAtiva ? 'a Ficha rolará dois d20 e usará o melhor.' : 'informe dois resultados físicos de d20; será considerado o melhor.'}</p>}
+          {!rolagemVirtualAtiva ? <div className="recursos-controles">
             <label>Resultado do d20<input type="number" min="1" max="20" step="1" value={primeiroDado} disabled={ocupado || bloqueado} onChange={e => setPrimeiroDado(e.target.value)}/></label>
             {vantagem && <label>Segundo d20<input type="number" min="1" max="20" step="1" value={segundoDado} disabled={ocupado || bloqueado} onChange={e => setSegundoDado(e.target.value)}/></label>}
           </div> : <p>{vantagem ? 'A Ficha rolará virtualmente dois d20 e usará o melhor.' : 'A Ficha rolará virtualmente um d20.'}</p>}
-          <button type="button" className="acao" disabled={ocupado || bloqueado || !resultadoValido} onClick={() => void registrarTeste()}>{metodo === 'virtual' ? 'Rolar e registrar Teste' : 'Registrar resultado do Teste'} <span>→</span></button>
+          <button type="button" className="acao" disabled={ocupado || bloqueado || !resultadoValido} onClick={() => void registrarTeste()}>{rolagemVirtualAtiva ? 'Rolar e registrar Teste' : 'Registrar resultado do Teste'} <span>→</span></button>
         </>}
       {reanimacao.estado === 'desacordada_ate_reducao_bi' && <button type="button" className="acao" disabled={ocupado || bloqueado || recursos.biAtual >= biMaximo} onClick={() => void encerrarColapso()}>Confirmar BI abaixo do máximo e encerrar <span>→</span></button>}
       {reanimacao.estado === 'morte_a_registrar' && <p>A regra sinaliza morte após três falhas. O registro e as consequências de campanha permanecem sob responsabilidade do Mestre.</p>}

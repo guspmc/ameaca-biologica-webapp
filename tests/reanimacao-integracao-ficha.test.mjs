@@ -95,3 +95,9 @@ test('Reanimação virtual não é bloqueada e Teste de Medicina comum não ativ
   assert.match(painel, /sortearDados\(2, 20\)/);
   assert.match(painel, /não ativa Exposto automaticamente/);
 });
+
+test('roladores de Reanimação ficam disponíveis somente no modo Automático', () => {
+  assert.match(painel, /rolagemVirtualAtiva = modo === 'automatico' && metodo === 'virtual'/);
+  assert.match(painel, /modo === 'automatico' && modoDados === 'mistos'/);
+  assert.match(painel, /modo !== 'automatico' && <p>Modo/);
+});

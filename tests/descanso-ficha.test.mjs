@@ -78,3 +78,10 @@ test('rolagem virtual de Descanso Parcial ocorre somente após confirmação exp
   assert.match(ui, /Concluir Descanso Parcial/);
   assert.match(ui, /Dados de Vida virtuais/);
 });
+
+test('rolador virtual de Descanso Parcial fica restrito ao modo Automático', async () => {
+  const ui = await readFile(new URL('../src/DescansoFichaLocal.tsx', import.meta.url), 'utf8');
+  assert.match(ui, /rolagemVirtualAtiva = modo === 'automatico' && metodo === 'virtual'/);
+  assert.match(ui, /modo === 'automatico' && modoDados === 'mistos'/);
+  assert.match(ui, /modo !== 'automatico' && <p>Modo/);
+});
