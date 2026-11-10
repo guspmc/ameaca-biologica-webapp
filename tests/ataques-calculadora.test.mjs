@@ -43,3 +43,27 @@ test('Testes comuns e Ataques aparecem em seções separadas da Ficha', () => {
   const pericias = ficha.slice(ficha.indexOf('id="ficha-local-pericias"'), ficha.indexOf('id="ficha-local-combate"'));
   assert.doesNotMatch(pericias, /ataque-corpo|ataque-distancia|escopo="ataques"/);
 });
+
+test('calculadora consulta os catálogos de armas sem afirmar posse ou equipamento', () => {
+  assert.match(ui, /listarPerfisArma/);
+  assert.match(ui, /listarPerfisArmasFogo/);
+  assert.match(ui, /Perfil de arma para consulta \(opcional\)/);
+  assert.match(ui, /não confirma posse, equipamento, munição ou proficiência/);
+  assert.match(ui, /perfilSelecionado\.dano/);
+  assert.match(ui, /perfilSelecionado\.referencia/);
+});
+
+test('Origem Operário concede +1 no Ataque somente com a arma escolhida', () => {
+  assert.match(ui, /armaOperarioEscolhida = origem === 'Operário' && perfilCorpo\?\.nome === armaOperario/);
+  assert.match(ui, /bonusAtaqueOperario\(armaOperarioEscolhida\)/);
+  assert.match(ficha, /armaOperario=\{armaOperario\}/);
+  assert.match(ui, /Bônus da Origem Operário: \+\{bonusOperario\}/);
+});
+
+test('margem crítica usa o perfil consultado e não automatiza dano', () => {
+  assert.match(ui, /limiteCritico/);
+  assert.match(ui, /multiplicadorCritico/);
+  assert.match(ui, /resultadoAtaqueCritico/);
+  assert.match(ui, /O cálculo de Dano permanece manual/);
+  assert.doesNotMatch(ui, /aoSalvarRecursos|salvarPatchPersonagem/);
+});
