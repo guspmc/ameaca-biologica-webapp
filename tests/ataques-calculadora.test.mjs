@@ -18,7 +18,7 @@ test('modo de Ataque não compara com Defesa e mantém os resultados críticos o
   assert.match(ui, /calcularRolagemAtaqueManual/);
   assert.match(ui, /Compare com a Defesa do alvo na mesa/);
   assert.doesNotMatch(ui, /<label>Defesa do alvo/);
-  assert.match(ui, /20 natural: acerto automático e Crítico/);
+  assert.match(ui, /20 natural: Acerto Crítico automático/);
   assert.match(ui, /1 natural: Falha Crítica; Exposto é ativado automaticamente somente no modo Automático/);
 });
 
