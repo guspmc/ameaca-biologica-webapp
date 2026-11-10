@@ -34,6 +34,7 @@ import { calcularFaseBioInfeccao } from './bioInfeccao';
 import { reanimacaoValida } from './reanimacaoFicha';
 import { adicionarInstanciaCondicao, condicoesAtivas, gerarIdCondicao, listaCondicoesValida } from './condicoesFicha';
 import { classePersonagem, termoPersonagem } from './textoPersonagem';
+import { calcularDefesaComCondicoes } from './condicoesCalculadora';
 import { confirmarDescansoCompletoProgressao, estadoProgressaoPersistenteValido, pedidoProgressaoPersistenteValido, type PedidoProgressaoPersistente } from './progressaoPersistente';
 
 type DadosFichaLocal = {
@@ -303,6 +304,7 @@ export default function FichaLocal({ nome, mesa, contextoId, dados, aoFechar, ao
   const progressaoValida = estadoProgressaoPersistenteValido(ficha.progressao, classe);
   const penalidadeMorteNivel1 = progressaoValida && (ficha.progressao as { penalidadeMorteNivel1: boolean }).penalidadeMorteNivel1;
   const defesa = derivados?.defesa ?? 10 + numero(atributos.agilidade);
+  const defesaAtual = calcularDefesaComCondicoes(defesa, numero(atributos.agilidade), condicoesAtivasIds);
   const capacidade = derivados?.inventario ?? capacidadeInventario(numero(atributos.forca), origem);
   const listaPericias = [...new Set([...(PERICIAS_CLASSE[classe] ?? []), ...(dadosOrigem?.pericias ?? []), ...(treinada ? [treinada] : []), ...(extra ? [extra] : []), ...(extraTentativa ? [extraTentativa] : []), ...Object.keys(distribuicao)])].sort();
   const itensClasse = caracteristicos(classe);
@@ -538,7 +540,7 @@ export default function FichaLocal({ nome, mesa, contextoId, dados, aoFechar, ao
 
           <h3 className="ficha-local-subtitulo">Defesa e deslocamento</h3>
           <div className="ficha-local-grade">
-            <div><small>DEFESA BÁSICA</small><strong>{defesa}</strong><p>10 + AGI{origem === 'Policial' ? ' + 2 da Origem Policial' : ''}. Equipamentos ainda não aplicados.</p></div>
+            <div><small>DEFESA ATUAL</small><strong>{defesaAtual}</strong><p>Base {defesa} · {condicoesAtivasIds.includes('desorientado') ? 'AGI removida por Desorientado' : 'AGI aplicada'}{condicoesAtivasIds.includes('exposto') ? ' · −2 por Exposto' : ''}. Equipamentos ainda não aplicados.</p></div>
             <div><small>MOVIMENTO BASE</small><strong>9 m</strong><p>Deslocamento base informado pela ficha.</p></div>
           </div>
 
