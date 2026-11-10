@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   acumularCuraDuranteReanimacao,
   concederAjudaMedicina,
@@ -36,6 +36,7 @@ export default function ReanimacaoFichaLocal({ dados, recursos, origem, pvMaximo
   const [ocupado, setOcupado] = useState(false);
   const [mensagem, setMensagem] = useState('');
   const [erro, setErro] = useState('');
+  const colapsoAutoTentado = useRef(false);
 
   const reanimacaoAnteriorConcluida = reanimacao?.estado === 'concluida';
   const podeIniciarPV = recursos.pvAtual === 0 && (reanimacao === null || reanimacaoAnteriorConcluida);
@@ -70,6 +71,13 @@ export default function ReanimacaoFichaLocal({ dados, recursos, origem, pvMaximo
     try { await persistir(iniciarReanimacao(causa)); }
     catch (e) { setErro(e instanceof Error ? e.message : 'Não foi possível iniciar a Reanimação.'); }
   }
+
+  useEffect(() => {
+    if (biMaximo > 0 && recursos.biAtual < biMaximo) colapsoAutoTentado.current = false;
+    if (!podeIniciarColapso || bloqueado || ocupado || colapsoAutoTentado.current) return;
+    colapsoAutoTentado.current = true;
+    void iniciar('colapso_bi');
+  }, [recursos.biAtual, biMaximo, podeIniciarColapso, bloqueado, ocupado]);
 
   async function registrarTeste() {
     if (!reanimacao || !estadoAtivo || bloqueioVirtual || !resultadoValido) return;
@@ -121,12 +129,12 @@ export default function ReanimacaoFichaLocal({ dados, recursos, origem, pvMaximo
 
   return <details className="ficha-local-editor reanimacao-ficha" open={!!reanimacao}>
     <summary>Reanimação e estados críticos</summary>
-    <p>Os dados são informados manualmente. A ficha não rola dados, não avança turnos e não executa morte ou transformação automaticamente.</p>
+    <p>Os resultados são informados pelo jogador conforme o método de dados configurado. Ao atingir a BI Máxima, o Colapso Viral e a Reanimação específica são iniciados automaticamente; a Ficha não avança turnos nem decide a narrativa de morte ou transformação.</p>
     {bloqueado && <p role="status">Salve ou descarte outras alterações pendentes da ficha antes de alterar a Reanimação.</p>}
     {!reanimacao && <>
       {podeIniciarPV && <button type="button" className="acao" disabled={ocupado || bloqueado} onClick={() => void iniciar('pv_zero')}>Iniciar Reanimação por 0 PV <span>→</span></button>}
-      {podeIniciarColapso && <button type="button" className="acao" disabled={ocupado || bloqueado} onClick={() => void iniciar('colapso_bi')}>Iniciar Colapso Viral <span>→</span></button>}
-      {podeIniciarPV && podeIniciarColapso && <p>As duas condições estão presentes. Selecione a causa que corresponde ao evento aplicado pelo Mestre; a ficha não escolhe uma delas automaticamente.</p>}
+      {podeIniciarColapso && <button type="button" className="acao" disabled={ocupado || bloqueado} onClick={() => void iniciar('colapso_bi')}>Tentar iniciar Reanimação por Colapso Viral <span>→</span></button>}
+
     </>}
     {reanimacao && <>
       <h4>{reanimacao.causa === 'pv_zero' ? 'Reanimação por 0 PV' : 'Reanimação por Colapso Viral'}</h4>

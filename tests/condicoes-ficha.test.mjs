@@ -79,3 +79,15 @@ test('a Ficha permite ativar e encerrar Condições com confirmação e salvamen
   assert.match(ui, /Mestre acompanha a duração em rodadas separadamente na aba Combate/);
   assert.doesNotMatch(ui, /Duração ou critério de remoção|setDuracao/);
 });
+
+test('Colapso Viral é condição derivada da BI e não pode ser registrada manualmente', async () => {
+  const fs = await import('node:fs/promises');
+  const ui = await fs.readFile(new URL('../src/CondicoesFichaLocal.tsx', import.meta.url), 'utf8');
+  assert.match(ui, /biAtual >= biMaximo/);
+  assert.match(ui, /colapsoViral && <li>/);
+  assert.match(ui, /id !== 'colapso-viral'/);
+  assert.match(ui, /não podem ser ativados ou encerrados manualmente/);
+  const reanimacao = await fs.readFile(new URL('../src/ReanimacaoFichaLocal.tsx', import.meta.url), 'utf8');
+  assert.match(reanimacao, /void iniciar\('colapso_bi'\)/);
+  assert.match(reanimacao, /colapsoAutoTentado/);
+});

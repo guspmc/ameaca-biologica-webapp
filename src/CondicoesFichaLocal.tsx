@@ -5,6 +5,8 @@ type Props = {
   dados: Record<string, unknown>;
   pvAtual: number;
   pvMaximo: number;
+  biAtual: number;
+  biMaximo: number;
   aoSalvar: (patch: Record<string, unknown>) => Promise<boolean>;
   origemDados?: 'local' | 'servidor';
 };
@@ -16,10 +18,11 @@ const ICONE_CONDICAO: Record<CondicaoId, string> = {
   surpreendido:'❗', vulneravel:'🩸', 'infectado-especial':'🧟', 'cabeca-carmesim':'🧟‍♂️',
 };
 
-export default function CondicoesFichaLocal({ dados, pvAtual, pvMaximo, aoSalvar, origemDados = 'local' }: Props) {
+export default function CondicoesFichaLocal({ dados, pvAtual, pvMaximo, biAtual, biMaximo, aoSalvar, origemDados = 'local' }: Props) {
   const itens = listaCondicoesValida(dados.condicoes) ? dados.condicoes : [];
   const ativas = condicoesAtivas(itens);
   const vulneravel = pvMaximo > 0 ? vulneravelPorPV(pvAtual, pvMaximo) : null;
+  const colapsoViral = biMaximo > 0 && biAtual >= biMaximo;
   const tiposAtivos = condicoesComEfeitoUnico(itens);
   const [condicao, setCondicao] = useState<CondicaoId>('agarrado');
   const [fonte, setFonte] = useState('');
@@ -58,13 +61,14 @@ export default function CondicoesFichaLocal({ dados, pvAtual, pvMaximo, aoSalvar
   }
 
   return <details className="ficha-local-editor condicoes-ficha">
-    <summary>Condições e efeitos {ativas.length > 0 && <span aria-label={ativas.length + ' condições ativas'}>{ativas.map(item => ICONE_CONDICAO[item.condicao]).join(' ')}</span>}</summary>
-    <p>Registre uma Condição quando a regra, a fonte ou a situação narrativa se aplicar. Ativar e encerrar exigem confirmação. O histórico é preservado; não há expiração genérica por descanso. {origemDados === 'servidor' ? 'Na LAN, o Mestre acompanha a duração em rodadas separadamente na aba Combate; esse contador não altera a Ficha automaticamente.' : 'Offline, não há contador de rodadas nem Painel do Mestre: encerre a Condição manualmente quando ela terminar.'} Os registros Offline e LAN são independentes, sem sincronização entre os modos.</p>
+    <summary>Condições e efeitos {(ativas.length > 0 || colapsoViral) && <span aria-label={(ativas.length + (colapsoViral ? 1 : 0)) + ' condições ativas'}>{ativas.map(item => ICONE_CONDICAO[item.condicao]).join(' ')}{colapsoViral ? ' ' + ICONE_CONDICAO['colapso-viral'] : ''}</span>}</summary>
+    <p>Registre manualmente apenas Condições cuja origem dependa de regra, fonte ou situação narrativa. Vulnerável e Colapso Viral são derivados dos Recursos e não podem ser ativados ou encerrados manualmente. O histórico é preservado; não há expiração genérica por descanso. {origemDados === 'servidor' ? 'Na LAN, o Mestre acompanha a duração em rodadas separadamente na aba Combate.' : 'Offline, não há contador de rodadas: encerre manualmente as Condições temporárias quando terminarem.'}</p>
     <div className="ficha-local-grade">
       <div><small>VULNERÁVEL</small><strong>{vulneravel === null ? 'Não calculável' : vulneravel ? 'Sim' : 'Não'}</strong><p>Derivada dos PV Atuais iguais ou inferiores a 1/5 dos PV Máximos; não é cadastrada manualmente.</p></div>
     </div>
     <h4>Condições ativas</h4>
-    {ativas.length === 0 ? <p>Nenhuma Condição ativa.</p> : <ul>
+    {ativas.length === 0 && !colapsoViral ? <p>Nenhuma Condição ativa.</p> : <ul>
+      {colapsoViral && <li><strong>{ICONE_CONDICAO['colapso-viral']} Colapso Viral</strong> · Fonte: BI atual igual ou superior à BI Máxima<p>{CATALOGO_CONDICOES['colapso-viral'].efeito}</p><small>Condição derivada automaticamente; não pode ser encerrada manualmente. A Reanimação específica é iniciada pela Ficha.</small></li>}
       {ativas.map(item => {
         const regra = CATALOGO_CONDICOES[item.condicao];
         return <li key={item.id}>
@@ -80,7 +84,7 @@ export default function CondicoesFichaLocal({ dados, pvAtual, pvMaximo, aoSalvar
     <div className="ficha-local-editor">
       <label>Condição
         <select value={condicao} onChange={evento => setCondicao(evento.target.value as CondicaoId)}>
-          {Object.entries(CATALOGO_CONDICOES).filter(([id]) => id !== 'vulneravel').map(([id, regra]) => <option key={id} value={id}>{regra.nome}</option>)}
+          {Object.entries(CATALOGO_CONDICOES).filter(([id]) => id !== 'vulneravel' && id !== 'colapso-viral').map(([id, regra]) => <option key={id} value={id}>{regra.nome}</option>)}
         </select>
       </label>
       <label>Fonte ou causa

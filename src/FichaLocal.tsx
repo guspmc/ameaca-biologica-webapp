@@ -392,7 +392,7 @@ export default function FichaLocal({ nome, mesa, contextoId, dados, aoFechar, ao
         </div>
         <ProgressaoFichaLocal dados={dados} classe={classe} nivel={nivelAtual} origemDados={origemDados} aoSalvar={aoSalvarRecursos} />
 
-        <CondicoesFichaLocal dados={dados} pvAtual={recursosAtuais.pvAtual} pvMaximo={pv} aoSalvar={aoSalvarRecursos} origemDados={origemDados} />
+        <CondicoesFichaLocal dados={dados} pvAtual={recursosAtuais.pvAtual} pvMaximo={pv} biAtual={biAtual} biMaximo={bi} aoSalvar={aoSalvarRecursos} origemDados={origemDados} />
 
         <RecursosFichaLocal origemDados={origemDados} autoSalvar={autoSalvar}
           dados={dados}
