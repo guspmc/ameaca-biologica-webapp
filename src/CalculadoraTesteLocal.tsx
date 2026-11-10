@@ -151,8 +151,6 @@ export default function CalculadoraTesteLocal({ atributos, treinada, distribuica
     setGastoSAConfirmado(false);
   }
 
-  useEffect(() => { if (ataqueEmAreaGM79) setCriticoDano(false); }, [ataqueEmAreaGM79]);
-
   const perfisDisponiveis = useMemo(() => tipo === 'ataque-corpo'
     ? listarPerfisArma().filter(perfil => perfil.categoria === 'corpo-a-corpo')
     : tipo === 'ataque-distancia' ? listarPerfisArmasFogo() : [], [tipo]);
@@ -162,6 +160,7 @@ export default function CalculadoraTesteLocal({ atributos, treinada, distribuica
   const resultadoAtaqueCritico = escopo === 'ataques' && calculado.resultado?.dadoEscolhido === 20;
   const procedimentoGM79 = perfilFogo?.id === 'gm-79' ? consultarProcedimentoGM79(cartuchoGM79, modoGM79) : null;
   const ataqueEmAreaGM79 = procedimentoGM79?.danoEmArea ?? false;
+  useEffect(() => { if (ataqueEmAreaGM79) setCriticoDano(false); }, [ataqueEmAreaGM79]);
   const formulaDanoEspecial = perfilFogo ? consultarFormulaDanoEspecial(perfilFogo.id, varianteDanoEspecial) : null;
   const formulaDanoConvencional = formulaDanoEspecial ?? (perfilSelecionado?.dano && possuiFormulaDanoConvencional(perfilSelecionado.dano) ? perfilSelecionado.dano : null);
   const atributoDano = tipo === 'ataque-corpo' ? atributos.forca : atributos.agilidade;
@@ -177,9 +176,9 @@ export default function CalculadoraTesteLocal({ atributos, treinada, distribuica
         dano: perfilFogo!.dano!, multiplicadorCritico, criticoNatural: limiteCritico === 19 ? 19 as const : 20 as const,
         atributoDano: 'agilidade' as const, propriedades: perfilFogo!.propriedades, referencia: perfilFogo!.referencia,
       };
-      return { resultado: calcularDanoArma({ dadosRolados: valor, valorAtributo: atributoDano, critico: criticoDano, perfil: perfilCalculo, armaOperarioEscolhida, dadosAdicionais: adicionais }) };
+      return { resultado: calcularDanoArma({ dadosRolados: valor, valorAtributo: atributoDano, critico: criticoDano && !ataqueEmAreaGM79, perfil: perfilCalculo, armaOperarioEscolhida, dadosAdicionais: adicionais }) };
     } catch (problema) { return { erro: problema instanceof Error ? problema.message : 'Não foi possível calcular o Dano.' }; }
-  }, [formulaDanoConvencional, resultadoDadosDano, resultadoDadosAdicionais, perfilSelecionado, multiplicadorCritico, perfilCorpo, perfilFogo, limiteCritico, atributoDano, criticoDano, armaOperarioEscolhida]);
+  }, [formulaDanoConvencional, resultadoDadosDano, resultadoDadosAdicionais, perfilSelecionado, multiplicadorCritico, perfilCorpo, perfilFogo, limiteCritico, atributoDano, criticoDano, armaOperarioEscolhida, ataqueEmAreaGM79]);
 
   function registrarRolagem() {
     try {
@@ -218,7 +217,7 @@ export default function CalculadoraTesteLocal({ atributos, treinada, distribuica
         <option value="virtual">Dados virtuais</option>
       </select>
     </label>}
-    {(tipo === 'ataque-corpo' || tipo === 'ataque-distancia') && <p>20 natural: Acerto Crítico automático e fecha as Reações defensivas normais. 1 natural: Falha Crítica; Exposto é ativado automaticamente somente no modo Automático. A Ficha apresenta a rolagem e o total, sem comparar com a Defesa ou decidir acerto/erro. {limiteCritico === 19 ? 'Este perfil tem margem 19–20: em 19 natural, confira na mesa se o total alcança a Defesa antes de aplicar o Crítico.' : ''} O cálculo de Dano permanece manual.</p>}
+    {(tipo === 'ataque-corpo' || tipo === 'ataque-distancia') && !ataqueEmAreaGM79 && <p>20 natural: Acerto Crítico automático e fecha as Reações defensivas normais. 1 natural: Falha Crítica; Exposto é ativado automaticamente somente no modo Automático. A Ficha apresenta a rolagem e o total, sem comparar com a Defesa ou decidir acerto/erro. {limiteCritico === 19 ? 'Este perfil tem margem 19–20: em 19 natural, confira na mesa se o total alcança a Defesa antes de aplicar o Crítico.' : ''} O cálculo de Dano permanece manual.</p>}
 
     <label>{escopo === 'ataques' ? 'Tipo de Ataque' : 'Tipo de Teste'}
       <select value={tipo} onChange={evento => mudarTipo(evento.target.value as 'pericia' | 'atributo' | 'ataque-corpo' | 'ataque-distancia')}>
@@ -348,7 +347,8 @@ export default function CalculadoraTesteLocal({ atributos, treinada, distribuica
         <input type="number" min="1" max="20" step="1" value={dado2} onChange={evento => { setDado2(evento.target.value); setDadosConfirmados(null); }} placeholder="1–20" />
       </label>}
     </div>}
-    {!impossivel && <button type="button" className="botao-claro" onClick={registrarRolagem}>{metodo === 'virtual' ? (escopo === 'ataques' ? 'Rolar Ataque' : 'Rolar Teste') : (escopo === 'ataques' ? 'Confirmar dados do Ataque' : 'Confirmar dados físicos')}</button>}
+    {!impossivel && !ataqueEmAreaGM79 && <button type="button" className="botao-claro" onClick={registrarRolagem}>{metodo === 'virtual' ? (escopo === 'ataques' ? 'Rolar Ataque' : 'Rolar Teste') : (escopo === 'ataques' ? 'Confirmar dados do Ataque' : 'Confirmar dados físicos')}</button>}
+    {ataqueEmAreaGM79 && <p className="ficha-local-aviso" role="status">Disparo em Área da GM 79: não existe Teste de Ataque. Use os Testes de Reflexos e a resolução de Dano descritos acima, fora desta rolagem de Ataque.</p>}
     {erroRolagem && <p className="offline-erro" role="alert">{erroRolagem}</p>}
     {mensagemCondicao && <p role="status">{mensagemCondicao}</p>}
     {calculado.erro && <p className="offline-erro" role="alert">{calculado.erro}</p>}
