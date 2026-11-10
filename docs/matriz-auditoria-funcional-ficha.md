@@ -73,3 +73,36 @@
 ### Conclusão provisória
 
 A base de domínio e a cobertura automatizada do Inventário são substanciais. A lacuna principal está na integração operacional e persistente do Inventário ativo com a Ficha e com rotas autorizadas do servidor — não na ausência de catálogo ou de lógica de planejamento. A conclusão do módulo deve ser decomposta por operações e validada contra o Arquivo do Jogador antes de qualquer implementação.
+
+
+## Auditoria de criação — Identidade, Atributos/Perícias e Habilidades
+
+**Evidências consultadas:** `IdentidadeLocal.tsx`, `EditorAtributosPericiasLocal.tsx`, `PlanejadorHabilidadesCriacaoLocal.tsx`, `RevisaoCriacaoLocal.tsx` e testes de identidade, integridade, conferência, ativação e progressão.
+
+### Identidade
+
+- **Implementado:** editor narrativo integrado à Ficha; o teste confirma que nome e identidade são enviados no mesmo salvamento e armazenados nos dados locais sem alterar o esquema do IndexedDB.
+- **Cobertura existente:** `identidade-local.test.mjs`, `pendencias-edicao.test.mjs`.
+- **Limite:** Identidade não entra na primeira allowlist de sincronização genérica aprovada. A sincronização LAN exige fluxo/validação dedicada.
+
+### Atributos e Perícias
+
+- **Implementado:** editor de criação, regras de distribuição, treinamento gratuito da Origem, segunda Perícia do Amnésico e Tentativa e Erro, com revisão de criação.
+- **Cobertura existente:** `pericias-criacao.test.mjs`, `pericias.test.mjs`, `derivados-criacao.test.mjs`, `integridade-criacao.test.mjs`, `revisao.test.mjs`.
+- **Limite:** a auditoria identificou testes de domínio e alguns testes de sincronização de props/estado; ainda não equivale a uma rodada E2E manual em navegador para todas as combinações de Classe, Origem e edição concorrente.
+
+### Habilidades e Progressão
+
+- **Implementado:** catálogo por Classe/Ramo/Grau, pré-requisitos, planejamento de Habilidades e aplicação de ganhos por marcos de nível.
+- **Cobertura existente:** `catalogo-habilidades.test.mjs`, `progressao-habilidades.test.mjs`, `progressao-criacao.test.mjs`, `progressao-persistente.test.mjs`.
+- **Limite:** planejamento e aplicação de ganhos são etapas distintas. A Progressão LAN segue pendente de fluxo dedicado de autorização e gravação, conforme a matriz principal.
+
+### Revisão e ativação
+
+- **Implementado:** revisão resume escolhas, aponta pendências e atalhos; ativação no servidor exige conferência válida, revisão atual, teto de personagens e recibo idempotente.
+- **Cobertura existente:** `revisao-render.test.mjs`, `ativacao-interface.test.mjs`, `ativacao-integrada-local.test.mjs`, `validar-criacao-servidor.test.mjs`.
+- **Limite:** os testes cobrem contratos e cenários isolados/integrados; validação manual em dois navegadores/contas e em dispositivos reais permanece necessária antes de afirmar conclusão de produção.
+
+### Conclusão provisória
+
+Os blocos de criação da Ficha têm base funcional e testes substanciais. As pendências principais identificadas nesta frente são integração LAN de campos excluídos da allowlist genérica, Progressão e validação manual completa. Não foi encontrada, nesta inspeção parcial, justificativa para reescrever os editores de criação; priorizar lacunas de integração e testes de ponta a ponta.
