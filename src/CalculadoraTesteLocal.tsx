@@ -69,6 +69,12 @@ export default function CalculadoraTesteLocal({ atributos, treinada, distribuica
   const vantagemEfetiva: VantagemTeste = desvantagemBI
     ? (vantagem === 'vantagem' ? 'normal' : 'desvantagem')
     : vantagem;
+  useEffect(() => {
+    setDadosConfirmados(null);
+    setDado1('');
+    setDado2('');
+    setErroRolagem('');
+  }, [vantagemEfetiva]);
   const formula = tipo === 'ataque-corpo' ? 'Ataque Corpo a Corpo: 1d20 + Luta contra a Defesa do alvo.'
     : tipo === 'ataque-distancia' ? 'Ataque à distância: 1d20 + Pontaria contra a Defesa do alvo.'
     : tipo === 'pericia' ? 'Perícia já inclui o Atributo.' : 'Teste puro de Atributo.';
@@ -90,7 +96,7 @@ export default function CalculadoraTesteLocal({ atributos, treinada, distribuica
     } catch (problema) {
       return { resultado: null, erro: problema instanceof Error ? problema.message : 'Valores inválidos.' };
     }
-  }, [impossivel, valorTeste, modificador, dt, dadosConfirmados, vantagem]);
+  }, [impossivel, valorTeste, modificador, dt, dadosConfirmados, vantagemEfetiva]);
 
   function mudarTipo(valor: 'pericia' | 'atributo' | 'ataque-corpo' | 'ataque-distancia') {
     setTipo(valor);
