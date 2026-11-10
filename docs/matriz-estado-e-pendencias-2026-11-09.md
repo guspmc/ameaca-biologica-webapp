@@ -531,3 +531,15 @@ Esta atualização substitui qualquer ordem anterior incompatível nesta matriz.
 - **CI APROVADA:** commit de código `fc187b9c9b3a3d7f42d39d409c76ace912d475f8` — Verificação Offline: 793/793 testes e build aprovados; pipeline principal: 793/793 testes, build Vite e verificação TypeScript aprovados. Ambos os workflows concluíram com sucesso.
 - **PENDENTE:** solicitação de avanço persistida, escolhas de benefícios, aplicação atômica com Descanso Completo e integração da reversão por Morte à ficha evoluída.
 - Sem merge, deploy, produção/Supabase ou teste humano.
+
+
+## Atualização — auditoria de Reanimação, Recursos, Descanso e Perícias de Origem (09/11/2026)
+
+- **IMPLEMENTADO — commit `6022062ebdc9721b0d41755824f445b15504195d`:** corrigida a mensagem de Falha Crítica em Reanimação. Um 1 natural continua sendo Falha Crítica no Teste, mas não ativa Exposto automaticamente porque Reanimação não é Ataque; a ativação automática de Exposto permanece restrita a Falha Crítica em Ataque no modo Automático. O resumo de Bio-Infecção da Ficha também passou a informar corretamente que o módulo Reanimação registra o Colapso Viral quando a BI confirmada alcança o máximo.
+- **IMPLEMENTADO — commit `bc49736a4534c86512adcf61eba00cc3c43aa646`:** Descanso Completo agora valida o conjunto atual de Recursos contra os máximos antes de restaurá-los. Dados corrompidos ou fora dos limites não são silenciosamente sobrescritos. Testes cobrem PV acima do máximo, SA acima do máximo e PV fracionário.
+- **IMPLEMENTADO — commit `97942492bab00ea1eb0ac651bfe83e986a370d8e`:** corrigida a graduação exibida na lista de Perícias. A segunda Perícia escolhida pela Origem Amnésico amplia as opções permitidas na criação, mas não concede Treinamento gratuito; somente a primeira Perícia escolhida recebe o Treinamento da Origem. A função de domínio já respeitava essa regra; a divergência estava no rótulo apresentado pela Ficha.
+- **TESTES AUTOMÁTICOS:** adicionadas/ajustadas verificações para a Falha Crítica em Reanimação sem Exposto, a informação de início automático do Colapso, a validação dos Recursos no Descanso Completo e a segunda Perícia do Amnésico sem Treinamento gratuito.
+- **CI:** commit `6022062...` — ambos os workflows concluídos com sucesso. Para `bc49736...`, os workflows `42731760948` (Offline) e `42731760652` (compilação) estavam em execução na última consulta. Para HEAD `9794249...`, os workflows `42732027064` (Offline) e `42732027068` (compilação) também estavam em execução na última consulta. **Não declarar CI aprovada para o HEAD atual até ambos concluírem com sucesso.**
+- **HEAD do código/testes:** `97942492bab00ea1eb0ac651bfe83e986a370d8e`.
+- **PENDENTE:** auditoria final integrada de Condições, Recursos, Descanso e Reanimação; auditoria completa da Criação; integração de Combate; backup/importação e testes de round-trip. Nenhum teste humano foi solicitado nesta etapa.
+- Sem merge para `main`, deploy, produção/Supabase ou alteração de permissões.
