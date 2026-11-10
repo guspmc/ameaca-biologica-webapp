@@ -571,3 +571,31 @@ Nenhuma alteração em `main`, migration SQLite/Supabase, merge ou publicação 
 1. Aguardar e verificar os resultados da CI no HEAD atual.
 2. Se os testes passarem, prosseguir com auditoria funcional dos módulos da Ficha e priorizar lacunas pré-Inventário.
 3. Manter o teste real de navegador como pendência explícita antes de confiar no comportamento do IndexedDB em produção.
+
+
+---
+
+## Auditoria paralela — pendências funcionais visíveis na Ficha
+
+**Data:** 10/11/2026  
+**HEAD consultado:** `096e5b0bb18cec3123582d3470669a5c2d72e01e`
+
+### Evidências observadas
+
+Inspeção parcial de `src/FichaLocal.tsx`, `src/ProgressaoFichaLocal.tsx`, `src/DescansoFichaLocal.tsx`, `src/ReanimacaoFichaLocal.tsx`, `src/RecursosFichaLocal.tsx`, `src/CondicoesFichaLocal.tsx` e `src/FuncionamentoFichaLocal.tsx`.
+
+- **Proficiência e Inventário:** a própria Ficha informa que a validação automática de proficiência pela arma equipada depende da integração com Inventário (`FichaLocal.tsx`, observação da seção de proficiências).
+- **Combate:** a Ficha informa que Iniciativa da Mesa, propriedades operacionais das armas e consumo de munição permanecem pendentes de integração. O painel atual registra economia de ações, mas não presume gatilhos ou aplica efeitos.
+- **Condições:** a interface as descreve como informativas; a aplicação das regras depende da Mesa. Descanso Completo também informa que condições e progressões temporais não são atualizadas automaticamente.
+- **Progressão:** há fluxo local de Progressão e registro local de Morte, mas a interface explicita que a edição LAN requer fluxo próprio de autorização e gravação; o registro de Morte fica pendente de confirmação do Mestre na LAN.
+- **Recursos/Reanimação/Descanso:** existem painéis e regras de fluxo no código inspecionado. Esta inspeção textual não substitui testes completos de comportamento nem validação humana de todos os casos.
+
+### Interpretação e limite
+
+A afirmação “falta apenas Inventário” não pode ser generalizada para toda a arquitetura. O código contém funcionalidades offline implementadas e, ao mesmo tempo, pendências de integração LAN e de módulos dependentes (por exemplo, proficiência por arma, munição e Iniciativa da Mesa). Não classificar esses pontos como defeitos do modo Offline sem testes específicos.
+
+Esta é uma auditoria parcial por evidências explícitas no código; ainda não constitui certificação de completude funcional da Ficha.
+
+### Próximo passo
+
+Continuar a matriz por módulo e por contexto (**Offline**, **LAN**, **Automático/Misto/Manual**), separando: implementado no código, coberto por teste automatizado, validado manualmente e pendente de integração. Não alterar regras ou comportamento durante a auditoria.
