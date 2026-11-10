@@ -20,7 +20,7 @@ test('painel de Reanimação está integrado à ficha contínua e aos salvamento
 test('painel inicia Colapso Viral automaticamente sem presumir rolagens ou avançar turnos', () => {
   assert.match(painel, /resultadoValido/);
   assert.match(painel, /informe dois resultados físicos de d20/);
-  assert.match(painel, /sortearDados\(vantagem \? 2 : 1, 20\)/);
+  assert.match(painel, /sortearDados\(2, 20\)/);
   assert.match(painel, /Colapso Viral e a Reanimação específica são iniciados automaticamente/);
   assert.match(painel, /void iniciar\('colapso_bi'\)/);
   assert.match(painel, /não avança turnos/);
@@ -76,6 +76,7 @@ test('descanso não restaura PV enquanto Reanimação ou transformação estiver
 
 test('Reanimação respeita dados físicos, virtuais e mistos sem presumir resultados', () => {
   assert.match(painel, /sortearDados\(2, 20\)/);
+  assert.match(painel, /sortearDados\(1, 20\)\[0\]/);
   assert.match(painel, /modoDados === 'mistos'/);
   assert.match(painel, /Rolar e registrar Teste/);
   assert.match(painel, /Dados físicos registrados/);
@@ -91,6 +92,6 @@ test('0 PV inicia automaticamente o estado de Reanimação, aguardando o próxim
 
 test('Reanimação virtual não é bloqueada e Teste de Medicina comum não ativa Exposto', () => {
   assert.doesNotMatch(painel, /bloqueioVirtual/);
-  assert.match(painel, /sortearDados\(vantagem \? 2 : 1, 20\)/);
+  assert.match(painel, /sortearDados\(2, 20\)/);
   assert.match(painel, /não ativa Exposto automaticamente/);
 });
