@@ -439,3 +439,55 @@ No HEAD documental `35d32dd1197ec333fd41ad909469325cd457063f`, a última consult
 - `Supabase Preview`: ignorado.
 
 O commit posterior `51952dc` e o checkpoint deste ciclo ainda precisam de CI própria.
+
+
+---
+
+## Ciclo — IndexedDB v3: store de vínculos LAN
+
+**Data:** 10/11/2026  
+**Branch:** `feat/offline-first-ficha`  
+**HEAD consultado antes do registro:** `f7bc6791e72b98413240ff5eb8743b4a1f9bf14f`
+
+### Objetivo
+
+Implementar o primeiro incremento isolado do modelo de vínculo local↔LAN aprovado como próximo passo: adicionar metadados de vínculo em store separado, sem modificar o conteúdo das fichas existentes nem integrar ainda o envio à LAN.
+
+### Alterações implementadas
+
+- `src/persistenciaFicha.ts` agora declara a versão 3 do IndexedDB.
+- Criado o store `vinculosLan`, com `localId` como chave primária.
+- Criado índice único `remoteKey`, derivado de conta, Mesa e ID LAN da personagem.
+- O store `personagens` permanece separado e os registros não recebem campos de conta, Mesa ou sincronização.
+- Criados tipos para vínculo, estado de sincronização, operação pendente e snapshot LAN preservado em conflito.
+- Criada validação estrita da estrutura do vínculo e dos estados permitidos. IDs LAN precisam ter 32 caracteres hexadecimais; revisão e versão local precisam ser inteiros não negativos.
+- Criadas operações básicas de consulta, listagem, gravação e exclusão de vínculos.
+- A estrutura não define nem persiste senha, cookie ou token de autenticação.
+- O ID LAN armazenado é apenas referência; não representa autorização.
+
+### Testes adicionados/ajustados
+
+- `tests/persistencia-migracao.test.mjs`: cobertura da migração v1→v3 (incluindo geração histórica) e v2→v3 (preservação do registro existente e criação do novo store/índice único).
+- `tests/vinculos-lan.test.mjs`: validação de vínculo, chave remota, ID LAN, estado, revisão, operação pendente, snapshot de conflito e rejeição de propriedades extras como credenciais.
+
+### Classificação
+
+- **IMPLEMENTADO:** estrutura IndexedDB v3, store separado, índice único, tipos, validação e operações básicas.
+- **TESTES ESCRITOS:** migrações e validação de metadados.
+- **TESTADO:** aguardando conclusão dos workflows GitHub Actions correspondentes ao HEAD deste ciclo. Não houve execução local do conjunto de testes.
+- **NÃO IMPLEMENTADO:** criação de vínculo a partir de consulta autenticada; atualização atômica do snapshot da Ficha junto aos metadados; integração Local-first; endpoint servidor; recibos idempotentes; reconexão e UI de conflito.
+- **PENDENTE:** testar CRUD real do store em IndexedDB; validar comportamento de índice único e colisão de vínculo; confirmar preservação de fichas em migração no navegador; revisar concorrência/imutabilidade do vínculo antes de ligar a UI.
+
+### Riscos e limites
+
+- Este incremento não altera a Ficha Offline nem a Ficha LAN e não deve ser interpretado como sincronização funcional.
+- A API básica de gravação ainda precisa de endurecimento para impedir que uma atualização futura altere silenciosamente a identidade remota de um vínculo existente.
+- O snapshot LAN de conflito é apenas estrutura de preservação; não há fluxo que o receba ou resolva.
+- Nenhuma migration SQLite, rota de servidor, alteração Supabase, merge, mudança em `main` ou publicação foi realizada.
+
+### Próximo ciclo
+
+1. Fechar testes de CRUD do store e de colisão do índice único.
+2. Tornar a identidade do vínculo imutável após criação, com operação de atualização restrita a metadados.
+3. Testar atomicidade de atualização do vínculo e do snapshot local antes de começar o fluxo de cache LAN.
+4. Em paralelo, continuar a auditoria funcional dos módulos da Ficha, priorizando lacunas que impedem considerá-la concluída antes do Inventário.
