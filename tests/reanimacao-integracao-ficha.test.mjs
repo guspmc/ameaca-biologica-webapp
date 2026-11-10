@@ -17,11 +17,13 @@ test('painel de Reanimação está integrado à ficha contínua e aos salvamento
   assert.match(painel, /O armazenamento não confirmou a alteração da Reanimação/);
 });
 
-test('painel exige resultados manuais e não executa rolagem virtual presumida', () => {
+test('painel inicia Colapso Viral automaticamente sem presumir rolagens ou avançar turnos', () => {
   assert.match(painel, /resultadoValido/);
   assert.match(painel, /informe dois resultados de d20/);
   assert.match(painel, /rolagem virtual ainda não está implementada/);
-  assert.match(painel, /não rola dados, não avança turnos/);
+  assert.match(painel, /Colapso Viral e a Reanimação específica são iniciados automaticamente/);
+  assert.match(painel, /void iniciar\\('colapso_bi'\\)/);
+  assert.match(painel, /não avança turnos/);
 });
 
 test('Primeiros Socorros e cura acumulada ficam disponíveis enquanto aguarda o próximo turno', () => {
