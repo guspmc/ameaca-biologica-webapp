@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import {
   chaveRemotaVinculo,
   validarVinculoLan,
+  atualizarMetadadosVinculoLan,
 } from '../src/persistenciaFicha.ts';
 
 const vinculoValido = () => ({
@@ -74,4 +75,47 @@ test('vínculo sem credenciais e sem operação pendente também é válido', ()
   delete vinculo.pendingOperation;
   vinculo.syncState = 'sincronizado';
   assert.equal(validarVinculoLan(vinculo), true);
+});
+
+
+test('atualização de metadados preserva toda a identidade do vínculo', () => {
+  const atual = vinculoValido();
+  const remoteKey = atual.remoteKey;
+  const atualizado = atualizarMetadadosVinculoLan(atual, remoteKey, {
+    baseRevision: 5,
+    syncState: 'sincronizado',
+  });
+  assert.equal(atualizado.localId, atual.localId);
+  assert.equal(atualizado.accountId, atual.accountId);
+  assert.equal(atualizado.mesaId, atual.mesaId);
+  assert.equal(atualizado.personagemId, atual.personagemId);
+  assert.equal(atualizado.remoteKey, remoteKey);
+  assert.equal(atualizado.baseRevision, 5);
+  assert.equal(atualizado.syncState, 'sincronizado');
+  assert.equal(atualizado.pendingOperation, undefined);
+});
+
+test('recusa atualização quando a identidade remota esperada diverge', () => {
+  const atual = vinculoValido();
+  assert.throws(
+    () => atualizarMetadadosVinculoLan(atual, 'outra-chave', {
+      baseRevision: 5,
+      syncState: 'sincronizado',
+    }),
+    /identidade do vínculo mudou/,
+  );
+});
+
+test('metadados não permitem acrescentar credenciais ou reatribuir identidade', () => {
+  const atual = vinculoValido();
+  const atualizado = atualizarMetadadosVinculoLan(atual, atual.remoteKey, {
+    baseRevision: 4,
+    syncState: 'pendente',
+    accountId: 'outra-conta',
+    personagemId: 'b'.repeat(32),
+    accessToken: 'nao-persistir',
+  });
+  assert.equal(atualizado.accountId, 'conta-1');
+  assert.equal(atualizado.personagemId, 'a'.repeat(32));
+  assert.equal('accessToken' in atualizado, false);
 });
