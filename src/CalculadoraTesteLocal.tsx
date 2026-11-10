@@ -9,6 +9,7 @@ import type { ModoDados } from './funcionamentoFicha';
 import type { AtributosIniciais } from './atributosCriacao';
 import { listarPerfisArma, consultarPerfilArma, bonusAtaqueOperario, calcularDanoArma, possuiFormulaDanoConvencional, consultarPerfilAtaqueUniversal } from './catalogoArmas';
 import { listarPerfisArmasFogo, consultarPerfilArmaFogo } from './catalogoArmasFogo';
+import { consultarFormulaDanoEspecial, type VarianteDanoEspecial } from './variantesDanoArmas';
 
 const PERICIAS = Object.keys(ATRIBUTO_PERICIA);
 const ATRIBUTOS: { chave: keyof AtributosIniciais; nome: string }[] = [
@@ -44,6 +45,7 @@ export default function CalculadoraTesteLocal({ atributos, treinada, distribuica
   const [resultadoDadosDano, setResultadoDadosDano] = useState('');
   const [resultadoDadosAdicionais, setResultadoDadosAdicionais] = useState('');
   const [criticoDano, setCriticoDano] = useState(false);
+  const [varianteDanoEspecial, setVarianteDanoEspecial] = useState<VarianteDanoEspecial>('normal');
   const [atributo, setAtributo] = useState<keyof AtributosIniciais>('astucia');
   const [dt, setDt] = useState('12');
   const [impossivel, setImpossivel] = useState(false);
@@ -153,7 +155,8 @@ export default function CalculadoraTesteLocal({ atributos, treinada, distribuica
   const limiteCritico = perfilCorpo?.criticoNatural ?? (criticoTexto ? (/19\s*[–-]\s*20/.test(criticoTexto) ? 19 : 20) : null);
   const multiplicadorCritico = perfilCorpo?.multiplicadorCritico ?? (criticoTexto ? Number(criticoTexto.match(/x\s*(\d+)/i)?.[1] ?? 1) : null);
   const resultadoAtaqueCritico = escopo === 'ataques' && calculado.resultado?.dadoEscolhido === 20;
-  const formulaDanoConvencional = perfilSelecionado?.dano && possuiFormulaDanoConvencional(perfilSelecionado.dano) ? perfilSelecionado.dano : null;
+  const formulaDanoEspecial = perfilFogo ? consultarFormulaDanoEspecial(perfilFogo.id, varianteDanoEspecial) : null;
+  const formulaDanoConvencional = formulaDanoEspecial ?? (perfilSelecionado?.dano && possuiFormulaDanoConvencional(perfilSelecionado.dano) ? perfilSelecionado.dano : null);
   const atributoDano = tipo === 'ataque-corpo' ? atributos.forca : atributos.agilidade;
   const calculoDano = useMemo(() => {
     if (!formulaDanoConvencional || !resultadoDadosDano.trim() || !perfilSelecionado || multiplicadorCritico === null) return null;
@@ -218,7 +221,7 @@ export default function CalculadoraTesteLocal({ atributos, treinada, distribuica
     </label>
     {(tipo === 'ataque-corpo' || tipo === 'ataque-distancia') && <div className="ficha-local-editor">
       <label>Perfil de arma para consulta (opcional)
-        <select value={armaId} onChange={evento => { setArmaId(evento.target.value); setResultadoDadosDano(''); setResultadoDadosAdicionais(''); setCriticoDano(false); }}>
+        <select value={armaId} onChange={evento => { setArmaId(evento.target.value); setResultadoDadosDano(''); setResultadoDadosAdicionais(''); setCriticoDano(false); setVarianteDanoEspecial('normal'); }}>
           <option value="">Sem perfil selecionado</option>
           {perfisDisponiveis.map(perfil => <option key={perfil.id} value={perfil.id}>{perfil.nome}</option>)}
           {tipo === 'ataque-corpo' && <><option value="universal:arma-improvisada">Arma Improvisada</option><option value="universal:ataque-desarmado">Ataque Desarmado</option></>}
@@ -234,21 +237,38 @@ export default function CalculadoraTesteLocal({ atributos, treinada, distribuica
         <small>{perfilSelecionado.referencia}</small>
       </div>}
       {armaOperarioEscolhida && <p className="ficha-local-legenda">Origem Operário: +1 no Teste de Ataque com a arma escolhida na criação.</p>}
+      {perfilFogo?.id === 'spark-shot' && <label>Modo da Spark Shot
+        <select value={varianteDanoEspecial} onChange={evento => { setVarianteDanoEspecial(evento.target.value as VarianteDanoEspecial); setResultadoDadosDano(''); setResultadoDadosAdicionais(''); }}>
+          <option value="normal">Disparo normal · 1 Carga · 1d4</option>
+          <option value="carregado">Disparo Carregado · Ação Completa · 3 Cargas · 4d4</option>
+        </select>
+      </label>}
+      {perfilFogo?.id === 'lanca-chamas-quimico' && <label>Dano da Chama Contínua
+        <select value={varianteDanoEspecial} onChange={evento => { setVarianteDanoEspecial(evento.target.value as VarianteDanoEspecial); setResultadoDadosDano(''); setResultadoDadosAdicionais(''); }}>
+          <option value="chama-3">Início / reinício · 3d6</option>
+          <option value="chama-4">1 turno consecutivo · 4d6</option>
+          <option value="chama-5">2 turnos consecutivos · 5d6</option>
+          <option value="chama-6">3 ou mais turnos consecutivos · 6d6 (máximo)</option>
+        </select>
+        <small>Selecione conforme o histórico real do combate. Mover ou falhar no Teste encerra a acumulação; o próximo Ataque volta a 3d6.</small>
+      </label>}
       {perfilSelecionado && formulaDanoConvencional && multiplicadorCritico !== null && <div className="ficha-local-editor">
         <strong>Calculadora manual de Dano</strong>
         <small>Role os dados fisicamente ou informe a soma que você já obteve. Esta etapa não rola dados nem altera PV.</small>
-        <label>Soma dos Dados de Dano ({perfilSelecionado.dano})
+        <label>Soma dos Dados de Dano ({formulaDanoConvencional})
           <input type="number" min="0" step="1" value={resultadoDadosDano} onChange={evento => setResultadoDadosDano(evento.target.value)} placeholder="Resultado somado dos dados" />
         </label>
         <label>Soma de Dados adicionais já rolados (opcional)
           <input type="number" min="0" step="1" value={resultadoDadosAdicionais} onChange={evento => setResultadoDadosAdicionais(evento.target.value)} placeholder="Ex.: +1d4 de Peça ou Habilidade" />
         </label>
-        <small>Use este campo somente depois de rolar os dados adicionais previstos por uma Peça, Habilidade ou modo de disparo válido. A calculadora não presume que você os possui.</small>
+        <small>Use este campo somente depois de rolar dados adicionais previstos por uma Peça, Habilidade ou modo de disparo válido. Na Motosserra, informe aqui a soma dos dados extras gerados por cada resultado 6, incluindo os encadeamentos. A calculadora não presume que você possui Peças ou Habilidades.</small>
         <p>Atributo aplicado: {tipo === 'ataque-corpo' ? 'FOR' : 'AGI'} (+{atributoDano}).</p>
         {armaOperarioEscolhida && <p>Operário: o Dano recebe FOR adicional; esse bônus não é multiplicado no Crítico.</p>}
         <label className="ficha-local-opcao"><input type="checkbox" checked={criticoDano} onChange={evento => setCriticoDano(evento.target.checked)} /> Aplicar Acerto Crítico (×{multiplicadorCritico})</label>
         {calculoDano && ('erro' in calculoDano ? <p className="offline-erro" role="alert">{calculoDano.erro}</p> : <div className="offline-status ficha-local-resultado" role="status"><p>Dados: {calculoDano.resultado.dados} × {calculoDano.resultado.multiplicador} · {tipo === 'ataque-corpo' ? 'FOR' : 'AGI'}: {calculoDano.resultado.atributoMultiplicado}{calculoDano.resultado.bonusOperarioNaoMultiplicado ? ` + ${calculoDano.resultado.bonusOperarioNaoMultiplicado} FOR não multiplicado` : ''}</p><strong>Dano calculado: {calculoDano.resultado.total}</strong></div>)}
       </div>}
+      {perfilFogo?.id === 'spark-shot' && <p className="ficha-local-legenda">A escolha do modo não confirma Cargas disponíveis nem aplica Atordoado/Imobilizado; confira e resolva esses efeitos na mesa.</p>}
+      {perfilFogo?.id === 'lanca-chamas-quimico' && <p className="ficha-local-legenda">A escolha da fórmula não consome Combustível nem registra turnos ou Movimento; confira esses estados na mesa.</p>}
       {perfilSelecionado && !formulaDanoConvencional && <p className="ficha-local-aviso">Este perfil usa fórmula ou condição especial de Dano. A calculadora não aplica uma aproximação automática; consulte a regra específica do perfil.</p>}
     </div>}
     {tipo === 'pericia'
