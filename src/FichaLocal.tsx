@@ -526,7 +526,7 @@ export default function FichaLocal({ nome, mesa, contextoId, dados, aoFechar, ao
             })}
           </div>
           <p className="ficha-local-legenda">O valor exibido soma o Atributo associado e o Treinamento. O Passivo exibido é o normal; Testes Passivos recebem +5 com Vantagem ou -5 com Desvantagem. A circunstância é resolvida pela Mesa. Não some o Atributo novamente ao realizar o Teste.</p>
-          {configuracaoFuncionamento.modo === 'automatico' && <CalculadoraTesteLocal atributos={atributos} treinada={treinada} periciaOrigemExtra={extra} periciaTentativaErroTreinada={extraTentativa} temTentativaEErro={temTentativaEErro} distribuicao={distribuicao} modoDados={configuracaoFuncionamento.modoDados} origem={origem} saDisponivel={recursosAtuais.saAtual} aoFalharCriticoAtaque={registrarExpostoPorFalhaCritica} penalidadeMorteNivel1={penalidadeMorteNivel1} bonusAtaqueBI={faseBi.bonusTesteAtaque ?? 0} desvantagemBI={faseBi.desvantagemAtaquesETestes === true} />}
+          {configuracaoFuncionamento.modo === 'automatico' && <CalculadoraTesteLocal escopo="testes" atributos={atributos} treinada={treinada} periciaOrigemExtra={extra} periciaTentativaErroTreinada={extraTentativa} temTentativaEErro={temTentativaEErro} distribuicao={distribuicao} modoDados={configuracaoFuncionamento.modoDados} origem={origem} saDisponivel={recursosAtuais.saAtual} penalidadeMorteNivel1={penalidadeMorteNivel1} />}
         </section>
 
         <section id="ficha-local-combate" className="ficha-local-secao">
@@ -561,9 +561,9 @@ export default function FichaLocal({ nome, mesa, contextoId, dados, aoFechar, ao
           <RoladoresBasicosLocal modo={configuracaoFuncionamento.modo} modoDados={configuracaoFuncionamento.modoDados} visibilidade={configuracaoFuncionamento.visibilidadeRolagem} agilidade={numero(atributos.agilidade)} />
           <div className="ficha-local-grade">
             <div><small>MODIFICADOR DE INICIATIVA</small><strong>+{numero(atributos.agilidade)}</strong><p>AGI da personagem. A rolagem pontual fica disponível no modo Automático; a ordem do Encontro pertence ao Painel do Mestre.</p></div>
-            <div><small>ATAQUES E DANO</small><strong>A integrar</strong><p>Resolução de Testes, Defesa de alvos, Dano e consumo de munição não estão implementados nesta seção.</p></div>
           </div>
-          <p className="ficha-local-aviso">O painel registra usos de Ação, Movimento, Ação Bônus, Reação, Interação Gratuita, Esforço e gastos de Manobra; ele não executa rolagens, não presume gatilhos e não aplica efeitos. PV, SA e BI continuam administrados nos painéis próprios. Iniciativa da Mesa, resolução de Ataques, Defesa de alvos, Dano e consumo de munição permanecem pendentes. As Condições registradas são informativas e dependem da aplicação das regras pela Mesa.</p>
+          {configuracaoFuncionamento.modo === 'automatico' && <CalculadoraTesteLocal escopo="ataques" atributos={atributos} treinada={treinada} periciaOrigemExtra={extra} periciaTentativaErroTreinada={extraTentativa} temTentativaEErro={temTentativaEErro} distribuicao={distribuicao} modoDados={configuracaoFuncionamento.modoDados} origem={origem} saDisponivel={recursosAtuais.saAtual} aoFalharCriticoAtaque={registrarExpostoPorFalhaCritica} penalidadeMorteNivel1={penalidadeMorteNivel1} bonusAtaqueBI={faseBi.bonusTesteAtaque ?? 0} desvantagemBI={faseBi.desvantagemAtaquesETestes === true} />}
+          <p className="ficha-local-aviso">O painel registra usos de Ação, Movimento, Ação Bônus, Reação, Interação Gratuita, Esforço e gastos de Manobra; ele não executa rolagens, não presume gatilhos e não aplica efeitos. PV, SA e BI continuam administrados nos painéis próprios. Iniciativa da Mesa, cálculo de Dano, propriedades das armas e consumo de munição permanecem pendentes. A calculadora de Ataques informa o Teste e o resultado, sem decidir efeitos narrativos. As Condições registradas são informativas e dependem da aplicação das regras pela Mesa.</p>
         </section>
 
         <section id="ficha-local-inventario" className="ficha-local-secao">
