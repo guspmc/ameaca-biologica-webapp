@@ -41,3 +41,19 @@ export function condicoesQueImpoemDesvantagem(
   }
   return [...resultado];
 }
+
+/** Calcula Defesa atual aplicando somente os modificadores próprios e explícitos. */
+export function calcularDefesaComCondicoes(
+  defesaBase: number,
+  agilidade: number,
+  condicoes: readonly CondicaoId[],
+): number {
+  if (!Number.isSafeInteger(defesaBase) || defesaBase < 0
+    || !Number.isSafeInteger(agilidade) || agilidade < 0 || agilidade > 5) {
+    throw new Error('Defesa base ou Agilidade inválida.');
+  }
+  const ativas = new Set(condicoes);
+  return defesaBase
+    - (ativas.has('desorientado') ? agilidade : 0)
+    - (ativas.has('exposto') ? 2 : 0);
+}
