@@ -45,7 +45,7 @@ test('local permitido diferencia Descanso Parcial e Completo', () => {
   assert.equal(api.localPermiteDescanso('completo', ''), false);
 });
 
-test('painel respeita método Virtual e salva somente após ação expressa', async () => {
+test('painel respeita dados físicos, virtuais e mistos e salva somente após ação expressa', async () => {
   const ui = await readFile(new URL('../src/DescansoFichaLocal.tsx', import.meta.url), 'utf8');
   const ficha = await readFile(new URL('../src/FichaLocal.tsx', import.meta.url), 'utf8');
   const progressao = await readFile(new URL('../src/ProgressaoFichaLocal.tsx', import.meta.url), 'utf8');
@@ -56,8 +56,9 @@ test('painel respeita método Virtual e salva somente após ação expressa', as
   assert.match(ficha, /const nivelAtual = Number\.isSafeInteger\(ficha\.nivel\)/);
   assert.match(ui, /!bloqueado &&/);
   assert.match(ficha, /bloqueado=\{secoesPendentes\.size > 0(?: \|\| reanimacaoEmCurso)?\}/);
-  assert.match(ui, /modoDados === 'virtuais'/);
-  assert.match(ui, /Nenhum resultado será presumido/);
+  assert.match(ui, /sortearDados\(nivel, dadoVida!\)/);
+  assert.match(ui, /modoDados === 'mistos'/);
+  assert.match(ui, /Método dos Dados de Vida/);
   assert.match(ui, /Concluir Descanso Completo/);
   assert.match(ui, /renovarUsosDescansoCompleto\(\)/);
   assert.match(ui, /usos limitados renovados/);
@@ -69,4 +70,10 @@ test('painel respeita método Virtual e salva somente após ação expressa', as
   assert.match(ui, /\.\.\.\(aoPrepararPatchCompleto\?\.\(\) \?\? \{\}\)/);
   assert.match(ficha, /pedidoAtual\.estado === 'descanso_confirmado'/);
   assert.match(progressao, /Cancelar solicitação/);
+});
+
+test('rolagem virtual de Descanso Parcial ocorre somente após confirmação expressa', () => {
+  assert.match(ui, /tipo === 'parcial' \? \(metodo === 'virtual'/);
+  assert.match(ui, /Concluir Descanso Parcial/);
+  assert.match(ui, /Dados de Vida virtuais/);
 });
