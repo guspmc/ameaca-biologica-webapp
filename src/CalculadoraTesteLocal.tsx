@@ -5,7 +5,7 @@ import { calcularTesteManual, type VantagemTeste } from './testes';
 import { sortearDados, validarResultadosFisicos } from './rolagemDados';
 import type { ModoDados } from './funcionamentoFicha';
 import type { AtributosIniciais } from './atributosCriacao';
-import { listarPerfisArma, consultarPerfilArma, bonusAtaqueOperario } from './catalogoArmas';
+import { listarPerfisArma, consultarPerfilArma, bonusAtaqueOperario, calcularDanoArma } from './catalogoArmas';
 import { listarPerfisArmasFogo, consultarPerfilArmaFogo } from './catalogoArmasFogo';
 
 const PERICIAS = Object.keys(ATRIBUTO_PERICIA);
@@ -38,6 +38,8 @@ export default function CalculadoraTesteLocal({ atributos, treinada, distribuica
   const [tipo, setTipo] = useState<'pericia' | 'atributo' | 'ataque-corpo' | 'ataque-distancia'>(escopo === 'ataques' ? 'ataque-corpo' : 'pericia');
   const [pericia, setPericia] = useState('Percepção');
   const [armaId, setArmaId] = useState(() => escopo === 'ataques' && origem === 'Operário' ? listarPerfisArma().find(perfil => perfil.nome === armaOperario)?.id ?? '' : '');
+  const [resultadoDadosDano, setResultadoDadosDano] = useState('');
+  const [criticoDano, setCriticoDano] = useState(false);
   const [atributo, setAtributo] = useState<keyof AtributosIniciais>('astucia');
   const [dt, setDt] = useState('12');
   const [impossivel, setImpossivel] = useState(false);
@@ -132,6 +134,21 @@ export default function CalculadoraTesteLocal({ atributos, treinada, distribuica
   const multiplicadorCritico = perfilCorpo?.multiplicadorCritico ?? (criticoTexto ? Number(criticoTexto.match(/x\s*(\d+)/i)?.[1] ?? 1) : null);
   const resultadoAtaqueCritico = escopo === 'ataques' && calculado.resultado?.dadoEscolhido !== null && calculado.resultado?.dadoEscolhido !== undefined
     && (calculado.resultado.dadoEscolhido === 20 || (limiteCritico !== null && calculado.resultado.dadoEscolhido >= limiteCritico && calculado.resultado.total !== null && calculado.resultado.dt !== null && calculado.resultado.total >= calculado.resultado.dt));
+  const formulaDanoConvencional = perfilSelecionado?.dano && /^(\\d+)d(\\d+)$/i.test(perfilSelecionado.dano) ? perfilSelecionado.dano : null;
+  const atributoDano = tipo === 'ataque-corpo' ? atributos.forca : atributos.agilidade;
+  const calculoDano = useMemo(() => {
+    if (!formulaDanoConvencional || !resultadoDadosDano.trim() || !perfilSelecionado || multiplicadorCritico === null) return null;
+    const valor = Number(resultadoDadosDano);
+    if (!Number.isInteger(valor) || valor < 0) return { erro: 'Informe a soma inteira e não negativa dos Dados de Dano.' };
+    try {
+      const perfilCalculo = perfilCorpo ?? {
+        id: perfilFogo!.id, nome: perfilFogo!.nome, categoria: 'arma-fogo' as const,
+        dano: perfilFogo!.dano!, multiplicadorCritico, criticoNatural: limiteCritico === 19 ? 19 as const : 20 as const,
+        atributoDano: 'agilidade' as const, propriedades: perfilFogo!.propriedades, referencia: perfilFogo!.referencia,
+      };
+      return { resultado: calcularDanoArma({ dadosRolados: valor, valorAtributo: atributoDano, critico: criticoDano, perfil: perfilCalculo, armaOperarioEscolhida }) };
+    } catch (problema) { return { erro: problema instanceof Error ? problema.message : 'Não foi possível calcular o Dano.' }; }
+  }, [formulaDanoConvencional, resultadoDadosDano, perfilSelecionado, multiplicadorCritico, perfilCorpo, perfilFogo, limiteCritico, atributoDano, criticoDano, armaOperarioEscolhida]);
 
   function registrarRolagem() {
     try {
@@ -174,7 +191,7 @@ export default function CalculadoraTesteLocal({ atributos, treinada, distribuica
     </label>
     {(tipo === 'ataque-corpo' || tipo === 'ataque-distancia') && <div className="ficha-local-editor">
       <label>Perfil de arma para consulta (opcional)
-        <select value={armaId} onChange={evento => setArmaId(evento.target.value)}>
+        <select value={armaId} onChange={evento => { setArmaId(evento.target.value); setResultadoDadosDano(''); setCriticoDano(false); }}>
           <option value="">Sem perfil selecionado</option>
           {perfisDisponiveis.map(perfil => <option key={perfil.id} value={perfil.id}>{perfil.nome}</option>)}
         </select>
@@ -188,6 +205,18 @@ export default function CalculadoraTesteLocal({ atributos, treinada, distribuica
         <small>{perfilSelecionado.referencia}</small>
       </div>}
       {armaOperarioEscolhida && <p className="ficha-local-legenda">Origem Operário: +1 no Teste de Ataque com a arma escolhida na criação.</p>}
+      {perfilSelecionado && formulaDanoConvencional && multiplicadorCritico !== null && <div className="ficha-local-editor">
+        <strong>Calculadora manual de Dano</strong>
+        <small>Role os dados fisicamente ou informe a soma que você já obteve. Esta etapa não rola dados nem altera PV.</small>
+        <label>Soma dos Dados de Dano ({perfilSelecionado.dano})
+          <input type="number" min="0" step="1" value={resultadoDadosDano} onChange={evento => setResultadoDadosDano(evento.target.value)} placeholder="Resultado somado dos dados" />
+        </label>
+        <p>Atributo aplicado: {tipo === 'ataque-corpo' ? 'FOR' : 'AGI'} (+{atributoDano}).</p>
+        {armaOperarioEscolhida && <p>Operário: o Dano recebe FOR adicional; esse bônus não é multiplicado no Crítico.</p>}
+        <label className="ficha-local-opcao"><input type="checkbox" checked={criticoDano} onChange={evento => setCriticoDano(evento.target.checked)} /> Aplicar Acerto Crítico (×{multiplicadorCritico})</label>
+        {calculoDano && ('erro' in calculoDano ? <p className="offline-erro" role="alert">{calculoDano.erro}</p> : <div className="offline-status ficha-local-resultado" role="status"><p>Dados: {calculoDano.resultado.dados} × {calculoDano.resultado.multiplicador} · {tipo === 'ataque-corpo' ? 'FOR' : 'AGI'}: {calculoDano.resultado.atributoMultiplicado}{calculoDano.resultado.bonusOperarioNaoMultiplicado ? ` + ${calculoDano.resultado.bonusOperarioNaoMultiplicado} FOR não multiplicado` : ''}</p><strong>Dano calculado: {calculoDano.resultado.total}</strong></div>)}
+      </div>}
+      {perfilSelecionado && !formulaDanoConvencional && <p className="ficha-local-aviso">Este perfil usa fórmula ou condição especial de Dano. A calculadora não aplica uma aproximação automática; consulte a regra específica do perfil.</p>}
     </div>}
     {tipo === 'pericia'
       ? <label>Perícia
