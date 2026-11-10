@@ -257,3 +257,29 @@ No commit `1678a96e99e9aa295add4dcddc2357f2084563e7`, os checks `TypeScript e Vi
 - **NÃO TESTADO:** qualquer fluxo integrado de cache, desconexão, reautenticação e sincronização.
 
 **Próximo passo recomendado:** resolver as duas questões de autoridade que afetam a integridade antes de programar: (a) como tratar duas cópias locais válidas em dispositivos diferentes; (b) quais campos operacionais podem ser sincronizados em ficha ativa, sem contornar Progressão, ativação e Inventário.
+
+
+---
+
+## Quinto ciclo — política de divergência entre dispositivos aprovada
+
+**Data:** 10/11/2026  
+**HEAD documental anterior:** `361953181f0c15fc9f29013d8561f414dabc4a21`  
+**CI desse HEAD no momento do registro:** `validar` e `TypeScript e Vite` ainda em andamento; `Supabase Preview` ignorado (esperado).
+
+### Decisão aprovada por Gus
+
+Se a mesma personagem tiver duas cópias locais válidas em dispositivos diferentes e elas divergirem, o sistema não escolherá automaticamente uma delas por timestamp, revisão do servidor ou ordem de reconexão.
+
+O conflito deverá ser detectado e apresentado. As duas versões serão preservadas até resolução explícita; a sincronização daquela personagem ficará suspensa enquanto o conflito estiver aberto. Personagens sem conflito poderão continuar sincronizando normalmente.
+
+A resolução deverá permitir comparar as versões e escolher explicitamente o conteúdo a manter. A cópia preterida não poderá ser descartada antes da confirmação. A aprovação não autoriza mesclagem automática nem alteração das proteções de Progressão, ativação ou Inventário.
+
+### Classificação atualizada
+
+- **DECIDIDO:** política de conflito multi-dispositivo sem vencedor automático; preservar as duas cópias e exigir resolução explícita antes de sincronizar a personagem divergente.
+- **PENDENTE:** UX e granularidade da resolução (por seção/campo ou escolha integral); representação de snapshots e histórico de versões; tratamento de resolução em caso de campos protegidos.
+- **IMPLEMENTADO:** nada referente à detecção/resolução multi-dispositivo; somente documentação.
+- **NÃO TESTADO:** detecção, preservação e resolução de conflito multi-dispositivo.
+
+Nenhum código, banco ou migration foi alterado neste ciclo.
