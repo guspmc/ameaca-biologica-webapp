@@ -5,8 +5,79 @@
  * autenticação, Supabase, fetch, servidor ou qualquer transporte de rede.
  */
 export const BANCO_FICHA = 'ameaca-biologica-ficha';
-export const VERSAO_BANCO_FICHA = 2;
+export const VERSAO_BANCO_FICHA = 3;
 export const STORE_PERSONAGENS = 'personagens';
+export const STORE_VINCULOS_LAN = 'vinculosLan';
+export const INDEX_VINCULOS_REMOTE_KEY = 'remoteKey';
+
+export type EstadoSincronizacaoLan = 'sincronizado' | 'pendente' | 'conflito' | 'bloqueado-autorizacao';
+
+export type OperacaoPendenteLan = {
+  operationId: string;
+  payloadHash: string;
+  baseRevision: number;
+  localVersion: number;
+};
+
+export type SnapshotLanConflito = {
+  name: string;
+  data: Record<string, unknown>;
+  revision: number;
+};
+
+export type VinculoLan = {
+  localId: string;
+  accountId: string;
+  mesaId: string;
+  personagemId: string;
+  remoteKey: string;
+  baseRevision: number;
+  syncState: EstadoSincronizacaoLan;
+  pendingOperation?: OperacaoPendenteLan;
+  snapshotLanConflito?: SnapshotLanConflito;
+};
+
+export function chaveRemotaVinculo(accountId: string, mesaId: string, personagemId: string): string {
+  return JSON.stringify([accountId, mesaId, personagemId]);
+}
+
+function textoNaoVazio(valor: unknown): valor is string {
+  return typeof valor === 'string' && valor.trim().length > 0;
+}
+
+function objetoEstrito(valor: unknown, chaves: string[]): valor is Record<string, unknown> {
+  return !!valor && typeof valor === 'object' && !Array.isArray(valor)
+    && Object.keys(valor).every(chave => chaves.includes(chave));
+}
+
+export function validarVinculoLan(valor: unknown): valor is VinculoLan {
+  if (!objetoEstrito(valor, [
+    'localId', 'accountId', 'mesaId', 'personagemId', 'remoteKey',
+    'baseRevision', 'syncState', 'pendingOperation', 'snapshotLanConflito',
+  ])) return false;
+  const v = valor;
+  if (![v.localId, v.accountId, v.mesaId, v.personagemId].every(textoNaoVazio)
+    || !/^[a-f0-9]{32}$/i.test(v.personagemId as string)
+    || v.remoteKey !== chaveRemotaVinculo(v.accountId as string, v.mesaId as string, v.personagemId as string)
+    || !Number.isSafeInteger(v.baseRevision) || (v.baseRevision as number) < 0
+    || !['sincronizado', 'pendente', 'conflito', 'bloqueado-autorizacao'].includes(v.syncState as string)) return false;
+
+  if (v.pendingOperation !== undefined) {
+    if (!objetoEstrito(v.pendingOperation, ['operationId', 'payloadHash', 'baseRevision', 'localVersion'])) return false;
+    const op = v.pendingOperation;
+    if (!textoNaoVazio(op.operationId) || !textoNaoVazio(op.payloadHash)
+      || !Number.isSafeInteger(op.baseRevision) || (op.baseRevision as number) < 0
+      || !Number.isSafeInteger(op.localVersion) || (op.localVersion as number) < 0) return false;
+  }
+  if (v.snapshotLanConflito !== undefined) {
+    if (!objetoEstrito(v.snapshotLanConflito, ['name', 'data', 'revision'])) return false;
+    const snapshot = v.snapshotLanConflito;
+    if (!textoNaoVazio(snapshot.name) || !snapshot.data || typeof snapshot.data !== 'object'
+      || Array.isArray(snapshot.data) || !Number.isSafeInteger(snapshot.revision)
+      || (snapshot.revision as number) < 0) return false;
+  }
+  return true;
+}
 
 import { validarPersonagemLocal } from './validacaoPersonagemLocal.ts';
 
@@ -58,6 +129,11 @@ function abrirBanco(): Promise<IDBDatabase> {
         store.createIndex('atualizadoEm', 'atualizadoEm', { unique: false });
       } else {
         store = requisicao.transaction!.objectStore(STORE_PERSONAGENS);
+      }
+      // A v3 adiciona metadados LAN em store separado; fichas existentes não são reescritas.
+      if (!banco.objectStoreNames.contains(STORE_VINCULOS_LAN)) {
+        const vinculos = banco.createObjectStore(STORE_VINCULOS_LAN, { keyPath: 'localId' });
+        vinculos.createIndex(INDEX_VINCULOS_REMOTE_KEY, 'remoteKey', { unique: true });
       }
       // Migração transparente: fichas anteriores recebem uma geração inicial.
       if ((evento as IDBVersionChangeEvent).oldVersion < 2) {
@@ -284,6 +360,67 @@ export async function adicionarPersonagens(personagens: PersonagemLocal[]): Prom
     const transacao = banco.transaction(STORE_PERSONAGENS, 'readwrite');
     const store = transacao.objectStore(STORE_PERSONAGENS);
     for (const personagem of personagens) store.add({ ...structuredClone(personagem), geracao: novoTokenGeracao() });
+    await aguardarTransacao(transacao);
+  } catch (erro) {
+    throw mensagemErro(erro);
+  }
+}
+
+
+/** Consulta vínculo explícito; o ID remoto nunca substitui autenticação/autorização. */
+export async function obterVinculoLan(localId: string): Promise<VinculoLan | null> {
+  try {
+    const banco = await abrirBanco();
+    const transacao = banco.transaction(STORE_VINCULOS_LAN, 'readonly');
+    const requisicao = transacao.objectStore(STORE_VINCULOS_LAN).get(localId);
+    const valor = await new Promise<unknown>((resolve, reject) => {
+      requisicao.onsuccess = () => resolve(requisicao.result ?? null);
+      requisicao.onerror = () => reject(requisicao.error);
+    });
+    await aguardarTransacao(transacao);
+    if (valor === null) return null;
+    if (!validarVinculoLan(valor)) throw new Error('O vínculo LAN possui formato inválido. Nenhum dado foi alterado.');
+    return valor;
+  } catch (erro) {
+    throw mensagemErro(erro);
+  }
+}
+
+export async function listarVinculosLan(): Promise<VinculoLan[]> {
+  try {
+    const banco = await abrirBanco();
+    const transacao = banco.transaction(STORE_VINCULOS_LAN, 'readonly');
+    const requisicao = transacao.objectStore(STORE_VINCULOS_LAN).getAll();
+    const valores = await new Promise<unknown[]>((resolve, reject) => {
+      requisicao.onsuccess = () => resolve(requisicao.result as unknown[]);
+      requisicao.onerror = () => reject(requisicao.error);
+    });
+    await aguardarTransacao(transacao);
+    if (!valores.every(validarVinculoLan)) throw new Error('Há vínculos LAN com formato inválido. Nenhum dado foi alterado.');
+    return valores;
+  } catch (erro) {
+    throw mensagemErro(erro);
+  }
+}
+
+export async function salvarVinculoLan(vinculo: VinculoLan): Promise<VinculoLan> {
+  if (!validarVinculoLan(vinculo)) throw new Error('Vínculo LAN inválido. Revise IDs, revisão, estado e operação pendente.');
+  try {
+    const banco = await abrirBanco();
+    const transacao = banco.transaction(STORE_VINCULOS_LAN, 'readwrite');
+    transacao.objectStore(STORE_VINCULOS_LAN).put(structuredClone(vinculo));
+    await aguardarTransacao(transacao);
+    return vinculo;
+  } catch (erro) {
+    throw mensagemErro(erro);
+  }
+}
+
+export async function excluirVinculoLan(localId: string): Promise<void> {
+  try {
+    const banco = await abrirBanco();
+    const transacao = banco.transaction(STORE_VINCULOS_LAN, 'readwrite');
+    transacao.objectStore(STORE_VINCULOS_LAN).delete(localId);
     await aguardarTransacao(transacao);
   } catch (erro) {
     throw mensagemErro(erro);
