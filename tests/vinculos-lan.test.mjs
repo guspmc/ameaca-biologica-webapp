@@ -119,3 +119,15 @@ test('metadados não permitem acrescentar credenciais ou reatribuir identidade',
   assert.equal(atualizado.personagemId, 'a'.repeat(32));
   assert.equal('accessToken' in atualizado, false);
 });
+
+
+test('recusa regressão da revisão-base', () => {
+  const atual = vinculoValido();
+  assert.throws(
+    () => atualizarMetadadosVinculoLan(atual, atual.remoteKey, {
+      baseRevision: 3,
+      syncState: 'pendente',
+    }),
+    /não pode retroceder/,
+  );
+});
