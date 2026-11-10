@@ -12,6 +12,7 @@ import {
   estadoProgressaoPersistenteValido,
   pedidoProgressaoPersistenteValido,
   type EstadoProgressaoPersistente,
+  registrarMorteProgressao,
 } from './progressaoPersistente.ts';
 import type { AtributoProgressao, BeneficioNivelRegistrado } from './progressaoMorte.ts';
 
@@ -156,6 +157,78 @@ export function aplicarBeneficiosNivelProgressao(
     progressao: progressaoAtualizada,
     pedidoProgressao: null,
     habilidadesAdquiridas: habilidadesAtualizadas,
+    ...(atributosAtualizados ? { atributos: atributosAtualizados } : {}),
+    ...(periciasAtualizadas ? { distribuicaoPericias: periciasAtualizadas } : {}),
+  };
+}
+
+/**
+ * Prepara uma reversão de Morte completa e atômica para a Ficha.
+ * Cada campo precisa corresponder exatamente ao benefício registrado; em caso
+ * de divergência, bloqueia toda a operação em vez de sobrescrever escolhas.
+ */
+export function aplicarMorteNaFicha(dados: Record<string, unknown>): Record<string, unknown> {
+  if (!objetoSimples(dados) || typeof dados.classe !== 'string'
+    || !estadoProgressaoPersistenteValido(dados.progressao, dados.classe)) {
+    throw new Error('Ficha ou histórico de Progressão inválido para registrar Morte.');
+  }
+  const classe = dados.classe;
+  const estado = dados.progressao as EstadoProgressaoPersistente;
+  const nivelPerdido = estado.nivelAtual;
+  const registro = nivelPerdido > 1 ? estado.beneficiosPorNivel[nivelPerdido - 2] : null;
+  let habilidadesAtualizadas: EscolhaHabilidadeProgressao[] | undefined;
+  let atributosAtualizados: Record<string, number> | undefined;
+  let periciasAtualizadas: Record<string, number> | undefined;
+
+  if (nivelPerdido > 1) {
+    if (!registro || registro.nivel !== nivelPerdido || !Array.isArray(registro.beneficios)) {
+      throw new Error('O histórico do Nível perdido não está disponível.');
+    }
+    for (const beneficio of registro.beneficios) {
+      if (beneficio.tipo === 'habilidade') {
+        if (!Array.isArray(dados.habilidadesAdquiridas)) {
+          throw new Error('A lista atual de Habilidades não está disponível; reversão bloqueada.');
+        }
+        const atuais = dados.habilidadesAdquiridas as EscolhaHabilidadeProgressao[];
+        const correspondentes = atuais.filter(item => item?.nivel === nivelPerdido && item?.habilidadeId === beneficio.habilidadeId);
+        if (correspondentes.length !== 1 || atuais.some(item => item?.nivel === nivelPerdido && item?.habilidadeId !== beneficio.habilidadeId)) {
+          throw new Error('A Habilidade atual não corresponde ao registro do Nível perdido; reversão bloqueada.');
+        }
+        habilidadesAtualizadas = atuais.filter(item => item.nivel !== nivelPerdido);
+      } else if (beneficio.tipo === 'atributo') {
+        if (!objetoSimples(dados.atributos)) throw new Error('Atributos atuais indisponíveis; reversão bloqueada.');
+        const atuais = atributosAtualizados ?? { ...dados.atributos as Record<string, number> };
+        if (atuais[beneficio.atributo] !== beneficio.valorDepois) {
+          throw new Error(`O Atributo ${beneficio.atributo} não corresponde ao histórico; reversão bloqueada.`);
+        }
+        atuais[beneficio.atributo] = beneficio.valorAntes;
+        atributosAtualizados = atuais;
+      } else if (beneficio.tipo === 'pericia') {
+        if (!objetoSimples(dados.distribuicaoPericias) || typeof dados.periciaOrigemTreinada !== 'string') {
+          throw new Error('Distribuição de Perícias ou Treinamento de Origem indisponível; reversão bloqueada.');
+        }
+        const atuais = periciasAtualizadas ?? { ...dados.distribuicaoPericias as Record<string, number> };
+        const pontosAtuais = atuais[beneficio.pericia] ?? 0;
+        const grauAtual = pontosAtuais + (beneficio.pericia === dados.periciaOrigemTreinada ? 1 : 0);
+        if (grauAtual !== beneficio.grauDepois || pontosAtuais < 1) {
+          throw new Error(`A Perícia ${beneficio.pericia} não corresponde ao histórico; reversão bloqueada.`);
+        }
+        atuais[beneficio.pericia] = pontosAtuais - 1;
+        const grauResultante = atuais[beneficio.pericia] + (beneficio.pericia === dados.periciaOrigemTreinada ? 1 : 0);
+        if (grauResultante !== beneficio.grauAntes) {
+          throw new Error(`A reversão da Perícia ${beneficio.pericia} não confere com o grau anterior.`);
+        }
+        periciasAtualizadas = atuais;
+      }
+    }
+  }
+
+  const progressao = registrarMorteProgressao(estado, classe);
+  return {
+    nivel: progressao.nivelAtual,
+    progressao,
+    pedidoProgressao: null,
+    ...(habilidadesAtualizadas ? { habilidadesAdquiridas: habilidadesAtualizadas } : {}),
     ...(atributosAtualizados ? { atributos: atributosAtualizados } : {}),
     ...(periciasAtualizadas ? { distribuicaoPericias: periciasAtualizadas } : {}),
   };

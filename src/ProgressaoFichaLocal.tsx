@@ -5,7 +5,6 @@ import {
   atualizarContadorMissoes,
   registrarMarcoNarrativo,
   solicitarGanhoNivel,
-  registrarMorteProgressao,
   pedidoProgressaoPersistenteValido,
   type MetodoProgressaoPersistente,
   type EstadoProgressaoPersistente,
@@ -13,7 +12,7 @@ import {
 } from './progressaoPersistente';
 import { avaliarDisponibilidadeProgressao, habilidadesDisponiveisParaEscolha, ganhosProgressaoAte } from './progressaoHabilidades';
 import { PERICIAS_CLASSE } from './pericias';
-import { aplicarBeneficiosNivelProgressao } from './progressaoCampanha';
+import { aplicarBeneficiosNivelProgressao, aplicarMorteNaFicha } from './progressaoCampanha';
 
 type Props = {
   dados: Record<string, unknown>;
@@ -177,13 +176,14 @@ export default function ProgressaoFichaLocal({ dados, classe, nivel, origemDados
     if (!confirmacao) return;
     setOcupado(true); setErro(''); setMensagem('');
     try {
-      const atualizado = registrarMorteProgressao(estado, classe);
-      if (!await aoSalvar({ nivel: atualizado.nivelAtual, progressao: atualizado, pedidoProgressao: null })) {
+      const patch = aplicarMorteNaFicha(dados);
+      if (!await aoSalvar(patch)) {
         throw new Error('O armazenamento não confirmou o registro da Morte.');
       }
+      const atualizado = patch.progressao as EstadoProgressaoPersistente;
       setMensagem(atualizado.penalidadeMorteNivel1
         ? 'Morte registrada. A personagem permanece no Nível 1 e recebe a penalidade de −2 em Testes de Atributo, Perícia e Ataque até recuperar o Nível 2.'
-        : `Morte registrada. A personagem perdeu um Nível e agora está no Nível ${atualizado.nivelAtual}. Os benefícios do Nível perdido foram revertidos.`);
+        : `Morte registrada. A personagem perdeu um Nível e agora está no Nível ${atualizado.nivelAtual}. Habilidade, Atributo e Perícia do Nível perdido foram revertidos conforme o histórico.`);
     } catch (e) {
       setErro(e instanceof Error ? e.message : 'Não foi possível registrar a Morte.');
     } finally { setOcupado(false); }

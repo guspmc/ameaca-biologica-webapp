@@ -84,3 +84,54 @@ test('a tela de Progressão oferece escolhas após Descanso Completo e salva os 
   assert.match(ui, /aoSalvar\(patch\)/);
   assert.match(ui, /origemDados === 'servidor'/);
 });
+
+test('Morte reverte Habilidade, Atributo e Perícia do último Nível como operação única', async () => {
+  const { aplicarMorteNaFicha } = await import('../src/progressaoCampanha.ts');
+  const progressao = criarEstadoProgressaoInicial('missoes');
+  progressao.missoesCompletadas = 6;
+  progressao.nivelAtual = 4;
+  progressao.beneficiosPorNivel = [
+    { nivel: 2, beneficios: [{ nivel: 2, tipo: 'habilidade', habilidadeId: 'nao-vai-escapar' }] },
+    { nivel: 3, beneficios: [{ nivel: 3, tipo: 'atributo', atributo: 'forca', valorAntes: 2, valorDepois: 3 }] },
+    { nivel: 4, beneficios: [
+      { nivel: 4, tipo: 'habilidade', habilidadeId: 'finalizacao-a-distancia' },
+      { nivel: 4, tipo: 'pericia', pericia: 'Luta', grauAntes: 0, grauDepois: 1 },
+    ] },
+  ];
+  const ficha = {
+    classe: 'Agente', nivel: 4, progressao, pedidoProgressao: null,
+    habilidadeBasica: 'anatomia-de-combate',
+    habilidadesAdquiridas: [
+      { nivel: 1, habilidadeId: 'anatomia-de-combate' },
+      { nivel: 2, habilidadeId: 'nao-vai-escapar' },
+      { nivel: 4, habilidadeId: 'finalizacao-a-distancia' },
+    ],
+    atributos: { forca: 3, agilidade: 2, vigor: 2, astucia: 2 },
+    periciaOrigemTreinada: 'Investigação',
+    distribuicaoPericias: { Luta: 1 },
+  };
+  const original = structuredClone(ficha);
+  const patch = aplicarMorteNaFicha(ficha);
+  assert.equal(patch.nivel, 3);
+  assert.equal(patch.progressao.nivelAtual, 3);
+  assert.equal(patch.atributos.forca, 3);
+  assert.deepEqual(patch.habilidadesAdquiridas.map(x => x.nivel), [1, 2]);
+  assert.equal(patch.distribuicaoPericias.Luta, 0);
+  assert.equal(patch.progressao.beneficiosPorNivel.length, 2);
+  assert.deepEqual(ficha, original);
+});
+
+test('Morte bloqueia reversão se um valor da ficha divergir do benefício registrado', async () => {
+  const { aplicarMorteNaFicha } = await import('../src/progressaoCampanha.ts');
+  const progressao = criarEstadoProgressaoInicial('missoes');
+  progressao.missoesCompletadas = 1;
+  progressao.nivelAtual = 2;
+  progressao.beneficiosPorNivel = [{ nivel: 2, beneficios: [{ nivel: 2, tipo: 'habilidade', habilidadeId: 'nao-vai-escapar' }] }];
+  const ficha = {
+    classe: 'Agente', nivel: 2, progressao, habilidadeBasica: 'anatomia-de-combate',
+    habilidadesAdquiridas: [{ nivel: 1, habilidadeId: 'anatomia-de-combate' }],
+    atributos: { forca: 2, agilidade: 2, vigor: 2, astucia: 2 },
+    periciaOrigemTreinada: 'Investigação', distribuicaoPericias: {},
+  };
+  assert.throws(() => aplicarMorteNaFicha(ficha), /Habilidade atual não corresponde/);
+});
