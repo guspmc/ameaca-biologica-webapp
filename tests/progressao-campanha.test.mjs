@@ -1,3 +1,4 @@
+import { readFile } from 'node:fs/promises';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { aplicarBeneficiosNivelProgressao } from '../src/progressaoCampanha.ts';
@@ -71,4 +72,15 @@ test('não aplica benefícios antes de Descanso Completo confirmado nem aceita H
   assert.throws(() => aplicarBeneficiosNivelProgressao(dados, { habilidadeId: 'nao-vai-escapar' }), /Descanso Completo confirmado/);
   const pedido = confirmarDescansoCompletoProgressao(dados.pedidoProgressao, progressao, 'Agente', 'sala_descanso');
   assert.throws(() => aplicarBeneficiosNivelProgressao({ ...dados, pedidoProgressao: pedido }, { habilidadeId: 'anatomia-de-combate' }), /pré-requisitos/);
+});
+
+test('a tela de Progressão oferece escolhas após Descanso Completo e salva os benefícios', async () => {
+  const ui = await readFile(new URL('../src/ProgressaoFichaLocal.tsx', import.meta.url), 'utf8');
+  assert.match(ui, /habilidadesDisponiveisParaEscolha/);
+  assert.match(ui, /PERICIAS_CLASSE\[classe\]/);
+  assert.match(ui, /Atributo \+1/);
+  assert.match(ui, /Confirmar benefícios e subir de Nível/);
+  assert.match(ui, /aplicarBeneficiosNivelProgressao\(dados/);
+  assert.match(ui, /aoSalvar\(patch\)/);
+  assert.match(ui, /origemDados === 'servidor'/);
 });

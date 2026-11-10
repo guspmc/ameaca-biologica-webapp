@@ -10,7 +10,9 @@ import {
   type EstadoProgressaoPersistente,
   type PedidoProgressaoPersistente,
 } from './progressaoPersistente';
-import { avaliarDisponibilidadeProgressao } from './progressaoHabilidades';
+import { avaliarDisponibilidadeProgressao, habilidadesDisponiveisParaEscolha, ganhosProgressaoAte } from './progressaoHabilidades';
+import { PERICIAS_CLASSE } from './pericias';
+import { aplicarBeneficiosNivelProgressao } from './progressaoCampanha';
 
 type Props = {
   dados: Record<string, unknown>;
@@ -25,6 +27,9 @@ export default function ProgressaoFichaLocal({ dados, classe, nivel, origemDados
   const [ocupado, setOcupado] = useState(false);
   const [mensagem, setMensagem] = useState('');
   const [erro, setErro] = useState('');
+  const [habilidadeEscolhida, setHabilidadeEscolhida] = useState('');
+  const [atributoEscolhido, setAtributoEscolhido] = useState('');
+  const [periciaEscolhida, setPericiaEscolhida] = useState('');
   const progressao = dados.progressao;
   const nivelValido = Number.isSafeInteger(nivel) && nivel >= 1 && nivel <= 10;
 
@@ -165,6 +170,27 @@ export default function ProgressaoFichaLocal({ dados, classe, nivel, origemDados
     } finally { setOcupado(false); }
   }
 
+  async function aplicarBeneficios() {
+    if (ocupado || pedido === null || pedido.estado !== 'descanso_confirmado') return;
+    setOcupado(true); setErro(''); setMensagem('');
+    try {
+      const ganhos = ganhosProgressaoAte(pedido.nivel);
+      const recebeHabilidade = ganhos.habilidades.some(item => item.nivel === pedido.nivel);
+      const recebeAtributo = ganhos.atributos.includes(pedido.nivel);
+      const recebePericia = ganhos.pontosPericia.includes(pedido.nivel);
+      const patch = aplicarBeneficiosNivelProgressao(dados, {
+        ...(recebeHabilidade ? { habilidadeId: habilidadeEscolhida } : {}),
+        ...(recebeAtributo ? { atributo: atributoEscolhido as 'forca' | 'agilidade' | 'vigor' | 'astucia' } : {}),
+        ...(recebePericia ? { pericia: periciaEscolhida } : {}),
+      });
+      if (!await aoSalvar(patch)) throw new Error('O armazenamento não confirmou a aplicação dos benefícios.');
+      setMensagem(`Benefícios do Nível ${pedido.nivel} aplicados e salvos nesta Ficha.`);
+      setHabilidadeEscolhida(''); setAtributoEscolhido(''); setPericiaEscolhida('');
+    } catch (e) {
+      setErro(e instanceof Error ? e.message : 'Não foi possível aplicar os benefícios do Nível.');
+    } finally { setOcupado(false); }
+  }
+
   return <details className="ficha-local-editor progressao-ficha">
     <summary>Progressão de Personagem · Nível {estado.nivelAtual}</summary>
     <p>A Progressão é registrada nesta Ficha e não depende de uma configuração da Mesa.</p>
@@ -198,7 +224,47 @@ export default function ProgressaoFichaLocal({ dados, classe, nivel, origemDados
             <p className="offline-status" role="status">Solicitação de Nível {pedido.nivel} registrada. Conclua Descanso Completo na Sala de Descanso. O Nível e os benefícios ainda não foram alterados.</p>
             <button type="button" className="botao-claro" disabled={ocupado} onClick={() => void cancelarSolicitacao()}>Cancelar solicitação</button>
           </>
-        : <p className="offline-status" role="status">Descanso Completo confirmado. As escolhas dos benefícios do Nível {pedido.nivel} serão liberadas nesta Ficha; o Nível só muda após a aplicação confirmada dessas escolhas.</p>}
+        : <>
+            <p className="offline-status" role="status">Descanso Completo confirmado. Escolha os benefícios previstos para o Nível {pedido.nivel}. O Nível só muda após o salvamento confirmado.</p>
+            {(() => {
+              const ganhos = ganhosProgressaoAte(pedido.nivel);
+              const recebeHabilidade = ganhos.habilidades.some(item => item.nivel === pedido.nivel);
+              const recebeAtributo = ganhos.atributos.includes(pedido.nivel);
+              const recebePericia = ganhos.pontosPericia.includes(pedido.nivel);
+              const habilidadesAtuais = Array.isArray(dados.habilidadesAdquiridas)
+                ? dados.habilidadesAdquiridas as { nivel: number; habilidadeId: string }[]
+                : [{ nivel: 1, habilidadeId: String(dados.habilidadeBasica ?? '') }];
+              const opcoesHabilidade = habilidadesDisponiveisParaEscolha(classe, pedido.nivel, habilidadesAtuais);
+              const periciasClasse = PERICIAS_CLASSE[classe] ?? [];
+              return <div className="progressao-escolhas">
+                {recebeHabilidade && <label>Habilidade do Nível {pedido.nivel}
+                  <select value={habilidadeEscolhida} disabled={ocupado} onChange={e => setHabilidadeEscolhida(e.target.value)}>
+                    <option value="">Selecione uma Habilidade</option>
+                    {opcoesHabilidade.map(item => <option key={item.id} value={item.id}>{item.nome} · {item.grau}</option>)}
+                  </select>
+                </label>}
+                {recebeAtributo && <label>Atributo +1
+                  <select value={atributoEscolhido} disabled={ocupado} onChange={e => setAtributoEscolhido(e.target.value)}>
+                    <option value="">Selecione um Atributo</option>
+                    <option value="forca">Força</option><option value="agilidade">Agilidade</option>
+                    <option value="vigor">Vigor</option><option value="astucia">Astúcia</option>
+                  </select>
+                </label>}
+                {recebePericia && <label>Ponto de Perícia da Classe
+                  <select value={periciaEscolhida} disabled={ocupado} onChange={e => setPericiaEscolhida(e.target.value)}>
+                    <option value="">Selecione uma Perícia</option>
+                    {periciasClasse.map(item => <option key={item} value={item}>{item}</option>)}
+                  </select>
+                </label>}
+                <button type="button" className="acao" disabled={ocupado
+                  || (recebeHabilidade && !habilidadeEscolhida)
+                  || (recebeAtributo && !atributoEscolhido)
+                  || (recebePericia && !periciaEscolhida)} onClick={() => void aplicarBeneficios()}>
+                  Confirmar benefícios e subir de Nível <span>→</span>
+                </button>
+              </div>;
+            })()}
+          </>}
     {estado.beneficiosPorNivel.length > 0 && <p>Histórico de benefícios registrado: {estado.beneficiosPorNivel.length} nível(is) com escolhas preservadas.</p>}
     {erro && <p className="offline-erro" role="alert">{erro}</p>}
     {mensagem && <p className="offline-status" role="status">{mensagem}</p>}
