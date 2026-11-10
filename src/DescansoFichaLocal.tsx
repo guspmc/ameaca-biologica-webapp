@@ -68,7 +68,7 @@ export default function DescansoFichaLocal({ dados, classe, pvMaximo, saMaximo, 
     </label>
     {modo === 'automatico' && modoDados === 'mistos' && <label>Método dos Dados de Vida<select value={metodo} disabled={ocupado} onChange={e => setMetodo(e.target.value as 'fisico' | 'virtual')}><option value="fisico">Dados físicos</option><option value="virtual">Dados virtuais</option></select></label>}
     {modo === 'automatico' && modoDados !== 'mistos' && <p>Método: {modoDados === 'fisicos' ? 'Dados físicos' : 'Dados virtuais'}.</p>}
-    {modo !== 'automatico' && <p>Modo {modo === 'misto' ? 'Misto' : 'Manual'}: roladores integrados ocultos. Informe os resultados físicos obtidos fora da Ficha.</p>}
+    {modo !== 'automatico' && <p>Modo {modo === 'misto' ? 'Misto' : 'Manual'}: roladores integrados ocultos. Informe os resultados obtidos fora da Ficha.</p>}
     <h4>Descanso Parcial · 30 minutos</h4>
     <p>Sala de Descanso ou Sala Segura. Role um Dado de Vida por Nível; Autodidata usa d8, Agente d10 e Operador d12. Não recupera SA nem pausa Condições.</p>
     {!nivelValido && <p className="offline-erro" role="alert">Nível inválido; não é possível calcular o Descanso Parcial.</p>}
