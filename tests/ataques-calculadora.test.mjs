@@ -4,6 +4,7 @@ import { readFile } from 'node:fs/promises';
 
 const ui = await readFile(new URL('../src/CalculadoraTesteLocal.tsx', import.meta.url), 'utf8');
 const pericias = await readFile(new URL('../src/pericias.ts', import.meta.url), 'utf8');
+const ficha = await readFile(new URL('../src/FichaLocal.tsx', import.meta.url), 'utf8');
 
 test('calculadora oferece Ataque Corpo a Corpo com Luta e Ataque à distância com Pontaria', () => {
   assert.match(ui, /ataque-corpo/);
@@ -31,4 +32,14 @@ test('calculadora não rola dados nem aplica Dano automaticamente', () => {
 test('Ataques usam os Atributos oficiais associados a Luta e Pontaria', () => {
   assert.match(pericias, /Luta:\s*'forca'/);
   assert.match(pericias, /Pontaria:\s*'agilidade'/);
+});
+
+test('Testes comuns e Ataques aparecem em seções separadas da Ficha', () => {
+  assert.match(ui, /escopo\?: 'testes' \| 'ataques'/);
+  assert.match(ui, /escopo === 'testes'.*Teste de Perícia/s);
+  assert.match(ui, /escopo === 'ataques'.*Ataque Corpo a Corpo/s);
+  assert.match(ficha, /CalculadoraTesteLocal escopo="testes"/);
+  assert.match(ficha, /CalculadoraTesteLocal escopo="ataques"/);
+  const pericias = ficha.slice(ficha.indexOf('id="ficha-local-pericias"'), ficha.indexOf('id="ficha-local-combate"'));
+  assert.doesNotMatch(pericias, /ataque-corpo|ataque-distancia|escopo="ataques"/);
 });
