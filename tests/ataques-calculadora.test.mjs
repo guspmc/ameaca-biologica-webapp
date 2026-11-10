@@ -14,8 +14,10 @@ test('calculadora oferece Ataque Corpo a Corpo com Luta e Ataque à distância c
   assert.match(ui, /Ataque à distância: 1d20 \+ Pontaria contra a Defesa do alvo/);
 });
 
-test('modo de Ataque usa Defesa do alvo e mantém os resultados críticos oficiais', () => {
-  assert.match(ui, /Defesa do alvo/);
+test('modo de Ataque não compara com Defesa e mantém os resultados críticos oficiais', () => {
+  assert.match(ui, /calcularRolagemAtaqueManual/);
+  assert.match(ui, /Compare com a Defesa do alvo na mesa/);
+  assert.doesNotMatch(ui, /<label>Defesa do alvo/);
   assert.match(ui, /20 natural: acerto automático e Crítico/);
   assert.match(ui, /1 natural: Falha Crítica; Exposto é ativado automaticamente somente no modo Automático/);
 });
