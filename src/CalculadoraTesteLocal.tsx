@@ -238,13 +238,13 @@ export default function CalculadoraTesteLocal({ atributos, treinada, distribuica
       </div>}
       {armaOperarioEscolhida && <p className="ficha-local-legenda">Origem Operário: +1 no Teste de Ataque com a arma escolhida na criação.</p>}
       {perfilFogo?.id === 'spark-shot' && <label>Modo da Spark Shot
-        <select value={varianteDanoEspecial} onChange={evento => { setVarianteDanoEspecial(evento.target.value as VarianteDanoEspecial); setResultadoDadosDano(''); setResultadoDadosAdicionais(''); }}>
+        <select value={varianteDanoEspecial === 'carregado' ? 'carregado' : 'normal'} onChange={evento => { setVarianteDanoEspecial(evento.target.value as VarianteDanoEspecial); setResultadoDadosDano(''); setResultadoDadosAdicionais(''); }}>
           <option value="normal">Disparo normal · 1 Carga · 1d4</option>
           <option value="carregado">Disparo Carregado · Ação Completa · 3 Cargas · 4d4</option>
         </select>
       </label>}
       {perfilFogo?.id === 'lanca-chamas-quimico' && <label>Dano da Chama Contínua
-        <select value={varianteDanoEspecial} onChange={evento => { setVarianteDanoEspecial(evento.target.value as VarianteDanoEspecial); setResultadoDadosDano(''); setResultadoDadosAdicionais(''); }}>
+        <select value={varianteDanoEspecial.startsWith('chama-') ? varianteDanoEspecial : 'chama-3'} onChange={evento => { setVarianteDanoEspecial(evento.target.value as VarianteDanoEspecial); setResultadoDadosDano(''); setResultadoDadosAdicionais(''); }}>
           <option value="chama-3">Início / reinício · 3d6</option>
           <option value="chama-4">1 turno consecutivo · 4d6</option>
           <option value="chama-5">2 turnos consecutivos · 5d6</option>
