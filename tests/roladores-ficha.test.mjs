@@ -65,7 +65,8 @@ test('calculadora integrada exige ação explícita e respeita preferência fís
 test('Exposto automático só é solicitado por Falha Crítica em Ataque no fluxo Automático', async () => {
   const calculadora = await readFile(new URL('../src/CalculadoraTesteLocal.tsx', import.meta.url), 'utf8');
   const ficha = await readFile(new URL('../src/FichaLocal.tsx', import.meta.url), 'utf8');
-  assert.match(calculadora, /\(tipo === 'ataque-corpo' \|\| tipo === 'ataque-distancia'\) && resultado\.estado === 'falha-critica' && aoFalharCriticoAtaque/);
+  assert.match(calculadora, /const ehAtaque = tipo === 'ataque-corpo' \|\| tipo === 'ataque-distancia'/);
+  assert.match(calculadora, /if \(ehAtaque && resultado\.estado === 'falha-critica' && aoFalharCriticoAtaque\)/);
   assert.match(ficha, /configuracaoFuncionamento\.modo !== 'automatico'/);
   assert.match(ficha, /fonte: 'Falha Crítica em Ataque'/);
   assert.match(ficha, /condicao: 'exposto'/);
@@ -74,5 +75,6 @@ test('Exposto automático só é solicitado por Falha Crítica em Ataque no flux
 
 test('a Falha Crítica não aciona Exposto automático em Teste comum de Perícia ou Atributo', async () => {
   const ui = await readFile(new URL('../src/CalculadoraTesteLocal.tsx', import.meta.url), 'utf8');
-  assert.match(ui, /\(tipo === 'ataque-corpo' \|\| tipo === 'ataque-distancia'\) && resultado\.estado === 'falha-critica'/);
+  assert.match(ui, /const ehAtaque = tipo === 'ataque-corpo' \|\| tipo === 'ataque-distancia'/);
+  assert.match(ui, /if \(ehAtaque && resultado\.estado === 'falha-critica'/);
 });
