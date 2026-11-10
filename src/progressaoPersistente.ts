@@ -237,7 +237,7 @@ export function registrarMorteProgressao(
     marcoNarrativoAposUltimaMorte: false,
     penalidadeMorteNivel1: plano.penalidadeMorteNivel1,
     beneficiosPorNivel: estado.beneficiosPorNivel
-      .filter(registro => registro.nivel < plano.nivelResultante),
+      .filter(registro => registro.nivel <= plano.nivelResultante),
   };
   if (!estadoProgressaoPersistenteValido(atualizado, classe)) {
     throw new Error('O histórico resultante da Morte não passou pela validação. Nenhuma alteração foi aplicada.');
