@@ -67,3 +67,17 @@ Não exibir um único rótulo genérico “Salvo” quando apenas uma das duas p
 **NÃO TESTADO:** qualquer fluxo integrado Ficha ↔ servidor LAN, pois esse ciclo ainda não está conectado.
 
 A minuta do Planejamento v2.6 contém formulações anteriores sobre reconciliação/conflito que não refletem esta decisão. Como a v2.6 continua minuta não validada, manter este contrato como registro explícito da decisão posterior, sem editar ou declarar aprovada a minuta inteira.
+
+
+## Acesso à cópia local quando a LAN estiver indisponível — decisão confirmada em 10/11/2026
+
+Gus aprovou que a experiência de jogo continue normalmente quando o servidor LAN cair:
+
+1. No mesmo dispositivo e navegador em que a conta/Mesa já foram utilizadas, a aplicação poderá abrir a última cópia local válida da Ficha vinculada àquela conta e Mesa.
+2. A Ficha permanece utilizável e os salvamentos continuam locais enquanto não houver conexão.
+3. Não armazenar senha, token de sessão ou outro segredo para viabilizar esse acesso offline.
+4. A cópia local e o contexto anteriormente utilizado permitem localizar a Ficha offline, mas não equivalem a uma sessão autenticada no servidor.
+5. Quando a conexão retornar, a aplicação deve restabelecer/validar a autenticação no servidor antes de sincronizar. Só então envia a última versão local válida, que será validada e persistida pelo servidor.
+6. Se não for possível revalidar a sessão ou a autorização da conta/Mesa/personagem, a cópia local permanece preservada; a sincronização fica pendente e nenhuma operação compartilhada é liberada.
+
+**Precisão de implementação:** o servidor não consegue ler diretamente o IndexedDB do navegador. O cliente envia a versão local mais recente ao servidor após a reconexão e reautenticação. O servidor valida autorização, integridade e escopo e então grava essa versão. A regra Local > LAN continua determinando a precedência dos dados da Ficha, sem dispensar a autorização do servidor.
