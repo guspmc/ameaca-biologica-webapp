@@ -530,3 +530,44 @@ Foram adicionados testes para:
 ### Observação de qualidade
 
 O teste atual da migração usa IndexedDB simulado e comprova a lógica de upgrade/store declarada, mas não substitui teste em navegador com IndexedDB real. A colisão do índice único e as transações reais ainda precisam de cobertura de integração.
+
+
+
+---
+
+## Ciclo — cobertura de CRUD do vínculo LAN
+
+**Data:** 10/11/2026  
+**Branch:** `feat/offline-first-ficha`  
+**HEAD de código/documentação antes deste registro:** `90183747afd157b88160c8b08280bd070a80c33a`
+
+### Objetivo
+
+Fechar parte da lacuna de testes identificada no ciclo anterior: além de validar o formato e a imutabilidade por funções puras, exercitar a API pública de criação, consulta, listagem e atualização do vínculo LAN.
+
+### Alterações
+
+- Criado `tests/vinculos-lan-persistencia.test.mjs`.
+- O teste percorre `criarVinculoLan`, `obterVinculoLan`, `listarVinculosLan` e `salvarMetadadosVinculoLan`.
+- Verifica rejeição de duplicidade de `remoteKey`, preservação da identidade local/remota após atualização e rejeição de chave remota divergente.
+- O teste usa IndexedDB simulado com fila de operações e confirmação/abortamento transacional. Não adiciona dependências ao projeto.
+
+### Classificação
+
+- **IMPLEMENTADO:** teste automatizado de fluxo CRUD da API de vínculos usando ambiente simulado.
+- **TESTES ESCRITOS:** cobertura adicional do ciclo de vida do vínculo.
+- **TESTADO:** aguardando os workflows GitHub Actions iniciados para o commit `bf0a76d` e para a correção subsequente do teste. Não houve execução local.
+- **PENDENTE:** integração em navegador com IndexedDB real; validação real do índice único e abortamento transacional; teste de atomicidade entre Ficha e vínculo.
+- **NÃO IMPLEMENTADO:** integração Local-first, sincronização LAN, endpoint e interface de conflito.
+
+### CI e segurança
+
+Na consulta após o novo teste, os workflows de ficha offline e compilação foram iniciados para o commit `bf0a76d`; os workflows anteriores também permaneciam em execução. A aprovação depende de resultado concluído no HEAD mais recente, não apenas de execução iniciada.
+
+Nenhuma alteração em `main`, migration SQLite/Supabase, merge ou publicação foi realizada.
+
+### Próximo passo
+
+1. Aguardar e verificar os resultados da CI no HEAD atual.
+2. Se os testes passarem, prosseguir com auditoria funcional dos módulos da Ficha e priorizar lacunas pré-Inventário.
+3. Manter o teste real de navegador como pendência explícita antes de confiar no comportamento do IndexedDB em produção.
