@@ -57,3 +57,35 @@ Arquivos da branch consultados:
 ## Segurança de escopo
 
 Nenhuma migration, alteração Supabase, merge, mudança em `main` ou publicação foi realizada/autorizada neste ciclo.
+
+
+## Complemento da auditoria — persistência e API LAN
+
+A inspeção foi aprofundada em `src/persistenciaFicha.ts`, `src/servidorLocal.ts`, `server/personagens-local.mjs` e `server/auth-local.mjs`.
+
+### Persistência no dispositivo
+
+- `src/persistenciaFicha.ts` declara expressamente o IndexedDB como banco local primário e fonte de verdade no dispositivo.
+- O módulo não importa autenticação, `fetch`, servidor ou transporte de rede.
+- `salvarPatchPersonagem()` atualiza as chaves indicadas dentro de uma transação `readwrite`, verifica a geração da ficha e recusa alterações concorrentes na mesma chave; alterações em chaves distintas podem ser mescladas.
+- A versão local usa IDs de personagem gerados como UUID (com hífens) e um identificador `geracao` para detectar substituição/restauração em outra aba.
+- A aplicação offline chama esse módulo diretamente; não usa o cliente de API LAN.
+
+### Persistência no servidor LAN
+
+- O servidor **já possui** persistência SQLite de rascunhos de personagens, além de rotas de consulta, atualização, exclusão de rascunhos, conferência e ativação.
+- `src/servidorLocal.ts` expõe cliente autenticado para essas rotas.
+- Os IDs de personagem do servidor são 32 caracteres hexadecimais, sem hífens, distintos do UUID local da Ficha Offline.
+- A atualização LAN usa `PUT /api/personagens/:id`, envia `expectedRevision` e o servidor compara com a revisão atual. Se divergir, responde HTTP 409 e não grava.
+- A API exige sessão local válida, autoria do personagem e vínculo atual do jogador à Mesa. A ativação possui operação identificada e transação própria.
+- O servidor impõe proteções adicionais a personagens completas/ativas: campos de criação não podem ser alterados pelo salvamento genérico; progressão e outros estados protegidos têm fluxos próprios.
+
+### Consequências para a implementação Local > LAN
+
+1. Não basta adicionar uma chamada `fetch` ao salvamento atual: os modelos e identificadores local/servidor ainda não são intercambiáveis.
+2. Será necessário definir um vínculo persistente entre personagem local e personagem da Mesa no servidor, sem presumir que o UUID local possa substituir o ID hexadecimal já usado nas rotas.
+3. O contrato atual de `expectedRevision` é adequado para o fluxo de rascunho LAN existente, mas não atende sozinho à decisão Local > LAN quando a revisão divergir. A adaptação deve ser específica ao fluxo de sincronização autoritativa, mantendo autorização, transação e idempotência.
+4. É preciso decidir/definir como o snapshot local se relaciona com a ficha ativa no servidor, pois o PUT genérico atual protege dados de criação após ativação. Não contornar essa proteção com atualização genérica ou permissões mais amplas.
+5. A sincronização precisa preservar os mecanismos locais de geração, fila serializada e proteção contra gravações concorrentes; a versão local confirmada não pode ser substituída por resposta LAN antiga.
+
+**Conclusão deste complemento:** há dois caminhos de persistência separados — Ficha Offline em IndexedDB e personagem de Mesa no SQLite LAN. A integração entre eles ainda não existe. A arquitetura deve criar uma ponte explícita, autenticada e transacional; não fundir os dois módulos nem enfraquecer o contrato de ativação por conveniência.
