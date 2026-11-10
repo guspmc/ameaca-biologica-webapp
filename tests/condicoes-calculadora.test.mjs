@@ -60,4 +60,6 @@ test('Ficha alimenta os cálculos com Condições ativas e cancela Vantagem/Desv
   assert.match(calc, /vantagem === 'vantagem' \? 'normal' : 'desvantagem'/);
   assert.match(ficha, /condicoesAtivasIds = listaCondicoesValida\(dados\.condicoes\)/);
   assert.match(ficha, /condicoesAtivas=\{condicoesAtivasIds\}/);
+  assert.match(ficha, /calcularDefesaComCondicoes\(defesa, numero\(atributos\.agilidade\), condicoesAtivasIds\)/);
+  assert.match(ficha, /DEFESA ATUAL/);
 });
