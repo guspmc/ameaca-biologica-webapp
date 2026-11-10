@@ -106,3 +106,27 @@ A base de domínio e a cobertura automatizada do Inventário são substanciais. 
 ### Conclusão provisória
 
 Os blocos de criação da Ficha têm base funcional e testes substanciais. As pendências principais identificadas nesta frente são integração LAN de campos excluídos da allowlist genérica, Progressão e validação manual completa. Não foi encontrada, nesta inspeção parcial, justificativa para reescrever os editores de criação; priorizar lacunas de integração e testes de ponta a ponta.
+
+
+## Auditoria do transporte LAN para Inventário — incremento 2
+
+### Persistência existente no SQLite
+
+Inspeção de `server/index.mjs`, `server/personagens-local.mjs` e `src/servidorLocal.ts`:
+
+- O servidor local abre SQLite com WAL e `foreign_keys=ON`.
+- A leitura da personagem inclui `inventario_json` e `revisao`.
+- A rota de ativação do rascunho materializa o snapshot inicial de Inventário a partir da conferência no servidor e o grava em `inventario_json`, incrementando a revisão da ficha na mesma transação.
+- A ativação é protegida por `BEGIN IMMEDIATE`, estado de rascunho, autorização do Jogador, revisão esperada e recibo de operação.
+- A rota genérica PUT continua bloqueando os campos protegidos de criação/equipamento inicial.
+- Não foi identificada rota LAN para consultar e executar operações sobre o Inventário ativo (mover, trocar, usar, equipar, consumir ou recarregar). O painel de organização segue dependente de porta/fixture de QA.
+
+### Consequência para o desenho
+
+A integração deve começar com um contrato dedicado de operações de Inventário ativo, não com PATCH/PUT genérico do snapshot inteiro. O contrato precisa revalidar sessão, vínculo atual de Jogador, personagem/Mesa, estado ativo, revisão esperada, exemplar e requisitos da operação dentro de transação SQLite. Cada pedido deve ser idempotente e produzir recibo durável; Realtime deve apenas sinalizar invalidação, e o cliente deve reler o snapshot autorizado.
+
+A proposta Supabase `supabase/proposals/inventario-instancias.sql` e seus testes de PostgreSQL não constituem implementação SQLite. Não aplicar essa migration nem conceder permissões remotas; usar somente como evidência de invariantes que precisam ser reexpressos no servidor LAN.
+
+### Escopo ainda não especificado
+
+Antes de codificar, cruzar cada operação com o Arquivo do Jogador e definir a matriz de comandos autorizados por modo Automático/Misto/Manual. Baú e transferências continuam fora deste escopo e proibidos offline. Esta auditoria não autoriza efeitos de uso/equipamento, munição, durabilidade ou descarte que não estejam definidos nas fontes canônicas.
