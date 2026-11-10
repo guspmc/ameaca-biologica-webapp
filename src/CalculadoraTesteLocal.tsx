@@ -10,6 +10,7 @@ import type { AtributosIniciais } from './atributosCriacao';
 import { listarPerfisArma, consultarPerfilArma, bonusAtaqueOperario, calcularDanoArma, possuiFormulaDanoConvencional, consultarPerfilAtaqueUniversal } from './catalogoArmas';
 import { listarPerfisArmasFogo, consultarPerfilArmaFogo } from './catalogoArmasFogo';
 import { consultarFormulaDanoEspecial, type VarianteDanoEspecial } from './variantesDanoArmas';
+import { consultarProcedimentoGM79, type CartuchoGM79, type ModoGM79 } from './procedimentosGM79';
 
 const PERICIAS = Object.keys(ATRIBUTO_PERICIA);
 const ATRIBUTOS: { chave: keyof AtributosIniciais; nome: string }[] = [
@@ -46,6 +47,8 @@ export default function CalculadoraTesteLocal({ atributos, treinada, distribuica
   const [resultadoDadosAdicionais, setResultadoDadosAdicionais] = useState('');
   const [criticoDano, setCriticoDano] = useState(false);
   const [varianteDanoEspecial, setVarianteDanoEspecial] = useState<VarianteDanoEspecial>('normal');
+  const [cartuchoGM79, setCartuchoGM79] = useState<CartuchoGM79>('acido');
+  const [modoGM79, setModoGM79] = useState<ModoGM79>('direto');
   const [atributo, setAtributo] = useState<keyof AtributosIniciais>('astucia');
   const [dt, setDt] = useState('12');
   const [impossivel, setImpossivel] = useState(false);
@@ -148,6 +151,8 @@ export default function CalculadoraTesteLocal({ atributos, treinada, distribuica
     setGastoSAConfirmado(false);
   }
 
+  useEffect(() => { if (ataqueEmAreaGM79) setCriticoDano(false); }, [ataqueEmAreaGM79]);
+
   const perfisDisponiveis = useMemo(() => tipo === 'ataque-corpo'
     ? listarPerfisArma().filter(perfil => perfil.categoria === 'corpo-a-corpo')
     : tipo === 'ataque-distancia' ? listarPerfisArmasFogo() : [], [tipo]);
@@ -155,6 +160,8 @@ export default function CalculadoraTesteLocal({ atributos, treinada, distribuica
   const limiteCritico = perfilCorpo?.criticoNatural ?? (criticoTexto ? (/19\s*[–-]\s*20/.test(criticoTexto) ? 19 : 20) : null);
   const multiplicadorCritico = perfilCorpo?.multiplicadorCritico ?? (criticoTexto ? Number(criticoTexto.match(/x\s*(\d+)/i)?.[1] ?? 1) : null);
   const resultadoAtaqueCritico = escopo === 'ataques' && calculado.resultado?.dadoEscolhido === 20;
+  const procedimentoGM79 = perfilFogo?.id === 'gm-79' ? consultarProcedimentoGM79(cartuchoGM79, modoGM79) : null;
+  const ataqueEmAreaGM79 = procedimentoGM79?.danoEmArea ?? false;
   const formulaDanoEspecial = perfilFogo ? consultarFormulaDanoEspecial(perfilFogo.id, varianteDanoEspecial) : null;
   const formulaDanoConvencional = formulaDanoEspecial ?? (perfilSelecionado?.dano && possuiFormulaDanoConvencional(perfilSelecionado.dano) ? perfilSelecionado.dano : null);
   const atributoDano = tipo === 'ataque-corpo' ? atributos.forca : atributos.agilidade;
@@ -221,7 +228,7 @@ export default function CalculadoraTesteLocal({ atributos, treinada, distribuica
     </label>
     {(tipo === 'ataque-corpo' || tipo === 'ataque-distancia') && <div className="ficha-local-editor">
       <label>Perfil de arma para consulta (opcional)
-        <select value={armaId} onChange={evento => { setArmaId(evento.target.value); setResultadoDadosDano(''); setResultadoDadosAdicionais(''); setCriticoDano(false); setVarianteDanoEspecial('normal'); }}>
+        <select value={armaId} onChange={evento => { setArmaId(evento.target.value); setResultadoDadosDano(''); setResultadoDadosAdicionais(''); setCriticoDano(false); setVarianteDanoEspecial('normal'); setCartuchoGM79('acido'); setModoGM79('direto'); }}>
           <option value="">Sem perfil selecionado</option>
           {perfisDisponiveis.map(perfil => <option key={perfil.id} value={perfil.id}>{perfil.nome}</option>)}
           {tipo === 'ataque-corpo' && <><option value="universal:arma-improvisada">Arma Improvisada</option><option value="universal:ataque-desarmado">Ataque Desarmado</option></>}
@@ -237,6 +244,20 @@ export default function CalculadoraTesteLocal({ atributos, treinada, distribuica
         <small>{perfilSelecionado.referencia}</small>
       </div>}
       {armaOperarioEscolhida && <p className="ficha-local-legenda">Origem Operário: +1 no Teste de Ataque com a arma escolhida na criação.</p>}
+      {perfilFogo?.id === 'gm-79' && <div className="ficha-local-editor">
+        <label>Cartucho GM 79
+          <select value={cartuchoGM79} onChange={evento => { setCartuchoGM79(evento.target.value as CartuchoGM79); setResultadoDadosDano(''); setCriticoDano(false); }}>
+            <option value="acido">Ácido</option><option value="explosivo">Explosivo</option><option value="incendiario">Incendiário</option>
+          </select>
+        </label>
+        {cartuchoGM79 !== 'explosivo' && <label>Modo de disparo
+          <select value={modoGM79} onChange={evento => { setModoGM79(evento.target.value as ModoGM79); setResultadoDadosDano(''); setCriticoDano(false); }}>
+            <option value="direto">Ataque direto contra Defesa</option><option value="area">Disparo contra ponto do cenário · Área</option>
+          </select>
+        </label>}
+        <div className="ficha-local-aviso" role="status"><strong>{procedimentoGM79?.titulo}</strong><p>{procedimentoGM79?.descricao}</p></div>
+        <small>Todo disparo deixa a GM 79 vazia; recarga por Movimento. A calculadora não consome cartuchos nem resolve os Testes dos alvos.</small>
+      </div>}
       {perfilFogo?.id === 'spark-shot' && <label>Modo da Spark Shot
         <select value={varianteDanoEspecial === 'carregado' ? 'carregado' : 'normal'} onChange={evento => { setVarianteDanoEspecial(evento.target.value as VarianteDanoEspecial); setResultadoDadosDano(''); setResultadoDadosAdicionais(''); }}>
           <option value="normal">Disparo normal · 1 Carga · 1d4</option>
@@ -264,7 +285,8 @@ export default function CalculadoraTesteLocal({ atributos, treinada, distribuica
         <small>Use este campo somente depois de rolar dados adicionais previstos por uma Peça, Habilidade ou modo de disparo válido. Na Motosserra, informe aqui a soma dos dados extras gerados por cada resultado 6, incluindo os encadeamentos. A calculadora não presume que você possui Peças ou Habilidades.</small>
         <p>Atributo aplicado: {tipo === 'ataque-corpo' ? 'FOR' : 'AGI'} (+{atributoDano}).</p>
         {armaOperarioEscolhida && <p>Operário: o Dano recebe FOR adicional; esse bônus não é multiplicado no Crítico.</p>}
-        <label className="ficha-local-opcao"><input type="checkbox" checked={criticoDano} onChange={evento => setCriticoDano(evento.target.checked)} /> Aplicar Acerto Crítico (×{multiplicadorCritico})</label>
+        {!ataqueEmAreaGM79 && <label className="ficha-local-opcao"><input type="checkbox" checked={criticoDano} onChange={evento => setCriticoDano(evento.target.checked)} /> Aplicar Acerto Crítico (×{multiplicadorCritico})</label>}
+        {ataqueEmAreaGM79 && <small>Disparo em Área: sem Acerto Crítico, conforme a regra do Cartucho.</small>}
         {calculoDano && ('erro' in calculoDano ? <p className="offline-erro" role="alert">{calculoDano.erro}</p> : <div className="offline-status ficha-local-resultado" role="status"><p>Dados: {calculoDano.resultado.dados} × {calculoDano.resultado.multiplicador} · {tipo === 'ataque-corpo' ? 'FOR' : 'AGI'}: {calculoDano.resultado.atributoMultiplicado}{calculoDano.resultado.bonusOperarioNaoMultiplicado ? ` + ${calculoDano.resultado.bonusOperarioNaoMultiplicado} FOR não multiplicado` : ''}</p><strong>Dano calculado: {calculoDano.resultado.total}</strong></div>)}
       </div>}
       {perfilFogo?.id === 'spark-shot' && <p className="ficha-local-legenda">A escolha do modo não confirma Cargas disponíveis nem aplica Atordoado/Imobilizado; confira e resolva esses efeitos na mesa.</p>}
