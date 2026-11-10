@@ -124,3 +124,11 @@ test('Motosserra orienta informar os dados extras de explosão sem rolagem autom
   assert.match(ui, /Motosserra, informe aqui a soma dos dados extras gerados por cada resultado 6/);
   assert.match(ui, /incluindo os encadeamentos/);
 });
+
+test('GM 79 apresenta procedimentos de cartuchos e modos direto/área', () => {
+  assert.match(ui, /consultarProcedimentoGM79/);
+  assert.match(ui, /Cartucho GM 79/);
+  assert.match(ui, /Disparo contra ponto do cenário · Área/);
+  assert.match(ui, /Todo disparo deixa a GM 79 vazia; recarga por Movimento/);
+  assert.match(ui, /Disparo em Área: sem Acerto Crítico/);
+});
