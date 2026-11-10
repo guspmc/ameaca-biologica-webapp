@@ -599,3 +599,47 @@ Esta é uma auditoria parcial por evidências explícitas no código; ainda não
 ### Próximo passo
 
 Continuar a matriz por módulo e por contexto (**Offline**, **LAN**, **Automático/Misto/Manual**), separando: implementado no código, coberto por teste automatizado, validado manualmente e pendente de integração. Não alterar regras ou comportamento durante a auditoria.
+
+
+---
+
+## Continuação — matriz de auditoria funcional e Inventário
+
+**Data:** 10/11/2026  
+**HEAD antes deste registro:** `8c36ca1ef50c82213bef81ef95e49156b19f2c24`
+
+### Trabalho paralelo realizado
+
+1. Auditoria de cobertura por módulos da Ficha, cruzando componentes, módulos de domínio e testes existentes.
+2. Auditoria específica do Inventário, separando planejamento de criação, consulta somente leitura e gerenciamento ativo.
+3. Consulta dos workflows GitHub Actions associados à branch.
+
+### Artefatos
+
+- Criado `docs/matriz-auditoria-funcional-ficha.md`.
+- A matriz classifica áreas por evidência de código, testes existentes e pendências, separando Offline e LAN.
+- A seção específica do Inventário registra as evidências abaixo.
+
+### Evidências do Inventário
+
+- **Implementado:** planejamento do equipamento inicial/compras; materialização de exemplares; catálogos; consulta e validação; expansão de capacidade; lógica de organização com prévia, confirmação explícita, recibos e recuperação de pedidos.
+- **Testes existentes:** inventário ativo, consulta local, criação, expansão, persistência SQL, organização, múltiplos espaços e recuperação de sessão/pedido; também há uma fixture visual de QA.
+- **Limite da fixture:** `tests/ui/inventario.tsx` usa dados fictícios em memória e declara que não há login, banco ou campanha, nem ações de uso, equipamento, transferência ou Baú.
+- **Painel consultivo:** `src/PainelInventarioLocal.tsx` se identifica como somente leitura e oferece consulta, busca e filtros.
+- **Ficha ativa:** `src/FichaLocal.tsx` mostra resumo dos itens materializados e informa que movimentação e gerenciamento contínuo ainda serão liberados.
+- **Servidor:** `server/personagens-local.mjs` materializa `inventario_json` na ativação, dentro de transação e com recibo. As rotas identificadas nesse arquivo cobrem lista, ficha, conferência e ativação; não foi identificada rota para operações do Inventário ativo.
+- **Integrações pendentes explícitas:** munição/recarga e propriedades operacionais das armas permanecem pendentes na própria Ficha.
+
+### Conclusão provisória
+
+A lacuna principal do Inventário não é falta de catálogos ou de lógica de domínio: é a ligação das operações contínuas à Ficha ativa e a um transporte/servidor com autorização, persistência e concorrência apropriadas. Não implementar operações em modo Offline compartilhado nem reutilizar a fixture de QA como se fosse interface de produção.
+
+### CI
+
+Na última consulta, os workflows disparados para o commit `576fae4` ainda estavam em fila; os anteriores também não tinham concluído. Aguardando conclusão no HEAD mais recente. Nenhum resultado de teste ou build foi declarado como aprovado.
+
+### Próxima etapa paralela
+
+- Auditar o contrato completo do domínio de organização e as rotas/serviços do servidor, identificando quais operações estão prontas para integração e quais ainda são apenas lógica isolada.
+- Continuar a matriz de Características, Identidade, Atributos/Perícias e Habilidades.
+- Retomar CI no HEAD atual antes de qualquer nova alteração de código.
