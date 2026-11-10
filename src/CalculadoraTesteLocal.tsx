@@ -11,6 +11,7 @@ import { listarPerfisArma, consultarPerfilArma, bonusAtaqueOperario, calcularDan
 import { listarPerfisArmasFogo, consultarPerfilArmaFogo } from './catalogoArmasFogo';
 import { consultarFormulaDanoEspecial, type VarianteDanoEspecial } from './variantesDanoArmas';
 import { consultarProcedimentoGM79, type CartuchoGM79, type ModoGM79 } from './procedimentosGM79';
+import { consultarModosDisparoArmaFogo } from './procedimentosDisparoArmas';
 
 const PERICIAS = Object.keys(ATRIBUTO_PERICIA);
 const ATRIBUTOS: { chave: keyof AtributosIniciais; nome: string }[] = [
@@ -168,7 +169,7 @@ export default function CalculadoraTesteLocal({ atributos, treinada, distribuica
   const disparoUnicoIndisponivel = Boolean(modosArmaFogo && !modosArmaFogo.disparoUnico && !rajadaSelecionada && !cadenciadoSelecionado);
   const ataqueEmArea = ataqueEmAreaGM79 || rajadaSelecionada;
   const procedimentoPerfuracao = modosArmaFogo?.perfuracao ?? null;
-  useEffect(() => { if (ataqueEmAreaGM79) { setCriticoDano(false); setDadosConfirmados(null); setDado1(''); setDado2(''); setErroRolagem(''); } }, [ataqueEmAreaGM79]);
+  useEffect(() => { if (ataqueEmArea) { setCriticoDano(false); setDadosConfirmados(null); setDado1(''); setDado2(''); setErroRolagem(''); } }, [ataqueEmArea]);
   const formulaDanoEspecial = perfilFogo ? consultarFormulaDanoEspecial(perfilFogo.id, varianteDanoEspecial) : null;
   const formulaDanoConvencional = formulaDanoEspecial ?? (perfilSelecionado?.dano && possuiFormulaDanoConvencional(perfilSelecionado.dano) ? perfilSelecionado.dano : null);
   const atributoDano = tipo === 'ataque-corpo' ? atributos.forca : atributos.agilidade;
@@ -184,7 +185,7 @@ export default function CalculadoraTesteLocal({ atributos, treinada, distribuica
         dano: perfilFogo!.dano!, multiplicadorCritico, criticoNatural: limiteCritico === 19 ? 19 as const : 20 as const,
         atributoDano: 'agilidade' as const, propriedades: perfilFogo!.propriedades, referencia: perfilFogo!.referencia,
       };
-      return { resultado: calcularDanoArma({ dadosRolados: valor, valorAtributo: atributoDano, critico: criticoDano && !ataqueEmAreaGM79, perfil: perfilCalculo, armaOperarioEscolhida, dadosAdicionais: adicionais }) };
+      return { resultado: calcularDanoArma({ dadosRolados: valor, valorAtributo: atributoDano, critico: criticoDano && !ataqueEmArea, perfil: perfilCalculo, armaOperarioEscolhida, dadosAdicionais: adicionais }) };
     } catch (problema) { return { erro: problema instanceof Error ? problema.message : 'Não foi possível calcular o Dano.' }; }
   }, [formulaDanoConvencional, resultadoDadosDano, resultadoDadosAdicionais, perfilSelecionado, multiplicadorCritico, perfilCorpo, perfilFogo, limiteCritico, atributoDano, criticoDano, armaOperarioEscolhida, ataqueEmAreaGM79]);
 
@@ -235,7 +236,7 @@ export default function CalculadoraTesteLocal({ atributos, treinada, distribuica
     </label>
     {(tipo === 'ataque-corpo' || tipo === 'ataque-distancia') && <div className="ficha-local-editor">
       <label>Perfil de arma para consulta (opcional)
-        <select value={armaId} onChange={evento => { setArmaId(evento.target.value); setResultadoDadosDano(''); setResultadoDadosAdicionais(''); setCriticoDano(false); setVarianteDanoEspecial('normal'); setCartuchoGM79('acido'); setModoGM79('direto'); }}>
+        <select value={armaId} onChange={evento => { setArmaId(evento.target.value); setResultadoDadosDano(''); setResultadoDadosAdicionais(''); setCriticoDano(false); setVarianteDanoEspecial('normal'); setCartuchoGM79('acido'); setModoGM79('direto'); setModoDisparoAutomatico('normal'); setCoronhaMatildaConfirmada(false); }}>
           <option value="">Sem perfil selecionado</option>
           {perfisDisponiveis.map(perfil => <option key={perfil.id} value={perfil.id}>{perfil.nome}</option>)}
           {tipo === 'ataque-corpo' && <><option value="universal:arma-improvisada">Arma Improvisada</option><option value="universal:ataque-desarmado">Ataque Desarmado</option></>}
@@ -251,7 +252,7 @@ export default function CalculadoraTesteLocal({ atributos, treinada, distribuica
         <small>{perfilSelecionado.referencia}</small>
       </div>}
       {armaOperarioEscolhida && <p className="ficha-local-legenda">Origem Operário: +1 no Teste de Ataque com a arma escolhida na criação.</p>}
-      {perfilFogo && modosArmaFogo && (modosArmaFogo.cadenciado || modosArmaFogo.rajada || !modosArmaFogo.disparoUnico) && <div className="ficha-local-editor">
+      {perfilFogo && modosArmaFogo && (perfilFogo.id === 'matilda' || modosArmaFogo.cadenciado || modosArmaFogo.rajada || !modosArmaFogo.disparoUnico) && <div className="ficha-local-editor">
         {perfilFogo.id === 'matilda' && <label className="ficha-local-opcao"><input type="checkbox" checked={coronhaMatildaConfirmada} onChange={evento => { setCoronhaMatildaConfirmada(evento.target.checked); setModoDisparoAutomatico('normal'); setResultadoDadosDano(''); setResultadoDadosAdicionais(''); setCriticoDano(false); }} /> Confirmar Coronha específica da Matilda instalada</label>}
         <label>Modo de disparo
           <select value={modoDisparoAutomatico} onChange={evento => { setModoDisparoAutomatico(evento.target.value as 'normal' | 'cadenciado' | 'rajada'); setResultadoDadosDano(''); setResultadoDadosAdicionais(''); setCriticoDano(false); setDadosConfirmados(null); setDado1(''); setDado2(''); }}>
@@ -302,7 +303,7 @@ export default function CalculadoraTesteLocal({ atributos, treinada, distribuica
         <label>Soma de Dados adicionais já rolados (opcional)
           <input type="number" min="0" step="1" value={resultadoDadosAdicionais} onChange={evento => setResultadoDadosAdicionais(evento.target.value)} placeholder="Ex.: +1d4 de Peça ou Habilidade" />
         </label>
-        <small>Use este campo somente depois de rolar dados adicionais previstos por uma Peça, Habilidade ou modo de disparo válido. Na Motosserra, informe aqui a soma dos dados extras gerados por cada resultado 6, incluindo os encadeamentos. A calculadora não presume que você possui Peças ou Habilidades.</small>
+        <small>Use este campo somente depois de rolar dados adicionais previstos por uma Peça, Habilidade ou modo de disparo válido, incluindo os +2 dados do Disparo Cadenciado. Na Motosserra, informe aqui a soma dos dados extras gerados por cada resultado 6, incluindo os encadeamentos. A calculadora não presume que você possui Peças ou Habilidades.</small>
         <p>Atributo aplicado: {tipo === 'ataque-corpo' ? 'FOR' : 'AGI'} (+{atributoDano}).</p>
         {armaOperarioEscolhida && <p>Operário: o Dano recebe FOR adicional; esse bônus não é multiplicado no Crítico.</p>}
         {!ataqueEmArea && <label className="ficha-local-opcao"><input type="checkbox" checked={criticoDano} onChange={evento => setCriticoDano(evento.target.checked)} /> Aplicar Acerto Crítico (×{multiplicadorCritico})</label>}
