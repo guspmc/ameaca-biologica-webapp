@@ -589,3 +589,13 @@ Esta atualização substitui qualquer ordem anterior incompatível nesta matriz.
 - **CI:** verificar workflows do HEAD final antes de declarar sucesso.
 - **Checkpoint:** `docs/checkpoint-ataques-universais-dano-2026-11-10.md`.
 - Sem merge, publicação, alteração da `main` ou produção.
+
+## Atualização — fórmulas manuais de modos especiais (10/11/2026)
+
+- **IMPLEMENTADO:** `src/variantesDanoArmas.ts` fornece fórmulas manuais da Spark Shot (normal 1d4; carregado 4d4) e do Lança-Chamas Químico (3d6 a 6d6).
+- **IMPLEMENTADO:** a calculadora permite selecionar o modo/fórmula, sem consumir Cargas/Combustível nem controlar sequência de turnos ou Movimento.
+- **IMPLEMENTADO:** orientação específica para a Motosserra: informar no campo de Dados adicionais a soma de todos os dados extras gerados por cada 6, incluindo encadeamentos.
+- **TESTES ADICIONADOS:** verificações estáticas dos seletores e instruções; execução local não realizada.
+- **PENDENTE:** efeitos de Spark Shot, gestão de Cargas/Combustível, GM 79 e cartuchos especiais, RPG-7, Perfuração, Rajada e Disparo Cadenciado.
+- **CI:** pendente para o novo HEAD. Sem teste humano, merge, publicação ou alteração de produção.
+- **Checkpoint:** `docs/checkpoint-modos-especiais-dano-2026-11-10.md`.
