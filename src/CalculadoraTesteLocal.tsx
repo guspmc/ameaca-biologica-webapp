@@ -160,7 +160,7 @@ export default function CalculadoraTesteLocal({ atributos, treinada, distribuica
   const resultadoAtaqueCritico = escopo === 'ataques' && calculado.resultado?.dadoEscolhido === 20;
   const procedimentoGM79 = perfilFogo?.id === 'gm-79' ? consultarProcedimentoGM79(cartuchoGM79, modoGM79) : null;
   const ataqueEmAreaGM79 = procedimentoGM79?.danoEmArea ?? false;
-  useEffect(() => { if (ataqueEmAreaGM79) setCriticoDano(false); }, [ataqueEmAreaGM79]);
+  useEffect(() => { if (ataqueEmAreaGM79) { setCriticoDano(false); setDadosConfirmados(null); setDado1(''); setDado2(''); setErroRolagem(''); } }, [ataqueEmAreaGM79]);
   const formulaDanoEspecial = perfilFogo ? consultarFormulaDanoEspecial(perfilFogo.id, varianteDanoEspecial) : null;
   const formulaDanoConvencional = formulaDanoEspecial ?? (perfilSelecionado?.dano && possuiFormulaDanoConvencional(perfilSelecionado.dano) ? perfilSelecionado.dano : null);
   const atributoDano = tipo === 'ataque-corpo' ? atributos.forca : atributos.agilidade;
