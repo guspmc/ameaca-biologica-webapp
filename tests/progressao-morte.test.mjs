@@ -75,3 +75,13 @@ test('nível inválido é recusado', () => {
   assert.equal(planejarPerdaNivelPorMorte(0, []).aplicavel, false);
   assert.equal(planejarPerdaNivelPorMorte(11, []).aplicavel, false);
 });
+
+test('a penalidade de Morte no Nível 1 é aplicada ao valor-base de todos os Testes da calculadora', async () => {
+  const fs = await import('node:fs/promises');
+  const calculadora = await fs.readFile(new URL('../src/CalculadoraTesteLocal.tsx', import.meta.url), 'utf8');
+  assert.match(calculadora, /penalidadeMorteNivel1 \? -2 : 0/);
+  assert.match(calculadora, /Penalidade por Morte no Nível 1/);
+  const ficha = await fs.readFile(new URL('../src/FichaLocal.tsx', import.meta.url), 'utf8');
+  assert.match(ficha, /penalidadeMorteNivel1=\{penalidadeMorteNivel1\}/);
+  assert.match(ficha, /estadoProgressaoPersistenteValido\(ficha\.progressao, classe\)/);
+});

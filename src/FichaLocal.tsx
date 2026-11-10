@@ -295,6 +295,8 @@ export default function FichaLocal({ nome, mesa, contextoId, dados, aoFechar, ao
   const recursosAtuais = recursosIniciais(ficha as Record<string, unknown>, pv, sa);
   const biAtual = recursosAtuais.biAtual;
   const faseBi = calcularFaseBioInfeccao(biAtual, bi);
+  const progressaoValida = estadoProgressaoPersistenteValido(ficha.progressao, classe);
+  const penalidadeMorteNivel1 = progressaoValida && (ficha.progressao as { penalidadeMorteNivel1: boolean }).penalidadeMorteNivel1;
   const defesa = derivados?.defesa ?? 10 + numero(atributos.agilidade);
   const capacidade = derivados?.inventario ?? capacidadeInventario(numero(atributos.forca), origem);
   const listaPericias = [...new Set([...(PERICIAS_CLASSE[classe] ?? []), ...(dadosOrigem?.pericias ?? []), ...(treinada ? [treinada] : []), ...(extra ? [extra] : []), ...(extraTentativa ? [extraTentativa] : []), ...Object.keys(distribuicao)])].sort();
@@ -519,7 +521,7 @@ export default function FichaLocal({ nome, mesa, contextoId, dados, aoFechar, ao
             })}
           </div>
           <p className="ficha-local-legenda">O valor exibido soma o Atributo associado e o Treinamento. O Passivo exibido é o normal; Testes Passivos recebem +5 com Vantagem ou -5 com Desvantagem. A circunstância é resolvida pela Mesa. Não some o Atributo novamente ao realizar o Teste.</p>
-          {configuracaoFuncionamento.modo === 'automatico' && <CalculadoraTesteLocal atributos={atributos} treinada={treinada} periciaOrigemExtra={extra} periciaTentativaErroTreinada={extraTentativa} temTentativaEErro={temTentativaEErro} distribuicao={distribuicao} modoDados={configuracaoFuncionamento.modoDados} origem={origem} saDisponivel={recursosAtuais.saAtual} aoFalharCriticoAtaque={registrarExpostoPorFalhaCritica} />}
+          {configuracaoFuncionamento.modo === 'automatico' && <CalculadoraTesteLocal atributos={atributos} treinada={treinada} periciaOrigemExtra={extra} periciaTentativaErroTreinada={extraTentativa} temTentativaEErro={temTentativaEErro} distribuicao={distribuicao} modoDados={configuracaoFuncionamento.modoDados} origem={origem} saDisponivel={recursosAtuais.saAtual} aoFalharCriticoAtaque={registrarExpostoPorFalhaCritica} penalidadeMorteNivel1={penalidadeMorteNivel1} />}
         </section>
 
         <section id="ficha-local-combate" className="ficha-local-secao">
@@ -546,6 +548,7 @@ export default function FichaLocal({ nome, mesa, contextoId, dados, aoFechar, ao
             <div><small>DANO CORPO A CORPO</small><strong>{faseBi.danoCorpoACorpoAdicional ? '+' + faseBi.danoCorpoACorpoAdicional : '—'}</strong><p>{faseBi.danoCorpoACorpoAdicional ? 'Dano adicional da 4ª fase.' : 'Sem bônus de dano corpo a corpo por BI.'}</p></div>
             <div><small>DESVANTAGEM POR BI</small><strong>{faseBi.desvantagemAtaquesETestes === null ? '—' : faseBi.desvantagemAtaquesETestes ? 'Sim' : 'Não'}</strong><p>Aplica-se a Ataques e Testes de Perícia e Atributo na 5ª fase.</p></div>
           </div>
+          {penalidadeMorteNivel1 && <p className="ficha-local-aviso" role="status">Penalidade por Morte no Nível 1 ativa: −2 em Testes de Atributo, Perícia e Ataque. Será encerrada automaticamente quando a personagem recuperar o Nível 2.</p>}
           <p className="ficha-local-legenda">A BI começa em 0 e não progride sozinha. Alterações de BI são registradas expressamente no painel de Recursos; este resumo apenas calcula os modificadores da fase e não os aplica automaticamente a movimento, ataques ou dano, nem inicia Reanimação.</p>
 
           <h3 className="ficha-local-subtitulo">Combate ativo</h3>
