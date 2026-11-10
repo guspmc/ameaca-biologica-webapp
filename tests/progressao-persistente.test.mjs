@@ -150,3 +150,40 @@ test('Descanso Completo confirma o pedido apenas na Sala de Descanso', async () 
   assert.deepEqual(confirmado, { nivel: 2, estado: 'descanso_confirmado' });
   assert.throws(() => confirmarDescansoCompletoProgressao(confirmado, estado, 'Agente', 'sala_descanso'), /já foi confirmada/);
 });
+
+test('registro de Morte no nível 1 ativa penalidade e preserva progresso de Missões', async () => {
+  const { registrarMorteProgressao } = await import('../src/progressaoPersistente.ts');
+  const original = nivel1();
+  original.missoesCompletadas = 3;
+  const morte = registrarMorteProgressao(original, 'Agente');
+  assert.equal(morte.nivelAtual, 1);
+  assert.equal(morte.nivelNaUltimaMorte, 1);
+  assert.equal(morte.missoesCompletadasNaUltimaMorte, 3);
+  assert.equal(morte.missoesCompletadas, 3);
+  assert.equal(morte.penalidadeMorteNivel1, true);
+  assert.equal(estadoProgressaoPersistenteValido(morte, 'Agente'), true);
+  assert.deepEqual(original, { ...nivel1(), missoesCompletadas: 3 });
+});
+
+test('registro de Morte acima do nível 1 reverte apenas o último nível e preserva histórico anterior', async () => {
+  const { registrarMorteProgressao } = await import('../src/progressaoPersistente.ts');
+  const original = nivel4();
+  const morte = registrarMorteProgressao(original, 'Agente');
+  assert.equal(morte.nivelAtual, 3);
+  assert.equal(morte.nivelNaUltimaMorte, 4);
+  assert.equal(morte.missoesCompletadasNaUltimaMorte, 6);
+  assert.equal(morte.missoesCompletadas, 6);
+  assert.equal(morte.penalidadeMorteNivel1, false);
+  assert.equal(morte.beneficiosPorNivel.length, 2);
+  assert.deepEqual(morte.beneficiosPorNivel, original.beneficiosPorNivel.slice(0, 2));
+  assert.equal(estadoProgressaoPersistenteValido(morte, 'Agente'), true);
+  assert.equal(original.nivelAtual, 4);
+});
+
+test('registro de Morte bloqueia histórico incompleto sem alterar a origem', async () => {
+  const { registrarMorteProgressao } = await import('../src/progressaoPersistente.ts');
+  const original = nivel4();
+  original.beneficiosPorNivel[2].beneficios.pop();
+  assert.throws(() => registrarMorteProgressao(original, 'Agente'), /inválido/);
+  assert.equal(original.nivelAtual, 4);
+});

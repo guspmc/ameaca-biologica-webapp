@@ -208,3 +208,39 @@ export function confirmarDescansoCompletoProgressao(
   }
   return { nivel: pedido.nivel, estado: 'descanso_confirmado' };
 }
+
+/**
+ * Registra a Morte na Ficha Offline, revertendo somente os benefícios exatos
+ * do Nível perdido. O contador de Missões é preservado; seu valor no momento
+ * da Morte é guardado como marco para exigir progresso posterior.
+ */
+export function registrarMorteProgressao(
+  estado: EstadoProgressaoPersistente,
+  classe: string,
+): EstadoProgressaoPersistente {
+  if (!estadoProgressaoPersistenteValido(estado, classe)) {
+    throw new Error('Estado de Progressão inválido; a Morte não pode ser registrada.');
+  }
+  const registroNivel = estado.nivelAtual === 1
+    ? []
+    : estado.beneficiosPorNivel[estado.nivelAtual - 2]?.beneficios;
+  const plano = planejarPerdaNivelPorMorte(estado.nivelAtual, registroNivel);
+  if (!plano.aplicavel) {
+    throw new Error(`A Morte não pode ser registrada: ${plano.pendencias.join(' ')}`);
+  }
+  const atualizado: EstadoProgressaoPersistente = {
+    ...structuredClone(estado),
+    nivelAtual: plano.nivelResultante,
+    missoesCompletadasNaUltimaMorte: estado.missoesCompletadas,
+    nivelNaUltimaMorte: estado.nivelAtual,
+    marcoNarrativoConcedido: false,
+    marcoNarrativoAposUltimaMorte: false,
+    penalidadeMorteNivel1: plano.penalidadeMorteNivel1,
+    beneficiosPorNivel: estado.beneficiosPorNivel
+      .filter(registro => registro.nivel < plano.nivelResultante),
+  };
+  if (!estadoProgressaoPersistenteValido(atualizado, classe)) {
+    throw new Error('O histórico resultante da Morte não passou pela validação. Nenhuma alteração foi aplicada.');
+  }
+  return atualizado;
+}

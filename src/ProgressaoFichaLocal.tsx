@@ -5,6 +5,7 @@ import {
   atualizarContadorMissoes,
   registrarMarcoNarrativo,
   solicitarGanhoNivel,
+  registrarMorteProgressao,
   pedidoProgressaoPersistenteValido,
   type MetodoProgressaoPersistente,
   type EstadoProgressaoPersistente,
@@ -170,6 +171,24 @@ export default function ProgressaoFichaLocal({ dados, classe, nivel, origemDados
     } finally { setOcupado(false); }
   }
 
+  async function registrarMorte() {
+    if (ocupado || origemDados !== 'local') return;
+    const confirmacao = window.confirm('Registrar a Morte desta personagem? A Ficha perderá 1 Nível e reverterá os benefícios exatos desse Nível. O histórico de Missões será preservado. Esta ação só deve ser confirmada após a decisão narrativa correspondente.');
+    if (!confirmacao) return;
+    setOcupado(true); setErro(''); setMensagem('');
+    try {
+      const atualizado = registrarMorteProgressao(estado, classe);
+      if (!await aoSalvar({ nivel: atualizado.nivelAtual, progressao: atualizado, pedidoProgressao: null })) {
+        throw new Error('O armazenamento não confirmou o registro da Morte.');
+      }
+      setMensagem(atualizado.penalidadeMorteNivel1
+        ? 'Morte registrada. A personagem permanece no Nível 1 e recebe a penalidade de −2 em Testes de Atributo, Perícia e Ataque até recuperar o Nível 2.'
+        : `Morte registrada. A personagem perdeu um Nível e agora está no Nível ${atualizado.nivelAtual}. Os benefícios do Nível perdido foram revertidos.`);
+    } catch (e) {
+      setErro(e instanceof Error ? e.message : 'Não foi possível registrar a Morte.');
+    } finally { setOcupado(false); }
+  }
+
   async function aplicarBeneficios() {
     if (ocupado || pedido === null || pedido.estado !== 'descanso_confirmado') return;
     setOcupado(true); setErro(''); setMensagem('');
@@ -265,6 +284,9 @@ export default function ProgressaoFichaLocal({ dados, classe, nivel, origemDados
               </div>;
             })()}
           </>}
+    {estado.penalidadeMorteNivel1 && <p className="offline-erro" role="status">Penalidade de Morte ativa: −2 em Testes de Atributo, Perícia e Ataque até recuperar o Nível 2.</p>}
+    {estado.nivelNaUltimaMorte !== null && <p>Última Morte registrada no Nível {estado.nivelNaUltimaMorte}. Missões preservadas: {estado.missoesCompletadasNaUltimaMorte} no momento da Morte.</p>}
+    {origemDados === 'local' && <button type="button" className="botao-claro" disabled={ocupado || pedido !== null} onClick={() => void registrarMorte()}>Registrar Morte da personagem</button>}
     {estado.beneficiosPorNivel.length > 0 && <p>Histórico de benefícios registrado: {estado.beneficiosPorNivel.length} nível(is) com escolhas preservadas.</p>}
     {erro && <p className="offline-erro" role="alert">{erro}</p>}
     {mensagem && <p className="offline-status" role="status">{mensagem}</p>}
