@@ -5,6 +5,8 @@ import { calcularTesteManual, type VantagemTeste } from './testes';
 import { sortearDados, validarResultadosFisicos } from './rolagemDados';
 import type { ModoDados } from './funcionamentoFicha';
 import type { AtributosIniciais } from './atributosCriacao';
+import { listarPerfisArma, consultarPerfilArma, bonusAtaqueOperario } from './catalogoArmas';
+import { listarPerfisArmasFogo, consultarPerfilArmaFogo } from './catalogoArmasFogo';
 
 const PERICIAS = Object.keys(ATRIBUTO_PERICIA);
 const ATRIBUTOS: { chave: keyof AtributosIniciais; nome: string }[] = [
@@ -25,15 +27,17 @@ type Props = {
   origem?: string;
   saDisponivel?: number;
   escopo?: 'testes' | 'ataques';
+  armaOperario?: string;
   aoFalharCriticoAtaque?: () => Promise<boolean>;
   penalidadeMorteNivel1?: boolean;
   bonusAtaqueBI?: number;
   desvantagemBI?: boolean;
 };
 
-export default function CalculadoraTesteLocal({ atributos, treinada, distribuicao, periciaOrigemExtra = '', periciaTentativaErroTreinada = '', temTentativaEErro = false, modoDados, origem = '', saDisponivel = 0, aoFalharCriticoAtaque, penalidadeMorteNivel1 = false, bonusAtaqueBI = 0, desvantagemBI = false, escopo = 'testes' }: Props) {
+export default function CalculadoraTesteLocal({ atributos, treinada, distribuicao, periciaOrigemExtra = '', periciaTentativaErroTreinada = '', temTentativaEErro = false, modoDados, origem = '', saDisponivel = 0, aoFalharCriticoAtaque, penalidadeMorteNivel1 = false, bonusAtaqueBI = 0, desvantagemBI = false, escopo = 'testes', armaOperario = '' }: Props) {
   const [tipo, setTipo] = useState<'pericia' | 'atributo' | 'ataque-corpo' | 'ataque-distancia'>(escopo === 'ataques' ? 'ataque-corpo' : 'pericia');
   const [pericia, setPericia] = useState('Percepção');
+  const [armaId, setArmaId] = useState(() => escopo === 'ataques' && origem === 'Operário' ? listarPerfisArma().find(perfil => perfil.nome === armaOperario)?.id ?? '' : '');
   const [atributo, setAtributo] = useState<keyof AtributosIniciais>('astucia');
   const [dt, setDt] = useState('12');
   const [impossivel, setImpossivel] = useState(false);
@@ -66,7 +70,12 @@ export default function CalculadoraTesteLocal({ atributos, treinada, distribuica
   });
   const bonusTentativa = temTentativaEErro && testeDePericia ? bonusTentativaErro(periciaEfetiva, treinada || null, distribuicao, periciaOrigemExtra || null, periciaTentativaErroTreinada || null) : 0;
   const modificadorAtaqueBI = tipo === 'ataque-corpo' || tipo === 'ataque-distancia' ? bonusAtaqueBI : 0;
-  const valorTeste = valorBase + bonusOrigem + bonusTentativa + modificadorAtaqueBI + (penalidadeMorteNivel1 ? -2 : 0);
+  const perfilCorpo = tipo === 'ataque-corpo' && armaId ? consultarPerfilArma(armaId) : null;
+  const perfilFogo = tipo === 'ataque-distancia' && armaId ? consultarPerfilArmaFogo(armaId) : null;
+  const perfilSelecionado = perfilCorpo ?? perfilFogo;
+  const armaOperarioEscolhida = origem === 'Operário' && perfilCorpo?.nome === armaOperario;
+  const bonusOperario = tipo === 'ataque-corpo' ? bonusAtaqueOperario(armaOperarioEscolhida) : 0;
+  const valorTeste = valorBase + bonusOrigem + bonusTentativa + modificadorAtaqueBI + bonusOperario + (penalidadeMorteNivel1 ? -2 : 0);
   const vantagemEfetiva: VantagemTeste = desvantagemBI
     ? (vantagem === 'vantagem' ? 'normal' : 'desvantagem')
     : vantagem;
@@ -103,14 +112,26 @@ export default function CalculadoraTesteLocal({ atributos, treinada, distribuica
     setTipo(valor);
     setDadosConfirmados(null);
     setErroRolagem('');
-    if (valor === 'ataque-corpo') setPericia('Luta');
-    if (valor === 'ataque-distancia') setPericia('Pontaria');
+    if (valor === 'ataque-corpo') {
+      setPericia('Luta');
+      setArmaId(origem === 'Operário' ? listarPerfisArma().find(perfil => perfil.nome === armaOperario)?.id ?? '' : '');
+    }
+    if (valor === 'ataque-distancia') { setPericia('Pontaria'); setArmaId(''); }
     setDado1('');
     setDado2('');
     setDadosConfirmados(null);
     setErroRolagem('');
     setGastoSAConfirmado(false);
   }
+
+  const perfisDisponiveis = useMemo(() => tipo === 'ataque-corpo'
+    ? listarPerfisArma().filter(perfil => perfil.categoria === 'corpo-a-corpo')
+    : tipo === 'ataque-distancia' ? listarPerfisArmasFogo() : [], [tipo]);
+  const criticoTexto = perfilFogo?.critico ?? null;
+  const limiteCritico = perfilCorpo?.criticoNatural ?? (criticoTexto ? (/19\s*[–-]\s*20/.test(criticoTexto) ? 19 : 20) : null);
+  const multiplicadorCritico = perfilCorpo?.multiplicadorCritico ?? (criticoTexto ? Number(criticoTexto.match(/x\s*(\d+)/i)?.[1] ?? 1) : null);
+  const resultadoAtaqueCritico = escopo === 'ataques' && calculado.resultado?.dadoEscolhido !== null && calculado.resultado?.dadoEscolhido !== undefined
+    && (calculado.resultado.dadoEscolhido === 20 || (limiteCritico !== null && calculado.resultado.dadoEscolhido >= limiteCritico && calculado.resultado.total !== null && calculado.resultado.dt !== null && calculado.resultado.total >= calculado.resultado.dt));
 
   function registrarRolagem() {
     try {
@@ -143,7 +164,7 @@ export default function CalculadoraTesteLocal({ atributos, treinada, distribuica
         <option value="virtual">Dados virtuais</option>
       </select>
     </label>}
-    {(tipo === 'ataque-corpo' || tipo === 'ataque-distancia') && <p>20 natural: acerto automático e Crítico, multiplicado pelo fator da arma; fecha as Reações defensivas normais. 1 natural: Falha Crítica e aplica Exposto, salvo regra específica. O cálculo de Dano depende da arma equipada e permanece manual.</p>}
+    {(tipo === 'ataque-corpo' || tipo === 'ataque-distancia') && <p>20 natural: acerto automático e Crítico; fecha as Reações defensivas normais. 1 natural: Falha Crítica e aplica Exposto, salvo regra específica. A margem de Crítico e o multiplicador dependem do perfil consultado. O cálculo de Dano permanece manual.</p>}
 
     <label>{escopo === 'ataques' ? 'Tipo de Ataque' : 'Tipo de Teste'}
       <select value={tipo} onChange={evento => mudarTipo(evento.target.value as 'pericia' | 'atributo' | 'ataque-corpo' | 'ataque-distancia')}>
@@ -151,6 +172,23 @@ export default function CalculadoraTesteLocal({ atributos, treinada, distribuica
         {escopo === 'ataques' && <><option value="ataque-corpo">Ataque Corpo a Corpo · Luta</option><option value="ataque-distancia">Ataque à distância · Pontaria</option></>}
       </select>
     </label>
+    {(tipo === 'ataque-corpo' || tipo === 'ataque-distancia') && <div className="ficha-local-editor">
+      <label>Perfil de arma para consulta (opcional)
+        <select value={armaId} onChange={evento => setArmaId(evento.target.value)}>
+          <option value="">Sem perfil selecionado</option>
+          {perfisDisponiveis.map(perfil => <option key={perfil.id} value={perfil.id}>{perfil.nome}</option>)}
+        </select>
+      </label>
+      <small>A seleção consulta o catálogo; não confirma posse, equipamento, munição ou proficiência e não altera o Inventário.</small>
+      {perfilSelecionado && <div className="ficha-local-grade">
+        <div><small>PERFIL</small><strong>{perfilSelecionado.nome}</strong><p>{perfilSelecionado.categoria === 'corpo-a-corpo' ? 'Corpo a Corpo' : ('categoria' in perfilSelecionado ? perfilSelecionado.categoria : 'Arma de Fogo')}</p></div>
+        <div><small>DANO / CRÍTICO</small><strong>{perfilSelecionado.dano ?? 'Regra específica'}</strong><p>{perfilCorpo ? `Crítico ${perfilCorpo.criticoNatural}–20 ×${perfilCorpo.multiplicadorCritico}` : `Crítico ${perfilFogo?.critico ?? 'conforme regra específica'}`}</p></div>
+        <div><small>ALCANCE / RECARGA</small><strong>{perfilFogo?.alcance ?? perfilCorpo?.alcance ?? '—'}</strong><p>{perfilFogo?.recarga ?? perfilCorpo?.recarga ?? '—'}</p></div>
+        {(perfilSelecionado.propriedades.length > 0 || ('regrasEspeciais' in perfilSelecionado && (perfilSelecionado.regrasEspeciais?.length ?? 0) > 0)) && <div><small>PROPRIEDADES</small><p>{perfilSelecionado.propriedades.join(' · ')}</p>{'regrasEspeciais' in perfilSelecionado && perfilSelecionado.regrasEspeciais?.map((regra, i) => <p key={i}>{regra}</p>)}</div>}
+        <small>{perfilSelecionado.referencia}</small>
+      </div>}
+      {armaOperarioEscolhida && <p className="ficha-local-legenda">Origem Operário: +1 no Teste de Ataque com a arma escolhida na criação.</p>}
+    </div>}
     {tipo === 'pericia'
       ? <label>Perícia
           <select value={pericia} onChange={evento => { setPericia(evento.target.value); setDado1(''); setDado2(''); setDadosConfirmados(null); setErroRolagem(''); setGastoSAConfirmado(false); }}>
@@ -218,6 +256,8 @@ export default function CalculadoraTesteLocal({ atributos, treinada, distribuica
         : calculado.resultado.estado === 'sucesso' ? 'Sucesso'
         : 'Falha'}</strong>
       <p>{calculado.resultado.detalhe}</p>
+      {resultadoAtaqueCritico && <p><strong>Acerto Crítico</strong>{multiplicadorCritico ? ` · multiplicador ×${multiplicadorCritico}` : ' · consulte a regra específica do perfil'}</p>}
+      {bonusOperario > 0 && <p>Bônus da Origem Operário: +{bonusOperario} no Ataque.</p>}
       {calculado.resultado.total !== null && <p>Dado escolhido: {calculado.resultado.dadoEscolhido} · Valor base: {valorTeste} · Modificador: {Number(modificador || 0)} · Total: {calculado.resultado.total} · {escopo === 'ataques' ? 'Defesa' : 'DT'}: {calculado.resultado.dt}</p>}
     </div>}
   </details>;
