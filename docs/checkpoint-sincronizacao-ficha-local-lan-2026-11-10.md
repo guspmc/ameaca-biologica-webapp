@@ -189,3 +189,33 @@ O presente complemento altera apenas documentação. A CI deste novo commit ser�
 - **NÃO IMPLEMENTADO:** cache local da Ficha LAN; vínculo entre IDs local e LAN; salvamento duplo; abertura offline da ficha de Mesa; sincronização automática; contrato LAN autoritativo.
 - **NÃO TESTADO:** fluxo integrado Local > LAN.
 - **PENDENTE:** fechar decisões de UX/identidade offline e delimitação de campos sincronizáveis de fichas ativas; depois implementar em incrementos pequenos.
+
+
+---
+
+## Terceiro ciclo — acesso offline da Ficha LAN aprovado
+
+**Data:** 10/11/2026  
+**Branch:** `feat/offline-first-ficha`  
+**CI do HEAD documental anterior `6b4e07c9158f9191fbbcbcfe1d21f1b1b73e8005`:** `validar` sucesso; `TypeScript e Vite` sucesso; `Supabase Preview` ignorado (esperado).
+
+### Decisão funcional confirmada por Gus
+
+Quando o servidor LAN cair, o jogador poderá continuar usando a última cópia local válida da Ficha no mesmo dispositivo/navegador e contexto de conta/Mesa anteriormente utilizados. Os salvamentos continuam no dispositivo, sem exigir exportação ou intervenção manual.
+
+Não será armazenada senha nem token de sessão para permitir esse acesso offline. A cópia local serve para continuidade da Ficha, mas não representa autenticação válida no servidor. Ao voltar a conexão, o aplicativo deve revalidar a sessão e a autorização no servidor antes de sincronizar.
+
+### Fluxo de reconexão esclarecido
+
+A expressão “o servidor pega a versão mais recente” significa, tecnicamente, que o cliente envia ao servidor a última versão local válida após restabelecer a conexão e revalidar a autenticação. O servidor não tem acesso direto ao IndexedDB do navegador. Após receber o snapshot, o servidor valida conta, Mesa, personagem, integridade e escopo dos campos e então persiste a versão local, respeitando a regra de autoridade Local > LAN.
+
+Se autenticação ou autorização não puderem ser confirmadas, a cópia local continua preservada e a sincronização fica pendente. Não liberar Baú, transferências ou outras mutações compartilhadas offline.
+
+### Classificação atualizada
+
+- **DECIDIDO:** continuidade offline da Ficha no mesmo dispositivo/navegador e contexto previamente utilizado; sem armazenar credenciais/tokens; reautenticação e autorização obrigatórias antes da sincronização; cliente envia a versão local mais recente ao servidor.
+- **IMPLEMENTADO:** ainda não há integração entre cache IndexedDB e fluxo LAN.
+- **PENDENTE:** especificar a proteção/identificação local da cópia e a UX de reautenticação; definir campos sincronizáveis para ficha ativa; implementar vínculo explícito entre IDs local e LAN; criar contrato de sincronização autenticado e idempotente.
+- **NÃO TESTADO:** abertura offline da Ficha LAN e reconexão/sincronização integrada.
+
+Nenhum código, migration ou endpoint foi alterado neste ciclo; somente decisões e documentação foram atualizadas.
