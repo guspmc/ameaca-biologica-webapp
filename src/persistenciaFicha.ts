@@ -403,14 +403,75 @@ export async function listarVinculosLan(): Promise<VinculoLan[]> {
   }
 }
 
-export async function salvarVinculoLan(vinculo: VinculoLan): Promise<VinculoLan> {
+export type MetadadosVinculoLan = Pick<VinculoLan,
+  'baseRevision' | 'syncState' | 'pendingOperation' | 'snapshotLanConflito'
+>;
+
+export function atualizarMetadadosVinculoLan(
+  atual: VinculoLan,
+  remoteKeyEsperada: string,
+  metadados: MetadadosVinculoLan,
+): VinculoLan {
+  if (!validarVinculoLan(atual) || atual.remoteKey !== remoteKeyEsperada) {
+    throw new Error('A identidade do vínculo mudou. A atualização foi recusada.');
+  }
+  const atualizado: VinculoLan = {
+    ...atual,
+    baseRevision: metadados.baseRevision,
+    syncState: metadados.syncState,
+    ...(metadados.pendingOperation === undefined ? {} : { pendingOperation: structuredClone(metadados.pendingOperation) }),
+    ...(metadados.snapshotLanConflito === undefined ? {} : { snapshotLanConflito: structuredClone(metadados.snapshotLanConflito) }),
+  };
+  if (metadados.pendingOperation === undefined) delete atualizado.pendingOperation;
+  if (metadados.snapshotLanConflito === undefined) delete atualizado.snapshotLanConflito;
+  if (!validarVinculoLan(atualizado)) throw new Error('Metadados LAN inválidos. Nenhuma alteração foi salva.');
+  return atualizado;
+}
+
+/** Criação é add-only: não permite substituir um vínculo já existente. */
+export async function criarVinculoLan(vinculo: VinculoLan): Promise<VinculoLan> {
   if (!validarVinculoLan(vinculo)) throw new Error('Vínculo LAN inválido. Revise IDs, revisão, estado e operação pendente.');
   try {
     const banco = await abrirBanco();
     const transacao = banco.transaction(STORE_VINCULOS_LAN, 'readwrite');
-    transacao.objectStore(STORE_VINCULOS_LAN).put(structuredClone(vinculo));
+    transacao.objectStore(STORE_VINCULOS_LAN).add(structuredClone(vinculo));
     await aguardarTransacao(transacao);
     return vinculo;
+  } catch (erro) {
+    throw mensagemErro(erro);
+  }
+}
+
+/** Atualiza apenas metadados; identidade local/remota é imutável após a criação. */
+export async function salvarMetadadosVinculoLan(
+  localId: string,
+  remoteKeyEsperada: string,
+  metadados: MetadadosVinculoLan,
+): Promise<VinculoLan> {
+  try {
+    const banco = await abrirBanco();
+    const transacao = banco.transaction(STORE_VINCULOS_LAN, 'readwrite');
+    const store = transacao.objectStore(STORE_VINCULOS_LAN);
+    const requisicao = store.get(localId);
+    let atualizado: VinculoLan | null = null;
+    let falha: Error | null = null;
+    requisicao.onsuccess = () => {
+      try {
+        if (!requisicao.result) throw new Error('Vínculo LAN não encontrado. Nenhum dado foi alterado.');
+        atualizado = atualizarMetadadosVinculoLan(requisicao.result, remoteKeyEsperada, metadados);
+        store.put(structuredClone(atualizado));
+      } catch (erro) {
+        falha = erro instanceof Error ? erro : new Error('Falha ao atualizar vínculo LAN.');
+        transacao.abort();
+      }
+    };
+    try {
+      await aguardarTransacao(transacao);
+    } catch (erro) {
+      throw falha ?? erro;
+    }
+    if (!atualizado) throw falha ?? new Error('Não foi possível confirmar os metadados do vínculo.');
+    return atualizado;
   } catch (erro) {
     throw mensagemErro(erro);
   }
