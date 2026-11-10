@@ -408,3 +408,34 @@ Foi especificado em `docs/desenho-tecnico-cache-ficha-lan.md` o contrato propost
 ### Próxima etapa
 
 Definir e implementar o vínculo local↔LAN e o modelo IndexedDB sem inferência por nome, incluindo compatibilidade com fichas Offline independentes, importação/exportação e troca de conta. Só então ligar a operação de sync à UI.
+
+
+## Ciclo — proposta do vínculo local↔LAN no IndexedDB
+
+**Commit de desenho:** `51952dca5a0b8dabbc3bf9ec8cfb0cdc7ef042b0`.
+
+A auditoria confirmou que o IndexedDB atual está na versão 2 e contém somente o store `personagens`, com UUID local, geração, nome, datas e dados da Ficha. O backup JSON atual exporta/importa fichas independentes. O fluxo de entrada ainda separa `FichaOfflineApp` e `ConexaoServidorLocal`; não existe ainda uma aplicação única que faça seleção automática Local/LAN.
+
+Foi proposta a versão 3 do IndexedDB com store separado `vinculosLan`, sem alterar os registros das fichas. O desenho inclui vínculo explícito por IDs de conta/Mesa/personagem, índice único remoto, revisão-base, estado de sync, operação pendente e snapshot LAN preservado em conflito. Fichas Offline preexistentes continuam independentes até vínculo explícito; backup/importação não copia vínculo nem credenciais.
+
+- **DECIDIDO:** associação explícita; nunca inferir por nome; não armazenar credenciais; preservar local em revogação/conflito.
+- **PROPOSTO:** store separado `vinculosLan`, migration IndexedDB v3.
+- **NÃO IMPLEMENTADO:** migration v3, store, vínculo, snapshot remoto, sincronização.
+- **PENDENTE:** UX para escolher/vincular ficha Offline existente, separação de contextos ao trocar conta e resolução visual de conflito.
+
+## Auditoria de conclusão funcional — evidência adicional
+
+A entrada atual ainda escolhe uma de duas aplicações por query string (`?servidor=local`): Offline independente ou LAN. A Ficha visual comum é reutilizada, mas a persistência e os adaptadores são separados. Isso confirma que a meta Local > LAN exige integração arquitetural, não apenas acrescentar uma chamada de rede ao salvamento atual.
+
+A Ficha LAN atual enfileira patches e envia snapshot amplo por PUT com revisão. A nova rota restrita não deve ser ligada diretamente ao fluxo amplo atual. A implementação precisa primeiro introduzir cache local e vínculo inequívoco.
+
+Os módulos oficiais do Jogador e Mestre foram consultados como base de verificação futura; não foram alteradas nem reinterpretadas regras do RPG neste ciclo.
+
+## CI
+
+No HEAD documental `35d32dd1197ec333fd41ad909469325cd457063f`, a última consulta indicou:
+- `TypeScript e Vite`: sucesso;
+- `validar`: em execução;
+- `Supabase Preview`: ignorado.
+
+O commit posterior `51952dc` e o checkpoint deste ciclo ainda precisam de CI própria.
