@@ -35,6 +35,9 @@ test('Descanso Parcial soma um Dado de Vida por Nível e rejeita quantidade inco
 test('Descanso Completo restaura PV e SA, encerra Temporários e preserva BI', () => {
   const r = { pvAtual: 2, pvTemporarios: 5, saAtual: 0, biAtual: 7 };
   assert.deepEqual(api.concluirDescansoCompleto(r, 12, 4), { pvAtual: 12, pvTemporarios: 0, saAtual: 4, biAtual: 7 });
+  assert.throws(() => api.concluirDescansoCompleto({ ...r, pvAtual: 13 }, 12, 4), /Recursos inválidos/);
+  assert.throws(() => api.concluirDescansoCompleto({ ...r, saAtual: 5 }, 12, 4), /Recursos inválidos/);
+  assert.throws(() => api.concluirDescansoCompleto({ ...r, pvAtual: 2.5 }, 12, 4), /Recursos inválidos/);
 });
 
 test('local permitido diferencia Descanso Parcial e Completo', () => {

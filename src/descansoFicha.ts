@@ -22,7 +22,7 @@ export function concluirDescansoParcial(r: RecursosAtuais, resultadosDadoVida: n
 /** Descanso Completo restaura PV/SA, encerra PV Temporários e preserva BI e demais consequências. */
 export function concluirDescansoCompleto(r: RecursosAtuais, pvMaximo: number, saMaximo: number): RecursosAtuais {
   if (!Number.isSafeInteger(pvMaximo) || pvMaximo < 0 || !Number.isSafeInteger(saMaximo) || saMaximo < 0
-    || !Number.isSafeInteger(r.biAtual) || r.biAtual < 0) throw new Error('Recursos inválidos para Descanso Completo.');
+    || !recursosValidos(r, pvMaximo, saMaximo)) throw new Error('Recursos inválidos para Descanso Completo.');
   return { pvAtual: pvMaximo, pvTemporarios: 0, saAtual: saMaximo, biAtual: r.biAtual };
 }
 
