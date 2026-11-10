@@ -116,3 +116,13 @@ A direção aprovada é que o uso normal da Mesa funcione pela rede local, sem d
 O primeiro protótipo técnico separado usa Node.js, SQLite e WebSocket para validar persistência e eventos em tempo real entre navegadores. Ele **não contém autenticação nem dados de campanha** e não deve ser usado com informações reais.
 
 Consulte o [guia de execução e teste do servidor local](docs/servidor-local-prototipo.md). O protótipo ainda precisa passar pela validação automatizada e pelo teste manual em dois dispositivos antes de avançarmos para autenticação local.
+
+
+## Contrato atual de persistência Local > LAN
+
+A decisão confirmada para a Ficha do Jogador é que a versão local válida é a fonte de verdade: com LAN disponível, salvar no dispositivo e no servidor; sem LAN, salvar localmente; ao reconectar, enviar automaticamente a última versão válida da Ficha para o servidor. A exportação de backup é opcional. Baú e transferências compartilhadas continuam restritos à LAN.
+
+- [Contrato de persistência e sincronização Local > LAN](docs/decisao-sincronizacao-ficha-local-lan.md)
+- [Checkpoint e auditoria técnica de 10/11/2026](docs/checkpoint-sincronizacao-ficha-local-lan-2026-11-10.md)
+
+**Atenção:** a decisão está documentada, mas a sincronização integrada ainda não está implementada. O caminho Offline atual persiste em IndexedDB; o servidor LAN tem persistência própria de personagens e revisão, sem ponte implementada com a Ficha Offline.
