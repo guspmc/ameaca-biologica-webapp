@@ -40,6 +40,7 @@ export default function ReanimacaoFichaLocal({ dados, recursos, origem, pvMaximo
   const [mensagem, setMensagem] = useState('');
   const [erro, setErro] = useState('');
   const colapsoAutoTentado = useRef(false);
+  const pvZeroAutoTentado = useRef(false);
 
   const reanimacaoAnteriorConcluida = reanimacao?.estado === 'concluida';
   const podeIniciarPV = recursos.pvAtual === 0 && (reanimacao === null || reanimacaoAnteriorConcluida);
@@ -81,6 +82,13 @@ export default function ReanimacaoFichaLocal({ dados, recursos, origem, pvMaximo
     colapsoAutoTentado.current = true;
     void iniciar('colapso_bi');
   }, [recursos.biAtual, biMaximo, podeIniciarColapso, bloqueado, ocupado]);
+  useEffect(() => {
+    if (recursos.pvAtual > 0) pvZeroAutoTentado.current = false;
+    if (biMaximo > 0 && recursos.biAtual >= biMaximo) return;
+    if (!podeIniciarPV || bloqueado || ocupado || pvZeroAutoTentado.current) return;
+    pvZeroAutoTentado.current = true;
+    void iniciar('pv_zero');
+  }, [recursos.pvAtual, recursos.biAtual, biMaximo, podeIniciarPV, bloqueado, ocupado]);
 
   async function registrarTeste() {
     if (!reanimacao || !estadoAtivo || bloqueioVirtual || !resultadoValido) return;
@@ -141,7 +149,7 @@ export default function ReanimacaoFichaLocal({ dados, recursos, origem, pvMaximo
     {modoDados !== 'mistos' && <p>Método: {modoDados === 'fisicos' ? 'Dados físicos' : 'Dados virtuais'}.</p>}
     {bloqueado && <p role="status">Salve ou descarte outras alterações pendentes da ficha antes de alterar a Reanimação.</p>}
     {!reanimacao && <>
-      {podeIniciarPV && <button type="button" className="acao" disabled={ocupado || bloqueado} onClick={() => void iniciar('pv_zero')}>Iniciar Reanimação por 0 PV <span>→</span></button>}
+      {podeIniciarPV && <button type="button" className="acao" disabled={ocupado || bloqueado} onClick={() => void iniciar('pv_zero')}>Tentar registrar estado de 0 PV <span>→</span></button>}
       {podeIniciarColapso && <button type="button" className="acao" disabled={ocupado || bloqueado} onClick={() => void iniciar('colapso_bi')}>Tentar iniciar Reanimação por Colapso Viral <span>→</span></button>}
 
     </>}

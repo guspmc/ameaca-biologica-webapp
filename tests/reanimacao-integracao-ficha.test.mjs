@@ -77,3 +77,11 @@ test('Reanimação respeita dados físicos, virtuais e mistos sem presumir resul
   assert.match(painel, /Rolar e registrar Teste/);
   assert.match(painel, /Dados físicos registrados/);
 });
+
+test('0 PV inicia automaticamente o estado de Reanimação, aguardando o próximo turno', () => {
+  assert.match(painel, /pvZeroAutoTentado/);
+  assert.match(painel, /void iniciar\('pv_zero'\)/);
+  assert.match(painel, /recursos\.pvAtual > 0/);
+  assert.match(painel, /aguardando_proximo_turno/);
+  assert.match(painel, /Iniciar Testes no próximo turno/);
+});
