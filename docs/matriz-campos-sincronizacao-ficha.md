@@ -1,7 +1,7 @@
 # Matriz preliminar de campos — sincronização Local > LAN
 
 **Data:** 10/11/2026  
-**Status:** análise técnica conservadora; proposta para validação, não é allowlist implementada.
+**Status:** allowlist inicial APROVADA pelo responsável em 10/11/2026; ainda não implementada.
 
 ## Princípio
 
@@ -11,9 +11,9 @@ A sincronização não deve aceitar um objeto JSON inteiro e confiar que o front
 
 | Campo/grupo | Evidência no código atual | Rascunho | Ficha ativa | Regra proposta |
 |---|---|---|---|---|
-| Nome | Editor de Identidade envia nome separado; PUT atualiza nome | Candidato, validar tamanho e normalização | Candidato, mesma validação | Operação explícita de identidade |
+| Nome | Editor de Identidade envia nome separado; UI/local exigem 2–80 caracteres; servidor atual aceita 1–80 no PUT genérico | **APROVADO para a primeira allowlist**, com validação server-side alinhada ao limite de 2–80 e normalização `trim()` | **APROVADO para a primeira allowlist**, mesma validação | Operação explícita e restrita; não aceitar objeto de ficha completo |
 | identidade | Callback próprio; não foi localizada validação server-side específica no PUT auditado | Pendente de schema | Pendente de schema | Não liberar até validar chaves e limites no servidor |
-| configuracaoFuncionamento | Callback próprio; existe configuracaoFuncionamentoValida | Candidato após validação server-side | Candidato após validação server-side | Allowlist somente após validação equivalente no servidor |
+| configuracaoFuncionamento | Callback próprio; `configuracaoFuncionamentoValida()` valida estrutura estrita em `src/funcionamentoFicha.ts`; o servidor já importa módulos TypeScript do domínio, mas ainda não chama este validador | **APROVADO condicionalmente**: incluir após o servidor chamar o validador compartilhado e os testes cobrirem payloads inválidos | **APROVADO condicionalmente**, mesma validação | Patch tipado, sem substituir outros campos; rejeitar chaves extras e valores inválidos |
 | classe, origem, armaOperario, habilidadeBasica | Campos de criação protegidos quando ficha está completa | Fluxo validado de criação | Proibido no sync genérico | Ativa não altera; rascunho sincroniza como conjunto validado |
 | atributos, periciaOrigemTreinada, periciaOrigemExtra, periciaTentativaErroTreinada, distribuicaoPericias | Dados de criação protegidos em ficha completa | Conjunto atômico e validado | Proibido no sync genérico | Nunca sincronizar parcialmente |
 | planejamentoCriacao | Editor salva pelo callback de Recursos; validador local conhece a estrutura | Candidato no fluxo de criação | Não tratar como edição operacional | Fluxo de criação validado |
@@ -49,13 +49,15 @@ A allowlist deve ser menor. Campos de criação e equipamento inicial protegidos
 5. **Identidade:** há editor próprio, mas o trecho auditado não demonstrou schema server-side suficiente.
 6. **Ausência e exclusão:** usar patches tipados com operação explícita de remoção; omissão não pode significar apagar campo.
 
-## Proposta de primeira allowlist para discussão
+## Primeira allowlist aprovada
 
 A primeira etapa deve ser deliberadamente estreita:
-- nome da personagem, por operação explícita;
-- configuracaoFuncionamento, após validação server-side correspondente;
-- identidade somente depois de definir e implementar schema server-side;
+- **nome da personagem:** aprovado para implementação, com validação server-side de 2 a 80 caracteres e normalização compatível com a UI/local;
+- **configuracaoFuncionamento:** aprovado para implementação somente depois de o servidor executar `configuracaoFuncionamentoValida()` (ou validação equivalente compartilhada) e haver testes positivos/negativos;
+- **identidade:** não faz parte da primeira allowlist; permanece bloqueada até definição e implementação de schema server-side específico;
 - demais recursos operacionais somente após mapear transições e invariantes de cada domínio.
+
+A aprovação é do escopo funcional, não significa que a rota, a persistência dupla ou a sincronização Local > LAN já estejam implementadas. A sincronização deverá usar operação/rota restrita e idempotente, sem transformar o PUT genérico atual em endpoint de sobrescrita irrestrita.
 
 Para ficha ativa, não incluir inicialmente: criação, atributos/perícias de criação, equipamento inicial, compras iniciais, nível/habilidades de Progressão, pedido de Progressão, inventário materializado, Baú, transferências, ativação, autoria, Mesa ou estado de ficha. Recursos e combate também ficam pendentes até haver operações tipadas e testes específicos.
 
@@ -65,6 +67,6 @@ Para rascunhos, a sincronização dos campos de criação deve respeitar o fluxo
 
 - **EVIDÊNCIA:** callbacks da UI separam Identidade, Características, Atributos/Perícias, Inventário, Configuração de Funcionamento e Recursos; servidor protege campos de criação em fichas ativas e propriedades sensíveis da Progressão; inventário materializado é separado.
 - **PROPOSTA:** allowlist estreita, validação server-side por domínio e operações tipadas em vez de PUT de snapshot completo.
-- **NÃO APROVADO:** nenhuma allowlist final foi autorizada ainda.
+- **APROVADO:** nome da personagem; `configuracaoFuncionamento` após validação server-side; identidade explicitamente excluída da primeira etapa.
 - **NÃO IMPLEMENTADO:** nenhuma rota ou sincronização usa esta matriz.
-- **PENDENTE:** confirmar primeira allowlist e detalhar recursos operacionais, combate, identidade e criação em ciclos separados.
+- **PENDENTE:** contrato exato da operação idempotente, vínculo local↔LAN, semântica de ausência/exclusão e testes de segurança; detalhar recursos operacionais, combate, identidade e criação em ciclos separados.
