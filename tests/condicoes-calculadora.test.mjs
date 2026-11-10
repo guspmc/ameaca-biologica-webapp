@@ -43,6 +43,15 @@ test('Desorientado e Intoxicado afetam Testes de Perícia; Intoxicado não afeta
   }), []);
 });
 
+test('Defesa atual aplica Exposto e remove AGI por Desorientado sem duplicar efeitos', () => {
+  assert.equal(api.calcularDefesaComCondicoes(14, 2, []), 14);
+  assert.equal(api.calcularDefesaComCondicoes(14, 2, ['exposto']), 12);
+  assert.equal(api.calcularDefesaComCondicoes(14, 2, ['desorientado']), 12);
+  assert.equal(api.calcularDefesaComCondicoes(14, 2, ['desorientado','exposto']), 10);
+  assert.equal(api.calcularDefesaComCondicoes(14, 2, ['exposto','exposto']), 12);
+  assert.throws(() => api.calcularDefesaComCondicoes(14, 6, []), /Agilidade inválida/);
+});
+
 test('Ficha alimenta os cálculos com Condições ativas e cancela Vantagem/Desvantagem normalmente', async () => {
   const calc = await readFile(new URL('../src/CalculadoraTesteLocal.tsx', import.meta.url), 'utf8');
   const ficha = await readFile(new URL('../src/FichaLocal.tsx', import.meta.url), 'utf8');
