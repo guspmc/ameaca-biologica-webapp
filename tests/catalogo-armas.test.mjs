@@ -4,6 +4,7 @@ import {
   bonusAtaqueOperario,
   calcularDanoArma,
   consultarPerfilArma,
+  consultarPerfilAtaqueUniversal,
   listarPerfisArma,
   possuiFormulaDanoConvencional,
   resolverAtaqueArma,
@@ -119,4 +120,21 @@ test('identifica somente fórmulas convencionais de Dados de Dano', () => {
   assert.equal(possuiFormulaDanoConvencional('Regra específica'), false);
   assert.equal(possuiFormulaDanoConvencional(null), false);
   assert.equal(possuiFormulaDanoConvencional(undefined), false);
+});
+
+test('ataques universais geram perfis de cálculo com dano e crítico canônicos', () => {
+  const improvisada = consultarPerfilAtaqueUniversal('arma-improvisada');
+  assert.deepEqual(
+    [improvisada.nome, improvisada.dano, improvisada.multiplicadorCritico, improvisada.atributoDano],
+    ['Arma Improvisada', '1d6', 2, 'forca'],
+  );
+  const desarmado = consultarPerfilAtaqueUniversal('ataque-desarmado');
+  assert.deepEqual(
+    [desarmado.nome, desarmado.dano, desarmado.multiplicadorCritico, desarmado.atributoDano],
+    ['Ataque Desarmado', '1d4', 3, 'forca'],
+  );
+  const dano = calcularDanoArma({
+    dadosRolados: 4, valorAtributo: 2, critico: true, perfil: desarmado,
+  });
+  assert.equal(dano.total, 18);
 });
