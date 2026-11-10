@@ -55,6 +55,8 @@ test('a interface liga recursos ao salvamento do rascunho e explica os limites',
   const laboratorio = await readFile(new URL('../src/LaboratorioLocal.tsx', import.meta.url), 'utf8');
   const ui = await readFile(new URL('../src/RecursosFichaLocal.tsx', import.meta.url), 'utf8');
   assert.match(ficha, /<RecursosFichaLocal/);
+  assert.match(ficha, /origem=\{origem\}/);
+  assert.match(ui, /ajustarBI\(recursos, 1, pvMaximo, saMaximo, origem\)/);
   const painelRecursos = ficha.match(/<RecursosFichaLocal\b[\s\S]*?\/>/)?.[0] ?? '';
   assert.ok(painelRecursos);
   assert.doesNotMatch(painelRecursos, /\bkey=/);
@@ -78,4 +80,21 @@ test('Vulnerável é exibida como condição derivada dos PV, sem edição manua
   const fonte = await readFile(new URL('../src/RecursosFichaLocal.tsx', import.meta.url), 'utf8');
   assert.match(fonte, /vulneravelPorPV\(recursos\.pvAtual, pvMaximo\)/);
   assert.match(fonte, /Vulnerável · PV atuais iguais ou inferiores a 1\/5 dos PV máximos/);
+});
+
+test('Origem Desgarrado recebe PV Temporários ao aumentar BI, sem acumular valores', () => {
+  const base = { pvAtual: 8, pvTemporarios: 0, saAtual: 2, biAtual: 1 };
+  assert.deepEqual(api.ajustarBI(base, 1, 10, 4, 'Desgarrado'), {
+    pvAtual: 8, pvTemporarios: 1, saAtual: 2, biAtual: 2,
+  });
+  const comTemporarios = { ...base, pvTemporarios: 3, biAtual: 4 };
+  assert.deepEqual(api.ajustarBI(comTemporarios, 1, 10, 4, 'Desgarrado'), {
+    pvAtual: 8, pvTemporarios: 3, saAtual: 2, biAtual: 5,
+  });
+  assert.deepEqual(api.ajustarBI(base, 1, 10, 4, 'Agente'), {
+    ...base, biAtual: 2,
+  });
+  assert.deepEqual(api.ajustarBI({ ...base, biAtual: 4 }, -1, 10, 4, 'Desgarrado'), {
+    ...base, biAtual: 3,
+  });
 });

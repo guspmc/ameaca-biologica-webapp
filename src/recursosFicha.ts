@@ -51,7 +51,11 @@ export function ajustarSA(r: RecursosAtuais, delta: number, pvMaximo: number, sa
 }
 
 /** BI pode alcançar ou ultrapassar o máximo e provocar Colapso Viral. */
-export function ajustarBI(r: RecursosAtuais, delta: number, pvMaximo: number, saMaximo: number): RecursosAtuais {
+export function ajustarBI(r: RecursosAtuais, delta: number, pvMaximo: number, saMaximo: number, origem = ''): RecursosAtuais {
   if (!Number.isSafeInteger(delta) || !recursosValidos(r, pvMaximo, saMaximo) || r.biAtual + delta < 0) throw new Error('BI Atual inválida.');
-  return { ...r, biAtual: r.biAtual + delta };
+  const atualizados = { ...r, biAtual: r.biAtual + delta };
+  if (delta > 0 && origem === 'Desgarrado') {
+    return definirPVTemporarios(atualizados, Math.floor(atualizados.biAtual / 2), pvMaximo, saMaximo);
+  }
+  return atualizados;
 }

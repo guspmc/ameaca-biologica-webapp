@@ -401,6 +401,7 @@ export default function FichaLocal({ nome, mesa, contextoId, dados, aoFechar, ao
           pvMaximo={pv}
           saMaximo={sa}
           biMaximo={bi}
+          origem={origem}
           bloquearPV={recursosAtuais.pvAtual === 0 || reanimacaoPV0EmCurso}
           aoSalvar={aoSalvarRecursos}
           aoAlterarPendencia={pendente => registrarPendencia('Recursos', pendente)}

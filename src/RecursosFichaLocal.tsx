@@ -9,6 +9,7 @@ type Props = {
   pvMaximo: number;
   saMaximo: number;
   biMaximo: number;
+  origem?: string;
   bloquearPV?: boolean;
   aoSalvar: (patch: RecursosAtuais) => Promise<boolean>;
   aoAlterarPendencia: (pendente: boolean) => void;
@@ -16,7 +17,7 @@ type Props = {
   origemDados?: 'local' | 'servidor';
 };
 
-export default function RecursosFichaLocal({ dados, pvMaximo, saMaximo, biMaximo, bloquearPV = false, aoSalvar, aoAlterarPendencia, autoSalvar = false, origemDados = 'local' }: Props) {
+export default function RecursosFichaLocal({ dados, pvMaximo, saMaximo, biMaximo, origem = '', bloquearPV = false, aoSalvar, aoAlterarPendencia, autoSalvar = false, origemDados = 'local' }: Props) {
   const recursosExternos = recursosIniciais(dados, pvMaximo, saMaximo);
   const chaveInicial = JSON.stringify(recursosExternos);
   const [recursos, setRecursos] = useState(recursosExternos);
@@ -93,7 +94,7 @@ export default function RecursosFichaLocal({ dados, pvMaximo, saMaximo, biMaximo
     <h4>Bio-Infecção</h4>
     <div className="recursos-controles">
       <button type="button" disabled={ocupado || biMaximo <= 0 || recursos.biAtual === 0} onClick={() => tentar(() => ajustarBI(recursos, -1, pvMaximo, saMaximo))}>-1 BI</button>
-      <button type="button" disabled={ocupado || biMaximo <= 0} onClick={() => tentar(() => ajustarBI(recursos, 1, pvMaximo, saMaximo))}>+1 BI</button>
+      <button type="button" disabled={ocupado || biMaximo <= 0} onClick={() => tentar(() => ajustarBI(recursos, 1, pvMaximo, saMaximo, origem))}>+1 BI</button>
     </div>
     <p className="ficha-local-legenda">BI começa em 0, não aumenta sozinha e só diminui por fonte expressa. Alcançar ou ultrapassar BI Máxima sinaliza Colapso Viral; esta tela não inicia Reanimação ou transformação.</p>
     {erroOperacao && <p className="offline-erro" role="alert">{erroOperacao}</p>}
