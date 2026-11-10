@@ -543,3 +543,12 @@ Esta atualização substitui qualquer ordem anterior incompatível nesta matriz.
 - **HEAD do código/testes:** `97942492bab00ea1eb0ac651bfe83e986a370d8e`.
 - **PENDENTE:** auditoria final integrada de Condições, Recursos, Descanso e Reanimação; auditoria completa da Criação; integração de Combate; backup/importação e testes de round-trip. Nenhum teste humano foi solicitado nesta etapa.
 - Sem merge para `main`, deploy, produção/Supabase ou alteração de permissões.
+
+
+## Atualização — benefício de BI da Origem Desgarrado (09/11/2026)
+
+- **IMPLEMENTADO — commit `3a81c7bb223db4f183aea13fa55d1301cf0f3691`:** o aumento de BI pelo painel de Recursos agora considera a Origem Desgarrado. Após o aumento, concede PV Temporários iguais à metade da BI atual, arredondada para baixo. A regra geral de PV Temporários continua aplicada: não soma valores; conserva o maior valor existente.
+- **TESTES ADICIONADOS:** aumento de BI com Desgarrado, manutenção de PV Temporários maiores, ausência do benefício em outras Origens e ausência de concessão ao reduzir BI.
+- **CI:** ambos os workflows do commit `66b33b065e513a5f3e3819c4134882de4b055784` concluíram com sucesso. Para o HEAD de código `3a81c7b...`, workflows `42732336629` (Offline) e `42732336648` (compilação) permanecem em execução na última consulta. **CI do HEAD atual pendente.**
+- **HEAD de código/testes:** `3a81c7bb223db4f183aea13fa55d1301cf0f3691`.
+- Sem teste humano, merge, deploy ou alteração de produção/Supabase.
