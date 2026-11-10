@@ -85,3 +85,15 @@ test('a penalidade de Morte no Nível 1 é aplicada ao valor-base de todos os Te
   assert.match(ficha, /penalidadeMorteNivel1=\{penalidadeMorteNivel1\}/);
   assert.match(ficha, /estadoProgressaoPersistenteValido\(ficha\.progressao, classe\)/);
 });
+
+test('a calculadora aplica os modificadores da fase de Bio-Infecção e combina Vantagem/Desvantagem', async () => {
+  const fs = await import('node:fs/promises');
+  const calculadora = await fs.readFile(new URL('../src/CalculadoraTesteLocal.tsx', import.meta.url), 'utf8');
+  assert.match(calculadora, /bonusAtaqueBI/);
+  assert.match(calculadora, /desvantagemBI/);
+  assert.match(calculadora, /vantagem === 'vantagem' \? 'normal' : 'desvantagem'/);
+  assert.match(calculadora, /vantagem: vantagemEfetiva/);
+  const ficha = await fs.readFile(new URL('../src/FichaLocal.tsx', import.meta.url), 'utf8');
+  assert.match(ficha, /bonusAtaqueBI=\{faseBi\.bonusTesteAtaque \?\? 0\}/);
+  assert.match(ficha, /desvantagemBI=\{faseBi\.desvantagemAtaquesETestes === true\}/);
+});

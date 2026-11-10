@@ -26,9 +26,11 @@ type Props = {
   saDisponivel?: number;
   aoFalharCriticoAtaque?: () => Promise<boolean>;
   penalidadeMorteNivel1?: boolean;
+  bonusAtaqueBI?: number;
+  desvantagemBI?: boolean;
 };
 
-export default function CalculadoraTesteLocal({ atributos, treinada, distribuicao, periciaOrigemExtra = '', periciaTentativaErroTreinada = '', temTentativaEErro = false, modoDados, origem = '', saDisponivel = 0, aoFalharCriticoAtaque, penalidadeMorteNivel1 = false }: Props) {
+export default function CalculadoraTesteLocal({ atributos, treinada, distribuicao, periciaOrigemExtra = '', periciaTentativaErroTreinada = '', temTentativaEErro = false, modoDados, origem = '', saDisponivel = 0, aoFalharCriticoAtaque, penalidadeMorteNivel1 = false, bonusAtaqueBI = 0, desvantagemBI = false }: Props) {
   const [tipo, setTipo] = useState<'pericia' | 'atributo' | 'ataque-corpo' | 'ataque-distancia'>('pericia');
   const [pericia, setPericia] = useState('Percepção');
   const [atributo, setAtributo] = useState<keyof AtributosIniciais>('astucia');
@@ -62,7 +64,11 @@ export default function CalculadoraTesteLocal({ atributos, treinada, distribuica
     saDisponivel, gastoSAConfirmado,
   });
   const bonusTentativa = temTentativaEErro && testeDePericia ? bonusTentativaErro(periciaEfetiva, treinada || null, distribuicao, periciaOrigemExtra || null, periciaTentativaErroTreinada || null) : 0;
-  const valorTeste = valorBase + bonusOrigem + bonusTentativa + (penalidadeMorteNivel1 ? -2 : 0);
+  const modificadorAtaqueBI = tipo === 'ataque-corpo' || tipo === 'ataque-distancia' ? bonusAtaqueBI : 0;
+  const valorTeste = valorBase + bonusOrigem + bonusTentativa + modificadorAtaqueBI + (penalidadeMorteNivel1 ? -2 : 0);
+  const vantagemEfetiva: VantagemTeste = desvantagemBI
+    ? (vantagem === 'vantagem' ? 'normal' : 'desvantagem')
+    : vantagem;
   const formula = tipo === 'ataque-corpo' ? 'Ataque Corpo a Corpo: 1d20 + Luta contra a Defesa do alvo.'
     : tipo === 'ataque-distancia' ? 'Ataque à distância: 1d20 + Pontaria contra a Defesa do alvo.'
     : tipo === 'pericia' ? 'Perícia já inclui o Atributo.' : 'Teste puro de Atributo.';
@@ -77,7 +83,7 @@ export default function CalculadoraTesteLocal({ atributos, treinada, distribuica
           dt: Number(dt),
           dado1: dadosConfirmados?.dado1 ?? null,
           dado2: dadosConfirmados?.dado2 ?? null,
-          vantagem,
+          vantagem: vantagemEfetiva,
         }),
         erro: '',
       };
@@ -101,14 +107,14 @@ export default function CalculadoraTesteLocal({ atributos, treinada, distribuica
 
   function registrarRolagem() {
     try {
-      const quantidadeDados = vantagem === 'normal' ? 1 : 2;
+      const quantidadeDados = vantagemEfetiva === 'normal' ? 1 : 2;
       const resultados = metodo === 'virtual'
         ? sortearDados(quantidadeDados, 20)
         : validarResultadosFisicos([dado1, ...(quantidadeDados === 2 ? [dado2] : [])].join(' '), quantidadeDados, 20);
       setDadosConfirmados({ dado1: resultados[0], dado2: resultados[1] });
       setErroRolagem('');
       setMensagemCondicao('');
-      const resultado = calcularTesteManual({ valorBase: valorTeste, modificador: Number(modificador || 0), dt: Number(dt), dado1: resultados[0], dado2: resultados[1] ?? null, vantagem });
+      const resultado = calcularTesteManual({ valorBase: valorTeste, modificador: Number(modificador || 0), dt: Number(dt), dado1: resultados[0], dado2: resultados[1] ?? null, vantagem: vantagemEfetiva });
       if ((tipo === 'ataque-corpo' || tipo === 'ataque-distancia') && resultado.estado === 'falha-critica' && aoFalharCriticoAtaque) {
         void aoFalharCriticoAtaque().then(salvo => setMensagemCondicao(salvo ? 'Falha Crítica: Exposto ativado automaticamente e salvo na Ficha.' : 'Falha Crítica: não foi possível confirmar o salvamento de Exposto. Confira as Condições da Ficha.'));
       }
@@ -121,6 +127,8 @@ export default function CalculadoraTesteLocal({ atributos, treinada, distribuica
   return <details className="ficha-local-editor calculadora-teste">
     <summary>Conferir Teste</summary>
     {penalidadeMorteNivel1 && <p className="ficha-local-aviso" role="status">Penalidade por Morte no Nível 1: −2 aplicada a este Teste de Atributo, Perícia ou Ataque até recuperar o Nível 2.</p>}
+    {desvantagemBI && <p className="ficha-local-aviso" role="status">5ª Fase da BI: Desvantagem aplicada a este Teste. Uma Vantagem e uma Desvantagem se anulam normalmente.</p>}
+    {modificadorAtaqueBI !== 0 && <p className="ficha-local-legenda">Bônus de Ataque pela Bio-Infecção: +{modificadorAtaqueBI}.</p>}
     <p>{modoDados === 'fisicos' ? 'Modo Físicos: informe o resultado obtido nos dados.' : modoDados === 'virtuais' ? 'Modo Virtuais: o aplicativo gera os dados somente quando você solicitar.' : 'Modo Mistos: escolha o método para este Teste.'} Cada rolagem exige comando explícito. O resultado é apenas informativo e não altera dados da personagem.</p>
     {modoDados === 'mistos' && <label>Método desta rolagem
       <select value={metodo} onChange={evento => { setMetodo(evento.target.value as 'fisico' | 'virtual'); setDadosConfirmados(null); setErroRolagem(''); }}>
@@ -189,7 +197,7 @@ export default function CalculadoraTesteLocal({ atributos, treinada, distribuica
       <label>Resultado físico do d20
         <input type="number" min="1" max="20" step="1" value={dado1} onChange={evento => { setDado1(evento.target.value); setDadosConfirmados(null); }} placeholder="1–20" />
       </label>
-      {vantagem !== 'normal' && <label>Segundo d20
+      {vantagemEfetiva !== 'normal' && <label>Segundo d20
         <input type="number" min="1" max="20" step="1" value={dado2} onChange={evento => { setDado2(evento.target.value); setDadosConfirmados(null); }} placeholder="1–20" />
       </label>}
     </div>}
