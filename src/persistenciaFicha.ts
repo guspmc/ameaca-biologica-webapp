@@ -415,6 +415,9 @@ export function atualizarMetadadosVinculoLan(
   if (!validarVinculoLan(atual) || atual.remoteKey !== remoteKeyEsperada) {
     throw new Error('A identidade do vínculo mudou. A atualização foi recusada.');
   }
+  if (!Number.isSafeInteger(metadados.baseRevision) || metadados.baseRevision < atual.baseRevision) {
+    throw new Error('A revisão-base do vínculo não pode retroceder.');
+  }
   const atualizado: VinculoLan = {
     ...atual,
     baseRevision: metadados.baseRevision,
