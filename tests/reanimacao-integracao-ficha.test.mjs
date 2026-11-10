@@ -51,9 +51,15 @@ test('Teste de Medicina também permite registrar resultado crítico de 1 natura
   assert.doesNotMatch(painel, /Falha Crítica e Exposto para quem realizou o Teste/);
 });
 
-test('1 natural sinaliza Falha Crítica e Exposto sem administrar a Condição automaticamente', () => {
-  assert.match(painel, /Falha Crítica e Exposto/);
-  assert.match(painel, /não administra Condições automaticamente/);
+test('1 natural em Reanimação é Falha Crítica, mas não ativa Exposto por não ser Ataque', () => {
+  assert.match(painel, /Falha Crítica no Teste de Reanimação/);
+  assert.match(painel, /não ativa Exposto automaticamente/);
+  assert.doesNotMatch(painel, /Falha Crítica e Exposto/);
+});
+
+test('resumo da BI informa corretamente que Colapso Viral inicia Reanimação automaticamente', () => {
+  assert.match(ficha, /Ao confirmar BI igual ou superior ao máximo, o módulo Reanimação registra automaticamente o Colapso Viral/);
+  assert.doesNotMatch(ficha, /nem inicia Reanimação/);
 });
 
 test('PV Atuais não podem ser alterados diretamente durante Reanimação por 0 PV', () => {

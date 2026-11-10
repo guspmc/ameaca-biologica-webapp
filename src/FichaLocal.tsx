@@ -553,7 +553,7 @@ export default function FichaLocal({ nome, mesa, contextoId, dados, aoFechar, ao
             <div><small>DESVANTAGEM POR BI</small><strong>{faseBi.desvantagemAtaquesETestes === null ? '—' : faseBi.desvantagemAtaquesETestes ? 'Sim' : 'Não'}</strong><p>Aplica-se a Ataques e Testes de Perícia e Atributo na 5ª fase.</p></div>
           </div>
           {penalidadeMorteNivel1 && <p className="ficha-local-aviso" role="status">Penalidade por Morte no Nível 1 ativa: −2 em Testes de Atributo, Perícia e Ataque. Será encerrada automaticamente quando a personagem recuperar o Nível 2.</p>}
-          <p className="ficha-local-legenda">A BI começa em 0 e não progride sozinha. Alterações de BI são registradas expressamente no painel de Recursos; este resumo apenas calcula os modificadores da fase e não os aplica automaticamente a movimento, ataques ou dano, nem inicia Reanimação.</p>
+          <p className="ficha-local-legenda">A BI começa em 0 e não progride sozinha. Alterações são registradas expressamente no painel de Recursos. Este resumo calcula os modificadores da fase, sem aplicá-los automaticamente a movimento, ataques ou dano. Ao confirmar BI igual ou superior ao máximo, o módulo Reanimação registra automaticamente o Colapso Viral; a Ficha não avança turnos nem decide a narrativa.</p>
 
           <h3 className="ficha-local-subtitulo">Combate ativo</h3>
           <PainelAcoesLocal dados={dados} saAtual={recursosAtuais.saAtual} origemDados={origemDados} aoSalvar={aoSalvarRecursos} />

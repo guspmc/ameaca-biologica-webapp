@@ -84,7 +84,7 @@ test('Colapso: testes começam imediatamente; Cobaia rola dois d20 e três suces
   assert.equal(api.encerrarColapsoPorReducaoBI(r, 9, 10).estado, 'concluida');
 });
 
-test('1 natural em Reanimação sinaliza Falha Crítica e Exposto; Vantagem usa o melhor resultado', () => {
+test('1 natural em Reanimação sinaliza Falha Crítica sem ativar Exposto; Vantagem usa o melhor resultado', () => {
   const normal = api.iniciarTurnoReanimacao(api.iniciarReanimacao('pv_zero'));
   const falha = aplicar(normal, 1);
   assert.equal(falha.falhaCritica, true);

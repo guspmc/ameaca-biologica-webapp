@@ -101,7 +101,7 @@ export default function ReanimacaoFichaLocal({ dados, recursos, origem, pvMaximo
       const recursosPatch = resultado.pvAoDespertar === null ? {} : { pvAtual: resultado.pvAoDespertar };
       await persistir(resultado.reanimacao, recursosPatch);
       const avisos: string[] = [];
-      if (resultado.falhaCritica) avisos.push('1 natural: Falha Crítica e Exposto. Registre a Condição conforme a regra; o painel não administra Condições automaticamente.');
+      if (resultado.falhaCritica) avisos.push('1 natural: Falha Crítica no Teste de Reanimação. Como não é um Ataque, não ativa Exposto automaticamente.');
       if (resultado.morteParaRegistroDoMestre) avisos.push('Três falhas: morte sinalizada para registro do Mestre. Nenhuma consequência adicional foi executada.');
       else if (resultado.transformacaoPendente) avisos.push('Três falhas: retorno como Zumbi Especial pendente para o próximo turno.');
       else if (resultado.pvAoDespertar !== null) avisos.push(`Três sucessos: personagem desperta com ${resultado.pvAoDespertar} PV.`);
