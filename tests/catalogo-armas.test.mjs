@@ -5,6 +5,7 @@ import {
   calcularDanoArma,
   consultarPerfilArma,
   listarPerfisArma,
+  possuiFormulaDanoConvencional,
   resolverAtaqueArma,
 } from '../src/catalogoArmas.ts';
 
@@ -104,4 +105,15 @@ test('dado adicional já rolado pode ser incluído sem rolagem automática', () 
   const resultado = calcularDanoArma({ dadosRolados: 6, dadosAdicionais: 4, valorAtributo: 2, critico: false, perfil });
   assert.equal(resultado.total, 12);
   assert.throws(() => calcularDanoArma({ dadosRolados: -1, valorAtributo: 2, critico: false, perfil }));
+});
+
+
+test('identifica somente fórmulas convencionais de Dados de Dano', () => {
+  assert.equal(possuiFormulaDanoConvencional('1d8'), true);
+  assert.equal(possuiFormulaDanoConvencional(' 3D6 '), true);
+  assert.equal(possuiFormulaDanoConvencional('1d6 + FOR'), false);
+  assert.equal(possuiFormulaDanoConvencional('1d4 + AGI'), false);
+  assert.equal(possuiFormulaDanoConvencional('Regra específica'), false);
+  assert.equal(possuiFormulaDanoConvencional(null), false);
+  assert.equal(possuiFormulaDanoConvencional(undefined), false);
 });
