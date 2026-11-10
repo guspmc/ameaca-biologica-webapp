@@ -10,8 +10,8 @@ test('calculadora oferece Ataque Corpo a Corpo com Luta e Ataque à distância c
   assert.match(ui, /ataque-corpo/);
   assert.match(ui, /ataque-distancia/);
   assert.match(ui, /const periciaEfetiva = tipo === 'ataque-corpo' \? 'Luta' : tipo === 'ataque-distancia' \? 'Pontaria'/);
-  assert.match(ui, /Ataque Corpo a Corpo: 1d20 \+ Luta contra a Defesa do alvo/);
-  assert.match(ui, /Ataque à distância: 1d20 \+ Pontaria contra a Defesa do alvo/);
+  assert.match(ui, /Ataque Corpo a Corpo: 1d20 \+ Luta/);
+  assert.match(ui, /Ataque à distância: 1d20 \+ Pontaria/);
 });
 
 test('modo de Ataque não compara com Defesa e mantém os resultados críticos oficiais', () => {
