@@ -611,3 +611,10 @@ Esta atualização substitui qualquer ordem anterior incompatível nesta matriz.
 - **Checkpoint:** `docs/checkpoint-gm79-2026-11-10.md`.
 
 - **Revisão adicional GM 79:** disparo em Área limpa resultados antigos, não oferece rolagem de Ataque e não permite multiplicador crítico; testes estáticos adicionados.
+
+
+## Atualização — procedimentos de disparo e Perfuração (10/11/2026)
+- **IMPLEMENTADO:** seletor manual de Disparo Cadenciado, Rajada e orientação de Perfuração; Matilda exige confirmação da Coronha específica.
+- **LIMITAÇÃO:** sem consumo de munição, rolagens de Reflexos, rastreamento de alvos/linha/cobertura ou aplicação automática de Dano.
+- **PENDENTE:** testes CI e validação humana.
+- **Checkpoint:** `docs/checkpoint-disparo-e-perfuracao-2026-11-10.md`.
