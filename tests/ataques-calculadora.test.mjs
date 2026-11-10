@@ -97,3 +97,11 @@ test('resultado do Ataque preenche automaticamente o estado de Crítico no cálc
   assert.match(ui, /if \(ehAtaque\) setCriticoDano\(ataqueFoiCritico\)/);
   assert.match(ui, /setCriticoDano\(false\)/);
 });
+
+test('Ataque Desarmado e Arma Improvisada estão disponíveis na calculadora', () => {
+  assert.match(ui, /consultarPerfilAtaqueUniversal/);
+  assert.match(ui, /universal:arma-improvisada/);
+  assert.match(ui, /universal:ataque-desarmado/);
+  assert.match(ui, /desvantagemDesarmado = perfilCorpo\?\.id === 'universal-ataque-desarmado'/);
+  assert.match(ui, /Ataque Desarmado: Desvantagem padrão aplicada/);
+});
