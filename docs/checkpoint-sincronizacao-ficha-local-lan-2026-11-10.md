@@ -108,3 +108,84 @@ Antes de codificar a ponte, especificar:
 - como a interface apresenta confirmação local e sincronização LAN separadamente.
 
 **Não iniciar endpoint de sobrescrita irrestrita.** A solução deve limitar a sincronização à personagem do jogador autenticado, ao vínculo atual com a Mesa e ao conjunto de dados que a Ficha pode legitimamente editar.
+
+
+---
+
+## Segundo ciclo — arquitetura real das duas entradas e do salvamento LAN
+
+**Data:** 10/11/2026  
+**HEAD de código consultado:** `c10e9f8e3e6c4a2ff8c185ad59fdd4824ba64ef0`  
+**HEAD documental antes deste complemento:** `41fc16e6cce202bc3e40ee0bc17a881167580464`
+
+### Descoberta: existem duas aplicações/entradas distintas
+
+- `src/main.tsx` seleciona `ConexaoServidorLocal` somente quando a URL contém `?servidor=local`.
+- Sem esse parâmetro, a aplicação inicial é `FichaOfflineApp`.
+- `FichaOfflineApp` é autônoma: não exige conta, não conhece Mesa/servidor e usa IndexedDB diretamente.
+- `ConexaoServidorLocal` tem autenticação local, lista Mesas/personagens e abre a mesma apresentação `FichaLocal`, mas lê e grava diretamente no SQLite por HTTP.
+- Portanto, hoje não existe um fluxo único que abra a Ficha e escolha entre salvar localmente ou na LAN. São dois caminhos separados.
+
+### Evidências no fluxo LAN
+
+- `ConexaoServidorLocal.tsx` restaura a sessão por cookie HttpOnly consultando `/api/health` e `/api/auth/me` no servidor.
+- Ao abrir uma personagem, consulta `GET /api/personagens/:id`, valida que o `mesaId` corresponde à Mesa selecionada e guarda em localStorage apenas o contexto de navegação `accountId`, `mesaId` e `personagemId`.
+- O salvamento atual monta um snapshot a partir dos dados LAN vigentes e envia `PUT /api/personagens/:id` com `expectedRevision`.
+- A fila serializada, a geração de sessão e a verificação de personagem/Mesa impedem que operações atrasadas migrem para outra ficha ou sessão.
+- A Ficha LAN não chama atualmente `salvarPersonagem` nem `salvarPatchPersonagem` do IndexedDB.
+
+### Evidências no servidor
+
+- `server/auth-local.mjs` mantém sessão em cookie HttpOnly e autentica cada chamada; o cliente não precisa persistir o token no localStorage no modo LAN.
+- `server/personagens-local.mjs` verifica autoria e participação atual como Jogador para consultar ou alterar personagem.
+- A rota PUT atual exige `expectedRevision`; revisão divergente retorna 409.
+- Para personagens ativas, o PUT genérico bloqueia alterações em campos de criação/equipamento inicial. Estado de Progressão e campos de Economia/Turno também têm validações específicas.
+- O SQLite tem migrações versionadas. A tabela `personagens_locais` já possui revisão, estado de ficha e inventário; a ativação tem recibo próprio. Não foi criada migration neste ciclo.
+
+### Implicação para Local > LAN
+
+A regra confirmada não pode ser implementada apenas dentro de `FichaOfflineApp` nem apenas adicionando IndexedDB ao botão de salvar sem resolver a entrada e a identidade.
+
+A ponte precisa relacionar, de forma persistente e inequívoca:
+- conta autenticada;
+- Mesa;
+- ID da personagem no servidor;
+- registro/cache local correspondente;
+- estado da personagem (rascunho ou ativa);
+- última versão local válida e situação de sincronização.
+
+Os IDs locais UUID e os IDs LAN hexadecimais devem continuar distintos, com um vínculo explícito. Não usar nome de personagem como chave de associação.
+
+### Proposta técnica para o próximo incremento — AINDA NÃO APROVADA/IMPLEMENTADA
+
+Manter `FichaLocal` como componente de interface comum e criar uma camada de persistência/coordenação no fluxo LAN:
+1. Ao abrir uma personagem online, validar sessão, autoria e Mesa no servidor.
+2. Persistir localmente um snapshot íntegro associado à conta/Mesa/ID LAN, mantendo o ID local próprio e um vínculo explícito.
+3. Em cada salvamento, confirmar primeiro a transação local; depois tentar gravar na LAN. Mostrar separadamente “Salvo neste dispositivo” e “Sincronizado com a LAN”.
+4. Se a LAN cair, continuar a partir do snapshot local previamente confirmado. Ao reconectar, autenticar novamente se necessário e enviar a última versão local válida automaticamente.
+5. Criar um contrato de sincronização dedicado no servidor, sem relaxar o PUT genérico nem remover proteções de Progressão/ativação/Inventário. A rota deve autorizar conta, Mesa e personagem, validar o conjunto de campos e ser idempotente.
+6. Definir como o usuário reabre a ficha cacheada quando o servidor está indisponível e como a identidade da conta é confirmada sem a sessão online. O cookie HttpOnly não pode ser lido pelo JavaScript; não armazenar senha/token como atalho.
+
+### Questões que precisam ser resolvidas no desenho antes de codificar
+
+- **Acesso offline e identidade:** qual UX autoriza abrir a cópia local quando não há servidor para validar a sessão? O contexto local existente ajuda a localizar a ficha, mas não prova autenticação atual.
+- **Ficha ativa:** quais campos de uma ficha ativa podem ser sobrescritos pelo snapshot Local > LAN e quais continuam obrigatoriamente sujeitos aos fluxos específicos já existentes? Não contornar bloqueios de Progressão, ativação ou Inventário.
+- **Entrada única:** o fluxo de jogador deve convergir para a entrada LAN com cache local, enquanto a entrada Offline independente permanece para fichas sem Mesa/conta? Esta é a proposta mais simples para evitar duplicar interfaces, mas precisa ser validada no planejamento.
+- **Primeiro vínculo:** quando já existe uma ficha Offline e uma personagem LAN, a associação deve ser explícita pelo jogador; nunca inferida por nome.
+
+### CI do ciclo documental anterior
+
+No commit `41fc16e6cce202bc3e40ee0bc17a881167580464`:
+- `TypeScript e Vite`: sucesso.
+- `validar`: sucesso.
+- `Supabase Preview`: ignorado (esperado para esta branch).
+
+O presente complemento altera apenas documentação. A CI deste novo commit será conferida separadamente.
+
+### Classificação atualizada
+
+- **DECIDIDO:** Ficha local é a autoridade; sincronização Local > LAN automática; Baú/transferências compartilhadas permanecem LAN-only.
+- **IMPLEMENTADO:** duas entradas separadas; IndexedDB no modo Offline; SQLite/API autenticada no modo LAN; revisão otimista no PUT atual; salvamento serializado e proteções de contexto.
+- **NÃO IMPLEMENTADO:** cache local da Ficha LAN; vínculo entre IDs local e LAN; salvamento duplo; abertura offline da ficha de Mesa; sincronização automática; contrato LAN autoritativo.
+- **NÃO TESTADO:** fluxo integrado Local > LAN.
+- **PENDENTE:** fechar decisões de UX/identidade offline e delimitação de campos sincronizáveis de fichas ativas; depois implementar em incrementos pequenos.
