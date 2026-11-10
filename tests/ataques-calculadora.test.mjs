@@ -111,3 +111,16 @@ test('cálculo manual aceita soma de Dados adicionais já rolados sem presumir P
   assert.match(ui, /dadosAdicionais: adicionais/);
   assert.match(ui, /A calculadora não presume que você os possui/);
 });
+
+test('modos especiais de Spark Shot e Lança-Chamas oferecem fórmulas manuais canônicas', () => {
+  assert.match(ui, /consultarFormulaDanoEspecial/);
+  assert.match(ui, /Disparo Carregado · Ação Completa · 3 Cargas · 4d4/);
+  assert.match(ui, /Início \/ reinício · 3d6/);
+  assert.match(ui, /3 ou mais turnos consecutivos · 6d6/);
+  assert.match(ui, /não consome Combustível nem registra turnos ou Movimento/);
+});
+
+test('Motosserra orienta informar os dados extras de explosão sem rolagem automática', () => {
+  assert.match(ui, /Motosserra, informe aqui a soma dos dados extras gerados por cada resultado 6/);
+  assert.match(ui, /incluindo os encadeamentos/);
+});
