@@ -59,7 +59,7 @@ test('ficha contínua integra revisão local e ativação explícita pelo servid
 
 test('calculadora integrada usa rolagem expressa física/virtual e não persiste resultados', async () => {
   const ficha = await ler('FichaLocal.tsx');
-  assert.match(ficha, /<CalculadoraTesteLocal atributos=\{atributos\}/);
+  assert.match(ficha, /<CalculadoraTesteLocal[^>]*atributos=\\{atributos\\}//);
   const calculadora = await ler('CalculadoraTesteLocal.tsx');
   assert.match(calculadora, /calcularTesteManual/);
   assert.match(calculadora, /modoDados === 'virtuais'/);
