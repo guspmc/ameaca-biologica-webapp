@@ -283,3 +283,47 @@ O cliente só marca o patch como sincronizado quando reconhecer o recibo da oper
 - Integrar salvamento local-first antes de habilitar envio automático.
 
 Nenhuma dessas pré-condições autoriza substituir a política Local > LAN ou escolher automaticamente entre cópias divergentes.
+
+
+## 10. Modelo proposto de vínculo IndexedDB local↔LAN
+
+**Estado:** proposta técnica para validação em implementação; ainda não implementada.
+
+### 10.1 Store separado
+
+A ficha local atual usa IndexedDB `ameaca-biologica-ficha`, versão 2, store `personagens`. Cada personagem possui UUID local, geração, nome, datas e `dados`; não possui identidade LAN.
+
+Proposta: elevar o banco para versão 3 e criar store separado `vinculosLan`, mantendo os registros de `personagens` intactos. Não colocar IDs de conta/Mesa/personagem remota dentro do objeto de ficha nem misturar metadados de sincronização com os dados do RPG.
+
+Registro mínimo proposto:
+- `localId` (UUID, chave primária e vínculo com `personagens.id`);
+- `accountId`, `mesaId`, `personagemId` LAN;
+- `remoteKey` determinística composta por conta/Mesa/personagem, com índice único para impedir dois vínculos locais simultâneos para a mesma personagem remota no mesmo navegador;
+- `baseRevision` (última revisão LAN conhecida e aceita);
+- `syncState` (sincronizado, pendente, conflito ou bloqueado por autorização);
+- operação pendente (`operationId`, hash/conteúdo permitido e revisão de base), quando houver;
+- snapshot LAN preservado em conflito, sem substituir o snapshot local.
+
+A estrutura não armazena senha, cookie, token ou credencial. O ID remoto não serve como prova de autorização.
+
+### 10.2 Primeiro vínculo
+
+- Vínculo é criado somente a partir de uma personagem consultada pela LAN após autenticação e confirmação de papel Jogador.
+- Não associar por nome, conteúdo semelhante, posição na lista ou UUID gerado localmente.
+- Uma ficha Offline preexistente não será vinculada automaticamente. O fluxo de escolha e confirmação explícita ainda precisa ser desenhado; até lá, ela permanece independente.
+- Ao abrir uma personagem LAN já vinculada, carregar o registro local correspondente e comparar a revisão LAN com a base registrada antes de decidir se há conflito.
+
+### 10.3 Backup e troca de conta
+
+- O backup JSON atual representa fichas Offline. Exportar/importar uma ficha não deve copiar silenciosamente vínculo LAN nem estado de autenticação.
+- Importação restaura ficha como independente; um novo vínculo exige fluxo explícito e autorização online.
+- Ao trocar de conta, não apagar registros locais pendentes. A UI deverá separar contextos e não expor uma ficha vinculada a outra conta como se estivesse autorizada; essa experiência de seleção/privacidade continua pendente.
+- Revogação ou remoção da Mesa bloqueia sincronização, preserva cópia local e snapshot de conflito.
+
+### 10.4 Escrita atômica local
+
+A atualização do snapshot da ficha e dos metadados de sincronização precisa ocorrer na mesma transação IndexedDB quando forem dependentes. O cliente só avança `baseRevision` depois de confirmar o recibo da operação correspondente. Uma edição local posterior ao início do envio permanece pendente e nunca é marcada como sincronizada pela resposta antiga.
+
+### 10.5 Limites
+
+Este modelo não autoriza sincronizar dados além da primeira allowlist, não implementa merge automático, não permite Baú/transferências offline e não altera a política de conflito entre dispositivos. A UI de comparação e resolução continua pendente.
