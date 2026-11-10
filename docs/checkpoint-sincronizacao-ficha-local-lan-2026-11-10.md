@@ -314,3 +314,44 @@ Criado `docs/matriz-campos-sincronizacao-ficha.md`, com matriz preliminar por ca
 - **NÃO TESTADO:** nenhum teste de sync Local > LAN, pois a integração ainda não existe.
 
 **Próximo passo:** submeter a proposta inicial de allowlist para decisão antes de implementar qualquer endpoint ou alterar o fluxo de salvamento.
+
+
+---
+
+## Ciclo — aprovação da primeira allowlist e validação técnica
+
+**Data:** 10/11/2026  
+**Branch:** `feat/offline-first-ficha`  
+**HEAD documental consultado:** `17316d21c47400a02f8d2273e40bcfd7f5750ec7`
+
+### Decisão do responsável
+
+Gus aprovou a primeira allowlist restrita:
+- **Nome da personagem** — incluído na primeira etapa.
+- **Configuração de Funcionamento (`configuracaoFuncionamento`)** — incluída após validação server-side correspondente.
+- **Identidade** — excluída da primeira etapa; só poderá entrar depois de schema/validação específica no servidor.
+- Todos os demais campos continuam fora da sincronização genérica inicial e preservam seus fluxos protegidos.
+
+### Evidências adicionais verificadas
+
+- `src/FuncionamentoFichaLocal.tsx` persiste preferências pelo callback próprio `aoSalvar`; o objeto contém modo, preferências do modo Misto, modo de dados e visibilidade padrão das rolagens.
+- `src/funcionamentoFicha.ts` exporta `configuracaoFuncionamentoValida()`, que verifica objeto estrito, chaves obrigatórias/opcionais, enums e conjunto exato de automações. Esse validador ainda não é chamado por `server/personagens-local.mjs`.
+- O servidor já importa validadores TypeScript do domínio (`validarCriacaoServidor.ts`, `economiaAcoes.ts`, `estadoTurnoCombate.ts`, `progressaoPersistente.ts`), portanto a reutilização do validador compartilhado de Funcionamento é compatível com o padrão de imports existente; isso ainda precisa ser confirmado por teste de execução/build após a alteração.
+- O editor/UI e a persistência local exigem nome entre **2 e 80 caracteres**; `nomeValido()` no servidor atualmente aceita entre **1 e 80**. A nova operação restrita deve alinhar o mínimo a 2, sem necessariamente alterar outros fluxos sem avaliar regressões.
+- O fluxo LAN atual envia snapshot amplo pelo PUT com `expectedRevision`; ele não é adequado para ser reaproveitado como endpoint de sincronização autoritativa Local > LAN.
+
+### Estado
+
+- **DECIDIDO/APROVADO:** allowlist inicial descrita acima.
+- **IMPLEMENTADO:** documentação da decisão e matriz atualizada neste ciclo.
+- **NÃO IMPLEMENTADO:** endpoint restrito, persistência dupla, integração IndexedDB↔LAN, idempotência e sincronização de reconexão.
+- **TESTADO:** CI do commit `17316d2` concluiu com sucesso em `validar` e `TypeScript e Vite`; `Supabase Preview` foi ignorado (branch não associado a preview). Isso valida o estado documental/código já existente, não uma implementação nova.
+- **PENDENTE:** definir e implementar operação restrita para nome/configuração; adicionar testes de validação positiva/negativa e autorização; manter identidade fora da allowlist.
+
+### Próximo ciclo
+
+1. Especificar a rota/operação mínima com patch explícito apenas para `name` e `configuracaoFuncionamento`, incluindo idempotência, autorização, vínculo conta/Mesa/personagem e transação.
+2. Reutilizar `configuracaoFuncionamentoValida()` no servidor, sem duplicar regras de domínio.
+3. Testar nome inválido (1 caractere, >80, espaços), configuração inválida (chaves extras, enum inválido, automação ausente/tipo errado), sessão inválida, conta não autora e jogador removido da Mesa.
+4. Não sincronizar Identidade, recursos, criação, Progressão, combate ou inventário por essa operação.
+5. Atualizar este checkpoint e a matriz após o próximo incremento; não iniciar sincronização real antes de existir vínculo local↔LAN inequívoco.
