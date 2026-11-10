@@ -53,6 +53,10 @@ function clonarPerfilArma(perfil: PerfilArma): PerfilArma {
   };
 }
 
+export function possuiFormulaDanoConvencional(dano: string | null | undefined): boolean {
+  return typeof dano === 'string' && /^\d+d\d+$/i.test(dano.trim());
+}
+
 export function consultarPerfilArma(id: string): PerfilArma | null {
   const perfil = porId.get(id);
   return perfil ? clonarPerfilArma(perfil) : null;
