@@ -355,3 +355,16 @@ Gus aprovou a primeira allowlist restrita:
 3. Testar nome inválido (1 caractere, >80, espaços), configuração inválida (chaves extras, enum inválido, automação ausente/tipo errado), sessão inválida, conta não autora e jogador removido da Mesa.
 4. Não sincronizar Identidade, recursos, criação, Progressão, combate ou inventário por essa operação.
 5. Atualizar este checkpoint e a matriz após o próximo incremento; não iniciar sincronização real antes de existir vínculo local↔LAN inequívoco.
+
+
+### Registro complementar do desenho técnico
+
+Após a aprovação da primeira allowlist, `docs/desenho-tecnico-cache-ficha-lan.md` foi atualizado para distinguir:
+- allowlist funcional aprovada;
+- arquitetura geral ainda em proposta;
+- endpoint, payload, recibo e persistência idempotente ainda pendentes de especificação;
+- identidade fora da primeira etapa.
+
+**Commit documental:** `feea982faee0a246223a77a6c84f81c21885df5c`.
+
+Nenhum arquivo de implementação foi alterado. O próximo ciclo deverá especificar a operação restrita e o vínculo local↔LAN antes de criar rota ou migration.
