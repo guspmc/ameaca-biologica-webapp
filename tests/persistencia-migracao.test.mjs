@@ -3,7 +3,9 @@ import assert from 'node:assert/strict';
 
 function instalarIndexedDBComBancoV1(registrosIniciais) {
   const registros = new Map(registrosIniciais.map(item => [item.id, structuredClone(item)]));
-  let versaoBanco = 1;
+  let versaoBanco = 2;
+  const stores = new Set(['personagens']);
+  let indiceRemotoUnico = false;
 
   const store = {
     openCursor() {
@@ -47,7 +49,17 @@ function instalarIndexedDBComBancoV1(registrosIniciais) {
 
   const banco = {
     onversionchange: null,
-    objectStoreNames: { contains: nome => nome === 'personagens' },
+    objectStoreNames: { contains: nome => stores.has(nome) },
+    createObjectStore(nome, opcoes) {
+      stores.add(nome);
+      return {
+        keyPath: opcoes.keyPath,
+        createIndex(nomeIndice, campo, configuracao) {
+          if (nome === 'vinculosLan' && nomeIndice === 'remoteKey'
+            && campo === 'remoteKey' && configuracao.unique === true) indiceRemotoUnico = true;
+        },
+      };
+    },
     close() {},
     transaction() {
       const transacao = {
@@ -98,10 +110,10 @@ function instalarIndexedDBComBancoV1(registrosIniciais) {
     return pedido;
   };
 
-  return { registros };
+  return { registros, stores, indiceRemotoUnico: () => indiceRemotoUnico };
 }
 
-test('migração v1 para v2 atribui geração às fichas antigas e preserva geração válida', async () => {
+test('migração v1 para v3 preserva fichas, cria store LAN e atribui geração às fichas antigas', async () => {
   const fake = instalarIndexedDBComBancoV1([
     {
       id: 'sem-geracao', nome: 'Claire',
@@ -127,7 +139,10 @@ test('migração v1 para v2 atribui geração às fichas antigas e preserva gera
   const fichas = await persistencia.listarPersonagens();
   const porId = new Map(fichas.map(ficha => [ficha.id, ficha]));
 
-  assert.equal(persistencia.VERSAO_BANCO_FICHA, 2);
+  assert.equal(persistencia.VERSAO_BANCO_FICHA, 3);
+  assert.ok(fake.stores.has('personagens'));
+  assert.ok(fake.stores.has('vinculosLan'));
+  assert.equal(fake.indiceRemotoUnico(), true);
   assert.equal(typeof porId.get('sem-geracao').geracao, 'string');
   assert.ok(porId.get('sem-geracao').geracao.trim().length > 0);
   assert.equal(typeof porId.get('geracao-vazia').geracao, 'string');
