@@ -29,7 +29,7 @@
 | Testes e roladores | `RoladoresBasicosLocal.tsx`, `CalculadoraTesteLocal.tsx`, `rolagemDados.ts`, `testes.ts`. | `roladores-ficha.test.mjs`, `testes.test.mjs`, `ataques-calculadora.test.mjs` | Os testes existentes verificam restrição de roladores ao modo Automático; Misto/Manual não devem ganhar calculadoras por acidente. |
 | Iniciativa | A Ficha exibe modificador derivado de AGI e permite rolagem pontual no modo Automático. | `iniciativa-ficha.test.mjs` | A própria suíte confirma que a Ficha não administra ordem de turnos nem Encontros. |
 | Progressão e Morte | `ProgressaoFichaLocal.tsx`, `progressaoPersistente.ts`, `progressaoMorte.ts`. | `progressao-persistente.test.mjs`, `progressao-morte.test.mjs`, `progressao-campanha.test.mjs` | Edição/registro disponíveis Offline; integração LAN requer fluxo próprio de autorização e gravação. Registro de Morte na LAN aguarda confirmação do Mestre. |
-| Inventário | `EditorInventarioLocal.tsx`, `PainelInventarioLocal.tsx` e diversos módulos de catálogo, consulta, criação, expansão e organização. | `inventario-*.test.mjs`, `catalogo-*.test.mjs`, `organizacao-*.test.mjs`, testes de UI de inventário | Existe uma base de código e testes substancial; isso não significa que todas as operações estejam concluídas ou integradas à Ficha ativa. A auditoria específica do módulo continua necessária. |
+| Inventário | `EditorInventarioLocal.tsx` permite planejar equipamento inicial e compras no rascunho. `inventarioCriacao.ts`, `inventarioAtivo.ts`, `inventarioConsulta.ts`, `inventarioExpansao.ts` e `organizacaoInventario.ts` implementam partes importantes do domínio. | `inventario-ativo`, `inventario-consulta-local`, `inventario-criacao`, `inventario-expansao`, `inventario-persistencia`, `organizacao-inventario`, `organizacao-multiespaco`, `organizacao-sessao`, catálogos e QA visual isolado. | Na Ficha ativa, o código mostra resumo de itens materializados e declara que movimentação/gerenciamento contínuo ainda serão liberados. `PainelInventarioLocal` é somente leitura; a fixture visual declara não ter ações de uso, equipamento, transferência ou Baú. O servidor inspecionado expõe lista, ficha, conferência e ativação, mas não uma rota dedicada de operações do Inventário ativo. Munição/recarga e propriedades operacionais das armas também permanecem pendentes. |
 | Persistência Offline | `persistenciaFicha.ts`, `FichaOfflineApp.tsx`; IndexedDB v3 com store separado para vínculos LAN. | `persistencia-migracao.test.mjs`, `persistencia-operacoes.test.mjs`, `persistencia-patch.test.mjs`, `persistencia-gravacao.test.mjs`, `vinculos-lan*.test.mjs` | O novo teste CRUD do vínculo usa IndexedDB simulado. Integração em navegador com IndexedDB real permanece pendente. |
 | Persistência LAN | `ConexaoServidorLocal.tsx`, `servidorLocal.ts`, servidor local SQLite. | `personagens-local.test.mjs`, `cliente-servidor-local.test.mjs`, `auth-local.test.mjs`, `rascunhos-concorrencia.test.mjs`, entre outros. | LAN e Offline ainda são fluxos separados. Não existe ainda sincronização local-first, endpoint dedicado para allowlist ou UI de conflito multi-dispositivo. |
 
@@ -47,3 +47,29 @@
 - Auditar o módulo Inventário por fluxo: criação, ativação, consulta, movimentação, organização, consumo, munição/recarga e salvamento.
 - Auditar LAN separadamente: sessão, salvamento, permissões e estado de sincronização.
 - Depois, cruzar cada caso com o Arquivo do Jogador e o Planejamento aprovado, sem alterar o cânone.
+
+
+## Auditoria específica do Inventário — incremento 1
+
+**Evidências consultadas:** `src/FichaLocal.tsx` (seção Inventário), `src/PainelInventarioLocal.tsx`, `tests/ui/inventario.tsx`, `tests/ui/estadoInventario.ts`, `src/organizacaoInventario.ts` e `server/personagens-local.mjs`.
+
+### O que está implementado no código
+
+- Planejamento de equipamento inicial e compras no rascunho, com prévia de ocupação/capacidade.
+- Materialização de exemplares com identificadores próprios, posições e estados iniciais.
+- Catálogos de armas, munições, coletes, itens de exploração, peças e procedimentos.
+- Modelos de consulta e validação de inventário, inclusive pilhas de munição, estados gastos, exemplares distintos e capacidade excedida.
+- Modelo de expansão de capacidade e organização por prévia, confirmação explícita, recibos e recuperação de pedidos.
+- Persistência do inventário no registro da personagem durante a ativação no servidor, com transação, revisão e recibo.
+
+### O que ainda não está conectado à Ficha ativa
+
+- Para personagem completa, `FichaLocal.tsx` exibe resumo e informa que movimentação e gerenciamento contínuo serão liberados no módulo.
+- `PainelInventarioLocal.tsx` está identificado como “SOMENTE LEITURA”; permite consultar, buscar e filtrar exemplares.
+- A fixture `tests/ui/inventario.tsx` declara expressamente que é simulação isolada, com dados fictícios em memória, sem login/banco/campanha e sem ações de uso, equipamento, transferência ou Baú.
+- As rotas identificadas em `server/personagens-local.mjs` cobrem lista, ficha, conferência e ativação. A ativação materializa `inventario_json`; não foi identificada nesse roteador uma rota de gerenciamento do Inventário ativo.
+- A própria Ficha declara que controle de munição/recarga, propriedades operacionais das armas e Iniciativa da Mesa permanecem pendentes.
+
+### Conclusão provisória
+
+A base de domínio e a cobertura automatizada do Inventário são substanciais. A lacuna principal está na integração operacional e persistente do Inventário ativo com a Ficha e com rotas autorizadas do servidor — não na ausência de catálogo ou de lógica de planejamento. A conclusão do módulo deve ser decomposta por operações e validada contra o Arquivo do Jogador antes de qualquer implementação.
