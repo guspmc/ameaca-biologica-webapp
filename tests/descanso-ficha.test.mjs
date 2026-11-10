@@ -72,7 +72,8 @@ test('painel respeita dados físicos, virtuais e mistos e salva somente após a�
   assert.match(progressao, /Cancelar solicitação/);
 });
 
-test('rolagem virtual de Descanso Parcial ocorre somente após confirmação expressa', () => {
+test('rolagem virtual de Descanso Parcial ocorre somente após confirmação expressa', async () => {
+  const ui = await readFile(new URL('../src/DescansoFichaLocal.tsx', import.meta.url), 'utf8');
   assert.match(ui, /tipo === 'parcial' \? \(metodo === 'virtual'/);
   assert.match(ui, /Concluir Descanso Parcial/);
   assert.match(ui, /Dados de Vida virtuais/);
