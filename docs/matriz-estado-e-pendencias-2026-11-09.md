@@ -848,3 +848,30 @@ Esta atualização substitui qualquer ordem anterior incompatível nesta matriz.
 - O sistema continua sem equipamento ativo conectado ao estado de Durabilidade; helper é domínio isolado, não atualiza ficha/inventário.
 - A decisão narrativa de gatilho, quadrado ameaçado, proteção contra AoO e elegibilidade do item permanece externa/manual.
 - Testes adicionados, não executados localmente; CI pendente.
+
+## 22. Auditoria de Finalizar e Finalização Dupla (11/11/2026)
+
+**CÂNONE CONSULTADO — Arquivo do Jogador v1.0, pp. 77–79**
+- Finalizar custa 3 SA; é uma Manobra cujo custo completo inclui o Ataque e o deslocamento de até o Movimento exclusivamente para alcançar o alvo. Não consome a Ação nem o Movimento normais.
+- Em acerto, o alvo faz Fortitude contra DT igual ao resultado do Ataque; em falha, sofre Dano normal +3d6. Se estiver Vulnerável e puder sofrer Morte Instantânea, é morto.
+- Finalização Dupla custa Reação +3 SA; só pode ser usada depois que um aliado Finalizar e o alvo sobreviver, por personagem que ainda não agiu na rodada.
+- Finalização Dupla compromete a Ação e o Movimento do próximo turno, preservando Ação Bônus e Ação Livre.
+- O custo de 3 SA é integral para Finalizar. A janela de Esforço limita a 3 SA gastos em Esforço e Manobras, renovada somente ao fim do próximo turno da personagem. Custos de Habilidades não entram nesse limite salvo texto expresso.
+
+**AUDITORIA DA IMPLEMENTAÇÃO**
+- src/economiaAcoes.ts já permite registrar um gasto de Manobra de 3 SA e aplica o teto de 3 SA por janela. Isso é infraestrutura genérica, não implementação de Finalizar.
+- src/manobrasOperacionais.ts não contém operação Finalizar nem Finalização Dupla.
+- src/estadoTurnoCombate.ts não possui marcador persistente para comprometer Ação + Movimento do próximo turno. iniciarTurnoCombate() renova ambos os recursos normalmente, portanto não representa a penalidade da Finalização Dupla.
+- src/reacoesCombate.ts não oferece operação integrada de Finalização Dupla. O helper de Contra-Ataque Instintivo e a exceção de VOCÊ APAROU UM MÍSSIL!? não substituem a Manobra Finalizar.
+- A calculadora de Ataques não resolve essa Manobra nem a Fortitude do alvo; não há registro operacional de alvo sobrevivente após Finalização.
+
+**RESULTADO**
+- **PENDENTE / NÃO IMPLEMENTADO:** Finalizar e Finalização Dupla como operações de domínio e fluxo integrado.
+- **SEM CORREÇÃO DE CÓDIGO NESTE CICLO:** não foi seguro simular a penalidade da Finalização Dupla apenas marcando recursos do turno atual, pois a regra compromete o próximo turno e o estado atual os renova no início. A implementação exige evolução explícita e persistente do estado de turno.
+- **DECISÕES CANÔNICAS NÃO NECESSÁRIAS:** o texto das pp. 77–79 é suficiente para especificar os custos e os compromissos. Permanecem externas as condições narrativas/operacionais que o livro deixa para a Mesa, como confirmação de que o alvo sobreviveu e de que a personagem ainda não agiu na rodada.
+
+**VALIDAÇÃO**
+- Auditoria estática do código e testes existentes; nenhum teste novo foi executado.
+- Não houve alteração de código, validação humana, merge ou publicação.
+- CI do HEAD b233b3f foi consultado novamente: workflows de build e verificação offline ainda estavam em fila no momento da consulta.
+- Checkpoint: docs/checkpoint-auditoria-finalizacao-dupla-2026-11-11.md.
