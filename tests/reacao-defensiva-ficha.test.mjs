@@ -14,6 +14,7 @@ test('A interface avalia a janela com resultado total e d20 natural, sem inferir
 test('A interface só declara Esquiva quando a janela a autoriza e registra o custo pela transição integrada', () => {
   assert.match(painel, /janelaDefensiva\.podeEsquivar/);
   assert.match(painel, /registrarReacaoDefensiva\(\{ economia: economiaAtual, manobra: 'esquivar'/);
+  assert.match(painel, /aplicarReacaoDefensivaCombate/);
   assert.match(painel, /aplicarReacaoCombate/);
 });
 
