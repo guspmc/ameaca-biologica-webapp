@@ -207,3 +207,13 @@ test('CURIOSA apresenta lembrete contextual sem conceder Vantagem automaticament
   assert.match(ui, /Se a situação cumprir os requisitos, selecione Vantagem manualmente/);
   assert.match(ui, /Uma vez por Descanso Completo, também permite Teste de AST DT 12/);
 });
+
+
+test('Habilidades de combate são passadas à calculadora e exibem lembretes sem presumir contexto', () => {
+  assert.match(ficha, /escopo="ataques"[^>]*habilidadesAtivas=\{habilidadesAtivasIds\}/);
+  assert.match(ui, /quantoMaisMelhorAtiva = escopo === 'ataques' && habilidadesAtivas.includes\('quanto-mais-melhor'\)/);
+  assert.match(ui, /Confirme a circunstância com a Mesa e selecione Vantagem manualmente/);
+  assert.match(ui, /armeiroAtivo = escopo === 'ataques' && habilidadesAtivas.includes\('armeiro'\)/);
+  assert.match(ui, /informe o bônus no modificador manual/);
+  assert.match(ui, /ARMEIRA AUTODIDATA: Armas de Fogo modificadas causam \+1d4 de Dano por Peça Extra instalada/);
+});
