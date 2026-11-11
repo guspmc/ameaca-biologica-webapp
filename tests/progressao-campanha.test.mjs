@@ -24,7 +24,6 @@ const escolhasPorNivel = {
 };
 
 test('Progressão Offline neutra registra autorização externa, exige Descanso e consome a autorização ao subir', async () => {
-  const inicial = registrarAvancoAutorizadoGrupo(criarEstadoProgressaoInicial(), 'Agente');
   const { registrarAvancoAutorizadoGrupo } = await import('../src/progressaoPersistente.ts');
   const inicial = registrarAvancoAutorizadoGrupo(criarEstadoProgressaoInicial(), 'Agente');
   const pedido = solicitarGanhoNivel(inicial, 'Agente');
