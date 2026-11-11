@@ -302,6 +302,8 @@ export default function FichaLocal({ nome, mesa, contextoId, dados, aoFechar, ao
   const usosDescanso = (dados as Record<string, unknown>).usosDescansoCompleto ?? {};
   const academicoDisponivel = origem === 'Acadêmico' && usosDescansoCompletoValido(usosDescanso)
     && (usosDescanso as Record<string, unknown>)['origem:academico'] !== true;
+  const criminosoDisponivel = origem === 'Criminoso' && usosDescansoCompletoValido(usosDescanso)
+    && (usosDescanso as Record<string, unknown>)['origem:criminoso'] !== true;
   const recursosAtuais = recursosIniciais(ficha as Record<string, unknown>, pv, sa);
   const biAtual = recursosAtuais.biAtual;
   const faseBi = calcularFaseBioInfeccao(biAtual, bi);
@@ -539,7 +541,7 @@ export default function FichaLocal({ nome, mesa, contextoId, dados, aoFechar, ao
             })}
           </div>
           <p className="ficha-local-legenda">O valor exibido soma o Atributo associado e o Treinamento. O Passivo exibido é o normal; Testes Passivos recebem +5 com Vantagem ou -5 com Desvantagem. A circunstância é resolvida pela Mesa. Não some o Atributo novamente ao realizar o Teste.</p>
-          {configuracaoFuncionamento.modo === 'automatico' && <CalculadoraTesteLocal escopo="testes" atributos={atributos} treinada={treinada} periciaOrigemExtra={extra} periciaTentativaErroTreinada={extraTentativa} temTentativaEErro={temTentativaEErro} distribuicao={distribuicao} modoDados={configuracaoFuncionamento.modoDados} origem={origem} saDisponivel={recursosAtuais.saAtual} penalidadeMorteNivel1={penalidadeMorteNivel1} academicoDisponivel={academicoDisponivel} condicoesAtivas={condicoesAtivasIds} habilidadesAtivas={habilidadesAtivasIds} />}
+          {configuracaoFuncionamento.modo === 'automatico' && <CalculadoraTesteLocal escopo="testes" atributos={atributos} treinada={treinada} periciaOrigemExtra={extra} periciaTentativaErroTreinada={extraTentativa} temTentativaEErro={temTentativaEErro} distribuicao={distribuicao} modoDados={configuracaoFuncionamento.modoDados} origem={origem} saDisponivel={recursosAtuais.saAtual} penalidadeMorteNivel1={penalidadeMorteNivel1} academicoDisponivel={academicoDisponivel} criminosoDisponivel={criminosoDisponivel} condicoesAtivas={condicoesAtivasIds} habilidadesAtivas={habilidadesAtivasIds} />}
         </section>
 
         <section id="ficha-local-combate" className="ficha-local-secao">
