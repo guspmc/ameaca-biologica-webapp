@@ -34,6 +34,21 @@ export type ResultadoManobraOperacional = {
   ataqueAdicionalAutorizado: boolean;
 };
 
+/** Finalizar custa 3 SA; o Ataque e o deslocamento necessário são componentes da Manobra. */
+export function registrarFinalizar(
+  economia: EstadoEconomiaAcoes,
+  manobras: EstadoManobrasTurno,
+): ResultadoManobraOperacional {
+  validarEstadoManobras(manobras);
+  if (!economia.turnoEmAndamento) throw new Error('Finalizar só pode ser registrado durante o próprio turno.');
+  return {
+    economia: gastarSAEmManobra(economia, 3),
+    manobras: { ...manobras },
+    movimentosAdicionais: 0,
+    ataqueAdicionalAutorizado: false,
+  };
+}
+
 /** Desengajar consome o Movimento normal e concede deslocamento protegido de 1,5 m. */
 export function registrarDesengajar(economia: EstadoEconomiaAcoes, manobras: EstadoManobrasTurno): ResultadoManobraOperacional {
   validarEstadoManobras(manobras);
