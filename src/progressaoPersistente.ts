@@ -162,6 +162,7 @@ export function registrarAvancoAutorizadoGrupo(
   if (!estadoProgressaoPersistenteValido(estado, classe) || estado.metodo !== undefined) {
     throw new Error('Esta operação exige um estado de Progressão neutro válido.');
   }
+  if (estado.nivelAtual >= 10) throw new Error('A personagem já alcançou o Nível máximo.');
   if (estado.avancoAutorizado) throw new Error('O avanço já foi autorizado pelo grupo.');
   return { ...structuredClone(estado), avancoAutorizado: true };
 }
