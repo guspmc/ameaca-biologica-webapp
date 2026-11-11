@@ -13,6 +13,7 @@ import { consultarFormulaDanoEspecial, type VarianteDanoEspecial } from './varia
 import { consultarProcedimentoGM79, type CartuchoGM79, type ModoGM79 } from './procedimentosGM79';
 import { consultarModosDisparoArmaFogo } from './procedimentosDisparoArmas';
 import { consultarProcedimentoArmaEspecial } from './procedimentosArmasEspeciais';
+import { aumentarCategoriaDano, categoriasAtaqueUniversal } from './progressaoDano';
 
 const PERICIAS = Object.keys(ATRIBUTO_PERICIA);
 const ATRIBUTOS: { chave: keyof AtributosIniciais; nome: string }[] = [
@@ -206,7 +207,13 @@ export default function CalculadoraTesteLocal({ atributos, treinada, distribuica
   const procedimentoArmaEspecial = perfilFogo ? consultarProcedimentoArmaEspecial(perfilFogo.id) : null;
   useEffect(() => { if (ataqueEmArea) { setCriticoDano(false); setDadosConfirmados(null); setDado1(''); setDado2(''); setErroRolagem(''); } }, [ataqueEmArea]);
   const formulaDanoEspecial = perfilFogo ? consultarFormulaDanoEspecial(perfilFogo.id, varianteDanoEspecial) : null;
-  const formulaDanoConvencional = bearLauncherSelecionado ? '4d6' : formulaDanoEspecial ?? (perfilSelecionado?.dano && possuiFormulaDanoConvencional(perfilSelecionado.dano) ? perfilSelecionado.dano : null);
+  const formulaDanoBase = bearLauncherSelecionado ? '4d6' : formulaDanoEspecial ?? (perfilSelecionado?.dano && possuiFormulaDanoConvencional(perfilSelecionado.dano) ? perfilSelecionado.dano : null);
+  const categoriasDanoUniversal = escopo === 'ataques' && perfilCorpo
+    ? categoriasAtaqueUniversal(origem, cascaGrossaAtiva, perfilCorpo.id)
+    : 0;
+  const formulaDanoConvencional = formulaDanoBase && categoriasDanoUniversal > 0
+    ? aumentarCategoriaDano(formulaDanoBase, categoriasDanoUniversal)
+    : formulaDanoBase;
   const multiplicadorCriticoDano = bearLauncherSelecionado ? 4 : multiplicadorCritico;
   const atributoDano = tipo === 'ataque-corpo' ? atributos.forca : atributos.agilidade;
   const calculoDano = useMemo(() => {
@@ -274,7 +281,8 @@ export default function CalculadoraTesteLocal({ atributos, treinada, distribuica
     {quantoMaisMelhorAtiva && <p className="ficha-local-aviso" role="status">QUANTO MAIS MELHOR: se você estiver na Área de Ameaça de 3 ou mais inimigos, recebe Vantagem nos Ataques. Confirme a circunstância com a Mesa e selecione Vantagem manualmente; a Ficha não conta inimigos nem presume posicionamento.</p>}
     {armeiroAtivo && <p className="ficha-local-legenda">ARMEIRO: ao atacar com arma modificada, some +1 ao Teste de Ataque por Peça Extra instalada nela. Confira a arma efetivamente empunhada e informe o bônus no modificador manual; a seleção do perfil não confirma peças instaladas.</p>}
     {armeiraAutodidataAtiva && <p className="ficha-local-legenda">ARMEIRA AUTODIDATA: Armas de Fogo modificadas causam +1d4 de Dano por Peça Extra instalada. Confira a arma e informe os dados adicionais manualmente; não se aplica a armas Corpo a Corpo. O perfil não confirma peças instaladas.</p>}
-    {cascaGrossaAtiva && <p className="ficha-local-aviso" role="status">CASCA-GROSSA: o Dano Desarmado ou de Coronhada sobe uma categoria de Dado. Uma vez por turno, após um Ataque bem-sucedido, permite executar Cabeçada ou Pisão com Desvantagem. Confira a aplicação manualmente; esta calculadora ainda não confirma Coronhada elegível nem registra usos por turno.</p>}
+    {origem === 'Lutador' && <p className="ficha-local-legenda">LUTADOR: Ataque Desarmado e Arma Improvisada sobem automaticamente uma categoria de Dado. O bônus acumula com Casca-Grossa no Ataque Desarmado; não afeta Coronhada.</p>}
+    {cascaGrossaAtiva && <p className="ficha-local-aviso" role="status">CASCA-GROSSA: a calculadora eleva automaticamente uma categoria no Ataque Desarmado selecionado. Em Coronhada, aplique a categoria manualmente após confirmar coronha resistente e autorizada. Uma vez por turno, após Ataque bem-sucedido, também permite Cabeçada ou Pisão com Desvantagem; a Ficha não registra esses usos.</p>}
     {armamentoEspecialAtivo && <p className="ficha-local-legenda">ARMAMENTO ESPECIAL: concede Proficiência com Magnums e Armas Especiais. Reduz em uma categoria os custos de Recarga, Bombear/Manejar e Coice, nunca abaixo de Interação Gratuita com Objeto. A calculadora não aplica custos de ação automaticamente.</p>}
     {controleDeFogoAtivo && <p className="ficha-local-legenda">CONTROLE DE FOGO: ao usar Rajada, pode substituir o Cone por até 6 espaços conectados entre si e dentro do alcance permitido; cada espaço precisa de linha de efeito. Confirme a geometria e a linha de efeito na Mesa. Consumo, Dano e DT permanecem os da Rajada.</p>}
     {anatomiaDeCombateAtiva && <p className="ficha-local-aviso" role="status">ANATOMIA DE COMBATE: como Ação Bônus, faça Medicina DT 15. Em sucesso, descubra se o alvo está Vulnerável e receba Vantagem no próximo Ataque contra ele, utilizável até o fim do seu próximo turno. Registre o resultado e selecione Vantagem manualmente; a Ficha não acompanha o alvo nem a duração do benefício.</p>}
