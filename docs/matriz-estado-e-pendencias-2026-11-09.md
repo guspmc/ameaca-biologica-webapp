@@ -656,3 +656,19 @@ Esta atualização substitui qualquer ordem anterior incompatível nesta matriz.
 **VALIDAÇÃO**
 - Testes adicionados, mas ainda não executados localmente.
 - CI do novo HEAD precisa concluir; não houve validação humana, merge ou publicação.
+
+
+## 11. Atualização — restrições de Ataque por Condições (11/11/2026)
+
+**IMPLEMENTADO NA BRANCH**
+- `src/condicoesCalculadora.ts` exporta `restricoesDeAtaquePorCondicoes()`, que identifica condições ativas que proíbem Ações ou o uso de Atacar: Desorientado, Atordoado, Incapacitado e Surpreendido.
+- `src/CalculadoraTesteLocal.tsx` exibe os lembretes no escopo de Ataques, incluindo o texto da restrição.
+- Os avisos não desabilitam a calculadora nem resolvem a narrativa; duração, exceções e contexto permanecem com jogador/Mestre.
+- `tests/condicoes-calculadora.test.mjs` cobre o mapeamento e a apresentação.
+
+**MOTIVAÇÃO DA AUDITORIA**
+- O catálogo canônico já descrevia essas proibições, mas a integração anterior da calculadora aplicava apenas Desvantagem e Defesa. Faltava tornar visível que certas Condições impedem a própria ação, não apenas modificam a rolagem.
+
+**VALIDAÇÃO**
+- Testes adicionados; ainda sem execução local neste ambiente.
+- CI do HEAD precisa concluir. Sem validação humana, merge ou publicação.
