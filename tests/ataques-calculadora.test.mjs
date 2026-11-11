@@ -150,3 +150,14 @@ test('Disparo Cadenciado e Perfuração exibem procedimentos sem assumir equipam
   assert.match(ui, /Confirmar Coronha específica da Matilda instalada/);
   assert.match(ui, /A calculadora não controla a Linha, os alvos subsequentes/);
 });
+
+test('Bear Commander separa rifle e lançador integrado com reserva e dano próprios', () => {
+  assert.match(ui, /Bear Commander — sistema de disparo/);
+  assert.match(ui, /Lança-granadas integrado · 4d6 · Cartucho GM 79/);
+  assert.match(ui, /capacidade separada de 1 Cartucho GM 79/);
+  assert.match(ui, /reserva independente dos cartuchos do rifle/);
+  assert.match(ui, /Recarga por Ação Bônus/);
+  assert.match(ui, /const bearLauncherSelecionado = perfilFogo\?\.id === 'bear-commander'/);
+  assert.match(ui, /const formulaDanoConvencional = bearLauncherSelecionado \? '4d6'/);
+  assert.match(ui, /const multiplicadorCriticoDano = bearLauncherSelecionado \? 4/);
+});
