@@ -797,3 +797,22 @@ Esta atualização substitui qualquer ordem anterior incompatível nesta matriz.
 
 **VALIDAÇÃO**
 - Teste estático adicionado; não executado localmente. CI pendente no HEAD final.
+
+
+## 19. Procedimentos de Habilidades de Reação (11/11/2026)
+
+**IMPLEMENTADO NA BRANCH**
+- `src/reacoesCombate.ts` agora expõe helpers puros para:
+  - Contra-Ataque Instintivo: autoriza reaproveitar a mesma Reação, mantendo o custo normal de 1 SA no Contra-Ataque.
+  - Retaliação: após Aparar/Esquivar bem-sucedido, sinaliza Atordoado no agressor; Contra-Ataque recebe Vantagem e +1 dado de Dano se acertar.
+  - Não Vai Escapar: valida gatilho de Ataque de Oportunidade em combate Corpo a Corpo para você/aliado e deslocamento prévio até 3 m, terminando adjacente.
+  - Na Minha Mira: valida uso 1/rodada, alvo percebido até Alcance Médio e aquisição naquele momento de nova Condição penalizante/restritiva; retorna Ataque de Oportunidade à distância.
+  - VOCÊ APAROU UM MÍSSIL!?: separa interceptação permitida pela narrativa, Aparar como Ação Livre 1/turno com Faca de Combate/Hatchet, 2d4 em Aparar Corpo a Corpo bem-sucedido, Finalizar sem custo de SA em Contra-Ataque declarado e +2d4 nos Contra-Ataques.
+- Testes unitários adicionados em `tests/reacoes-combate.test.mjs`.
+
+**LIMITES**
+- Helpers ainda não conectados a uma interface de Reações na Ficha; exigem integração com o fluxo de combate e Inventário.
+- Não inferem posição, tamanho, percepção, Condições do alvo, arma empunhada, gatilhos narrativos ou usos por rodada.
+- Bônus de Dano são devolvidos como instruções; não alteram PV nem executam Ataques/Finalizações.
+- Contra-Ataque Instintivo não gasta segunda Reação, mas preserva 1 SA.
+- Execução local e validação humana pendentes; CI deve ser conferido para o HEAD final.
