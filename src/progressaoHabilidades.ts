@@ -223,7 +223,8 @@ export function validarGanhoPericiaProgressao(
 export type MetodoProgressao = 'marco_narrativo' | 'missoes';
 export type EstadoProgressao = {
   nivelAtual: number;
-  metodo: MetodoProgressao;
+  metodo?: MetodoProgressao;
+  avancoAutorizado?: boolean;
   /** Campo legado opcional; não bloqueia progressão por Missões. */
   autorizacaoMestre?: boolean;
   missoesCompletadas: number;
@@ -241,7 +242,7 @@ export function avaliarDisponibilidadeProgressao(estado: EstadoProgressao): {
 } {
   if (!estado || typeof estado !== 'object' || Array.isArray(estado)
     || !nivelValido(estado.nivelAtual)
-    || !['marco_narrativo', 'missoes'].includes(estado.metodo)
+    || (estado.metodo === undefined ? typeof estado.avancoAutorizado !== 'boolean' : !['marco_narrativo', 'missoes'].includes(estado.metodo) || estado.avancoAutorizado !== undefined)
     || (estado.autorizacaoMestre !== undefined && typeof estado.autorizacaoMestre !== 'boolean')
     || !Number.isSafeInteger(estado.missoesCompletadas) || estado.missoesCompletadas < 0
     || typeof estado.descansoCompletoEmSalaDescanso !== 'boolean'
@@ -253,21 +254,27 @@ export function avaliarDisponibilidadeProgressao(estado: EstadoProgressao): {
   }
   if (estado.nivelAtual >= 10) return { disponivel: false, proximoNivel: null, motivo: 'A personagem já alcançou o nível máximo.' };
   const proximoNivel = estado.nivelAtual + 1;
-  const requisitoCumprido = estado.metodo === 'marco_narrativo'
-    ? estado.marcoNarrativoConcedido === true
-    : estado.missoesCompletadas >= MISSOES_POR_NIVEL[proximoNivel - 1];
+  const requisitoCumprido = estado.metodo === undefined
+    ? estado.avancoAutorizado === true
+    : estado.metodo === 'marco_narrativo'
+      ? estado.marcoNarrativoConcedido === true
+      : estado.missoesCompletadas >= MISSOES_POR_NIVEL[proximoNivel - 1];
   if (!requisitoCumprido) return {
     disponivel: false, proximoNivel,
-    motivo: estado.metodo === 'marco_narrativo'
-      ? 'Aguardando concessão de Marco Narrativo pelo Narrador.'
-      : `A personagem precisa alcançar ${MISSOES_POR_NIVEL[proximoNivel - 1]} Missões Completadas.`,
+    motivo: estado.metodo === undefined
+      ? 'Aguardando autorização de avanço pelo grupo/Narrador; o critério é decidido fora do WebApp.'
+      : estado.metodo === 'marco_narrativo'
+        ? 'Aguardando concessão de Marco Narrativo pelo Narrador.'
+        : `A personagem precisa alcançar ${MISSOES_POR_NIVEL[proximoNivel - 1]} Missões Completadas.`,
   };
   const houveMorteRegistrada = estado.missoesCompletadasNaUltimaMorte !== undefined
     && estado.missoesCompletadasNaUltimaMorte !== null;
   if (houveMorteRegistrada) {
-    const avancouAposMorte = estado.metodo === 'missoes'
-      ? estado.missoesCompletadas > estado.missoesCompletadasNaUltimaMorte!
-      : estado.marcoNarrativoAposUltimaMorte === true;
+    const avancouAposMorte = estado.metodo === undefined
+      ? estado.avancoAutorizado === true
+      : estado.metodo === 'missoes'
+        ? estado.missoesCompletadas > estado.missoesCompletadasNaUltimaMorte!
+        : estado.marcoNarrativoAposUltimaMorte === true;
     if (!avancouAposMorte) return {
       disponivel: false, proximoNivel,
       motivo: 'Após perder um Nível por Morte, é necessário concluir uma nova Missão ou alcançar um novo Marco Narrativo.',
