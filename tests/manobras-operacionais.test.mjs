@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {
   estadoManobrasTurnoInicial, registrarDesengajar, registrarDisparada,
   registrarFuga, registrarMirar, registrarAtaque, registrarAjudar,
-  registrarUsarObjeto, registrarCombateDuasArmas,
+  registrarUsarObjeto, registrarCombateDuasArmas, registrarFinalizar,
 } from '../src/manobrasOperacionais.ts';
 import { economiaAcoesInicial, consumirRecursoNormal } from '../src/economiaAcoes.ts';
 
@@ -72,4 +72,17 @@ test('Manobras respeitam disponibilidade e a janela de SA', () => {
   assert.throws(() => registrarDisparada(acaoUsada, estadoManobrasTurnoInicial()), /já foi utilizado/);
   const noLimite = { ...economiaAcoesInicial(3), saAtual: 0, saGastaNaJanela: 3 };
   assert.throws(() => registrarMirar(noLimite, estadoManobrasTurnoInicial()), /SA insuficiente|limite de 3 SA/);
+});
+
+
+test('Finalizar custa 3 SA sem consumir Ação nem Movimento normais', () => {
+  const economia = economiaAcoesInicial(5);
+  const resultado = registrarFinalizar(economia, estadoManobrasTurnoInicial());
+  assert.equal(resultado.economia.saAtual, 2);
+  assert.equal(resultado.economia.saGastaNaJanela, 3);
+  assert.equal(resultado.economia.normaisUsados.acao, false);
+  assert.equal(resultado.economia.normaisUsados.movimento, false);
+  assert.equal(resultado.movimentosAdicionais, 0);
+  assert.throws(() => registrarFinalizar({ ...economia, saAtual: 2, saGastaNaJanela: 1 }, estadoManobrasTurnoInicial()), /limite de 3 SA/);
+  assert.throws(() => registrarFinalizar({ ...economia, turnoEmAndamento: false }, estadoManobrasTurnoInicial()), /próprio turno/);
 });
