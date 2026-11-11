@@ -14,7 +14,8 @@
 - Após a declaração, o modo Automático oferece o Teste de Reflexos contra o resultado total do Ataque recebido, por `resolverTesteDefensivo()`.
 - O valor de Reflexos vem de `valorBasePericia()`, sem duplicar Atributo. Desvantagem por Condições aplicáveis a Reflexos e pela Fase da BI usa dois d20 e escolhe o pior.
 - Dados Físicos exigem resultados informados; Virtuais são sorteados somente após comando explícito; Mistos permitem escolher o método.
-- Modos Misto e Manual mantêm a resolução fora do cálculo automático. O resultado calculado não altera recursos, Defesa, Dano, BI ou Condições.
+- O cálculo é oferecido após solicitação explícita nos modos Automático, Misto e Manual; o modo de funcionamento não bloqueia rolagens solicitadas. A preferência de dados controla Físicos/Virtuais/Mistos. O resultado não altera recursos, Defesa, Dano, BI ou Condições.
+- No cálculo automático da Esquiva, sucesso/falha alimenta a confirmação local de defesa bem-sucedida usada pelo painel de Retaliação/Contra-Ataque. Alterar o gatilho ou declarar nova Esquiva limpa a confirmação.
 
 ## Proteção e limites
 
