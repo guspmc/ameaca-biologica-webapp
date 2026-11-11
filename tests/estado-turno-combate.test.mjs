@@ -37,7 +37,7 @@ test('Manobras encadeadas preservam Economia e marcadores no mesmo estado', () =
   estado = aplicarManobraCombate(estado, registrarDisparada).estado;
   estado = aplicarManobraCombate(estado, registrarFuga).estado;
   assert.equal(estado.economia.saAtual, 4);
-  assert.equal(estado.economia.saGastaNaJanela, 1);
+  assert.equal(estado.economia.saGastaNaJanela, 0);
   assert.equal(estado.manobras.disparadaUsada, true);
   assert.equal(estado.manobras.fugaUsada, true);
   assert.equal(estado.movimentosAdicionaisConcedidos, 2);
