@@ -317,3 +317,26 @@ test('helpers de Habilidades de Reação rejeitam campos ausentes ou extras', as
   assert.throws(() => avaliarNaMinhaMira({ habilidadeAtiva: true, usoDisponivelNaRodada: true, inimigoPercebido: true, dentroDeAlcanceMedio: true }), /Gatilho de Na Minha Mira inválido/);
   assert.throws(() => consultarVoceAparouUmMissil({ habilidadeAtiva: true }), /Dados de VOCÊ APAROU UM MÍSSIL/);
 });
+
+
+test('registro de Ataque de Oportunidade rejeita gatilho forjado ou payload com campos extras', async () => {
+  const { registrarAtaqueOportunidade } = await import('../src/reacoesCombate.ts');
+  const economia = economiaAcoesInicial(3);
+  assert.throws(() => registrarAtaqueOportunidade({
+    economia, gatilho: { disponivel: true, interrompeMovimento: false, motivo: 'válido', extra: true },
+  }), /Dados de registro do Ataque de Oportunidade inválidos/);
+  assert.throws(() => registrarAtaqueOportunidade({
+    economia, gatilho: { disponivel: true, interrompeMovimento: false, motivo: '   ' },
+  }), /Dados de registro do Ataque de Oportunidade inválidos/);
+  assert.throws(() => registrarAtaqueOportunidade({
+    economia, gatilho: { disponivel: false, interrompeMovimento: false, motivo: 'gatilho indisponível' },
+  }), /não está disponível/);
+});
+
+test('registro de Durabilidade rejeita payload externo com campos extras', async () => {
+  const { registrarUsoAparar } = await import('../src/reacoesCombate.ts');
+  assert.throws(() => registrarUsoAparar({
+    item: { durabilidadeAtual: 2, indestrutivel: false },
+    automacaoAtiva: true, custoExtra: 0,
+  }), /Estado de Aparar inválido/);
+});
