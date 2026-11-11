@@ -25,3 +25,9 @@ test('O painel registra somente a Reação; o Ataque de Oportunidade continua ma
   assert.match(painel, /Execute o Ataque de Oportunidade à distância manualmente/);
   assert.match(painel, /Na Minha Mira registrado/);
 });
+
+
+test('Na Minha Mira usa a transição validada de Reação e preserva o estado integrado', () => {
+  assert.match(painel, /aplicarReacaoCombate\(atual, economiaAtual => registrarNaMinhaMira/);
+  assert.doesNotMatch(painel, /comEconomia\(atual, economiaAtual => registrarNaMinhaMira/);
+});
