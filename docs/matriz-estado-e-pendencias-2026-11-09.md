@@ -980,3 +980,13 @@ Esta atualização substitui qualquer ordem anterior incompatível nesta matriz.
 - Novo tests/criminoso-investigacao.test.mjs; tests/usos-descanso-completo.test.mjs já cobre a fonte e renovação.
 - Testes não executados localmente; CI do novo HEAD pendente. Sem validação humana isolada, merge ou publicação.
 - Checkpoint: docs/checkpoint-criminoso-investigacao-2026-11-11.md.
+
+
+## Decisão expressa — método de Progressão fora do escopo de configuração do WebApp (11/11/2026)
+
+- O WebApp **não precisa oferecer seleção/configuração do método de Progressão** (Marco Narrativo ou Missões) por Mesa.
+- A escolha de método, quando relevante para a campanha, é uma decisão do grupo, feita fora do sistema.
+- Não criar campo de configuração de método na Mesa, fluxo de escolha de método, nem exigir que o grupo registre essa decisão no WebApp.
+- Esta decisão retira apenas a configuração/decisão de método do escopo do produto. Não autoriza remover silenciosamente os contratos, histórico ou regras de Progressão já existentes; a integração da Progressão na Ficha deve ser reavaliada para não impor uma escolha administrativa ao grupo.
+- A implementação deve continuar priorizando o funcionamento Offline da Ficha. Qualquer interface existente que exija selecionar um método antes de usar a Progressão deverá ser revista no contexto da implementação, sem presumir um padrão obrigatório nem converter decisão do grupo em configuração de sistema.
+- Esta decisão substitui as pendências anteriores desta matriz que exigiam definir método por Mesa ou resolver política de método para Mesas existentes/novas.
