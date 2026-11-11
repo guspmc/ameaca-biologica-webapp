@@ -568,7 +568,7 @@ export default function FichaLocal({ nome, mesa, contextoId, dados, aoFechar, ao
           <p className="ficha-local-legenda">A BI começa em 0 e não progride sozinha. Alterações são registradas expressamente no painel de Recursos. Este resumo calcula os modificadores da fase, sem aplicá-los automaticamente a movimento, ataques ou dano. Ao confirmar BI igual ou superior ao máximo, o módulo Reanimação registra automaticamente o Colapso Viral; a Ficha não avança turnos nem decide a narrativa.</p>
 
           <h3 className="ficha-local-subtitulo">Combate ativo</h3>
-          <PainelAcoesLocal dados={dados} saAtual={recursosAtuais.saAtual} origemDados={origemDados} aoSalvar={aoSalvarRecursos} />
+          <PainelAcoesLocal dados={dados} saAtual={recursosAtuais.saAtual} origemDados={origemDados} origem={origem} aoSalvar={aoSalvarRecursos} />
           <RoladoresBasicosLocal modo={configuracaoFuncionamento.modo} modoDados={configuracaoFuncionamento.modoDados} visibilidade={configuracaoFuncionamento.visibilidadeRolagem} agilidade={numero(atributos.agilidade)} />
           <div className="ficha-local-grade">
             <div><small>MODIFICADOR DE INICIATIVA</small><strong>+{numero(atributos.agilidade)}</strong><p>AGI da personagem. A rolagem pontual fica disponível no modo Automático; a ordem do Encontro pertence ao Painel do Mestre.</p></div>
