@@ -90,13 +90,16 @@ export function prepararContraAtaque(args: {
   if (!estadoEconomiaAcoesValido(args.economia)) throw new Error('Estado da economia de ações inválido para Contra-Ataque.');
   let economia = args.economia;
   let reacaoAdicionalComprada = false;
-  if (!args.mesmaReacaoAutorizada) {
-    if (!economia.normaisUsados.reacao) {
-      economia = consumirRecursoNormal(economia, 'reacao');
-    } else {
-      economia = comprarRecursoPorEsforco(economia, 'reacao');
-      reacaoAdicionalComprada = true;
+  if (args.mesmaReacaoAutorizada) {
+    const existeReacaoConsumida = economia.normaisUsados.reacao || economia.comprasEsforco.reacao > 0;
+    if (!existeReacaoConsumida) {
+      throw new Error('Contra-Ataque Instintivo exige que a Reação usada na defesa já esteja registrada.');
     }
+  } else if (!economia.normaisUsados.reacao) {
+    economia = consumirRecursoNormal(economia, 'reacao');
+  } else {
+    economia = comprarRecursoPorEsforco(economia, 'reacao');
+    reacaoAdicionalComprada = true;
   }
   economia = gastarSAEmManobra(economia, 1, true);
   return { economia, reacaoAdicionalComprada, custoSA: 1 + (reacaoAdicionalComprada ? 1 : 0) };
@@ -225,6 +228,13 @@ export function registrarReacaoDefensiva(args: {
 }
 
 
+function objetoBooleanosExatos(valor: unknown, chaves: string[]): valor is Record<string, boolean> {
+  if (!valor || typeof valor !== 'object' || Array.isArray(valor)
+    || Object.getPrototypeOf(valor) !== Object.prototype
+    || Object.keys(valor).sort().join('|') !== [...chaves].sort().join('|')) return false;
+  return chaves.every(chave => typeof (valor as Record<string, unknown>)[chave] === 'boolean');
+}
+
 export type HabilidadesReacaoAtivas = {
   contraAtaqueInstintivo: boolean;
   retaliacao: boolean;
@@ -235,8 +245,7 @@ export type HabilidadesReacaoAtivas = {
 
 /** Contra-Ataque Instintivo autoriza usar a mesma Reação já gasta na defesa. */
 export function contraAtaqueUsaMesmaReacao(habilidades: HabilidadesReacaoAtivas): boolean {
-  if (!habilidades || typeof habilidades !== 'object'
-    || Object.values(habilidades).some(valor => typeof valor !== 'boolean')) {
+  if (!objetoBooleanosExatos(habilidades, ['contraAtaqueInstintivo', 'retaliacao', 'naoVaiEscapar', 'naMinhaMira', 'voceAparouUmMissil'])) {
     throw new Error('Habilidades de Reação inválidas.');
   }
   return habilidades.contraAtaqueInstintivo;
@@ -247,7 +256,7 @@ export function consultarRetaliacao(args: {
   habilidadeAtiva: boolean;
   defesaBemSucedida: boolean;
 }): { atordoaAgressor: boolean; contraAtaqueComVantagem: boolean; dadosAdicionaisNoAcerto: number } {
-  if (!args || typeof args.habilidadeAtiva !== 'boolean' || typeof args.defesaBemSucedida !== 'boolean') {
+  if (!objetoBooleanosExatos(args, ['habilidadeAtiva', 'defesaBemSucedida'])) {
     throw new Error('Dados de Retaliação inválidos.');
   }
   const ativa = args.habilidadeAtiva && args.defesaBemSucedida;
@@ -261,7 +270,7 @@ export function avaliarNaoVaiEscapar(args: {
   gatilhoFoiParaVoceOuAliado: boolean;
   combateCorpoACorpo: boolean;
 }): { disponivel: boolean; deslocamentoMaximoMetros: number; deveTerminarAdjacente: boolean; motivo: string } {
-  if (!args || Object.values(args).some(valor => typeof valor !== 'boolean')) {
+  if (!objetoBooleanosExatos(args, ['habilidadeAtiva', 'criaturaProvocouAtaqueDeOportunidade', 'gatilhoFoiParaVoceOuAliado', 'combateCorpoACorpo'])) {
     throw new Error('Gatilho de Não Vai Escapar inválido.');
   }
   const disponivel = args.habilidadeAtiva && args.criaturaProvocouAtaqueDeOportunidade
@@ -283,7 +292,7 @@ export function avaliarNaMinhaMira(args: {
   dentroDeAlcanceMedio: boolean;
   adquiriuNovaCondicaoPenalizante: boolean;
 }): { disponivel: boolean; usaReacao: boolean; ataqueDeOportunidadeADistancia: boolean; motivo: string } {
-  if (!args || Object.values(args).some(valor => typeof valor !== 'boolean')) {
+  if (!objetoBooleanosExatos(args, ['habilidadeAtiva', 'usoDisponivelNaRodada', 'inimigoPercebido', 'dentroDeAlcanceMedio', 'adquiriuNovaCondicaoPenalizante'])) {
     throw new Error('Gatilho de Na Minha Mira inválido.');
   }
   const disponivel = Object.values(args).every(Boolean);
@@ -312,7 +321,7 @@ export function consultarVoceAparouUmMissil(args: {
   finalizarContraAtaqueSemSA: boolean;
   danoContraAtaqueAdicional: '2d4' | null;
 } {
-  if (!args || Object.values(args).some(valor => typeof valor !== 'boolean')) {
+  if (!objetoBooleanosExatos(args, ['habilidadeAtiva', 'narrativaPermiteInterceptacao', 'gatilhoValidoParaAparar', 'facaOuHatchet', 'turnoProprio', 'acaoLivreJaUsadaNoTurno', 'apararCorpoACorpoBemSucedido', 'contraAtaqueDeclarado'])) {
     throw new Error('Dados de VOCÊ APAROU UM MÍSSIL!? inválidos.');
   }
   const ativa = args.habilidadeAtiva;
