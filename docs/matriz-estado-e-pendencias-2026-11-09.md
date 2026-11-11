@@ -959,3 +959,24 @@ Esta atualização substitui qualquer ordem anterior incompatível nesta matriz.
 - Novo tests/academico-saber-e-poder.test.mjs; tests/usos-descanso-completo.test.mjs já cobre disponibilidade e renovação do uso.
 - Testes não executados localmente; CI do novo HEAD pendente. Sem validação humana isolada, merge ou publicação.
 - Checkpoint: docs/checkpoint-saber-e-poder-academico-2026-11-11.md.
+
+
+## 27. Integração do benefício de busca — Origem Criminoso (11/11/2026)
+
+**FONTE CANÔNICA**
+- Arquivo do Jogador v1.0, p. 24: uma vez por Descanso Completo, Vantagem em Investigação ao procurar itens ou recursos.
+
+**IMPLEMENTADO NA BRANCH**
+- A Calculadora oferece finalidade específica para busca de itens/recursos e opção explícita de usar o benefício.
+- A disponibilidade depende do registro persistido origem:criminoso em usosDescansoCompleto.
+- O benefício participa da resolução comum de Vantagem/Desvantagem, sem acumular fontes.
+- O consumo é marcado pelo jogador no painel de benefícios limitados após o uso.
+
+**LIMITES**
+- Não executa busca nem determina a existência de itens/recursos; a Ficha apenas apoia o Teste declarado.
+- O registro do consumo não é automático.
+
+**VALIDAÇÃO**
+- Novo tests/criminoso-investigacao.test.mjs; tests/usos-descanso-completo.test.mjs já cobre a fonte e renovação.
+- Testes não executados localmente; CI do novo HEAD pendente. Sem validação humana isolada, merge ou publicação.
+- Checkpoint: docs/checkpoint-criminoso-investigacao-2026-11-11.md.
