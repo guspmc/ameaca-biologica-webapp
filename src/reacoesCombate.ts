@@ -292,6 +292,35 @@ export function avaliarNaoVaiEscapar(args: {
   };
 }
 
+/** Registra a Reação de Não Vai Escapar após confirmação do gatilho e do deslocamento permitido. */
+export function registrarNaoVaiEscapar(args: {
+  economia: EstadoEconomiaAcoes;
+  avaliacao: ReturnType<typeof avaliarNaoVaiEscapar>;
+}): { economia: EstadoEconomiaAcoes; reacaoAdicionalComprada: boolean; deslocamentoMaximoMetros: 3; deveTerminarAdjacente: true } {
+  if (!args || typeof args !== 'object' || Array.isArray(args)
+    || Object.getPrototypeOf(args) !== Object.prototype
+    || Object.keys(args).sort().join('|') !== ['avaliacao', 'economia'].sort().join('|')
+    || !args.avaliacao || typeof args.avaliacao !== 'object' || Array.isArray(args.avaliacao)
+    || Object.getPrototypeOf(args.avaliacao) !== Object.prototype
+    || Object.keys(args.avaliacao).sort().join('|') !== ['deveTerminarAdjacente', 'deslocamentoMaximoMetros', 'disponivel', 'motivo'].sort().join('|')
+    || typeof args.avaliacao.disponivel !== 'boolean'
+    || args.avaliacao.deslocamentoMaximoMetros !== 3
+    || args.avaliacao.deveTerminarAdjacente !== true
+    || typeof args.avaliacao.motivo !== 'string' || !args.avaliacao.motivo.trim()) {
+    throw new Error('Dados de registro de Não Vai Escapar inválidos.');
+  }
+  if (!args.avaliacao.disponivel) throw new Error('Não Vai Escapar não está disponível para este gatilho.');
+  if (!estadoEconomiaAcoesValido(args.economia)) throw new Error('Estado da economia de ações inválido para Não Vai Escapar.');
+  let economia = args.economia;
+  let reacaoAdicionalComprada = false;
+  if (!economia.normaisUsados.reacao) economia = consumirRecursoNormal(economia, 'reacao');
+  else {
+    economia = comprarRecursoPorEsforco(economia, 'reacao');
+    reacaoAdicionalComprada = true;
+  }
+  return { economia, reacaoAdicionalComprada, deslocamentoMaximoMetros: 3, deveTerminarAdjacente: true };
+}
+
 /** Na Minha Mira exige nova Condição penalizante/restritiva, alvo percebido e até Alcance Médio. */
 export function avaliarNaMinhaMira(args: {
   habilidadeAtiva: boolean;
