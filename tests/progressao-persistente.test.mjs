@@ -84,22 +84,28 @@ test('estrutura desconhecida, campos extras e contadores inválidos são recusad
 });
 
 
-test('estado inicial da Progressão pertence à Ficha e adota Marco Narrativo como padrão preferencial', async () => {
-  const { criarEstadoProgressaoInicial } = await import('../src/progressaoPersistente.ts');
+test('novo estado de Progressão não exige método e aguarda autorização externa do grupo', async () => {
+  const { criarEstadoProgressaoInicial, registrarAvancoAutorizadoGrupo, solicitarGanhoNivel } = await import('../src/progressaoPersistente.ts');
   const inicial = criarEstadoProgressaoInicial();
   assert.equal(inicial.nivelAtual, 1);
-  assert.equal(inicial.metodo, 'marco_narrativo');
-  assert.equal(inicial.marcoNarrativoConcedido, false);
+  assert.equal('metodo' in inicial, false);
+  assert.equal(inicial.avancoAutorizado, false);
   assert.equal(estadoProgressaoPersistenteValido(inicial, 'Agente'), true);
-  const alternativo = criarEstadoProgressaoInicial('missoes');
-  assert.equal(alternativo.metodo, 'missoes');
-  assert.equal(estadoProgressaoPersistenteValido(alternativo, 'Operador'), true);
+  assert.throws(() => solicitarGanhoNivel(inicial, 'Agente'), /autorização de avanço/);
+  const autorizado = registrarAvancoAutorizadoGrupo(inicial, 'Agente');
+  assert.equal(autorizado.avancoAutorizado, true);
+  assert.equal('metodo' in autorizado, false);
+  assert.deepEqual(solicitarGanhoNivel(autorizado, 'Agente'), { nivel: 2, estado: 'aguardando_descanso' });
+  assert.throws(() => registrarAvancoAutorizadoGrupo(autorizado, 'Agente'), /já foi autorizado/);
+  const legado = criarEstadoProgressaoInicial('missoes');
+  assert.equal(legado.metodo, 'missoes');
+  assert.equal(estadoProgressaoPersistenteValido(legado, 'Operador'), true);
   assert.throws(() => criarEstadoProgressaoInicial('mesa'), /Método/);
 });
 
 test('registrar Marco Narrativo não concede nível e registra progresso posterior à Morte', async () => {
   const { criarEstadoProgressaoInicial, registrarMarcoNarrativo } = await import('../src/progressaoPersistente.ts');
-  const inicial = criarEstadoProgressaoInicial();
+  const inicial = criarEstadoProgressaoInicial('marco_narrativo');
   const concedido = registrarMarcoNarrativo(inicial, 'Agente');
   assert.equal(concedido.marcoNarrativoConcedido, true);
   assert.equal(concedido.nivelAtual, 1);
