@@ -189,6 +189,17 @@ test('catálogo de efeitos oferece descrição para todas as Habilidades de Clas
   for (const id of ids) assert.ok(fonte.includes("'"+id+"'"), 'Efeito ausente: '+id);
 });
 
+test('Progressão neutra exige autorização externa do grupo e novo avanço após Morte', () => {
+  const base = { nivelAtual: 1, avancoAutorizado: false, missoesCompletadas: 0, descansoCompletoEmSalaDescanso: true };
+  assert.equal(avaliarDisponibilidadeProgressao(base).disponivel, false);
+  assert.match(avaliarDisponibilidadeProgressao(base).motivo, /grupo\/Narrador/);
+  assert.equal(avaliarDisponibilidadeProgressao({ ...base, avancoAutorizado: true }).disponivel, true);
+  const aposMorte = { ...base, nivelAtual: 2, avancoAutorizado: false, missoesCompletadasNaUltimaMorte: 2 };
+  assert.equal(avaliarDisponibilidadeProgressao(aposMorte).disponivel, false);
+  assert.equal(avaliarDisponibilidadeProgressao({ ...aposMorte, avancoAutorizado: true }).disponivel, true);
+  assert.equal(avaliarDisponibilidadeProgressao({ ...base, avancoAutorizado: true, descansoCompletoEmSalaDescanso: false }).disponivel, false);
+});
+
 test('progressão objetiva usa os marcos cumulativos de Missões Completadas', () => {
   const base = { nivelAtual: 1, metodo: 'missoes', autorizacaoMestre: false, descansoCompletoEmSalaDescanso: true };
   assert.equal(avaliarDisponibilidadeProgressao({ ...base, missoesCompletadas: 0 }).disponivel, false);
