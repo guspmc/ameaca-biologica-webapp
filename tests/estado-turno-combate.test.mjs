@@ -348,3 +348,20 @@ test('Contra-Ataque padrão compra Reação adicional se a normal já foi usada'
   assert.equal(estado.economia.saGastaNaJanela, 2);
   assert.equal(estado.economia.comprasEsforco.reacao, 1);
 });
+
+
+test('Não Vai Escapar integra Reação, custo opcional e estado persistente', async () => {
+  const { avaliarNaoVaiEscapar, registrarNaoVaiEscapar } = await import('../src/reacoesCombate.ts');
+  let estado = estadoTurnoCombateInicial(3);
+  const avaliacao = avaliarNaoVaiEscapar({
+    habilidadeAtiva: true, criaturaProvocouAtaqueDeOportunidade: true,
+    gatilhoFoiParaVoceOuAliado: true, combateCorpoACorpo: true,
+  });
+  estado = aplicarReacaoCombate(estado, economia =>
+    registrarNaoVaiEscapar({ economia, avaliacao }),
+  ).estado;
+  assert.equal(estado.economia.normaisUsados.reacao, true);
+  const recarregado = carregarEstadoTurnoCombate(estado, null, 3);
+  assert.equal(recarregado.valido, true);
+  assert.equal(recarregado.estado.economia.normaisUsados.reacao, true);
+});
