@@ -161,3 +161,13 @@ test('Bear Commander separa rifle e lançador integrado com reserva e dano próp
   assert.match(ui, /const formulaDanoConvencional = bearLauncherSelecionado \? '4d6'/);
   assert.match(ui, /const multiplicadorCriticoDano = bearLauncherSelecionado \? 4/);
 });
+
+
+test('procedimentos especiais do RPG-7 e Spark Shot são exibidos sem automação de efeitos', () => {
+  assert.match(ui, /consultarProcedimentoArmaEspecial/);
+  assert.match(ui, /RPG-7/);
+  assert.match(ui, /não escolhe avanço de fase\/efeito de ficha/);
+  assert.match(ui, /Fortitude DT 15/);
+  assert.match(ui, /Atordoados até o fim do próximo turno e Imobilizados por 1d4 rodadas/);
+  assert.match(ui, /não rola Fortitude e não aplica Condições/);
+});
