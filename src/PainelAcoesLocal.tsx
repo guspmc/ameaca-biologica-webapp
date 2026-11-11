@@ -10,7 +10,10 @@ import {
   iniciarTurnoCombate, registrarResolucaoAtaqueAdicional, registrarFinalizacaoDupla, type EstadoTurnoCombate,
 } from './estadoTurnoCombate';
 import { registrarCombateDuasArmas, registrarDisparada, registrarFuga, registrarMirar, registrarAtaque, registrarFinalizar, registrarAjudar } from './manobrasOperacionais';
-import { avaliarAtaqueOportunidade, registrarAtaqueOportunidade, prepararContraAtaque, consultarRetaliacao, avaliarNaoVaiEscapar, registrarNaoVaiEscapar, avaliarJanelaReacao, registrarReacaoDefensiva, type JanelaReacao } from './reacoesCombate';
+import { avaliarAtaqueOportunidade, registrarAtaqueOportunidade, prepararContraAtaque, consultarRetaliacao, avaliarNaoVaiEscapar, registrarNaoVaiEscapar, avaliarJanelaReacao, registrarReacaoDefensiva, resolverTesteDefensivo, type JanelaReacao } from './reacoesCombate';
+import { sortearDados, validarResultadosFisicos } from './rolagemDados';
+import type { ModoDados } from './funcionamentoFicha';
+import { condicoesQueImpoemDesvantagem } from './condicoesCalculadora';
 
 type Props = {
   dados: Record<string, unknown>;
@@ -19,6 +22,12 @@ type Props = {
   origemDados?: 'local' | 'servidor';
   origem?: string;
   habilidadesAtivas?: string[];
+  valorLuta?: number;
+  valorReflexos?: number;
+  modo?: 'automatico' | 'misto' | 'manual';
+  modoDados?: ModoDados;
+  desvantagemBI?: boolean;
+  condicoesAtivas?: string[];
 };
 
 const RECURSOS: { id: RecursoAcao; nome: string; custo: string }[] = [
@@ -39,7 +48,7 @@ function comEconomia(
   return { ...estado, economia: operacao(estado.economia) };
 }
 
-export default function PainelAcoesLocal({ dados, saAtual, aoSalvar, origemDados = 'local', origem = '', habilidadesAtivas = [] }: Props) {
+export default function PainelAcoesLocal({ dados, saAtual, aoSalvar, origemDados = 'local', origem = '', habilidadesAtivas = [], valorLuta = 0, valorReflexos = 0, modo = 'manual', modoDados = 'fisicos', desvantagemBI = false, condicoesAtivas = [] }: Props) {
   const estadoInicial = carregarEstado(dados, saAtual);
   const chaveInicial = JSON.stringify([dados.estadoTurnoCombate ?? null, dados.economiaAcoes ?? null, saAtual]);
   const [inicial, setInicial] = useState(estadoInicial);
@@ -69,7 +78,19 @@ export default function PainelAcoesLocal({ dados, saAtual, aoSalvar, origemDados
   const [gatilhoEsquivaAutorizado, setGatilhoEsquivaAutorizado] = useState(false);
   const [janelaDefensiva, setJanelaDefensiva] = useState<JanelaReacao | null>(null);
   const [erroJanelaDefensiva, setErroJanelaDefensiva] = useState('');
+  const [reacaoDefensivaDeclarada, setReacaoDefensivaDeclarada] = useState(false);
+  const [metodoDefensivo, setMetodoDefensivo] = useState<'fisico' | 'virtual'>(modoDados === 'virtuais' ? 'virtual' : 'fisico');
+  const [dadoDefensivo1, setDadoDefensivo1] = useState('');
+  const [dadoDefensivo2, setDadoDefensivo2] = useState('');
+  const [resultadoDefensivo, setResultadoDefensivo] = useState<ReturnType<typeof resolverTesteDefensivo> | null>(null);
+  const [erroTesteDefensivo, setErroTesteDefensivo] = useState('');
   const bloqueioOperacao = useRef(false);
+  useEffect(() => {
+    setMetodoDefensivo(modoDados === 'virtuais' ? 'virtual' : 'fisico');
+    setDadoDefensivo1('');
+    setDadoDefensivo2('');
+    setResultadoDefensivo(null);
+  }, [modoDados]);
   useEffect(() => {
     if (salvando) return;
     setInicial(estadoInicial);
@@ -119,10 +140,11 @@ export default function PainelAcoesLocal({ dados, saAtual, aoSalvar, origemDados
         setConfirmouCombateCorpoACorpo(false);
       }
       if (mensagemConfirmada?.startsWith('Esquiva declarada')) {
-        setJanelaDefensiva(null);
-        setResultadoAtaqueDefensivo('');
-        setDadoNaturalDefensivo('');
-        setGatilhoEsquivaAutorizado(false);
+        setReacaoDefensivaDeclarada(true);
+        setDadoDefensivo1('');
+        setDadoDefensivo2('');
+        setResultadoDefensivo(null);
+        setErroTesteDefensivo('');
       }
       setConfirmacao(mensagemConfirmada ?? (origemDados === 'servidor' ? 'Economia de ações confirmada pelo servidor.' : 'Economia de ações salva neste dispositivo.'));
     } catch (problema) {
@@ -169,28 +191,58 @@ export default function PainelAcoesLocal({ dados, saAtual, aoSalvar, origemDados
           <div className="ficha-local-editor">
             <p>Informe o resultado do Ataque recebido e o d20 natural para identificar a janela. A Reação deve ser declarada imediatamente, antes da resolução de Dano, BI ou Condições. A Ficha registra a declaração e o custo; o Teste defensivo e seus efeitos continuam sendo resolvidos manualmente.</p>
             <label>Resultado total do Ataque
-              <input type="number" min="1" step="1" value={resultadoAtaqueDefensivo} disabled={salvando} onChange={evento => { setResultadoAtaqueDefensivo(evento.target.value); setJanelaDefensiva(null); }} />
+              <input type="number" min="1" step="1" value={resultadoAtaqueDefensivo} disabled={salvando} onChange={evento => { setResultadoAtaqueDefensivo(evento.target.value); setJanelaDefensiva(null); setReacaoDefensivaDeclarada(false); setResultadoDefensivo(null); }} />
             </label>
             <label>Dado natural do Ataque (1–20)
-              <input type="number" min="1" max="20" step="1" value={dadoNaturalDefensivo} disabled={salvando} onChange={evento => { setDadoNaturalDefensivo(evento.target.value); setJanelaDefensiva(null); }} />
+              <input type="number" min="1" max="20" step="1" value={dadoNaturalDefensivo} disabled={salvando} onChange={evento => { setDadoNaturalDefensivo(evento.target.value); setJanelaDefensiva(null); setReacaoDefensivaDeclarada(false); setResultadoDefensivo(null); }} />
             </label>
             <label><input type="checkbox" checked={ataqueCorpoACorpoDefensivo} disabled={salvando} onChange={evento => { setAtaqueCorpoACorpoDefensivo(evento.target.checked); setJanelaDefensiva(null); }} /> O Ataque recebido foi Corpo a Corpo.</label>
             <label><input type="checkbox" checked={ataqueAcertouDefensivo} disabled={salvando} onChange={evento => { setAtaqueAcertouDefensivo(evento.target.checked); setJanelaDefensiva(null); }} /> O Ataque atingiu a Defesa.</label>
             <label><input type="checkbox" checked={ataqueAparavelDefensivo} disabled={salvando} onChange={evento => { setAtaqueAparavelDefensivo(evento.target.checked); setJanelaDefensiva(null); }} /> A Mesa confirmou que este Ataque pode ser aparado.</label>
             <label><input type="checkbox" checked={gatilhoEsquivaAutorizado} disabled={salvando} onChange={evento => { setGatilhoEsquivaAutorizado(evento.target.checked); setJanelaDefensiva(null); }} /> Confirmo que uma Habilidade ou regra autoriza Esquivar contra este gatilho.</label>
             <button type="button" disabled={salvando || !/^\d+$/.test(resultadoAtaqueDefensivo) || Number(resultadoAtaqueDefensivo) < 1 || !/^\d+$/.test(dadoNaturalDefensivo) || Number(dadoNaturalDefensivo) < 1 || Number(dadoNaturalDefensivo) > 20}
-              onClick={() => { try { setErroJanelaDefensiva(''); setJanelaDefensiva(avaliarJanelaReacao({ resultadoAtaque: Number(resultadoAtaqueDefensivo), dadoNaturalAtaque: Number(dadoNaturalDefensivo), ataqueCorpoACorpo: ataqueCorpoACorpoDefensivo, ataqueAcertou: ataqueAcertouDefensivo, ataqueAparavel: ataqueAparavelDefensivo, gatilhoEsquivaAutorizado })); } catch (problema) { setErroJanelaDefensiva(problema instanceof Error ? problema.message : 'Não foi possível avaliar a janela.'); } }}>Avaliar janela de Reação</button>
+              onClick={() => { try { setErroJanelaDefensiva(''); setJanelaDefensiva(avaliarJanelaReacao({ resultadoAtaque: Number(resultadoAtaqueDefensivo), dadoNaturalAtaque: Number(dadoNaturalDefensivo), ataqueCorpoACorpo: ataqueCorpoACorpoDefensivo, ataqueAcertou: ataqueAcertouDefensivo, ataqueAparavel: ataqueAparavelDefensivo, gatilhoEsquivaAutorizado })); setReacaoDefensivaDeclarada(false); setResultadoDefensivo(null); } catch (problema) { setErroJanelaDefensiva(problema instanceof Error ? problema.message : 'Não foi possível avaliar a janela.'); } }}>Avaliar janela de Reação</button>
             {erroJanelaDefensiva && <p className="offline-erro" role="alert">{erroJanelaDefensiva}</p>}
             {janelaDefensiva && <>
               <p className="ficha-local-legenda" role="status">{janelaDefensiva.motivo}</p>
               {janelaDefensiva.fechadaPor20Natural && <p>20 natural: não é possível declarar Reação defensiva normal.</p>}
               {janelaDefensiva.podeAparar && <p>Aparar seria permitido pelo gatilho, mas o registro está bloqueado até existir estado confiável de equipamento empunhado e Durabilidade. A Ficha não presume uma arma equipada.</p>}
-              {janelaDefensiva.podeEsquivar && <>
+              {janelaDefensiva.podeEsquivar && !reacaoDefensivaDeclarada && <>
                 <p>Esquiva autorizada pelo gatilho confirmado. Declare a Reação antes de resolver o Teste defensivo.</p>
                 <p className="ficha-local-legenda">{economia.normaisUsados.reacao ? 'A Reação normal já foi usada: esta declaração comprará outra por 1 SA.' : 'Esta declaração consumirá sua Reação normal, sem custo de SA.'}</p>
                 <button type="button" disabled={salvando || (economia.normaisUsados.reacao && (economia.saAtual < 1 || janela >= 3))}
                   onClick={() => void aplicar(atual => aplicarReacaoCombate(atual, economiaAtual => registrarReacaoDefensiva({ economia: economiaAtual, manobra: 'esquivar', janela: janelaDefensiva })).estado, economia.normaisUsados.reacao ? 'Esquiva declarada: Reação adicional comprada por 1 SA. Resolva o Teste defensivo manualmente.' : 'Esquiva declarada: Reação normal consumida. Resolva o Teste defensivo manualmente.')}>Declarar Esquiva · Reação</button>
               </>}
+              {janelaDefensiva.podeEsquivar && reacaoDefensivaDeclarada && <div className="ficha-local-editor">
+                <strong>Teste de Esquiva · Reflexos contra {resultadoAtaqueDefensivo}</strong>
+                {modo !== 'automatico' && <p className="ficha-local-legenda">Modo {modo === 'misto' ? 'Misto' : 'Manual'}: resolva o Teste com os procedimentos escolhidos pelo grupo. O modo Automático habilita o cálculo informativo nesta Ficha.</p>}
+                {modo === 'automatico' && <>
+                  <p>Valor base de Reflexos: +{valorReflexos}. A Desvantagem por Condição ou Fase da BI é aplicada quando presente; uma Vantagem e uma Desvantagem se cancelam.</p>
+                  {modoDados === 'mistos' && <label>Método desta rolagem
+                    <select value={metodoDefensivo} onChange={evento => { setMetodoDefensivo(evento.target.value as 'fisico' | 'virtual'); setDadoDefensivo1(''); setDadoDefensivo2(''); setResultadoDefensivo(null); }}>
+                      <option value="fisico">Dados físicos</option><option value="virtual">Dados virtuais</option>
+                    </select>
+                  </label>}
+                  {modoDados !== 'mistos' && <p>Método: {modoDados === 'fisicos' ? 'Dados físicos' : 'Dados virtuais'}.</p>}
+                  {metodoDefensivo === 'fisico' && <>
+                    <label>Resultado do d20{condicoesQueImpoemDesvantagem(condicoesAtivas as never, { escopo: 'testes', tipoTeste: 'pericia', pericia: 'Reflexos' }).length || desvantagemBI ? ' · Desvantagem ativa: informe dois dados' : ''}
+                      <input type="number" min="1" max="20" step="1" value={dadoDefensivo1} disabled={salvando} onChange={evento => { setDadoDefensivo1(evento.target.value); setResultadoDefensivo(null); }} />
+                    </label>
+                    {(condicoesQueImpoemDesvantagem(condicoesAtivas as never, { escopo: 'testes', tipoTeste: 'pericia', pericia: 'Reflexos' }).length > 0 || desvantagemBI) && <label>Segundo d20
+                      <input type="number" min="1" max="20" step="1" value={dadoDefensivo2} disabled={salvando} onChange={evento => { setDadoDefensivo2(evento.target.value); setResultadoDefensivo(null); }} />
+                    </label>}
+                  </>}
+                  <button type="button" disabled={salvando} onClick={() => { try {
+                    const desvantagem = desvantagemBI || condicoesQueImpoemDesvantagem(condicoesAtivas as never, { escopo: 'testes', tipoTeste: 'pericia', pericia: 'Reflexos' }).length > 0;
+                    const dados = metodoDefensivo === 'virtual' ? sortearDados(desvantagem ? 2 : 1, 20) : validarResultadosFisicos([dadoDefensivo1, ...(desvantagem ? [dadoDefensivo2] : [])].join(' '), desvantagem ? 2 : 1, 20);
+                    setResultadoDefensivo(resolverTesteDefensivo({ tipo: 'esquivar', valorReflexos, resultadoAtaque: Number(resultadoAtaqueDefensivo), dado1: dados[0], dado2: dados[1] ?? null, vantagem: desvantagem ? 'desvantagem' : 'normal' }));
+                    setErroTesteDefensivo('');
+                  } catch (problema) { setErroTesteDefensivo(problema instanceof Error ? problema.message : 'Não foi possível resolver o Teste defensivo.'); } }}>{metodoDefensivo === 'virtual' ? 'Rolar Teste de Esquiva' : 'Calcular Teste de Esquiva'}</button>
+                  {resultadoDefensivo && <p role="status"><strong>{resultadoDefensivo.estado === 'sucesso' || resultadoDefensivo.estado === 'critico-sucesso' ? 'Esquiva bem-sucedida' : resultadoDefensivo.estado === 'falha-critica' ? 'Falha Crítica' : resultadoDefensivo.estado === 'incompleto' ? 'Teste incompleto' : 'Esquiva não alcançou o resultado do Ataque'}</strong> · {resultadoDefensivo.detalhe} {resultadoDefensivo.total !== null ? `Total ${resultadoDefensivo.total} contra ${resultadoDefensivo.dt}.` : ''}</p>}
+                  {erroTesteDefensivo && <p className="offline-erro" role="alert">{erroTesteDefensivo}</p>}
+                </>}
+                <p className="ficha-local-legenda">O resultado é informativo e não altera Defesa, Dano, BI ou Condições; confirme a resolução com a Mesa.</p>
+              </div>}
             </>}
             <p className="ficha-local-legenda">Aparar permanece bloqueado nesta etapa porque o módulo ainda não controla arma empunhada, elegibilidade do item e Durabilidade. Esquiva só pode ser declarada quando você confirmar o gatilho autorizado por Habilidade ou regra. O aplicativo não rola o d20 nem aplica Defesa, Dano ou efeitos.</p>
           </div>
