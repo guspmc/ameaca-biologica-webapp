@@ -745,3 +745,22 @@ Esta atualização substitui qualquer ordem anterior incompatível nesta matriz.
 **VALIDAÇÃO**
 - Teste adicionado, sem execução local.
 - CI do HEAD pendente; validação humana pendente; sem merge ou publicação.
+
+
+## 16. Atualização — lembretes adicionais de Habilidades de Operador (11/11/2026)
+
+**IMPLEMENTADO NA BRANCH**
+- `CalculadoraTesteLocal.tsx` apresenta lembretes para CASCA-GROSSA, ARMAMENTO ESPECIAL e CONTROLE DE FOGO quando cada Habilidade está ativa.
+- CASCA-GROSSA: aumento de uma categoria de Dado no Dano Desarmado/Coronhada e opção de Cabeçada/Pisão com Desvantagem uma vez por turno após Ataque bem-sucedido. Uso/eligibilidade continuam manuais.
+- ARMAMENTO ESPECIAL: lembrete de Proficiência com Magnums/Armas Especiais e redução de uma categoria nos custos especificados, sem reduzir abaixo de Interação Gratuita com Objeto.
+- CONTROLE DE FOGO: lembrete de substituição do Cone de Rajada por até 6 espaços conectados com linha de efeito.
+- Teste estático de integração acrescentado em `tests/ataques-calculadora.test.mjs`.
+
+**LIMITES**
+- Não altera fórmulas de Dano, não valida Coronhada elegível, não controla usos por turno nem custos de ação.
+- Não desenha ou valida geometria, conectividade, alcance ou linha de efeito da Rajada.
+- Os lembretes não substituem decisões da Mesa.
+
+**VALIDAÇÃO**
+- Teste adicionado, sem execução local.
+- CI do HEAD pendente; validação humana pendente; sem merge ou publicação.
