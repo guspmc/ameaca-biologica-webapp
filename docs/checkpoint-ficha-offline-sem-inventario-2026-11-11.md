@@ -2,7 +2,7 @@
 
 **Data:** 11/11/2026  
 **Branch:** `feat/offline-first-ficha`  
-**HEAD verificado neste ciclo:** `83a1f1de45f030bf5ecfa1fb87d17f0e295910d0`
+**HEAD verificado neste ciclo:** `abd44d1c64be5d0168ec80e4a7cd9482fde5fae9` (checkpoint atualizado após revisão documental adicional).
 
 ## Objetivo deste checkpoint
 
@@ -79,7 +79,8 @@ Dependências que permanecem bloqueadas até Inventário:
 - **Implementado:** código e documentação na branch indicada.
 - **Testes locais:** não executados; não há clone/ambiente local do repositório nesta sessão.
 - **CI no HEAD:** `43081465600` (Verificação da ficha offline) e `43081465795` (Validar compilação do WebApp) estão `queued`; criados em 11/11/2026 às 18:49 UTC e ainda sem início no momento desta conferência. Nenhum resultado foi presumido.
-- **Revisão estática adicional:** confirmada a integração do painel Amnésico/Militar diretamente na Ficha (`dados` contém o estado persistido e `aoSalvarRecursos` é a operação de gravação); confirmados os contratos de validação estrita dos dois estados. Revisão estática não substitui TypeScript/build/testes.
+- **Revisão estática adicional:** confirmada a integração do painel Amnésico/Militar diretamente na Ficha (`dados` contém o estado persistido e `aoSalvarRecursos` é a operação de gravação); confirmados os contratos de validação estrita dos dois estados.
+- **Auditoria de Origens:** atualizada `docs/checkpoint-auditoria-origens-2026-11-11.md`: dos 17 benefícios de Origem, 16 têm implementação identificada; somente Chef permanece pendente por depender de fabricação/Inventário. Revisão estática não substitui TypeScript/build/testes.
 - **Validação humana:** ainda não iniciada, conforme combinado.
 - **LAN:** não alterado; considerado funcional conforme testes anteriores relatados.
 - **Supabase/banco:** não alterados.
