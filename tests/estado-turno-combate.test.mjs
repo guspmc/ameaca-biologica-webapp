@@ -6,7 +6,7 @@ import {
   aplicarManobraCombate, aplicarReacaoCombate, registrarFinalizacaoDupla,
 } from '../src/estadoTurnoCombate.ts';
 import { registrarDisparada, registrarFuga, registrarMirar, registrarAtaque } from '../src/manobrasOperacionais.ts';
-import { registrarReacaoDefensiva, avaliarJanelaReacao } from '../src/reacoesCombate.ts';
+import { registrarReacaoDefensiva, avaliarJanelaReacao, avaliarAtaqueOportunidade, registrarAtaqueOportunidade } from '../src/reacoesCombate.ts';
 
 test('estado integrado nasce versionado e valida sua estrutura completa', () => {
   const estado = estadoTurnoCombateInicial(4);
@@ -242,4 +242,48 @@ test('migração de estado composto anterior adiciona compromisso falso sem perd
   assert.equal(migrado.estado.movimentosAdicionaisConcedidos, 2);
   assert.equal(migrado.estado.ataqueAdicionalAutorizado, true);
   assert.equal(migrado.estado.proximoTurnoComprometido, false);
+});
+
+
+test('Ataque de Oportunidade integra a Reação ao estado persistente sem interromper Movimento', () => {
+  let estado = estadoTurnoCombateInicial(4);
+  const gatilho = avaliarAtaqueOportunidade({
+    saiuVoluntariamente: true, saiuQuadradoAmeacado: true, protegidoContraGatilho: false,
+  });
+  estado = aplicarReacaoCombate(estado, economia =>
+    registrarAtaqueOportunidade({ economia, gatilho }),
+  ).estado;
+  assert.equal(estado.economia.normaisUsados.reacao, true);
+  assert.equal(estado.economia.saAtual, 4);
+  const recarregado = carregarEstadoTurnoCombate(estado, null, 4);
+  assert.equal(recarregado.valido, true);
+  assert.equal(recarregado.estado.economia.normaisUsados.reacao, true);
+  assert.equal(recarregado.estado.economia.saAtual, 4);
+  assert.equal(gatilho.interrompeMovimento, false);
+});
+
+test('Ataque de Oportunidade após Reação normal compra Reação adicional e persiste o gasto de SA', () => {
+  let estado = estadoTurnoCombateInicial(3);
+  estado = aplicarReacaoCombate(estado, economia =>
+    registrarReacaoDefensiva({
+      economia,
+      manobra: 'aparar',
+      janela: avaliarJanelaReacao({
+        resultadoAtaque: 12, dadoNaturalAtaque: 12, ataqueCorpoACorpo: true,
+        ataqueAcertou: true, ataqueAparavel: true, gatilhoEsquivaAutorizado: false,
+      }),
+    }),
+  ).estado;
+  const gatilho = avaliarAtaqueOportunidade({
+    saiuVoluntariamente: true, saiuQuadradoAmeacado: true, protegidoContraGatilho: false,
+  });
+  estado = aplicarReacaoCombate(estado, economia =>
+    registrarAtaqueOportunidade({ economia, gatilho }),
+  ).estado;
+  assert.equal(estado.economia.saAtual, 2);
+  assert.equal(estado.economia.saGastaNaJanela, 1);
+  assert.equal(estado.economia.comprasEsforco.reacao, 1);
+  const recarregado = carregarEstadoTurnoCombate(estado, null, 2);
+  assert.equal(recarregado.valido, true);
+  assert.equal(recarregado.estado.economia.comprasEsforco.reacao, 1);
 });
