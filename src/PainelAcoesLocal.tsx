@@ -200,7 +200,7 @@ export default function PainelAcoesLocal({ dados, saAtual, aoSalvar, origemDados
 
           <h4>Reações defensivas · Aparar e Esquivar</h4>
           <div className="ficha-local-editor">
-            <p>Informe o resultado do Ataque recebido e o d20 natural para identificar a janela. A Reação deve ser declarada imediatamente, antes da resolução de Dano, BI ou Condições. A Ficha registra a declaração e o custo; o Teste defensivo e seus efeitos continuam sendo resolvidos manualmente.</p>
+            <p>Informe o resultado do Ataque recebido e o d20 natural para identificar a janela. A Reação deve ser declarada imediatamente, antes da resolução de Dano, BI ou Condições. No modo Automático, a Ficha também calcula o Teste de Esquiva após a declaração; nos modos Misto e Manual, a resolução permanece com os procedimentos escolhidos pelo grupo.</p>
             <label>Resultado total do Ataque
               <input type="number" min="1" step="1" value={resultadoAtaqueDefensivo} disabled={salvando} onChange={evento => { setResultadoAtaqueDefensivo(evento.target.value); setJanelaDefensiva(null); setReacaoDefensivaDeclarada(false); setResultadoDefensivo(null); }} />
             </label>
@@ -246,7 +246,9 @@ export default function PainelAcoesLocal({ dados, saAtual, aoSalvar, origemDados
                   <button type="button" disabled={salvando} onClick={() => { try {
                     const desvantagem = desvantagemBI || condicoesQueImpoemDesvantagem(condicoesAtivas, { escopo: 'testes', tipoTeste: 'pericia', pericia: 'Reflexos' }).length > 0;
                     const dados = metodoDefensivo === 'virtual' ? sortearDados(desvantagem ? 2 : 1, 20) : validarResultadosFisicos([dadoDefensivo1, ...(desvantagem ? [dadoDefensivo2] : [])].join(' '), desvantagem ? 2 : 1, 20);
-                    setResultadoDefensivo(resolverTesteDefensivo({ tipo: 'esquivar', valorReflexos, resultadoAtaque: Number(resultadoAtaqueDefensivo), dado1: dados[0], dado2: dados[1] ?? null, vantagem: desvantagem ? 'desvantagem' : 'normal' }));
+                    const resolvido = resolverTesteDefensivo({ tipo: 'esquivar', valorReflexos, resultadoAtaque: Number(resultadoAtaqueDefensivo), dado1: dados[0], dado2: dados[1] ?? null, vantagem: desvantagem ? 'desvantagem' : 'normal' });
+                    setResultadoDefensivo(resolvido);
+                    setConfirmouDefesaBemSucedida(resolvido.estado === 'sucesso' || resolvido.estado === 'critico-sucesso');
                     setErroTesteDefensivo('');
                   } catch (problema) { setErroTesteDefensivo(problema instanceof Error ? problema.message : 'Não foi possível resolver o Teste defensivo.'); } }}>{metodoDefensivo === 'virtual' ? 'Rolar Teste de Esquiva' : 'Calcular Teste de Esquiva'}</button>
                   {resultadoDefensivo && <p role="status"><strong>{resultadoDefensivo.estado === 'sucesso' || resultadoDefensivo.estado === 'critico-sucesso' ? 'Esquiva bem-sucedida' : resultadoDefensivo.estado === 'falha-critica' ? 'Falha Crítica' : resultadoDefensivo.estado === 'incompleto' ? 'Teste incompleto' : 'Esquiva não alcançou o resultado do Ataque'}</strong> · {resultadoDefensivo.detalhe} {resultadoDefensivo.total !== null ? `Total ${resultadoDefensivo.total} contra ${resultadoDefensivo.dt}.` : ''}</p>}
