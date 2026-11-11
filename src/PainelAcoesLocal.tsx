@@ -10,11 +10,12 @@ import {
   iniciarTurnoCombate, registrarResolucaoAtaqueAdicional, registrarFinalizacaoDupla, type EstadoTurnoCombate,
 } from './estadoTurnoCombate';
 import { registrarCombateDuasArmas, registrarDisparada, registrarFuga, registrarMirar, registrarAtaque, registrarFinalizar, registrarAjudar } from './manobrasOperacionais';
-import { avaliarAtaqueOportunidade, registrarAtaqueOportunidade, prepararContraAtaque, consultarRetaliacao, avaliarNaoVaiEscapar, registrarNaoVaiEscapar, avaliarJanelaReacao, registrarReacaoDefensiva, resolverTesteDefensivo, avaliarNaMinhaMira, registrarNaMinhaMira, type JanelaReacao } from './reacoesCombate';
+import { avaliarAtaqueOportunidade, registrarAtaqueOportunidade, prepararContraAtaque, consultarRetaliacao, avaliarNaoVaiEscapar, registrarNaoVaiEscapar, avaliarJanelaReacao, registrarReacaoDefensiva, resolverTesteDefensivo, avaliarNaMinhaMira, registrarNaMinhaMira, avaliarRespostaMercenario, registrarRespostaMercenario, type JanelaReacao } from './reacoesCombate';
 import { sortearDados, validarResultadosFisicos } from './rolagemDados';
 import type { ModoDados } from './funcionamentoFicha';
 import { condicoesQueImpoemDesvantagem } from './condicoesCalculadora';
 import type { CondicaoId } from './condicoesFicha';
+import { listarFontesUsosDescansoCompleto, registrarUsoDescansoCompleto, usosDescansoCompletoValido } from './usosDescansoCompleto';
 
 type Props = {
   dados: Record<string, unknown>;
@@ -90,6 +91,9 @@ export default function PainelAcoesLocal({ dados, saAtual, aoSalvar, origemDados
   const [miraNovaCondicao, setMiraNovaCondicao] = useState(false);
   const [miraArmaCarregada, setMiraArmaCarregada] = useState(false);
   const [miraArmaElegivel, setMiraArmaElegivel] = useState(false);
+  const [mercenarioHostilOculto, setMercenarioHostilOculto] = useState(false);
+  const [mercenarioSurpreenderia, setMercenarioSurpreenderia] = useState(false);
+  const [mercenarioArmaCarregada, setMercenarioArmaCarregada] = useState(false);
   const bloqueioOperacao = useRef(false);
   useEffect(() => {
     setMetodoDefensivo(modoDados === 'virtuais' ? 'virtual' : 'fisico');
@@ -103,7 +107,7 @@ export default function PainelAcoesLocal({ dados, saAtual, aoSalvar, origemDados
     setEstado(estadoInicial.estado);
   }, [chaveInicial, salvando]);
 
-  async function aplicar(operacao: (atual: EstadoTurnoCombate) => EstadoTurnoCombate, mensagemConfirmada?: string) {
+  async function aplicar(operacao: (atual: EstadoTurnoCombate) => EstadoTurnoCombate, mensagemConfirmada?: string, patchExtra: Record<string, unknown> = {}) {
     if (!inicial.valido || salvando || bloqueioOperacao.current) return;
     bloqueioOperacao.current = true;
     try {
@@ -111,7 +115,7 @@ export default function PainelAcoesLocal({ dados, saAtual, aoSalvar, origemDados
       setSalvando(true);
       setErro('');
       setConfirmacao('');
-      const salvo = await aoSalvar({ saAtual: proximo.economia.saAtual, estadoTurnoCombate: proximo, economiaAcoes: proximo.economia, economiaAcoesSaldoBase: estado.economia.saAtual });
+      const salvo = await aoSalvar({ saAtual: proximo.economia.saAtual, estadoTurnoCombate: proximo, economiaAcoes: proximo.economia, economiaAcoesSaldoBase: estado.economia.saAtual, ...patchExtra });
       if (!salvo) throw new Error('O salvamento não foi confirmado. Nenhum gasto foi registrado na ficha.');
       setEstado(proximo);
       if ((!estado.economia.turnoEmAndamento && proximo.economia.turnoEmAndamento)
@@ -144,6 +148,9 @@ export default function PainelAcoesLocal({ dados, saAtual, aoSalvar, origemDados
         setConfirmouAoOParaVoceOuAliado(false);
         setConfirmouCombateCorpoACorpo(false);
       }
+      if (mensagemConfirmada?.startsWith('Resposta do Mercenário registrada')) {
+        setMercenarioHostilOculto(false); setMercenarioSurpreenderia(false); setMercenarioArmaCarregada(false);
+      }
       if (mensagemConfirmada?.startsWith('Na Minha Mira registrado')) {
         setMiraUsoDisponivel(false); setMiraAlvoPercebido(false); setMiraAlcanceMedio(false);
         setMiraNovaCondicao(false); setMiraArmaCarregada(false); setMiraArmaElegivel(false);
@@ -167,6 +174,12 @@ export default function PainelAcoesLocal({ dados, saAtual, aoSalvar, origemDados
 
   const economia = estado.economia;
   const janela = saNaJanelaEsforco(economia);
+  const usosDescanso = dados.usosDescansoCompleto ?? {};
+  const fontesUsosDescanso = listarFontesUsosDescansoCompleto(origem, habilidadesAtivas);
+  const usoMercenarioValido = usosDescansoCompletoValido(usosDescanso);
+  const mercenarioDisponivel = origem === 'Mercenário' && usoMercenarioValido
+    && fontesUsosDescanso.some(fonte => fonte.chave === 'origem:mercenario')
+    && (usosDescanso as Record<string, unknown>)['origem:mercenario'] !== true;
   const retaliacao = consultarRetaliacao({
     habilidadeAtiva: habilidadesAtivas.includes('retaliacao'),
     defesaBemSucedida: confirmouDefesaBemSucedida,
@@ -332,6 +345,35 @@ export default function PainelAcoesLocal({ dados, saAtual, aoSalvar, origemDados
                   ? 'Não Vai Escapar registrado: Reação adicional comprada por 1 SA. Desloque-se até 3 m e termine adjacente antes do Ataque.'
                   : 'Não Vai Escapar registrado: Reação normal consumida. Desloque-se até 3 m e termine adjacente antes do Ataque.');
               }}>Registrar Não Vai Escapar · Reação</button>
+          </div>}
+
+          {origem === 'Mercenário' && <div className="ficha-local-editor">
+            <h4>Resposta ao hostil oculto · Mercenário</h4>
+            <p>1 vez por Descanso Completo, quando um hostil oculto fosse Surpreendê-lo, você pode usar uma Reação para sacar uma arma de fogo carregada e realizar um Ataque contra esse hostil. Ao fazer isso, percebe a ameaça a tempo e não fica Surpreendido. A Ficha registra a Reação e o uso; saque, Ataque e rolagem continuam manuais.</p>
+            {!usoMercenarioValido && <p className="offline-erro" role="alert">O registro de usos por Descanso Completo está inválido. A Reação do Mercenário permanece bloqueada.</p>}
+            <label><input type="checkbox" checked={mercenarioHostilOculto} disabled={salvando || !mercenarioDisponivel} onChange={evento => setMercenarioHostilOculto(evento.target.checked)} /> Confirmo que o hostil estava oculto.</label>
+            <label><input type="checkbox" checked={mercenarioSurpreenderia} disabled={salvando || !mercenarioDisponivel} onChange={evento => setMercenarioSurpreenderia(evento.target.checked)} /> Confirmo que esse hostil me surpreenderia.</label>
+            <label><input type="checkbox" checked={mercenarioArmaCarregada} disabled={salvando || !mercenarioDisponivel} onChange={evento => setMercenarioArmaCarregada(evento.target.checked)} /> Confirmo que tenho uma arma de fogo carregada disponível para sacar.</label>
+            <p className="ficha-local-legenda">{!mercenarioDisponivel ? 'Uso indisponível até o próximo Descanso Completo ou registro inválido.' : economia.normaisUsados.reacao ? 'A Reação normal já foi usada: será comprada outra por 1 SA, respeitando o limite de 3 SA.' : 'O registro consumirá sua Reação normal, sem custo de SA.'}</p>
+            <button type="button" disabled={salvando || !mercenarioDisponivel || !mercenarioHostilOculto || !mercenarioSurpreenderia || !mercenarioArmaCarregada || (economia.normaisUsados.reacao && (economia.saAtual < 1 || janela >= 3))}
+              onClick={() => {
+                const avaliacao = avaliarRespostaMercenario({
+                  origemMercenario: origem === 'Mercenário',
+                  usoDisponivel: mercenarioDisponivel,
+                  hostilOculto: mercenarioHostilOculto,
+                  hostilSurpreenderia: mercenarioSurpreenderia,
+                  armaFogoCarregada: mercenarioArmaCarregada,
+                });
+                const usoAtualizado = registrarUsoDescansoCompleto(usosDescanso, 'origem:mercenario', fontesUsosDescanso);
+                const comprada = economia.normaisUsados.reacao;
+                void aplicar(atual => aplicarReacaoCombate(atual, economiaAtual =>
+                  registrarRespostaMercenario({ economia: economiaAtual, avaliacao }),
+                ).estado,
+                comprada
+                  ? 'Resposta do Mercenário registrada: Reação adicional comprada por 1 SA. Saque a arma e realize o Ataque manualmente; você não fica Surpreendido.'
+                  : 'Resposta do Mercenário registrada: Reação normal consumida. Saque a arma e realize o Ataque manualmente; você não fica Surpreendido.',
+                { usosDescansoCompleto: usoAtualizado });
+              }}>Registrar resposta do Mercenário · Reação</button>
           </div>}
 
           <h4>Ataque de Oportunidade</h4>
