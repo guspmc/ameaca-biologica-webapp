@@ -103,7 +103,8 @@ export default function CalculadoraTesteLocal({ atributos, treinada, distribuica
   const valorTeste = valorBase + bonusOrigem + bonusTentativa + modificadorAtaqueBI + bonusOperario + (penalidadeMorteNivel1 ? -2 : 0);
   const desvantagemDesarmado = perfilCorpo?.id === 'universal-ataque-desarmado';
   const codeVeronicaAtiva = escopo === 'testes' && tipo === 'pericia' && habilidadesAtivas.includes('code-veronica');
-  const existeVantagem = vantagem === 'vantagem' || codeVeronicaAtiva;
+  const parrudoAtivo = escopo === 'testes' && tipo === 'pericia' && periciaEfetiva === 'Fortitude' && habilidadesAtivas.includes('parrudo');
+  const existeVantagem = vantagem === 'vantagem' || codeVeronicaAtiva || parrudoAtivo;
   const existeDesvantagem = vantagem === 'desvantagem' || desvantagemBI || desvantagensCondicao.length > 0 || desvantagemDesarmado;
   const vantagemEfetiva: VantagemTeste = existeVantagem && existeDesvantagem ? 'normal'
     : existeVantagem ? 'vantagem'
@@ -140,7 +141,7 @@ export default function CalculadoraTesteLocal({ atributos, treinada, distribuica
     } catch (problema) {
       return { resultado: null, erro: problema instanceof Error ? problema.message : 'Valores inválidos.' };
     }
-  }, [escopo, impossivel, valorTeste, modificador, dt, dadosConfirmados, vantagemEfetiva, codeVeronicaAtiva]);
+  }, [escopo, impossivel, valorTeste, modificador, dt, dadosConfirmados, vantagemEfetiva, codeVeronicaAtiva, parrudoAtivo]);
 
   function mudarTipo(valor: 'pericia' | 'atributo' | 'ataque-corpo' | 'ataque-distancia') {
     setTipo(valor);
@@ -378,6 +379,7 @@ export default function CalculadoraTesteLocal({ atributos, treinada, distribuica
       <input type="checkbox" checked={impossivel} onChange={evento => { setImpossivel(evento.target.checked); setDado1(''); setDado2(''); setDadosConfirmados(null); setErroRolagem(''); }} />
       Impossível — sem Teste
     </label>}
+    {parrudoAtivo && <p className="ficha-local-aviso" role="status">PARRUDO: Vantagem automática em Testes de Fortitude.</p>}
     {codeVeronicaAtiva && <p className="ficha-local-aviso" role="status">CODE VERONICA: Vantagem automática em Testes de Perícia; resultados naturais de 2 a 9 contam como 10. Um 1 natural continua sendo Falha Crítica. Fontes de Desvantagem cancelam a Vantagem normalmente.</p>}
     <label>Condição da rolagem
       <select value={vantagem} disabled={impossivel} onChange={evento => { setVantagem(evento.target.value as VantagemTeste); setDado1(''); setDado2(''); setDadosConfirmados(null); setErroRolagem(''); }}>
