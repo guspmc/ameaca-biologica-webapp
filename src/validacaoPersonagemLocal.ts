@@ -8,7 +8,7 @@ import { planejarInventarioCriacao } from './inventarioCriacao.ts';
 import { simularCompras } from './comprasIniciais.ts';
 import { configuracaoFuncionamentoValida } from './funcionamentoFicha.ts';
 import { reanimacaoValida } from './reanimacaoFicha.ts';
-import { estadoEconomiaAcoesValido, estadoEconomiaAcoesLegadoReconhecido } from './economiaAcoes.ts';
+import { estadoEconomiaAcoesValido } from './economiaAcoes.ts';
 import { estadoTurnoCombateValido, estadoTurnoCombateCompostoLegadoReconhecido } from './estadoTurnoCombate.ts';
 import { listaCondicoesValida } from './condicoesFicha.ts';
 import { HABILIDADES_PROGRESSAO, ganhosProgressaoAte, validarProgressaoHabilidades } from './progressaoHabilidades.ts';
@@ -207,7 +207,7 @@ function validarDadosFicha(valor: unknown): valor is Record<string, unknown> {
       || (valor.estadoTurnoCombate as { economia: { saAtual: number } }).economia.saAtual !== valor.saAtual) return false;
   }
   if ('economiaAcoes' in valor) {
-    if (!(estadoEconomiaAcoesValido(valor.economiaAcoes) || estadoEconomiaAcoesLegadoReconhecido(valor.economiaAcoes))) return false;
+    if (!estadoEconomiaAcoesValido(valor.economiaAcoes)) return false;
     // SA é exibida e administrada também no painel de Recursos; os dois registros
     // precisam permanecer idênticos para impedir uma ficha com saldos divergentes.
     if (!Number.isSafeInteger(valor.saAtual) || (valor.economiaAcoes as { saAtual: number }).saAtual !== valor.saAtual) return false;
