@@ -726,3 +726,22 @@ Esta atualização substitui qualquer ordem anterior incompatível nesta matriz.
 **VALIDAÇÃO**
 - Teste estático novo para CURIOSA; testes de Perícias existentes auditados.
 - Sem execução local; CI do HEAD pendente; validação humana pendente; sem merge ou publicação.
+
+
+## 15. Atualização — lembretes de Habilidades de combate (11/11/2026)
+
+**IMPLEMENTADO NA BRANCH**
+- `FichaLocal.tsx` agora passa `habilidadesAtivasIds` também à Calculadora de Ataques (antes, a lista era passada somente à Calculadora de Testes).
+- `CalculadoraTesteLocal.tsx` apresenta lembretes para QUANTO MAIS MELHOR, ARMEIRO e ARMEIRA AUTODIDATA quando as Habilidades correspondentes estão ativas.
+- QUANTO MAIS MELHOR: Vantagem permanece manual; a pessoa confirma Área de Ameaça de 3 ou mais inimigos. Não há contagem de inimigos nem inferência de posicionamento.
+- ARMEIRO: lembra +1 no Teste de Ataque por Peça Extra instalada na arma efetivamente empunhada; o bônus deve ser informado manualmente.
+- ARMEIRA AUTODIDATA: lembra +1d4 por Peça Extra instalada em Arma de Fogo modificada; dados adicionais continuam manuais e não se aplicam a armas Corpo a Corpo.
+- Teste estático de integração acrescentado em `tests/ataques-calculadora.test.mjs`.
+
+**LIMITES**
+- A seleção de perfil de arma continua sendo consulta e não confirma posse, arma empunhada, Peças instaladas ou compatibilidade efetiva.
+- Nenhum bônus foi aplicado automaticamente; não existe estado operacional de Peças instaladas nesta etapa.
+
+**VALIDAÇÃO**
+- Teste adicionado, sem execução local.
+- CI do HEAD pendente; validação humana pendente; sem merge ou publicação.
