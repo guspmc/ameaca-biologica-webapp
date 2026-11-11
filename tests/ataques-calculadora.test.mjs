@@ -217,3 +217,14 @@ test('Habilidades de combate são passadas à calculadora e exibem lembretes sem
   assert.match(ui, /informe o bônus no modificador manual/);
   assert.match(ui, /ARMEIRA AUTODIDATA: Armas de Fogo modificadas causam \+1d4 de Dano por Peça Extra instalada/);
 });
+
+
+test('Habilidades de combate adicionais exibem lembretes sem automatizar ação ou geometria', () => {
+  assert.match(ui, /cascaGrossaAtiva = escopo === 'ataques' && habilidadesAtivas.includes\('casca-grossa'\)/);
+  assert.match(ui, /Dano Desarmado ou de Coronhada sobe uma categoria de Dado/);
+  assert.match(ui, /não registra usos por turno/);
+  assert.match(ui, /armamentoEspecialAtivo = escopo === 'ataques' && habilidadesAtivas.includes\('armamento-especial'\)/);
+  assert.match(ui, /nunca abaixo de Interação Gratuita com Objeto/);
+  assert.match(ui, /controleDeFogoAtivo = escopo === 'ataques' && habilidadesAtivas.includes\('controle-de-fogo'\)/);
+  assert.match(ui, /até 6 espaços conectados entre si/);
+});
