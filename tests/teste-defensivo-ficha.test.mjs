@@ -48,3 +48,9 @@ test('O cálculo defensivo não altera recursos, Defesa, Dano ou Condições', (
   assert.match(painel, /não altera Defesa, Dano, BI ou Condições/);
   assert.doesNotMatch(painel, /aoSalvar\(\{[^}]*resultadoDefensivo/s);
 });
+
+
+test('Resultado automático de Esquiva atualiza a confirmação usada por Retaliação e Contra-Ataque', () => {
+  assert.match(painel, /setConfirmouDefesaBemSucedida\(resolvido\.estado === 'sucesso' \|\| resolvido\.estado === 'critico-sucesso'\)/);
+  assert.match(painel, /defesaBemSucedida: confirmouDefesaBemSucedida/);
+});
