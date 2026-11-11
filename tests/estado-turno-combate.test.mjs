@@ -200,6 +200,10 @@ test('Finalização Dupla consome Reação + 3 SA e compromete Ação e Moviment
   assert.equal(estado.economia.normaisUsados.acao, false);
   assert.equal(estado.economia.normaisUsados.movimento, false);
   assert.equal(estado.proximoTurnoComprometido, true);
+  const recarregado = carregarEstadoTurnoCombate(estado, null, 3);
+  assert.equal(recarregado.valido, true);
+  assert.equal(recarregado.estado.proximoTurnoComprometido, true);
+  estado = recarregado.estado;
 
   estado = encerrarTurnoCombate(estado);
   estado = iniciarTurnoCombate(estado);
