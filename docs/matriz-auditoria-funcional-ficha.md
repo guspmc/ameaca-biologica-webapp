@@ -186,3 +186,12 @@ Nenhum desses pontos deve ser resolvido por inferência durante a implementaçã
 **Limites:** o resultado não altera recursos, Defesa, Dano, BI ou Condições, não decide efeitos narrativos e não substitui a confirmação da Mesa. Aparar continua indisponível na interface até integração segura do equipamento e Durabilidade.
 
 **Teste adicionado:** `tests/teste-defensivo-ficha.test.mjs`. Não executado localmente; CI pendente.
+
+
+## Na Minha Mira — integração contextual — 11/11/2026
+
+**Implementado:** quando a Habilidade `na-minha-mira` está ativa, o Painel de Ações permite confirmar manualmente uso disponível na rodada, inimigo percebido, Alcance Médio, nova Condição penalizante/restritiva, arma de fogo empunhada/carregada e elegibilidade do Ataque de Oportunidade à distância. A avaliação usa `avaliarNaMinhaMira()` e o registro usa `registrarNaMinhaMira()`, consumindo Reação normal ou comprando outra por 1 SA.
+
+**Limites:** não acompanha rodada, percepção, alcance, condições do alvo, arma empunhada ou munição. Os requisitos são confirmados pelo jogador com a Mesa. Não executa a rolagem do Ataque, não aplica Dano ou efeitos. A Ficha não presume arma carregada.
+
+**Teste adicionado:** `tests/na-minha-mira-ficha.test.mjs`; os testes de helper em `tests/reacoes-combate.test.mjs` também cobrem elegibilidade da arma e custo da Reação. Não executados localmente; CI pendente.
