@@ -9,13 +9,14 @@ import {
   aplicarManobraCombate, carregarEstadoTurnoCombate, encerrarTurnoCombate,
   iniciarTurnoCombate, registrarResolucaoAtaqueAdicional, registrarFinalizacaoDupla, type EstadoTurnoCombate,
 } from './estadoTurnoCombate';
-import { registrarCombateDuasArmas, registrarDisparada, registrarFuga, registrarMirar, registrarAtaque, registrarFinalizar } from './manobrasOperacionais';
+import { registrarCombateDuasArmas, registrarDisparada, registrarFuga, registrarMirar, registrarAtaque, registrarFinalizar, registrarAjudar } from './manobrasOperacionais';
 
 type Props = {
   dados: Record<string, unknown>;
   saAtual: number;
   aoSalvar: (patch: Record<string, unknown>) => Promise<boolean>;
   origemDados?: 'local' | 'servidor';
+  origem?: string;
 };
 
 const RECURSOS: { id: RecursoAcao; nome: string; custo: string }[] = [
@@ -36,7 +37,7 @@ function comEconomia(
   return { ...estado, economia: operacao(estado.economia) };
 }
 
-export default function PainelAcoesLocal({ dados, saAtual, aoSalvar, origemDados = 'local' }: Props) {
+export default function PainelAcoesLocal({ dados, saAtual, aoSalvar, origemDados = 'local', origem = '' }: Props) {
   const estadoInicial = carregarEstado(dados, saAtual);
   const chaveInicial = JSON.stringify([dados.estadoTurnoCombate ?? null, dados.economiaAcoes ?? null, saAtual]);
   const [inicial, setInicial] = useState(estadoInicial);
@@ -45,6 +46,8 @@ export default function PainelAcoesLocal({ dados, saAtual, aoSalvar, origemDados
   const [erro, setErro] = useState('');
   const [confirmacao, setConfirmacao] = useState('');
   const [confirmouDuasArmas, setConfirmouDuasArmas] = useState(false);
+  const [confirmouAjudarElegivel, setConfirmouAjudarElegivel] = useState(false);
+  const [confirmouTreinamentoAjudar, setConfirmouTreinamentoAjudar] = useState(false);
   const [confirmouAliadoFinalizou, setConfirmouAliadoFinalizou] = useState(false);
   const [confirmouAlvoSobreviveu, setConfirmouAlvoSobreviveu] = useState(false);
   const [confirmouAindaNaoAgio, setConfirmouAindaNaoAgio] = useState(false);
@@ -55,7 +58,7 @@ export default function PainelAcoesLocal({ dados, saAtual, aoSalvar, origemDados
     setEstado(estadoInicial.estado);
   }, [chaveInicial, salvando]);
 
-  async function aplicar(operacao: (atual: EstadoTurnoCombate) => EstadoTurnoCombate) {
+  async function aplicar(operacao: (atual: EstadoTurnoCombate) => EstadoTurnoCombate, mensagemConfirmada?: string) {
     if (!inicial.valido || salvando || bloqueioOperacao.current) return;
     bloqueioOperacao.current = true;
     try {
@@ -70,12 +73,20 @@ export default function PainelAcoesLocal({ dados, saAtual, aoSalvar, origemDados
         || (!estado.manobras.combateDuasArmasUsado && proximo.manobras.combateDuasArmasUsado)) {
         setConfirmouDuasArmas(false);
       }
+      if (mensagemConfirmada?.startsWith('Ajudar')) {
+        setConfirmouAjudarElegivel(false);
+        setConfirmouTreinamentoAjudar(false);
+      }
+      if (!estado.economia.turnoEmAndamento && proximo.economia.turnoEmAndamento) {
+        setConfirmouAjudarElegivel(false);
+        setConfirmouTreinamentoAjudar(false);
+      }
       if (!estado.proximoTurnoComprometido && proximo.proximoTurnoComprometido) {
         setConfirmouAliadoFinalizou(false);
         setConfirmouAlvoSobreviveu(false);
         setConfirmouAindaNaoAgio(false);
       }
-      setConfirmacao(origemDados === 'servidor' ? 'Economia de ações confirmada pelo servidor.' : 'Economia de ações salva neste dispositivo.');
+      setConfirmacao(mensagemConfirmada ?? (origemDados === 'servidor' ? 'Economia de ações confirmada pelo servidor.' : 'Economia de ações salva neste dispositivo.'));
     } catch (problema) {
       setErro(problema instanceof Error ? problema.message : 'Não foi possível registrar a ação.');
     } finally {
@@ -110,6 +121,18 @@ export default function PainelAcoesLocal({ dados, saAtual, aoSalvar, origemDados
                 <button type="button" disabled={salvando || foraDoTurno || economia.saAtual < (recurso.id === 'acao' ? 2 : 1) || janela >= 3} onClick={() => void aplicar(atual => comEconomia(atual, economiaAtual => comprarRecursoPorEsforco(economiaAtual, recurso.id)))}>Comprar · {recurso.custo}</button>
               </div>;
             })}
+          </div>
+
+          <h4>Ajudar</h4>
+          <div className="ficha-local-editor">
+            <p>Ajudar consome sua Ação. Quando a tarefa puder receber auxílio e você cumprir os requisitos de treinamento, o aliado recebe Vantagem no Teste. A Ficha não decide se a tarefa pode ser ajudada nem quais requisitos se aplicam: confirme isso com a Mesa.</p>
+            <label><input type="checkbox" checked={confirmouAjudarElegivel} disabled={salvando || !economia.turnoEmAndamento || economia.normaisUsados.acao} onChange={evento => setConfirmouAjudarElegivel(evento.target.checked)} /> Confirmo que a tarefa admite auxílio e que cumpro os requisitos de treinamento.</label>
+            {origem === 'Servidor Público' && <>
+              <label><input type="checkbox" checked={confirmouTreinamentoAjudar} disabled={salvando || !confirmouAjudarElegivel || !economia.turnoEmAndamento || economia.normaisUsados.acao} onChange={evento => setConfirmouTreinamentoAjudar(evento.target.checked)} /> Confirmo que sou Treinado ou Mestre na Perícia do Teste do aliado.</label>
+              <p className="ficha-local-legenda">Servidor Público: além da Vantagem normal de Ajudar, o aliado recebe +2 no Teste de Perícia.</p>
+            </>}
+            <button type="button" disabled={salvando || !economia.turnoEmAndamento || economia.normaisUsados.acao || !confirmouAjudarElegivel || (origem === 'Servidor Público' && !confirmouTreinamentoAjudar)}
+              onClick={() => void aplicar(atual => aplicarManobraCombate(atual, registrarAjudar).estado, origem === 'Servidor Público' ? 'Ajudar registrado: Ação consumida; aliado recebe Vantagem e +2 no Teste de Perícia, conforme as confirmações.' : 'Ajudar registrado: Ação consumida; aliado recebe Vantagem, conforme as confirmações.')}>Registrar Ajudar · Ação</button>
           </div>
 
           <h4>Ação Completa e Interação Gratuita</h4>
