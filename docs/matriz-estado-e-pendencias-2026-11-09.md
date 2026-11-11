@@ -618,3 +618,14 @@ Esta atualização substitui qualquer ordem anterior incompatível nesta matriz.
 - **LIMITAÇÃO:** sem consumo de munição, rolagens de Reflexos, rastreamento de alvos/linha/cobertura ou aplicação automática de Dano.
 - **PENDENTE:** testes CI e validação humana.
 - **Checkpoint:** `docs/checkpoint-disparo-e-perfuracao-2026-11-10.md`.
+
+
+## Atualização — Bear Commander e lançador integrado (10/11/2026)
+- FONTE CANÔNICA: Arquivo do Jogador v1.0, p. 57 (perfil do Bear Commander) e p. 60 (procedimentos dos Cartuchos GM 79).
+- IMPLEMENTADO: seleção explícita entre rifle Bear Commander (1d10) e lançador integrado (4d6, regras do Cartucho GM 79).
+- IMPLEMENTADO: lançador usa reserva independente, capacidade de 1 cartucho, alcance Médio e recarga por Ação Bônus; seleção de Ácido, Explosivo ou Incendiário reaproveita src/procedimentosGM79.ts.
+- IMPLEMENTADO: o lançador usa multiplicador crítico x4 em ataque direto, sem Crítico nos disparos em Área.
+- LIMITES: seleção não confirma posse/equipamento nem disponibilidade real de cartucho; não consome munição, recarrega estados, resolve Testes dos alvos ou aplica Queimadura/respingo.
+- TESTES ADICIONADOS: verificação estática em tests/ataques-calculadora.test.mjs; execução local não realizada.
+- PENDENTE: CI e validação humana.
+- Checkpoint: docs/checkpoint-bear-commander-2026-11-10.md.
