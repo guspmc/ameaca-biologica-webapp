@@ -45,9 +45,9 @@ test('comprar um recurso por Esforço não consome seu uso normal', () => {
 });
 
 test('Manobras também entram no limite de 3 SA da janela', () => {
-  let estado = gastarSAEmManobra(economiaAcoesInicial(4));
-  estado = comprarRecursoPorEsforco(estado, 'movimento');
-  estado = gastarSAEmManobra(estado);
+  let estado = encerrarTurnoAcoes(economiaAcoesInicial(4));
+  estado = gastarSAEmManobra(estado, 1, true);
+  estado = comprarRecursoPorEsforco(estado, 'reacao');
   assert.equal(saNaJanelaEsforco(estado), 3);
   assert.throws(() => gastarSAEmManobra(estado), /limite de 3 SA/);
 });
@@ -126,7 +126,7 @@ test('janela aberta no fim do turno preserva gastos feitos fora do turno até o 
 
 test('gastos do turno atual não pertencem à janela que só começa no fim dele', () => {
   let estado = gastarSAEmManobra(economiaAcoesInicial(5), 2);
-  assert.equal(estado.saGastaNaJanela, 2);
+  assert.equal(estado.saGastaNaJanela, 0);
   estado = encerrarTurnoAcoes(estado);
   assert.equal(estado.saGastaNaJanela, 0);
   assert.equal(estado.janelaEsforcoAtiva, true);
