@@ -1018,3 +1018,37 @@ Esta atualização substitui qualquer ordem anterior incompatível nesta matriz.
 **ESCOPO E SEGURANÇA**
 - Nenhuma alteração em `main`, merge, deploy, publicação, banco de produção ou Supabase.
 - Nenhuma validação humana solicitada; Inventário ativo permanece bloqueado.
+
+
+## 29. Progressão de Dano — Origem Lutador e Casca-Grossa (11/11/2026)
+
+**FONTE CANÔNICA**
+- Arquivo do Jogador v1.0, p. 24: Origem Lutador aumenta uma categoria o Dano de Ataque Desarmado e Arma Improvisada; acumula com Casca-Grossa; não afeta Coronhada.
+- Arquivo do Jogador v1.0, p. 37: Casca-Grossa aumenta uma categoria o Dano Desarmado ou de Coronhada.
+- Arquivo do Jogador v1.0, p. 52: fórmulas-base de Ataque Desarmado (1d4 + FOR) e Arma Improvisada (1d6 + FOR).
+- A sequência de categorias de Dano do livro é respeitada; a progressão ocorre sobre os Dados antes do multiplicador crítico.
+
+**IMPLEMENTADO NA BRANCH**
+- Novo `src/progressaoDano.ts` concentra a sequência canônica e calcula os passos aplicáveis.
+- `CalculadoraTesteLocal.tsx` aplica automaticamente +1 categoria a Ataque Desarmado e Arma Improvisada quando a Origem é Lutador.
+- Com Casca-Grossa ativa, Ataque Desarmado recebe uma categoria adicional; Lutador + Casca-Grossa totaliza duas categorias no Desarmado.
+- Casca-Grossa não altera Arma Improvisada. Coronhada continua manual, pois não há perfil/equipamento de Coronhada confirmado na Ficha.
+- O campo de soma dos dados passa a exibir a fórmula já ajustada. A calculadora continua sem rolar Dano, consumir equipamento ou alterar PV.
+- Não há presunção de que a personagem esteja empunhando/portando o objeto: a escolha de perfil continua sendo referência declarada pelo jogador.
+
+**LIMITES**
+- Não automatiza elegibilidade de Coronhada, pois exige arma de fogo de duas mãos com coronha resistente e autorizada.
+- Não registra usos por turno de Cabeçada/Pisão de Casca-Grossa.
+- Não altera Dano de outras armas, ataques à distância ou efeitos especiais.
+- A Origem Lutador não afeta Coronhada, conforme o texto da Origem.
+
+**VALIDAÇÃO**
+- Novo `tests/progressao-dano.test.mjs` cobre a sequência, Lutador, acumulação com Casca-Grossa e exclusões.
+- `tests/ataques-calculadora.test.mjs` cobre a integração na UI.
+- Testes não executados localmente neste ambiente.
+- CI do HEAD após o checkpoint será consultado; não presumir aprovação.
+- Checkpoint: `docs/checkpoint-lutador-casca-grossa-2026-11-11.md`.
+
+**ESCOPO**
+- Sem alteração em `main`, merge, deploy, publicação, Supabase ou banco de produção.
+- Sem validação humana isolada; Inventário ativo permanece bloqueado.
