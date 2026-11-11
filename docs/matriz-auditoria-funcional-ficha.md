@@ -195,3 +195,10 @@ Nenhum desses pontos deve ser resolvido por inferência durante a implementaçã
 **Limites:** não acompanha rodada, percepção, alcance, condições do alvo, arma empunhada ou munição. Os requisitos são confirmados pelo jogador com a Mesa. Não executa a rolagem do Ataque, não aplica Dano ou efeitos. A Ficha não presume arma carregada.
 
 **Teste adicionado:** `tests/na-minha-mira-ficha.test.mjs`; os testes de helper em `tests/reacoes-combate.test.mjs` também cobrem elegibilidade da arma e custo da Reação. Não executados localmente; CI pendente.
+
+
+### Integridade do contexto após declarar Esquiva — 11/11/2026
+
+**Implementado:** depois que a Reação defensiva é declarada e seu custo salvo, os campos que descrevem o Ataque recebido e o gatilho ficam bloqueados, assim como o botão de reavaliar a janela. Isso impede que uma edição acidental apague o contexto local de uma Reação já consumida e permita uma nova declaração sobre o mesmo evento.
+
+**Teste adicionado:** `tests/reacao-defensiva-ficha.test.mjs`; teste estrutural adicionado, ainda sem execução local. CI deve confirmar.
