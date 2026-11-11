@@ -1091,3 +1091,33 @@ Esta atualização substitui qualquer ordem anterior incompatível nesta matriz.
 - Testes automatizados existentes e adicionados foram identificados, mas não executados localmente neste ambiente.
 - CI do HEAD do ciclo está em fila; consultar o resultado antes de declarar aprovação.
 - Checkpoint: `docs/checkpoint-auditoria-origens-2026-11-11.md`.
+
+
+## 31. Integração do registro de Ataque de Oportunidade na Ficha (11/11/2026)
+
+**FONTE CANÔNICA**
+- Arquivo do Jogador v1.0, p. 81: quando uma criatura sai voluntariamente de um quadrado ameaçado pela personagem, sem proteção contra o gatilho, ela pode usar sua Reação para realizar um Ataque contra a criatura.
+- Acertar não interrompe o Movimento do alvo, salvo regra específica.
+
+**IMPLEMENTADO NA BRANCH**
+- `PainelAcoesLocal.tsx` apresenta três confirmações explícitas: saída voluntária, saída de quadrado ameaçado pela personagem e ausência de proteção contra o gatilho.
+- O registro usa `avaliarAtaqueOportunidade()`, `registrarAtaqueOportunidade()` e `aplicarReacaoCombate()`, preservando a transição integrada da Economia de Ações.
+- Se a Reação normal estiver disponível, consome-a sem SA. Se já tiver sido usada, compra Reação adicional por 1 SA, respeitando o limite da janela de 3 SA.
+- O registro não depende de o turno próprio estar ativo, pois Reações podem ocorrer fora dele.
+- O texto da interface deixa explícito que o Ataque, as posições e a decisão narrativa continuam sob responsabilidade da Mesa; o Movimento não é interrompido.
+
+**LIMITES**
+- Não acompanha posições, área ameaçada, voluntariedade ou proteções; as três condições são confirmadas pelo jogador com a Mesa.
+- Não executa rolagem, não verifica Defesa, não aplica Dano/BI/Condições e não registra resultado do Ataque.
+- Não coordena o gatilho com a ficha de outra personagem ou com um Encontro compartilhado.
+
+**VALIDAÇÃO**
+- Testes de domínio existentes em `tests/reacoes-combate.test.mjs` já cobriam gatilho, Reação normal, compra por Esforço e ausência de interrupção do Movimento.
+- Novos testes em `tests/estado-turno-combate.test.mjs` cobrem integração à transição persistente, recarga e compra de Reação adicional após uso da normal.
+- Novo teste estático `tests/ataque-oportunidade-ficha.test.mjs` cobre a interface e seus limites.
+- Testes não executados localmente neste ambiente; CI do HEAD precisa concluir. Nenhuma validação humana foi solicitada.
+- Checkpoint: `docs/checkpoint-ataque-oportunidade-ficha-2026-11-11.md`.
+
+**ESCOPO**
+- Sem alteração em `main`, merge, deploy, publicação, Supabase ou banco de produção.
+- Inventário ativo permanece bloqueado até a conclusão da Ficha e da validação humana integrada.
