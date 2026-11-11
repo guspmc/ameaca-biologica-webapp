@@ -212,7 +212,7 @@ export default function PainelAcoesLocal({ dados, saAtual, aoSalvar, origemDados
                 <p>Esquiva autorizada pelo gatilho confirmado. Declare a Reação antes de resolver o Teste defensivo.</p>
                 <p className="ficha-local-legenda">{economia.normaisUsados.reacao ? 'A Reação normal já foi usada: esta declaração comprará outra por 1 SA.' : 'Esta declaração consumirá sua Reação normal, sem custo de SA.'}</p>
                 <button type="button" disabled={salvando || (economia.normaisUsados.reacao && (economia.saAtual < 1 || janela >= 3))}
-                  onClick={() => void aplicar(atual => aplicarReacaoCombate(atual, economiaAtual => registrarReacaoDefensiva({ economia: economiaAtual, manobra: 'esquivar', janela: janelaDefensiva })).estado, economia.normaisUsados.reacao ? 'Esquiva declarada: Reação adicional comprada por 1 SA. Resolva o Teste defensivo manualmente.' : 'Esquiva declarada: Reação normal consumida. Resolva o Teste defensivo manualmente.')}>Declarar Esquiva · Reação</button>
+                  onClick={() => void aplicar(atual => aplicarReacaoCombate(atual, economiaAtual => registrarReacaoDefensiva({ economia: economiaAtual, manobra: 'esquivar', janela: janelaDefensiva })).estado, economia.normaisUsados.reacao ? 'Esquiva declarada: Reação adicional comprada por 1 SA. Resolva o Teste defensivo conforme o modo configurado.' : 'Esquiva declarada: Reação normal consumida. Resolva o Teste defensivo conforme o modo configurado.')}>Declarar Esquiva · Reação</button>
               </>}
               {janelaDefensiva.podeEsquivar && reacaoDefensivaDeclarada && <div className="ficha-local-editor">
                 <strong>Teste de Esquiva · Reflexos contra {resultadoAtaqueDefensivo}</strong>
@@ -229,12 +229,12 @@ export default function PainelAcoesLocal({ dados, saAtual, aoSalvar, origemDados
                     <label>Resultado do d20{condicoesQueImpoemDesvantagem(condicoesAtivas, { escopo: 'testes', tipoTeste: 'pericia', pericia: 'Reflexos' }).length || desvantagemBI ? ' · Desvantagem ativa: informe dois dados' : ''}
                       <input type="number" min="1" max="20" step="1" value={dadoDefensivo1} disabled={salvando} onChange={evento => { setDadoDefensivo1(evento.target.value); setResultadoDefensivo(null); }} />
                     </label>
-                    {(condicoesQueImpoemDesvantagem(condicoesAtivas as never, { escopo: 'testes', tipoTeste: 'pericia', pericia: 'Reflexos' }).length > 0 || desvantagemBI) && <label>Segundo d20
+                    {(condicoesQueImpoemDesvantagem(condicoesAtivas, { escopo: 'testes', tipoTeste: 'pericia', pericia: 'Reflexos' }).length > 0 || desvantagemBI) && <label>Segundo d20
                       <input type="number" min="1" max="20" step="1" value={dadoDefensivo2} disabled={salvando} onChange={evento => { setDadoDefensivo2(evento.target.value); setResultadoDefensivo(null); }} />
                     </label>}
                   </>}
                   <button type="button" disabled={salvando} onClick={() => { try {
-                    const desvantagem = desvantagemBI || condicoesQueImpoemDesvantagem(condicoesAtivas as never, { escopo: 'testes', tipoTeste: 'pericia', pericia: 'Reflexos' }).length > 0;
+                    const desvantagem = desvantagemBI || condicoesQueImpoemDesvantagem(condicoesAtivas, { escopo: 'testes', tipoTeste: 'pericia', pericia: 'Reflexos' }).length > 0;
                     const dados = metodoDefensivo === 'virtual' ? sortearDados(desvantagem ? 2 : 1, 20) : validarResultadosFisicos([dadoDefensivo1, ...(desvantagem ? [dadoDefensivo2] : [])].join(' '), desvantagem ? 2 : 1, 20);
                     setResultadoDefensivo(resolverTesteDefensivo({ tipo: 'esquivar', valorReflexos, resultadoAtaque: Number(resultadoAtaqueDefensivo), dado1: dados[0], dado2: dados[1] ?? null, vantagem: desvantagem ? 'desvantagem' : 'normal' }));
                     setErroTesteDefensivo('');
@@ -245,7 +245,7 @@ export default function PainelAcoesLocal({ dados, saAtual, aoSalvar, origemDados
                 <p className="ficha-local-legenda">O resultado é informativo e não altera Defesa, Dano, BI ou Condições; confirme a resolução com a Mesa.</p>
               </div>}
             </>}
-            <p className="ficha-local-legenda">Aparar permanece bloqueado nesta etapa porque o módulo ainda não controla arma empunhada, elegibilidade do item e Durabilidade. Esquiva só pode ser declarada quando você confirmar o gatilho autorizado por Habilidade ou regra. O aplicativo não rola o d20 nem aplica Defesa, Dano ou efeitos.</p>
+            <p className="ficha-local-legenda">Aparar permanece bloqueado nesta etapa porque o módulo ainda não controla arma empunhada, elegibilidade do item e Durabilidade. Esquiva só pode ser declarada quando você confirmar o gatilho autorizado por Habilidade ou regra. O aplicativo não decide efeitos narrativos, não altera Defesa, Dano ou Condições e não substitui a confirmação da Mesa.</p>
           </div>
 
           <h4>Contra-Ataque</h4>
