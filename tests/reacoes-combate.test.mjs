@@ -407,7 +407,8 @@ test('Mercenário compra Reação adicional por 1 SA se a normal já foi usada',
 test('Mercenário não permite ultrapassar o limite de 3 SA na janela', async () => {
   const { avaliarRespostaMercenario, registrarRespostaMercenario } = await import('../src/reacoesCombate.ts');
   const avaliacao = avaliarRespostaMercenario({ origemMercenario: true, usoDisponivel: true, hostilOculto: true, hostilSurpreenderia: true, armaFogoCarregada: true });
-  const economia = { ...economiaAcoesInicial(3), saGastaNaJanela: 3, normaisUsados: { acao: false, movimento: false, acaoBonus: false, reacao: true } };
+  const base = economiaAcoesInicial(4);
+  const economia = { ...base, saAtual: 1, saGastaNaJanela: 3, normaisUsados: { ...base.normaisUsados, reacao: true } };
   assert.throws(() => registrarRespostaMercenario({ economia, avaliacao }), /limite de 3 SA/);
 });
 
