@@ -105,6 +105,57 @@ export function prepararContraAtaque(args: {
   return { economia, reacaoAdicionalComprada, custoSA: 1 + (reacaoAdicionalComprada ? 1 : 0) };
 }
 
+export type AvaliacaoRespostaMercenario = { disponivel: boolean; motivo: string };
+
+/** Avalia manualmente o gatilho da Origem Mercenário; não presume surpresa nem equipamento. */
+export function avaliarRespostaMercenario(args: {
+  origemMercenario: boolean;
+  usoDisponivel: boolean;
+  hostilOculto: boolean;
+  hostilSurpreenderia: boolean;
+  armaFogoCarregada: boolean;
+}): AvaliacaoRespostaMercenario {
+  const chaves = ['origemMercenario', 'usoDisponivel', 'hostilOculto', 'hostilSurpreenderia', 'armaFogoCarregada'].sort().join('|');
+  if (!args || typeof args !== 'object' || Array.isArray(args)
+    || Object.getPrototypeOf(args) !== Object.prototype
+    || Object.keys(args).sort().join('|') !== chaves
+    || Object.values(args).some(valor => typeof valor !== 'boolean')) {
+    throw new Error('Confirmações da resposta do Mercenário inválidas.');
+  }
+  const disponivel = args.origemMercenario && args.usoDisponivel && args.hostilOculto
+    && args.hostilSurpreenderia && args.armaFogoCarregada;
+  return {
+    disponivel,
+    motivo: disponivel
+      ? 'Gatilho confirmado: use uma Reação para sacar a arma de fogo carregada e realizar o Ataque manualmente; você não fica Surpreendido.'
+      : 'Mercenário exige Origem ativa, uso disponível, hostil oculto que o surpreenderia e arma de fogo carregada.',
+  };
+}
+
+/** Registra somente a Reação do Mercenário; saque e Ataque permanecem manuais. */
+export function registrarRespostaMercenario(args: {
+  economia: EstadoEconomiaAcoes;
+  avaliacao: AvaliacaoRespostaMercenario;
+}): { economia: EstadoEconomiaAcoes; reacaoAdicionalComprada: boolean } {
+  if (!args || typeof args !== 'object' || Array.isArray(args)
+    || Object.getPrototypeOf(args) !== Object.prototype
+    || Object.keys(args).sort().join('|') !== 'avaliacao|economia'
+    || !args.avaliacao || typeof args.avaliacao !== 'object' || Array.isArray(args.avaliacao)
+    || Object.getPrototypeOf(args.avaliacao) !== Object.prototype
+    || Object.keys(args.avaliacao).sort().join('|') !== 'disponivel|motivo'
+    || typeof args.avaliacao.disponivel !== 'boolean'
+    || typeof args.avaliacao.motivo !== 'string' || !args.avaliacao.motivo.trim()) {
+    throw new Error('Dados de registro da resposta do Mercenário inválidos.');
+  }
+  if (!args.avaliacao.disponivel) throw new Error('A resposta do Mercenário não está disponível para este gatilho.');
+  if (!estadoEconomiaAcoesValido(args.economia)) throw new Error('Estado da economia de ações inválido para Mercenário.');
+  const reacaoAdicionalComprada = args.economia.normaisUsados.reacao;
+  const economia = reacaoAdicionalComprada
+    ? comprarRecursoPorEsforco(args.economia, 'reacao')
+    : consumirRecursoNormal(args.economia, 'reacao');
+  return { economia, reacaoAdicionalComprada };
+}
+
 /** Avalia o gatilho universal de Ataque de Oportunidade. Não realiza o Ataque. */
 export function avaliarAtaqueOportunidade(args: {
   saiuVoluntariamente: boolean;
