@@ -764,3 +764,22 @@ Esta atualização substitui qualquer ordem anterior incompatível nesta matriz.
 **VALIDAÇÃO**
 - Teste adicionado, sem execução local.
 - CI do HEAD pendente; validação humana pendente; sem merge ou publicação.
+
+## 17. Atualização — Defesa alternativa e lembrete de Parede Humana (11/11/2026)
+
+**IMPLEMENTADO NA BRANCH**
+- `calcularDefesaComReflexosSobrevivente()` calcula, somente quando a Habilidade está ativa, o maior valor entre a Defesa atual e 10 + Acrobacia.
+- `FichaLocal.tsx` calcula Acrobacia pelo valor de Perícia já composto (Atributo + Treinamento) e exibe a Defesa alternativa no resumo de Combate. A Defesa-base e a Defesa atual continuam separadas.
+- A Habilidade Parede Humana agora apresenta lembrete contextual com o gatilho, bônus de VIG, RD e duração. Não ativa o efeito nem controla o gasto de Movimento.
+
+**TESTES ADICIONADOS**
+- Cobrem escolha do maior valor, ausência do benefício sem a Habilidade e integração da Ficha.
+
+**LIMITES**
+- A Defesa alternativa é apresentada para consulta; o Mestre/jogador ainda escolhe qual valor usar contra cada Ataque.
+- Parede Humana não registra estado temporário, duração, RD aplicada nem gasto de Movimento.
+- Equipamentos/armaduras ainda não compõem a Defesa atual.
+
+**VALIDAÇÃO**
+- Testes adicionados; execução local não realizada neste ambiente.
+- CI precisa concluir para o HEAD final. Sem validação humana, merge ou publicação.
