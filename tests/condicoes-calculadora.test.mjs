@@ -57,7 +57,7 @@ test('Ficha alimenta os cálculos com Condições ativas e cancela Vantagem/Desv
   const ficha = await readFile(new URL('../src/FichaLocal.tsx', import.meta.url), 'utf8');
   assert.match(calc, /condicoesQueImpoemDesvantagem\(condicoesAtivas/);
   assert.match(calc, /const existeDesvantagem = vantagem === 'desvantagem' \\|\\| desvantagemBI \\|\\| desvantagensCondicao.length > 0 \\|\\| desvantagemDesarmado/);
-  assert.match(calc, /vantagem === 'vantagem' \? 'normal' : 'desvantagem'/);
+  assert.match(calc, /const vantagemEfetiva: VantagemTeste = existeVantagem && existeDesvantagem \? 'normal'/);
   assert.match(ficha, /condicoesAtivasIds = listaCondicoesValida\(dados\.condicoes\)/);
   assert.match(ficha, /condicoesAtivas=\{condicoesAtivasIds\}/);
   assert.match(ficha, /calcularDefesaComCondicoes\(defesa, numero\(atributos\.agilidade\), condicoesAtivasIds\)/);
