@@ -113,7 +113,7 @@ function migrarEstadoTurnoCombateComposto(valor: unknown): EstadoTurnoCombate | 
       ataqueNormalRealizado: (manobras.ataqueNormalRealizado as boolean | undefined) ?? false,
       combateDuasArmasUsado: manobras.combateDuasArmasUsado as boolean,
     },
-    movimentosAdicionaisConcedidos: chavesEstado === chavesComMarcadores ? estado.movimentosAdicionaisConcedidos as number : 0,
+    movimentosAdicionaisConcedidos: chavesEstado !== chavesBasicas ? estado.movimentosAdicionaisConcedidos as number : 0,
     ataqueAdicionalAutorizado: chavesEstado !== chavesBasicas ? estado.ataqueAdicionalAutorizado as boolean : false,
     proximoTurnoComprometido: chavesEstado === chavesComCompromisso ? estado.proximoTurnoComprometido as boolean : false,
   };
