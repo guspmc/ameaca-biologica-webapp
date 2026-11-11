@@ -13,7 +13,7 @@
 ### Amnésico — Vislumbres do Passado
 - Estado local persistente registra uso 1/sessão e Vantagem pendente no próximo Teste relacionado de Sobrevivência.
 - Exige confirmação de local conhecido antes da amnésia e tentativa AST DT 10 resolvida pelo jogador conforme o modo da Ficha.
-- O jogador registra se o Teste teve sucesso e se a informação foi útil; somente sucesso + informação útil gera a Vantagem pendente.
+- O jogador registra a tentativa AST DT 10 e confirma se a informação foi útil; informação útil gera a Vantagem pendente, conforme o texto canônico.
 - A Vantagem permanece pendente até o jogador marcar seu consumo após o Teste relacionado.
 - O botão de nova sessão renova apenas o uso; preserva Vantagem pendente ainda não consumida.
 
@@ -33,6 +33,7 @@
 - `src/beneficiosOrigensContextuais.ts` — contratos e transições persistentes para Amnésico e Militar.
 - `src/BeneficiosOrigemContextuaisLocal.tsx` — UI de confirmação e consumo.
 - `src/FichaLocal.tsx` — integração dos benefícios contextuais e lembrete de Agente de Saúde.
+- `src/validacaoPersonagemLocal.ts` — valida os novos estados persistidos de Amnésico e Militar.
 - `src/reacoesCombate.ts` e `src/PainelAcoesLocal.tsx` — avaliação, custo e gravação combinada da Reação do Mercenário.
 - `src/UsosDescansoCompletoLocal.tsx` — impede consumo separado do Mercenário.
 - `tests/beneficios-origens-contextuais.test.mjs` — regras de Amnésico/Militar e integração.
@@ -52,7 +53,8 @@
 
 - `2c52a18`, `7972601`, `467e983`, `edea31f`, `a12a69e` — Mercenário.
 - `5a185ca`, `a422f94` — Agente de Saúde.
-- `42e38d5`, `932cb0f`, `b7b65b2`, `a14babca`, `e0d0fdb`, `531e4db` — Amnésico e Militar.
+- `42e38d5`, `932cb0f`, `b7b65b2`, `a14babca`, `e0d0fdb`, `531e4db`, `e06f352`, `bb209a9`, `52437a9` — Amnésico e Militar.
+- `09fb81e`, `67d6ba5` — validação dos estados contextuais.
 - `26a1e4a`, `3ce37a8` — matriz.
 
 ## Validação
