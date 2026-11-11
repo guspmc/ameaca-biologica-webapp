@@ -190,7 +190,7 @@ Nenhum desses pontos deve ser resolvido por inferência durante a implementaçã
 
 ## Na Minha Mira — integração contextual — 11/11/2026
 
-**Implementado:** quando a Habilidade `na-minha-mira` está ativa, o Painel de Ações permite confirmar manualmente uso disponível na rodada, inimigo percebido, Alcance Médio, nova Condição penalizante/restritiva, arma de fogo empunhada/carregada e elegibilidade do Ataque de Oportunidade à distância. A avaliação usa `avaliarNaMinhaMira()` e o registro usa `registrarNaMinhaMira()`, consumindo Reação normal ou comprando outra por 1 SA.
+**Implementado:** quando a Habilidade `na-minha-mira` está ativa, o Painel de Ações permite confirmar manualmente uso disponível na rodada, inimigo percebido, Alcance Médio, nova Condição penalizante/restritiva, arma de fogo empunhada/carregada e elegibilidade do Ataque de Oportunidade à distância. A avaliação usa `avaliarNaMinhaMira()` e o registro usa `registrarNaMinhaMira()` dentro de `aplicarReacaoCombate()`, consumindo Reação normal ou comprando outra por 1 SA e preservando a transição validada do estado integrado.
 
 **Limites:** não acompanha rodada, percepção, alcance, condições do alvo, arma empunhada ou munição. Os requisitos são confirmados pelo jogador com a Mesa. Não executa a rolagem do Ataque, não aplica Dano ou efeitos. A Ficha não presume arma carregada.
 
