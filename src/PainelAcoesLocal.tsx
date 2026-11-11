@@ -7,10 +7,9 @@ import {
 } from './economiaAcoes';
 import {
   aplicarManobraCombate, carregarEstadoTurnoCombate, encerrarTurnoCombate,
-  iniciarTurnoCombate, registrarResolucaoAtaqueAdicional, type EstadoTurnoCombate,
+  iniciarTurnoCombate, registrarResolucaoAtaqueAdicional, registrarFinalizacaoDupla, type EstadoTurnoCombate,
 } from './estadoTurnoCombate';
 import { registrarCombateDuasArmas, registrarDisparada, registrarFuga, registrarMirar, registrarAtaque, registrarFinalizar } from './manobrasOperacionais';
-import { registrarFinalizacaoDupla } from './estadoTurnoCombate';
 
 type Props = {
   dados: Record<string, unknown>;
