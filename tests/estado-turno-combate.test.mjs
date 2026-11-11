@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {
   estadoTurnoCombateInicial, estadoTurnoCombateValido, carregarEstadoTurnoCombate, estadoTurnoCombateCompostoLegadoReconhecido,
   iniciarTurnoCombate, encerrarTurnoCombate,
-  aplicarManobraCombate, aplicarReacaoCombate,
+  aplicarManobraCombate, aplicarReacaoCombate, registrarFinalizacaoDupla,
 } from '../src/estadoTurnoCombate.ts';
 import { registrarDisparada, registrarFuga, registrarMirar, registrarAtaque } from '../src/manobrasOperacionais.ts';
 import { registrarReacaoDefensiva, avaliarJanelaReacao } from '../src/reacoesCombate.ts';
@@ -13,6 +13,7 @@ test('estado integrado nasce versionado e valida sua estrutura completa', () => 
   assert.equal(estado.versao, 1);
   assert.equal(estado.movimentosAdicionaisConcedidos, 0);
   assert.equal(estado.ataqueAdicionalAutorizado, false);
+  assert.equal(estado.proximoTurnoComprometido, false);
   assert.equal(estadoTurnoCombateValido(estado), true);
   assert.equal(estadoTurnoCombateValido({ ...estado, campoExtra: true }), false);
   assert.equal(estadoTurnoCombateValido({ ...estado, manobras: { ...estado.manobras, fugaUsada: true } }), false);
@@ -187,3 +188,54 @@ test('não migra estado composto histórico com estrutura ou tipos desconhecidos
   assert.equal(carregarEstadoTurnoCombate(extra, null, 3).valido, false);
 });
 
+
+
+test('Finalização Dupla consome Reação + 3 SA e compromete Ação e Movimento do próximo turno', () => {
+  let estado = estadoTurnoCombateInicial(6);
+  const contexto = { aliadoFinalizou: true, alvoSobreviveu: true, personagemAindaNaoAgioNaRodada: true };
+  estado = registrarFinalizacaoDupla(estado, contexto);
+  assert.equal(estado.economia.saAtual, 3);
+  assert.equal(estado.economia.saGastaNaJanela, 3);
+  assert.equal(estado.economia.normaisUsados.reacao, true);
+  assert.equal(estado.economia.normaisUsados.acao, false);
+  assert.equal(estado.economia.normaisUsados.movimento, false);
+  assert.equal(estado.proximoTurnoComprometido, true);
+
+  estado = encerrarTurnoCombate(estado);
+  estado = iniciarTurnoCombate(estado);
+  assert.equal(estado.economia.normaisUsados.acao, true);
+  assert.equal(estado.economia.normaisUsados.movimento, true);
+  assert.equal(estado.economia.normaisUsados.acaoBonus, false);
+  assert.equal(estado.economia.interacaoGratuitaUsada, false);
+  assert.equal(estado.proximoTurnoComprometido, false);
+});
+
+test('Finalização Dupla exige contexto explícito, Reação disponível e 3 SA na janela', () => {
+  const estado = estadoTurnoCombateInicial(6);
+  const contexto = { aliadoFinalizou: true, alvoSobreviveu: true, personagemAindaNaoAgioNaRodada: true };
+  assert.throws(() => registrarFinalizacaoDupla(estado, { ...contexto, alvoSobreviveu: false }), /exige confirmação/);
+  assert.throws(() => registrarFinalizacaoDupla(estado, { ...contexto, extra: true }), /exige confirmação/);
+  const reacaoUsada = { ...estado, economia: { ...estado.economia, normaisUsados: { ...estado.economia.normaisUsados, reacao: true } } };
+  assert.throws(() => registrarFinalizacaoDupla(reacaoUsada, contexto), /Reação disponível/);
+  const SAInsuficiente = { ...estado, economia: { ...estado.economia, saAtual: 5, saGastaNaJanela: 1 } };
+  assert.throws(() => registrarFinalizacaoDupla(SAInsuficiente, contexto), /limite de 3 SA/);
+  assert.equal(estado.economia.saAtual, 6);
+  assert.equal(estado.proximoTurnoComprometido, false);
+});
+
+test('migração de estado composto anterior adiciona compromisso falso sem perder marcadores', () => {
+  const atual = estadoTurnoCombateInicial(5);
+  const legado = {
+    versao: 1,
+    economia: atual.economia,
+    manobras: { ...atual.manobras },
+    movimentosAdicionaisConcedidos: 2,
+    ataqueAdicionalAutorizado: true,
+  };
+  assert.equal(estadoTurnoCombateCompostoLegadoReconhecido(legado), true);
+  const migrado = carregarEstadoTurnoCombate(legado, null, 5);
+  assert.equal(migrado.valido, true);
+  assert.equal(migrado.estado.movimentosAdicionaisConcedidos, 2);
+  assert.equal(migrado.estado.ataqueAdicionalAutorizado, true);
+  assert.equal(migrado.estado.proximoTurnoComprometido, false);
+});
