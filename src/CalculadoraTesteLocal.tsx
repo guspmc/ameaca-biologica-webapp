@@ -106,6 +106,9 @@ export default function CalculadoraTesteLocal({ atributos, treinada, distribuica
   const parrudoAtivo = escopo === 'testes' && tipo === 'pericia' && periciaEfetiva === 'Fortitude' && habilidadesAtivas.includes('parrudo');
   const curiosaAtiva = escopo === 'testes' && tipo === 'pericia' && habilidadesAtivas.includes('curiosa');
   const curiosaContextual = curiosaAtiva && ['Percepção', 'Investigação'].includes(periciaEfetiva);
+  const quantoMaisMelhorAtiva = escopo === 'ataques' && habilidadesAtivas.includes('quanto-mais-melhor');
+  const armeiroAtivo = escopo === 'ataques' && habilidadesAtivas.includes('armeiro');
+  const armeiraAutodidataAtiva = escopo === 'ataques' && habilidadesAtivas.includes('armeira-autodidata');
   const existeVantagem = vantagem === 'vantagem' || codeVeronicaAtiva || parrudoAtivo;
   const existeDesvantagem = vantagem === 'desvantagem' || desvantagemBI || desvantagensCondicao.length > 0 || desvantagemDesarmado;
   const vantagemEfetiva: VantagemTeste = existeVantagem && existeDesvantagem ? 'normal'
@@ -251,6 +254,9 @@ export default function CalculadoraTesteLocal({ atributos, treinada, distribuica
       </select>
     </label>
     {escopo === 'ataques' && restricoesAtaque.length > 0 && <div className="ficha-local-aviso" role="status"><strong>Condições que restringem Ataques</strong>{restricoesAtaque.map(item => <p key={item.condicao}>{item.motivo}</p>)}<small>Este aviso não bloqueia a rolagem nem altera a narrativa; confira se a Condição ainda está ativa e se existe uma exceção aplicável.</small></div>}
+    {quantoMaisMelhorAtiva && <p className="ficha-local-aviso" role="status">QUANTO MAIS MELHOR: se você estiver na Área de Ameaça de 3 ou mais inimigos, recebe Vantagem nos Ataques. Confirme a circunstância com a Mesa e selecione Vantagem manualmente; a Ficha não conta inimigos nem presume posicionamento.</p>}
+    {armeiroAtivo && <p className="ficha-local-legenda">ARMEIRO: ao atacar com arma modificada, some +1 ao Teste de Ataque por Peça Extra instalada nela. Confira a arma efetivamente empunhada e informe o bônus no modificador manual; a seleção do perfil não confirma peças instaladas.</p>}
+    {armeiraAutodidataAtiva && <p className="ficha-local-legenda">ARMEIRA AUTODIDATA: Armas de Fogo modificadas causam +1d4 de Dano por Peça Extra instalada. Confira a arma e informe os dados adicionais manualmente; não se aplica a armas Corpo a Corpo. O perfil não confirma peças instaladas.</p>}
     {(tipo === 'ataque-corpo' || tipo === 'ataque-distancia') && <div className="ficha-local-editor">
       <label>Perfil de arma para consulta (opcional)
         <select value={armaId} onChange={evento => { setArmaId(evento.target.value); setResultadoDadosDano(''); setResultadoDadosAdicionais(''); setCriticoDano(false); setVarianteDanoEspecial('normal'); setCartuchoGM79('acido'); setModoGM79('direto'); setModoBearCommander('rifle'); setModoDisparoAutomatico('normal'); setCoronhaMatildaConfirmada(false); }}>
