@@ -11,7 +11,10 @@
 - A janela é avaliada por `avaliarJanelaReacao()`; 20 natural mantém o fechamento das Reações defensivas normais.
 - A declaração de Esquiva só aparece quando a janela autoriza Esquivar. O registro usa `registrarReacaoDefensiva()` dentro de `aplicarReacaoCombate()`, preservando a transição integrada da Economia de Ações.
 - Se a Reação normal já foi usada, o registro compra outra por 1 SA e respeita a janela de 3 SA.
-- O fluxo informa que a declaração ocorre antes de Dano, BI ou Condições; não realiza o Teste defensivo nem aplica efeitos.
+- Após a declaração, o modo Automático oferece o Teste de Reflexos contra o resultado total do Ataque recebido, por `resolverTesteDefensivo()`.
+- O valor de Reflexos vem de `valorBasePericia()`, sem duplicar Atributo. Desvantagem por Condições aplicáveis a Reflexos e pela Fase da BI usa dois d20 e escolhe o pior.
+- Dados Físicos exigem resultados informados; Virtuais são sorteados somente após comando explícito; Mistos permitem escolher o método.
+- Modos Misto e Manual mantêm a resolução fora do cálculo automático. O resultado calculado não altera recursos, Defesa, Dano, BI ou Condições.
 
 ## Proteção e limites
 
@@ -23,6 +26,7 @@
 ## Testes e validação
 
 - Adicionado `tests/reacao-defensiva-ficha.test.mjs` com verificações estruturais do fluxo e do bloqueio de Aparar.
+- Adicionado `tests/teste-defensivo-ficha.test.mjs` para cálculo, Perícias, Desvantagem e modos de dados.
 - **Não executado localmente:** não há clone/ambiente local disponível nesta execução.
 - **CI:** pendente de consulta após os commits.
 - **Validação humana:** não solicitada, conforme decisão de realizar uma única sessão integrada depois de concluir a Ficha (exceto Inventário).
@@ -34,6 +38,12 @@
 - `d9882f1` — atualiza a matriz de auditoria.
 - `0311345` — corrige a validação dos campos numéricos.
 - `6ff8cda` — exige confirmação explícita dos dados contextuais.
+- `65be4a6` — conecta o Teste de Esquiva à Ficha.
+- `923c028` — tipa condições para o cálculo.
+- `389e8fd` — fornece Perícias e configuração de funcionamento à Ficha.
+- `46dc969` — corrige tipagem/mensagens.
+- `28c65b1` — adiciona testes do cálculo defensivo.
+- `8fa7ad1` — atualiza a matriz.
 
 ## Próximo passo
 
