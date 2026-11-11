@@ -259,3 +259,43 @@ test('Ataque de Oportunidade rejeita gatilhos malformados ou indisponíveis', as
     economia: economiaAcoesInicial(3), gatilho: indisponivel,
   }), /não está disponível/);
 });
+
+
+test('Contra-Ataque Instintivo autoriza a mesma Reação e Retaliação aplica efeitos somente após defesa bem-sucedida', async () => {
+  const { contraAtaqueUsaMesmaReacao, consultarRetaliacao } = await import('../src/reacoesCombate.ts');
+  const habilidades = { contraAtaqueInstintivo: true, retaliacao: false, naoVaiEscapar: false, naMinhaMira: false, voceAparouUmMissil: false };
+  assert.equal(contraAtaqueUsaMesmaReacao(habilidades), true);
+  assert.equal(consultarRetaliacao({ habilidadeAtiva: true, defesaBemSucedida: true }).dadosAdicionaisNoAcerto, 1);
+  assert.equal(consultarRetaliacao({ habilidadeAtiva: true, defesaBemSucedida: true }).atordoaAgressor, true);
+  assert.deepEqual(consultarRetaliacao({ habilidadeAtiva: true, defesaBemSucedida: false }), { atordoaAgressor: false, contraAtaqueComVantagem: false, dadosAdicionaisNoAcerto: 0 });
+});
+
+test('Não Vai Escapar exige provocação em combate Corpo a Corpo para você ou aliado', async () => {
+  const { avaliarNaoVaiEscapar } = await import('../src/reacoesCombate.ts');
+  const valido = avaliarNaoVaiEscapar({ habilidadeAtiva: true, criaturaProvocouAtaqueDeOportunidade: true, gatilhoFoiParaVoceOuAliado: true, combateCorpoACorpo: true });
+  assert.equal(valido.disponivel, true);
+  assert.equal(valido.deslocamentoMaximoMetros, 3);
+  assert.equal(valido.deveTerminarAdjacente, true);
+  assert.equal(avaliarNaoVaiEscapar({ habilidadeAtiva: true, criaturaProvocouAtaqueDeOportunidade: true, gatilhoFoiParaVoceOuAliado: false, combateCorpoACorpo: true }).disponivel, false);
+});
+
+test('Na Minha Mira só dispara com nova Condição penalizante em alvo percebido até Alcance Médio', async () => {
+  const { avaliarNaMinhaMira } = await import('../src/reacoesCombate.ts');
+  const base = { habilidadeAtiva: true, usoDisponivelNaRodada: true, inimigoPercebido: true, dentroDeAlcanceMedio: true, adquiriuNovaCondicaoPenalizante: true };
+  assert.equal(avaliarNaMinhaMira(base).ataqueDeOportunidadeADistancia, true);
+  assert.equal(avaliarNaMinhaMira({ ...base, adquiriuNovaCondicaoPenalizante: false }).disponivel, false);
+  assert.equal(avaliarNaMinhaMira({ ...base, dentroDeAlcanceMedio: false }).disponivel, false);
+});
+
+test('VOCÊ APAROU UM MÍSSIL!? separa interceptação narrativa, Aparar livre e bônus de dano', async () => {
+  const { consultarVoceAparouUmMissil } = await import('../src/reacoesCombate.ts');
+  const base = { habilidadeAtiva: true, narrativaPermiteInterceptacao: true, gatilhoValidoParaAparar: true, facaOuHatchet: true, turnoProprio: true, acaoLivreJaUsadaNoTurno: false, apararCorpoACorpoBemSucedido: true, contraAtaqueDeclarado: true };
+  const efeito = consultarVoceAparouUmMissil(base);
+  assert.equal(efeito.podeApararQualquerAtaque, true);
+  assert.equal(efeito.apararComAcaoLivre, true);
+  assert.equal(efeito.danoApararAdicional, '2d4');
+  assert.equal(efeito.finalizarContraAtaqueSemSA, true);
+  assert.equal(efeito.danoContraAtaqueAdicional, '2d4');
+  assert.equal(consultarVoceAparouUmMissil({ ...base, acaoLivreJaUsadaNoTurno: true }).apararComAcaoLivre, false);
+  assert.equal(consultarVoceAparouUmMissil({ ...base, facaOuHatchet: false }).danoApararAdicional, null);
+});
