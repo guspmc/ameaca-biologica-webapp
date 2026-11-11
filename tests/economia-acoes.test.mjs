@@ -125,7 +125,7 @@ test('janela aberta no fim do turno preserva gastos feitos fora do turno até o 
 });
 
 test('gastos do turno atual não pertencem à janela que só começa no fim dele', () => {
-  let estado = gastarSAEmManobra(economiaAcoesInicial(5), 2);
+  let estado = gastarSAEmManobra(economiaAcoesInicial(6), 3);
   assert.equal(estado.saGastaNaJanela, 0);
   estado = encerrarTurnoAcoes(estado);
   assert.equal(estado.saGastaNaJanela, 0);
