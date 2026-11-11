@@ -783,3 +783,17 @@ Esta atualização substitui qualquer ordem anterior incompatível nesta matriz.
 **VALIDAÇÃO**
 - Testes adicionados; execução local não realizada neste ambiente.
 - CI precisa concluir para o HEAD final. Sem validação humana, merge ou publicação.
+
+## 18. Correção de escopo — Reflexos de Sobrevivente e Rolamento (11/11/2026)
+
+**IMPLEMENTADO NA BRANCH**
+- O lembrete de Reflexos de Sobrevivente foi completado conforme Arquivo do Jogador v1.0, p. 34: uma Esquiva gratuita por rodada sem gastar Reação, comprometendo a próxima Ação Bônus; passagem por espaços ocupados por personagens/inimigos Médios e menores sem Ataque de Oportunidade.
+- Quando Rolamento está ativo, a Ficha também lembra o reposicionamento de até 3 m após Esquiva bem-sucedida, sem provocar Ataques de Oportunidade.
+- A Defesa alternativa (maior entre Defesa e 10 + Acrobacia) permanece exibida separadamente.
+
+**LIMITES**
+- Os lembretes não acompanham rodada, uso da Esquiva gratuita, comprometimento da Ação Bônus, posição, tamanho de criaturas nem geometria do deslocamento.
+- Não consomem Reação nem Ação Bônus automaticamente; decisão e registro continuam com a Mesa.
+
+**VALIDAÇÃO**
+- Teste estático adicionado; não executado localmente. CI pendente no HEAD final.
