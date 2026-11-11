@@ -53,3 +53,25 @@ test('recusa faces, DT e modificadores inválidos', () => {
   assert.throws(() => calcularTesteManual({ valorBase: 0, dt: 0, dado1: 10 }), /DT/);
   assert.throws(() => calcularTesteManual({ valorBase: 0.5, dt: 12, dado1: 10 }), /inteiros/);
 });
+
+
+test('CODE VERONICA converte resultados naturais de 2 a 9 em 10, preservando 1 e 20', () => {
+  const baixo = calcularTesteManual({ valorBase: 0, dt: 10, dado1: 2, naturalDe2a9Como10: true });
+  const alto = calcularTesteManual({ valorBase: 0, dt: 10, dado1: 9, naturalDe2a9Como10: true });
+  const dez = calcularTesteManual({ valorBase: 0, dt: 10, dado1: 10, naturalDe2a9Como10: true });
+  const falhaCritica = calcularTesteManual({ valorBase: 20, dt: 10, dado1: 1, naturalDe2a9Como10: true });
+  const critico = calcularTesteManual({ valorBase: 0, dt: 25, dado1: 20, naturalDe2a9Como10: true });
+  assert.equal(baixo.total, 10);
+  assert.match(baixo.detalhe, /Natural 2 conta como 10 por CODE VERONICA/);
+  assert.equal(alto.total, 10);
+  assert.equal(dez.total, 10);
+  assert.equal(falhaCritica.estado, 'falha-critica');
+  assert.equal(critico.estado, 'critico-sucesso');
+});
+
+test('CODE VERONICA aplica o ajuste ao resultado escolhido com Vantagem', () => {
+  const resultado = calcularTesteManual({ valorBase: 0, dt: 10, dado1: 2, dado2: 8, vantagem: 'vantagem', naturalDe2a9Como10: true });
+  assert.equal(resultado.dadoEscolhido, 8);
+  assert.equal(resultado.total, 10);
+  assert.match(resultado.detalhe, /Natural 8 conta como 10 por CODE VERONICA/);
+});
