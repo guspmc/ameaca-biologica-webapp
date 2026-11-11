@@ -816,3 +816,18 @@ Esta atualização substitui qualquer ordem anterior incompatível nesta matriz.
 - Bônus de Dano são devolvidos como instruções; não alteram PV nem executam Ataques/Finalizações.
 - Contra-Ataque Instintivo não gasta segunda Reação, mas preserva 1 SA.
 - Execução local e validação humana pendentes; CI deve ser conferido para o HEAD final.
+
+
+## 20. Auditoria de integridade das Reações — correção do Contra-Ataque Instintivo (11/11/2026)
+
+**PROBLEMA ENCONTRADO**
+- `prepararContraAtaque()` aceitava `mesmaReacaoAutorizada: true` mesmo quando nenhuma Reação havia sido registrada. Isso permitia contornar o custo de Reação por chamada direta do domínio, embora a Habilidade apenas permita reutilizar a Reação já gasta em Aparar/Esquivar.
+
+**CORREÇÃO IMPLEMENTADA**
+- Contra-Ataque Instintivo agora exige que a economia registre a Reação normal consumida ou uma Reação adicional comprada antes de reutilizá-la.
+- A Habilidade continua preservando o custo normal de 1 SA do Contra-Ataque.
+- Helpers de Habilidades de Reação agora validam estrutura exata, rejeitando campos ausentes, extras e tipos incorretos.
+- Testes adicionados para a regressão e validação estrutural.
+
+**VALIDAÇÃO**
+- Testes adicionados, não executados localmente. CI pendente no HEAD final; sem validação humana, merge ou publicação.
