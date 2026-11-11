@@ -1121,3 +1121,40 @@ Esta atualização substitui qualquer ordem anterior incompatível nesta matriz.
 **ESCOPO**
 - Sem alteração em `main`, merge, deploy, publicação, Supabase ou banco de produção.
 - Inventário ativo permanece bloqueado até a conclusão da Ficha e da validação humana integrada.
+
+
+## 32. Integração do registro de Contra-Ataque na Ficha (11/11/2026)
+
+**FONTE CANÔNICA**
+- Arquivo do Jogador v1.0, p. 81: depois de Aparar ou Esquivar com sucesso, a personagem pode gastar 1 SA e usar uma Reação para fazer um Ataque normal contra a Defesa do agressor.
+- O gasto de 1 SA entra na janela de 3 SA.
+- Se a Reação normal já foi usada, pode ser necessário comprar uma nova Reação por Esforço antes de executar o Contra-Ataque.
+- Por padrão, responde apenas a Ataques Corpo a Corpo; Habilidades podem criar exceções.
+- Contra-Ataque Instintivo autoriza aproveitar a mesma Reação usada na defesa, conforme Habilidade ativa.
+- Retaliação, após defesa bem-sucedida, atordoa o agressor; o Contra-Ataque recebe Vantagem e acrescenta 1 dado de Dano se acertar.
+
+**IMPLEMENTADO NA BRANCH**
+- `PainelAcoesLocal.tsx` apresenta o registro de Contra-Ataque com confirmações explícitas de defesa bem-sucedida e Ataque originário Corpo a Corpo.
+- O registro usa `prepararContraAtaque()` e `aplicarReacaoCombate()`, persistindo Economia de Ações pelo fluxo existente.
+- O custo padrão é Reação + 1 SA. Se a Reação normal já foi usada, compra Reação adicional por 1 SA, além do 1 SA da Manobra; ambos respeitam a janela de 3 SA.
+- A Ficha fornece ao painel os IDs das Habilidades realmente ativas.
+- Com Contra-Ataque Instintivo ativo e Reação normal já consumida, a interface permite confirmar que a Reação consumida foi a da defesa bem-sucedida e reutilizá-la, sem comprar outra.
+- Com Retaliação ativa e defesa bem-sucedida confirmada, a interface apresenta Atordoado, Vantagem e +1 dado de Dano no acerto como efeitos a resolver manualmente.
+
+**LIMITES**
+- A Ficha não valida resultado de Aparar/Esquivar nem a natureza Corpo a Corpo do Ataque; o jogador confirma ambos com a Mesa.
+- Não oferece exceção genérica a Ataque à distância: só será permitida quando uma Habilidade/regra específica estiver identificada e integrada.
+- Não executa o Contra-Ataque, não rola contra Defesa, não aplica Dano nem Atordoado ao agressor.
+- O registro da Reação usada na defesa continua contextual e confirmado pelo jogador; o painel não rastreia a origem narrativa de cada Reação consumida.
+- Não coordena o Ataque ou seus efeitos com outra ficha ou Encontro compartilhado.
+
+**VALIDAÇÃO**
+- Novos testes em `tests/estado-turno-combate.test.mjs` cobrem custo padrão, persistência, reutilização por Contra-Ataque Instintivo e compra de Reação adicional.
+- Novo `tests/contra-ataque-ficha.test.mjs` cobre controles contextuais, uso dos IDs de Habilidades ativas e limites da interface.
+- Testes não executados localmente neste ambiente.
+- CI do novo HEAD precisa concluir; nenhuma aprovação presumida.
+- Checkpoint: `docs/checkpoint-contra-ataque-ficha-2026-11-11.md`.
+
+**ESCOPO**
+- Sem alteração em `main`, merge, deploy, publicação, Supabase ou banco de produção.
+- Sem validação humana isolada; Inventário ativo permanece bloqueado até a conclusão da Ficha e da validação humana integrada.
