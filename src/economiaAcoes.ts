@@ -42,6 +42,7 @@ function validarEstado(estado: EstadoEconomiaAcoes): void {
     || typeof estado.janelaEsforcoAtiva !== 'boolean'
     || !Number.isSafeInteger(estado.saAtual) || estado.saAtual < 0
     || !Number.isSafeInteger(estado.saGastaNaJanela) || estado.saGastaNaJanela < 0 || estado.saGastaNaJanela > LIMITE_SA_JANELA_ESFORCO
+    || (!estado.janelaEsforcoAtiva && estado.saGastaNaJanela !== 0)
     || !estado.normaisUsados || RECURSOS.some(r => typeof estado.normaisUsados[r] !== 'boolean')
     || !estado.comprasEsforco || RECURSOS.some(r => !Number.isSafeInteger(estado.comprasEsforco[r]) || estado.comprasEsforco[r] < 0)
     || typeof estado.interacaoGratuitaUsada !== 'boolean' || typeof estado.turnoEmAndamento !== 'boolean') throw new Error('Estado da economia de ações inválido.');
@@ -77,10 +78,14 @@ export function consumirInteracaoGratuita(estado: EstadoEconomiaAcoes): EstadoEc
 function registrarGastoSA(estado: EstadoEconomiaAcoes, custo: number): EstadoEconomiaAcoes {
   if (!Number.isSafeInteger(custo) || custo <= 0) throw new Error('O custo em SA deve ser um inteiro positivo.');
   if (estado.saAtual < custo) throw new Error('SA insuficiente.');
-  if (estado.saGastaNaJanela + custo > LIMITE_SA_JANELA_ESFORCO) {
+  if (estado.janelaEsforcoAtiva && estado.saGastaNaJanela + custo > LIMITE_SA_JANELA_ESFORCO) {
     throw new Error('O limite de 3 SA de Esforço e Manobras nesta janela seria ultrapassado.');
   }
-  return { ...estado, saAtual: estado.saAtual - custo, saGastaNaJanela: estado.saGastaNaJanela + custo };
+  return {
+    ...estado,
+    saAtual: estado.saAtual - custo,
+    saGastaNaJanela: estado.janelaEsforcoAtiva ? estado.saGastaNaJanela + custo : 0,
+  };
 }
 
 /** Compra explícita de um recurso adicional, sem consumir seu uso normal. */
