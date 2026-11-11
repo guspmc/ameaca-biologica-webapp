@@ -6,7 +6,7 @@ import {
   aplicarManobraCombate, aplicarReacaoCombate, registrarFinalizacaoDupla,
 } from '../src/estadoTurnoCombate.ts';
 import { registrarDisparada, registrarFuga, registrarMirar, registrarAtaque } from '../src/manobrasOperacionais.ts';
-import { registrarReacaoDefensiva, avaliarJanelaReacao, avaliarAtaqueOportunidade, registrarAtaqueOportunidade } from '../src/reacoesCombate.ts';
+import { registrarReacaoDefensiva, avaliarJanelaReacao, avaliarAtaqueOportunidade, registrarAtaqueOportunidade, prepararContraAtaque } from '../src/reacoesCombate.ts';
 
 test('estado integrado nasce versionado e valida sua estrutura completa', () => {
   const estado = estadoTurnoCombateInicial(4);
@@ -286,4 +286,65 @@ test('Ataque de Oportunidade após Reação normal compra Reação adicional e p
   const recarregado = carregarEstadoTurnoCombate(estado, null, 2);
   assert.equal(recarregado.valido, true);
   assert.equal(recarregado.estado.economia.comprasEsforco.reacao, 1);
+});
+
+
+test('Contra-Ataque integra Reação normal + 1 SA e persiste o registro', () => {
+  const janela = avaliarJanelaReacao({
+    resultadoAtaque: 13, dadoNaturalAtaque: 13, ataqueCorpoACorpo: true,
+    ataqueAcertou: true, ataqueAparavel: true, gatilhoEsquivaAutorizado: false,
+  });
+  let estado = estadoTurnoCombateInicial(4);
+  estado = aplicarReacaoCombate(estado, economia =>
+    registrarReacaoDefensiva({ economia, manobra: 'aparar', janela }),
+  ).estado;
+  estado = aplicarReacaoCombate(estado, economia =>
+    prepararContraAtaque({
+      economia, defesaBemSucedida: true, ataqueCorpoACorpo: true,
+      mesmaReacaoAutorizada: false,
+    }),
+  ).estado;
+  assert.equal(estado.economia.saAtual, 3);
+  assert.equal(estado.economia.saGastaNaJanela, 1);
+  assert.equal(estado.economia.normaisUsados.reacao, true);
+  const recarregado = carregarEstadoTurnoCombate(estado, null, 3);
+  assert.equal(recarregado.valido, true);
+  assert.equal(recarregado.estado.economia.saAtual, 3);
+  assert.equal(recarregado.estado.economia.saGastaNaJanela, 1);
+});
+
+test('Contra-Ataque Instintivo reutiliza a Reação da defesa confirmada sem comprar outra', () => {
+  const janela = avaliarJanelaReacao({
+    resultadoAtaque: 13, dadoNaturalAtaque: 13, ataqueCorpoACorpo: true,
+    ataqueAcertou: true, ataqueAparavel: true, gatilhoEsquivaAutorizado: false,
+  });
+  let estado = estadoTurnoCombateInicial(4);
+  estado = aplicarReacaoCombate(estado, economia =>
+    registrarReacaoDefensiva({ economia, manobra: 'aparar', janela }),
+  ).estado;
+  estado = aplicarReacaoCombate(estado, economia =>
+    prepararContraAtaque({
+      economia, defesaBemSucedida: true, ataqueCorpoACorpo: true,
+      mesmaReacaoAutorizada: true,
+    }),
+  ).estado;
+  assert.equal(estado.economia.saAtual, 3);
+  assert.equal(estado.economia.saGastaNaJanela, 1);
+  assert.equal(estado.economia.comprasEsforco.reacao, 0);
+});
+
+test('Contra-Ataque padrão compra Reação adicional se a normal já foi usada', () => {
+  let estado = estadoTurnoCombateInicial(4);
+  estado = aplicarReacaoCombate(estado, economia => ({
+    economia: { ...economia, normaisUsados: { ...economia.normaisUsados, reacao: true } },
+  })).estado;
+  estado = aplicarReacaoCombate(estado, economia =>
+    prepararContraAtaque({
+      economia, defesaBemSucedida: true, ataqueCorpoACorpo: true,
+      mesmaReacaoAutorizada: false,
+    }),
+  ).estado;
+  assert.equal(estado.economia.saAtual, 2);
+  assert.equal(estado.economia.saGastaNaJanela, 2);
+  assert.equal(estado.economia.comprasEsforco.reacao, 1);
 });
