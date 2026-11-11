@@ -103,6 +103,8 @@ test('a tela de Progressão oferece escolhas após Descanso Completo e salva os 
   assert.match(ui, /aplicarBeneficiosNivelProgressao\(dados/);
   assert.match(ui, /aoSalvar\(patch\)/);
   assert.match(ui, /origemDados === 'servidor'/);
+  assert.match(ui, /Registrar avanço autorizado pelo grupo/);
+  assert.doesNotMatch(ui, /Método de Progressão/);
 });
 
 test('Morte no Nível 4 reverte a Habilidade e a Perícia do Nível perdido, preservando benefícios anteriores', async () => {
