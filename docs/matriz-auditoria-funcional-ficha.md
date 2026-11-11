@@ -202,3 +202,14 @@ Nenhum desses pontos deve ser resolvido por inferência durante a implementaçã
 **Implementado:** depois que a Reação defensiva é declarada e seu custo salvo, os campos que descrevem o Ataque recebido e o gatilho ficam bloqueados, assim como o botão de reavaliar a janela. Isso impede que uma edição acidental apague o contexto local de uma Reação já consumida e permita uma nova declaração sobre o mesmo evento.
 
 **Teste adicionado:** `tests/reacao-defensiva-ficha.test.mjs`; teste estrutural adicionado, ainda sem execução local. CI deve confirmar.
+
+
+## Situação atual da Ficha Offline para início dos testes — 11/11/2026
+
+**Escopo funcional:** os módulos da Ficha do Jogador fora do Inventário estão implementados na branch, incluindo criação, Características, Atributos, Perícias, Progressão, Recursos, Bio-Infecção, Condições, Combate, Reações e benefícios contextuais das Origens. Confirmações narrativas e contextuais continuam manuais quando a regra depende da Mesa; isso é comportamento deliberado do produto, não ausência de automação prometida.
+
+**Único módulo funcional pendente na Ficha:** Inventário ativo. Sua integração concentra movimentação/organização, equipamento em mãos, uso/consumo, fabricação, munição/recarga, Peças e Durabilidade. Por depender de equipamento e Durabilidade autoritativos, Aparar e **VOCÊ APAROU UM MÍSSIL!?** permanecem bloqueados até esse módulo. O benefício do Chef também depende de fabricação na Sala de Descanso.
+
+**Fora da Ficha do Jogador:** ordem de Iniciativa e coordenação de Encontros pertencem ao Painel do Mestre; a Ficha do Jogador exibe o modificador e a rolagem pontual quando aplicável.
+
+**Validação:** os testes automatizados foram ampliados ao longo dos ciclos, mas ainda aguardam execução/conclusão dos workflows do GitHub. A validação humana integrada em navegador e dispositivos reais começa somente depois da conclusão funcional do Inventário. LAN, `main`, merge e publicação não fazem parte deste ciclo.
