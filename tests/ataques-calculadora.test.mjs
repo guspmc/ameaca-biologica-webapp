@@ -192,3 +192,10 @@ test('CODE VERONICA é passado à calculadora e concede Vantagem somente em Test
   assert.match(ui, /naturalDe2a9Como10: codeVeronicaAtiva/);
   assert.match(ui, /CODE VERONICA: Vantagem automática em Testes de Perícia/);
 });
+
+
+test('PARRUDO concede Vantagem somente em Testes de Fortitude', () => {
+  assert.match(ficha, /habilidadesAtivas=\{habilidadesAtivasIds\}/);
+  assert.match(ui, /parrudoAtivo = escopo === 'testes' && tipo === 'pericia' && periciaEfetiva === 'Fortitude' && habilidadesAtivas.includes\('parrudo'\)/);
+  assert.match(ui, /PARRUDO: Vantagem automática em Testes de Fortitude/);
+});
