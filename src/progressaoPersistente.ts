@@ -108,8 +108,9 @@ export function atualizarContadorMissoes(
 }
 
  
-/** Cria o estado inicial da Progressão pertencente à própria Ficha.
- * Marco Narrativo é o padrão oficial preferencial; Missões permanece opcional.
+/** Cria o estado inicial da Progressão pertencente à Ficha.
+ * Sem argumento, usa contrato neutro: o critério é decidido pelo grupo fora do WebApp.
+ * Argumentos explícitos preservam compatibilidade com históricos legados.
  * Não configura nem consulta a Mesa e não concede benefícios.
  */
 export function criarEstadoProgressaoInicial(
@@ -142,7 +143,7 @@ export function registrarMarcoNarrativo(
     throw new Error('Estado de Progressão inválido.');
   }
   if (estado.metodo !== 'marco_narrativo') {
-    throw new Error('Esta Ficha utiliza contagem de Missões, não Marco Narrativo.');
+    throw new Error('Esta Progressão não utiliza Marco Narrativo; o critério é decidido pelo grupo fora do WebApp.');
   }
   const houveMorte = estado.nivelNaUltimaMorte !== null;
   return {
@@ -196,7 +197,7 @@ export function pedidoProgressaoPersistenteValido(
   return requisito.disponivel && requisito.proximoNivel === valor.nivel;
 }
 
-/** Registra o pedido de avanço quando o requisito de Missões/Marco foi cumprido. */
+/** Registra o pedido após autorização externa ou requisito legado cumprido. */
 export function solicitarGanhoNivel(
   progressao: EstadoProgressaoPersistente,
   classe: string,
@@ -242,7 +243,7 @@ export function confirmarDescansoCompletoProgressao(
 /**
  * Registra a Morte na Ficha Offline, revertendo somente os benefícios exatos
  * do Nível perdido. O contador de Missões é preservado; seu valor no momento
- * da Morte é guardado como marco para exigir progresso posterior.
+ * da Morte é guardado para exigir progresso posterior.
  */
 export function registrarMorteProgressao(
   estado: EstadoProgressaoPersistente,
