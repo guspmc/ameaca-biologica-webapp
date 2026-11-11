@@ -109,6 +109,9 @@ export default function CalculadoraTesteLocal({ atributos, treinada, distribuica
   const quantoMaisMelhorAtiva = escopo === 'ataques' && habilidadesAtivas.includes('quanto-mais-melhor');
   const armeiroAtivo = escopo === 'ataques' && habilidadesAtivas.includes('armeiro');
   const armeiraAutodidataAtiva = escopo === 'ataques' && habilidadesAtivas.includes('armeira-autodidata');
+  const cascaGrossaAtiva = escopo === 'ataques' && habilidadesAtivas.includes('casca-grossa');
+  const armamentoEspecialAtivo = escopo === 'ataques' && habilidadesAtivas.includes('armamento-especial');
+  const controleDeFogoAtivo = escopo === 'ataques' && habilidadesAtivas.includes('controle-de-fogo');
   const existeVantagem = vantagem === 'vantagem' || codeVeronicaAtiva || parrudoAtivo;
   const existeDesvantagem = vantagem === 'desvantagem' || desvantagemBI || desvantagensCondicao.length > 0 || desvantagemDesarmado;
   const vantagemEfetiva: VantagemTeste = existeVantagem && existeDesvantagem ? 'normal'
@@ -257,6 +260,9 @@ export default function CalculadoraTesteLocal({ atributos, treinada, distribuica
     {quantoMaisMelhorAtiva && <p className="ficha-local-aviso" role="status">QUANTO MAIS MELHOR: se você estiver na Área de Ameaça de 3 ou mais inimigos, recebe Vantagem nos Ataques. Confirme a circunstância com a Mesa e selecione Vantagem manualmente; a Ficha não conta inimigos nem presume posicionamento.</p>}
     {armeiroAtivo && <p className="ficha-local-legenda">ARMEIRO: ao atacar com arma modificada, some +1 ao Teste de Ataque por Peça Extra instalada nela. Confira a arma efetivamente empunhada e informe o bônus no modificador manual; a seleção do perfil não confirma peças instaladas.</p>}
     {armeiraAutodidataAtiva && <p className="ficha-local-legenda">ARMEIRA AUTODIDATA: Armas de Fogo modificadas causam +1d4 de Dano por Peça Extra instalada. Confira a arma e informe os dados adicionais manualmente; não se aplica a armas Corpo a Corpo. O perfil não confirma peças instaladas.</p>}
+    {cascaGrossaAtiva && <p className="ficha-local-aviso" role="status">CASCA-GROSSA: o Dano Desarmado ou de Coronhada sobe uma categoria de Dado. Uma vez por turno, após um Ataque bem-sucedido, permite executar Cabeçada ou Pisão com Desvantagem. Confira a aplicação manualmente; esta calculadora ainda não confirma Coronhada elegível nem registra usos por turno.</p>}
+    {armamentoEspecialAtivo && <p className="ficha-local-legenda">ARMAMENTO ESPECIAL: concede Proficiência com Magnums e Armas Especiais. Reduz em uma categoria os custos de Recarga, Bombear/Manejar e Coice, nunca abaixo de Interação Gratuita com Objeto. A calculadora não aplica custos de ação automaticamente.</p>}
+    {controleDeFogoAtivo && <p className="ficha-local-legenda">CONTROLE DE FOGO: ao usar Rajada, pode substituir o Cone por até 6 espaços conectados entre si e dentro do alcance permitido; cada espaço precisa de linha de efeito. Confirme a geometria e a linha de efeito na Mesa. Consumo, Dano e DT permanecem os da Rajada.</p>}
     {(tipo === 'ataque-corpo' || tipo === 'ataque-distancia') && <div className="ficha-local-editor">
       <label>Perfil de arma para consulta (opcional)
         <select value={armaId} onChange={evento => { setArmaId(evento.target.value); setResultadoDadosDano(''); setResultadoDadosAdicionais(''); setCriticoDano(false); setVarianteDanoEspecial('normal'); setCartuchoGM79('acido'); setModoGM79('direto'); setModoBearCommander('rifle'); setModoDisparoAutomatico('normal'); setCoronhaMatildaConfirmada(false); }}>
