@@ -38,7 +38,8 @@ test('Aparar usa Luta e Esquivar usa Reflexos contra resultado do Ataque', () =>
 
 test('Contra-Ataque exige defesa bem-sucedida e gasta 1 SA em Manobra', () => {
   assert.throws(() => prepararContraAtaque({ economia: economiaAcoesInicial(3), defesaBemSucedida: false, ataqueCorpoACorpo: true, mesmaReacaoAutorizada: false }), /bem-sucedido/);
-  const resultado = prepararContraAtaque({ economia: economiaAcoesInicial(3), defesaBemSucedida: true, ataqueCorpoACorpo: true, mesmaReacaoAutorizada: true });
+  const economiaComReacao = consumirRecursoNormal(economiaAcoesInicial(3), 'reacao');
+  const resultado = prepararContraAtaque({ economia: economiaComReacao, defesaBemSucedida: true, ataqueCorpoACorpo: true, mesmaReacaoAutorizada: true });
   assert.equal(resultado.economia.saAtual, 2);
   assert.equal(resultado.economia.saGastaNaJanela, 1);
   assert.equal(resultado.reacaoAdicionalComprada, false);
@@ -298,4 +299,21 @@ test('VOCÊ APAROU UM MÍSSIL!? separa interceptação narrativa, Aparar livre e
   assert.equal(efeito.danoContraAtaqueAdicional, '2d4');
   assert.equal(consultarVoceAparouUmMissil({ ...base, acaoLivreJaUsadaNoTurno: true }).apararComAcaoLivre, false);
   assert.equal(consultarVoceAparouUmMissil({ ...base, facaOuHatchet: false }).danoApararAdicional, null);
+});
+
+
+test('Contra-Ataque Instintivo não permite ignorar uma Reação que ainda não foi consumida', () => {
+  assert.throws(() => prepararContraAtaque({
+    economia: economiaAcoesInicial(3), defesaBemSucedida: true,
+    ataqueCorpoACorpo: true, mesmaReacaoAutorizada: true,
+  }), /Reação usada na defesa já esteja registrada/);
+});
+
+test('helpers de Habilidades de Reação rejeitam campos ausentes ou extras', async () => {
+  const { contraAtaqueUsaMesmaReacao, consultarRetaliacao, avaliarNaoVaiEscapar, avaliarNaMinhaMira, consultarVoceAparouUmMissil } = await import('../src/reacoesCombate.ts');
+  assert.throws(() => contraAtaqueUsaMesmaReacao({ contraAtaqueInstintivo: true }), /Habilidades de Reação inválidas/);
+  assert.throws(() => consultarRetaliacao({ habilidadeAtiva: true }), /Dados de Retaliação inválidos/);
+  assert.throws(() => avaliarNaoVaiEscapar({ habilidadeAtiva: true, criaturaProvocouAtaqueDeOportunidade: true, gatilhoFoiParaVoceOuAliado: true, combateCorpoACorpo: true, extra: true }), /Gatilho de Não Vai Escapar inválido/);
+  assert.throws(() => avaliarNaMinhaMira({ habilidadeAtiva: true, usoDisponivelNaRodada: true, inimigoPercebido: true, dentroDeAlcanceMedio: true }), /Gatilho de Na Minha Mira inválido/);
+  assert.throws(() => consultarVoceAparouUmMissil({ habilidadeAtiva: true }), /Dados de VOCÊ APAROU UM MÍSSIL/);
 });
