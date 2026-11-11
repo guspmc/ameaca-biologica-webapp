@@ -223,3 +223,109 @@ export function registrarReacaoDefensiva(args: {
   }
   return { economia, reacaoAdicionalComprada };
 }
+
+
+export type HabilidadesReacaoAtivas = {
+  contraAtaqueInstintivo: boolean;
+  retaliacao: boolean;
+  naoVaiEscapar: boolean;
+  naMinhaMira: boolean;
+  voceAparouUmMissil: boolean;
+};
+
+/** Contra-Ataque Instintivo autoriza usar a mesma Reação já gasta na defesa. */
+export function contraAtaqueUsaMesmaReacao(habilidades: HabilidadesReacaoAtivas): boolean {
+  if (!habilidades || typeof habilidades !== 'object'
+    || Object.values(habilidades).some(valor => typeof valor !== 'boolean')) {
+    throw new Error('Habilidades de Reação inválidas.');
+  }
+  return habilidades.contraAtaqueInstintivo;
+}
+
+/** Retaliação: após Aparar/Esquivar bem-sucedido, atordoa; o Contra-Ataque tem Vantagem e +1 dado se acertar. */
+export function consultarRetaliacao(args: {
+  habilidadeAtiva: boolean;
+  defesaBemSucedida: boolean;
+}): { atordoaAgressor: boolean; contraAtaqueComVantagem: boolean; dadosAdicionaisNoAcerto: number } {
+  if (!args || typeof args.habilidadeAtiva !== 'boolean' || typeof args.defesaBemSucedida !== 'boolean') {
+    throw new Error('Dados de Retaliação inválidos.');
+  }
+  const ativa = args.habilidadeAtiva && args.defesaBemSucedida;
+  return { atordoaAgressor: ativa, contraAtaqueComVantagem: ativa, dadosAdicionaisNoAcerto: ativa ? 1 : 0 };
+}
+
+/** Não Vai Escapar amplia o gatilho para aliado e concede deslocamento prévio de até 3 m. */
+export function avaliarNaoVaiEscapar(args: {
+  habilidadeAtiva: boolean;
+  criaturaProvocouAtaqueDeOportunidade: boolean;
+  gatilhoFoiParaVoceOuAliado: boolean;
+  combateCorpoACorpo: boolean;
+}): { disponivel: boolean; deslocamentoMaximoMetros: number; deveTerminarAdjacente: boolean; motivo: string } {
+  if (!args || Object.values(args).some(valor => typeof valor !== 'boolean')) {
+    throw new Error('Gatilho de Não Vai Escapar inválido.');
+  }
+  const disponivel = args.habilidadeAtiva && args.criaturaProvocouAtaqueDeOportunidade
+    && args.gatilhoFoiParaVoceOuAliado && args.combateCorpoACorpo;
+  return {
+    disponivel, deslocamentoMaximoMetros: disponivel ? 3 : 0,
+    deveTerminarAdjacente: disponivel,
+    motivo: disponivel
+      ? 'Pode usar Reação para Ataque de Oportunidade; antes dele, desloca até 3 m e termina adjacente, sem provocar Ataques de Oportunidade.'
+      : 'Não Vai Escapar não tem gatilho válido neste contexto.',
+  };
+}
+
+/** Na Minha Mira exige nova Condição penalizante/restritiva, alvo percebido e até Alcance Médio. */
+export function avaliarNaMinhaMira(args: {
+  habilidadeAtiva: boolean;
+  usoDisponivelNaRodada: boolean;
+  inimigoPercebido: boolean;
+  dentroDeAlcanceMedio: boolean;
+  adquiriuNovaCondicaoPenalizante: boolean;
+}): { disponivel: boolean; usaReacao: boolean; ataqueDeOportunidadeADistancia: boolean; motivo: string } {
+  if (!args || Object.values(args).some(valor => typeof valor !== 'boolean')) {
+    throw new Error('Gatilho de Na Minha Mira inválido.');
+  }
+  const disponivel = Object.values(args).every(Boolean);
+  return {
+    disponivel, usaReacao: disponivel, ataqueDeOportunidadeADistancia: disponivel,
+    motivo: disponivel
+      ? 'Pode usar uma Reação para Ataque de Oportunidade à distância com arma de fogo; respeite alcance e regras da arma.'
+      : 'Na Minha Mira exige Habilidade ativa, uso disponível na rodada, inimigo percebido em até Alcance Médio e aquisição de nova Condição penalizante/restritiva.',
+  };
+}
+
+/** VOCÊ APAROU UM MÍSSIL!?; narrativa e gatilho são confirmados pela Mesa. */
+export function consultarVoceAparouUmMissil(args: {
+  habilidadeAtiva: boolean;
+  narrativaPermiteInterceptacao: boolean;
+  gatilhoValidoParaAparar: boolean;
+  facaOuHatchet: boolean;
+  turnoProprio: boolean;
+  acaoLivreJaUsadaNoTurno: boolean;
+  apararCorpoACorpoBemSucedido: boolean;
+  contraAtaqueDeclarado: boolean;
+}): {
+  podeApararQualquerAtaque: boolean;
+  apararComAcaoLivre: boolean;
+  danoApararAdicional: '2d4' | null;
+  finalizarContraAtaqueSemSA: boolean;
+  danoContraAtaqueAdicional: '2d4' | null;
+} {
+  if (!args || Object.values(args).some(valor => typeof valor !== 'boolean')) {
+    throw new Error('Dados de VOCÊ APAROU UM MÍSSIL!? inválidos.');
+  }
+  const ativa = args.habilidadeAtiva;
+  const podeApararQualquerAtaque = ativa && args.narrativaPermiteInterceptacao && args.gatilhoValidoParaAparar;
+  const apararComAcaoLivre = podeApararQualquerAtaque && args.facaOuHatchet
+    && args.turnoProprio && !args.acaoLivreJaUsadaNoTurno;
+  const apararBemSucedido = ativa && args.facaOuHatchet && args.apararCorpoACorpoBemSucedido;
+  const contraAtaque = ativa && args.contraAtaqueDeclarado;
+  return {
+    podeApararQualquerAtaque,
+    apararComAcaoLivre,
+    danoApararAdicional: apararBemSucedido ? '2d4' : null,
+    finalizarContraAtaqueSemSA: contraAtaque,
+    danoContraAtaqueAdicional: contraAtaque ? '2d4' : null,
+  };
+}
