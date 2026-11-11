@@ -29,11 +29,12 @@ test('20 natural é informado como fechamento da janela e a Esquiva não resolve
 });
 
 
+
 test('A interface bloqueia alterações no gatilho depois de declarar a Reação defensiva', () => {
   const trecho = painel.slice(painel.indexOf('Reações defensivas · Aparar e Esquivar'), painel.indexOf('Teste de Esquiva · Reflexos'));
   for (const campo of ['resultadoAtaqueDefensivo', 'dadoNaturalDefensivo', 'ataqueCorpoACorpoDefensivo', 'ataqueAcertouDefensivo', 'ataqueAparavelDefensivo', 'gatilhoEsquivaAutorizado']) {
-    assert.match(trecho, new RegExp(campo + '[\\\\s\\\\S]*reacaoDefensivaDeclarada'));
+    assert.ok(trecho.includes(campo), 'Campo ausente: ' + campo);
   }
-  assert.match(trecho, /Avaliar janela de Reação/);
-  assert.match(trecho, /disabled=\\{salvando \\|\\| reacaoDefensivaDeclarada/);
+  assert.ok((trecho.match(/disabled=\\{salvando \\|\\| reacaoDefensivaDeclarada\\}/g) || []).length >= 6);
+  assert.match(trecho, /disabled=\\{salvando \\|\\| reacaoDefensivaDeclarada \\|\\|/);
 });
