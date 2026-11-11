@@ -183,7 +183,7 @@ Nenhum desses pontos deve ser resolvido por inferência durante a implementaçã
 
 **Modos de funcionamento:** a rolagem/cálculo é oferecida após solicitação explícita nos modos Automático, Misto e Manual. O modo de funcionamento governa automações operacionais; a preferência de dados governa como o resultado do dado é obtido. Nenhum efeito ou recurso é aplicado pelo cálculo defensivo.
 
-**Limites:** o resultado não altera recursos, Defesa, Dano, BI ou Condições, não decide efeitos narrativos e não substitui a confirmação da Mesa. Quando o Teste é calculado, o sucesso/falha alimenta a confirmação local usada pelo painel de Retaliação/Contra-Ataque; alterar o gatilho ou declarar nova Esquiva limpa essa confirmação. Aparar continua indisponível na interface até integração segura do equipamento e Durabilidade.
+**Limites:** o resultado não altera recursos, Defesa, Dano, BI ou Condições, não decide efeitos narrativos e não substitui a confirmação da Mesa. Quando o Teste é calculado, o sucesso/falha alimenta a confirmação local usada pelo painel de Retaliação/Contra-Ataque; alterar o gatilho ou declarar nova Esquiva limpa essa confirmação. Retaliação apresenta o Atordoado após defesa bem-sucedida mesmo sem escolher Contra-Ataque; Vantagem e +1 dado aparecem somente na opção de Contra-Ataque. Aparar continua indisponível na interface até integração segura do equipamento e Durabilidade.
 
 **Teste adicionado:** `tests/teste-defensivo-ficha.test.mjs`. Não executado localmente; CI pendente.
 
