@@ -6,7 +6,7 @@ import {
   saNaJanelaEsforco, type EstadoEconomiaAcoes, type RecursoAcao,
 } from './economiaAcoes';
 import {
-  aplicarManobraCombate, aplicarReacaoCombate, carregarEstadoTurnoCombate, encerrarTurnoCombate,
+  aplicarManobraCombate, aplicarReacaoCombate, aplicarReacaoDefensivaCombate, carregarEstadoTurnoCombate, encerrarTurnoCombate,
   iniciarTurnoCombate, registrarResolucaoAtaqueAdicional, registrarFinalizacaoDupla, type EstadoTurnoCombate,
 } from './estadoTurnoCombate';
 import { registrarCombateDuasArmas, registrarDisparada, registrarFuga, registrarMirar, registrarAtaque, registrarFinalizar, registrarAjudar } from './manobrasOperacionais';
@@ -68,7 +68,6 @@ export default function PainelAcoesLocal({ dados, saAtual, aoSalvar, origemDados
   const [confirmouSemProtecaoAoO, setConfirmouSemProtecaoAoO] = useState(false);
   const [confirmouDefesaBemSucedida, setConfirmouDefesaBemSucedida] = useState(false);
   const [confirmouAtaqueCorpoACorpo, setConfirmouAtaqueCorpoACorpo] = useState(false);
-  const [confirmouReacaoDaDefesa, setConfirmouReacaoDaDefesa] = useState(false);
   const [confirmouAoOParaVoceOuAliado, setConfirmouAoOParaVoceOuAliado] = useState(false);
   const [confirmouCombateCorpoACorpo, setConfirmouCombateCorpoACorpo] = useState(false);
   const [resultadoAtaqueDefensivo, setResultadoAtaqueDefensivo] = useState('');
@@ -140,7 +139,6 @@ export default function PainelAcoesLocal({ dados, saAtual, aoSalvar, origemDados
       if (mensagemConfirmada?.startsWith('Contra-Ataque registrado')) {
         setConfirmouDefesaBemSucedida(false);
         setConfirmouAtaqueCorpoACorpo(false);
-        setConfirmouReacaoDaDefesa(false);
       }
       if (mensagemConfirmada?.startsWith('Não Vai Escapar registrado')) {
         setConfirmouAoOParaVoceOuAliado(false);
@@ -223,7 +221,7 @@ export default function PainelAcoesLocal({ dados, saAtual, aoSalvar, origemDados
                 <p>Esquiva autorizada pelo gatilho confirmado. Declare a Reação antes de resolver o Teste defensivo.</p>
                 <p className="ficha-local-legenda">{economia.normaisUsados.reacao ? 'A Reação normal já foi usada: esta declaração comprará outra por 1 SA.' : 'Esta declaração consumirá sua Reação normal, sem custo de SA.'}</p>
                 <button type="button" disabled={salvando || (economia.normaisUsados.reacao && (economia.saAtual < 1 || janela >= 3))}
-                  onClick={() => void aplicar(atual => aplicarReacaoCombate(atual, economiaAtual => registrarReacaoDefensiva({ economia: economiaAtual, manobra: 'esquivar', janela: janelaDefensiva })).estado, economia.normaisUsados.reacao ? 'Esquiva declarada: Reação adicional comprada por 1 SA. Resolva o Teste defensivo conforme o modo configurado.' : 'Esquiva declarada: Reação normal consumida. Resolva o Teste defensivo conforme o modo configurado.')}>Declarar Esquiva · Reação</button>
+                  onClick={() => void aplicar(atual => aplicarReacaoDefensivaCombate(atual, economiaAtual => registrarReacaoDefensiva({ economia: economiaAtual, manobra: 'esquivar', janela: janelaDefensiva })).estado, economia.normaisUsados.reacao ? 'Esquiva declarada: Reação adicional comprada por 1 SA. Resolva o Teste defensivo conforme o modo configurado.' : 'Esquiva declarada: Reação normal consumida. Resolva o Teste defensivo conforme o modo configurado.')}>Declarar Esquiva · Reação</button>
               </>}
               {janelaDefensiva.podeEsquivar && reacaoDefensivaDeclarada && <div className="ficha-local-editor">
                 <strong>Teste de Esquiva · Reflexos contra {resultadoAtaqueDefensivo}</strong>
@@ -267,7 +265,7 @@ export default function PainelAcoesLocal({ dados, saAtual, aoSalvar, origemDados
             <p>Depois de Aparar ou Esquivar com sucesso, você pode gastar 1 SA e usar uma Reação para fazer um Ataque normal contra a Defesa do agressor. Por padrão, responde apenas a Ataques Corpo a Corpo; Habilidades podem criar exceções. O painel registra custos e condições confirmadas, mas não executa o Ataque.</p>
             <label><input type="checkbox" checked={confirmouDefesaBemSucedida} disabled={salvando} onChange={evento => setConfirmouDefesaBemSucedida(evento.target.checked)} /> Confirmo que Aparar ou Esquivar foi bem-sucedido.</label>
             <label><input type="checkbox" checked={confirmouAtaqueCorpoACorpo} disabled={salvando} onChange={evento => setConfirmouAtaqueCorpoACorpo(evento.target.checked)} /> O Ataque que originou a defesa foi Corpo a Corpo.</label>
-            {economia.normaisUsados.reacao && habilidadesAtivas.includes('contra-ataque-instintivo') && <label><input type="checkbox" checked={confirmouReacaoDaDefesa} disabled={salvando} onChange={evento => setConfirmouReacaoDaDefesa(evento.target.checked)} /> Confirmo que a Reação já consumida foi a usada nesta defesa bem-sucedida; Contra-Ataque Instintivo permite aproveitá-la.</label>}
+            {economia.normaisUsados.reacao && habilidadesAtivas.includes('contra-ataque-instintivo') && <p className="ficha-local-legenda">{estado.reacaoDefensivaRegistrada ? 'A Ficha registrou que a Reação foi usada na defesa; Contra-Ataque Instintivo pode reutilizar essa mesma Reação.' : 'A Reação normal já foi consumida por outro gatilho nesta janela; Contra-Ataque Instintivo não pode reutilizá-la para esta defesa.'}</p>}
             {retaliacao.contraAtaqueComVantagem && <p className="ficha-local-legenda">Retaliação: se fizer o Contra-Ataque, recebe Vantagem e acrescenta 1 dado de Dano se acertar. A rolagem e a aplicação do Dano permanecem manuais.</p>}
             <p className="ficha-local-legenda">{economia.normaisUsados.reacao
               ? habilidadesAtivas.includes('contra-ataque-instintivo')
@@ -276,16 +274,16 @@ export default function PainelAcoesLocal({ dados, saAtual, aoSalvar, origemDados
               : 'O registro consumirá sua Reação normal e 1 SA pela Manobra.'}</p>
             <button type="button"
               disabled={salvando || !confirmouDefesaBemSucedida || !confirmouAtaqueCorpoACorpo
-                || economia.saAtual < (economia.normaisUsados.reacao && !(habilidadesAtivas.includes('contra-ataque-instintivo') && confirmouReacaoDaDefesa) ? 2 : 1)
-                || janela + (economia.normaisUsados.reacao && !(habilidadesAtivas.includes('contra-ataque-instintivo') && confirmouReacaoDaDefesa) ? 2 : 1) > 3}
+                || economia.saAtual < (economia.normaisUsados.reacao && !(habilidadesAtivas.includes('contra-ataque-instintivo') && estado.reacaoDefensivaRegistrada) ? 2 : 1)
+                || janela + (economia.normaisUsados.reacao && !(habilidadesAtivas.includes('contra-ataque-instintivo') && estado.reacaoDefensivaRegistrada) ? 2 : 1) > 3}
               onClick={() => void aplicar(atual => aplicarReacaoCombate(atual, economiaAtual =>
                 prepararContraAtaque({
                   economia: economiaAtual,
                   defesaBemSucedida: confirmouDefesaBemSucedida,
                   ataqueCorpoACorpo: confirmouAtaqueCorpoACorpo,
-                  mesmaReacaoAutorizada: habilidadesAtivas.includes('contra-ataque-instintivo') && confirmouReacaoDaDefesa,
+                  mesmaReacaoAutorizada: habilidadesAtivas.includes('contra-ataque-instintivo') && estado.reacaoDefensivaRegistrada,
                 }),
-              ).estado, economia.normaisUsados.reacao && !(habilidadesAtivas.includes('contra-ataque-instintivo') && confirmouReacaoDaDefesa)
+              ).estado, economia.normaisUsados.reacao && !(habilidadesAtivas.includes('contra-ataque-instintivo') && estado.reacaoDefensivaRegistrada)
                 ? 'Contra-Ataque registrado: Reação adicional comprada por 1 SA e custo de Manobra de 1 SA. Execute o Ataque manualmente.'
                 : 'Contra-Ataque registrado: custo de Manobra de 1 SA. Execute o Ataque manualmente.')}>Registrar Contra-Ataque · Reação + 1 SA</button>
           </div>
