@@ -2,7 +2,7 @@
 
 **Data:** 11/11/2026  
 **Branch:** `feat/offline-first-ficha`  
-**Matriz atualizada:** `0388291c4e8f937079e0c70e118a7ec3299081e8`
+**Matriz atualizada:** ver `docs/matriz-auditoria-funcional-ficha.md` no HEAD atual.
 
 ## Objetivo
 
@@ -10,42 +10,46 @@ Comparar o catálogo `src/origens.ts` com as integrações atuais da Ficha para 
 
 ## Resultado da auditoria
 
-### Benefícios com implementação identificada no código (12)
+### Benefícios com implementação identificada no código (16)
 
 - Acadêmico — Vantagem em Teste elegível de AST, com uso limitado a Descanso Completo e confirmação manual.
+- Agente de Saúde — lembrete de +1d4 aos Dados de Cura ao curar aliado com item/efeito; não aplica cura cruzada.
+- Amnésico — Vislumbres do Passado: uso 1/sessão, local conhecido e tentativa AST DT 10 confirmados pelo jogador; informação útil registra Vantagem pendente no próximo Teste relacionado de Sobrevivência.
 - Atleta — +5 em Teste de Perícia baseado em FOR/AGI, exceto Luta/Pontaria, mediante gasto confirmado de 1 SA.
 - Cobaia — +2 BI Máxima e Vantagem nos Testes de Reanimação durante Colapso Viral.
 - Criminoso — Vantagem em Investigação para procurar itens/recursos, uma vez por Descanso Completo.
 - Desgarrado — PV Temporários ao aumentar BI pelo ajuste de Recursos, calculados sobre a BI atual.
 - Investigador — +5 em Investigação para procurar pista, mediante gasto confirmado de 1 SA.
 - Lutador — aumento de categoria em Ataque Desarmado e Arma Improvisada; acumula com Casca-Grossa no Desarmado.
+- Mercenário — gatilho manual de hostil oculto que surpreenderia, arma de fogo carregada e uso disponível; Reação normal ou adicional por 1 SA e uso 1/Descanso Completo salvos na mesma operação.
+- Militar — registro manual de morte por arma de fogo e Vantagem pendente no primeiro Ataque com arma de fogo do próximo turno.
 - Mochileiro — +1 Espaço de Inventário nos derivados.
 - Operário — bônus de Ataque e Dano com a arma escolhida na criação.
 - Policial — +2 Defesa.
 - Servidor Público — Ajudar elegível concede Vantagem e +2 ao aliado, mediante confirmações.
 - Universitária — +1 SA Máxima.
 
-A identificação é de implementação no código, não certifica validação humana ou CI.
+A identificação é de implementação no código, não certifica validação humana ou CI. Benefícios contextuais que dependem de confirmação da Mesa continuam sem inferência automática.
 
-### Benefícios pendentes (5)
+### Benefício pendente (1)
 
-- Agente de Saúde — precisa de fluxo de cura de aliado por item/efeito para adicionar +1d4 aos Dados de Cura sem aplicar à própria personagem.
-- Amnésico — precisa de contexto de sessão/local conhecido e registro temporário da Vantagem no próximo Teste de Sobrevivência relacionado.
-- Chef — depende da criação/fabricação de item em Sala de Descanso; não iniciar Inventário ativo antes do marco de validação humana da Ficha.
-- Mercenário — depende de gatilho de surpresa por hostil oculto, arma de fogo carregada e Reação, além de limite por Descanso Completo.
-- Militar — depende de registrar derrota causada por arma de fogo e conceder Vantagem no primeiro Ataque de arma de fogo do próximo turno.
+- Chef — em Sala de Descanso, ao criar item, pode escolher 10 no d20. Depende do fluxo de criação/fabricação, que será concluído junto ao Inventário. Não implementar crafting isolado nem criar uma rolagem paralela fictícia.
 
 ## Decisões para evitar retrabalho
 
 - Não duplicar benefícios já implementados.
-- Não criar um fluxo fictício de cura, sessão, crafting, surpresa ou derrota de alvo antes que os módulos correspondentes existam.
-- Manter os cinco benefícios pendentes vinculados às dependências funcionais descritas na matriz.
-- Inventário ativo continua bloqueado até a conclusão da Ficha e sessão integrada de validação humana.
-- Progressão de Nível permanece sem novas alterações até existir desenho neutro que não obrigue o grupo a escolher método dentro do WebApp.
+- Não criar fluxos fictícios de crafting ou rolagem narrativa; gatilhos que dependem da Mesa são confirmados pelo jogador.
+- Amnésico e Militar têm estados versionados persistidos e validados por `validarPersonagemLocal`.
+- Mercenário grava Reação/custo de SA e uso por Descanso Completo na mesma transição persistida.
+- Agente de Saúde é lembrete contextual; não cura outra personagem nem altera PV alheio.
+- Chef permanece dependente do Inventário/Fabricação.
+- Inventário ativo continua bloqueado até o marco definido no checkpoint consolidado da Ficha.
+- A Progressão foi neutralizada: grupo decide o critério fora do WebApp; a Ficha registra autorização explícita. Ver `docs/checkpoint-progressao-neutra-2026-11-11.md`.
 
 ## Validação
 
-- Inspecionados: `src/origens.ts`, `src/efeitosOrigens.ts`, `src/CalculadoraTesteLocal.tsx`, `src/derivadosCriacao.ts`, `src/recursosFicha.ts`, `src/ReanimacaoFichaLocal.tsx`, `src/PainelAcoesLocal.tsx`.
+- Inspecionados inicialmente: `src/origens.ts`, `src/efeitosOrigens.ts`, `src/CalculadoraTesteLocal.tsx`, `src/derivadosCriacao.ts`, `src/recursosFicha.ts`, `src/ReanimacaoFichaLocal.tsx`, `src/PainelAcoesLocal.tsx`.
+- Atualizações posteriores: `src/BeneficiosOrigemContextuaisLocal.tsx`, `src/beneficiosOrigensContextuais.ts`, `src/validacaoPersonagemLocal.ts`, `src/FichaLocal.tsx` e os testes específicos de Agente de Saúde, Mercenário, Amnésico e Militar.
 - Testes locais não executados neste ambiente.
 - CI do HEAD precisa concluir; nenhuma aprovação foi presumida.
 - Nenhuma validação humana solicitada.
