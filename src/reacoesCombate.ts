@@ -328,17 +328,50 @@ export function avaliarNaMinhaMira(args: {
   inimigoPercebido: boolean;
   dentroDeAlcanceMedio: boolean;
   adquiriuNovaCondicaoPenalizante: boolean;
+  armaDeFogoCarregada: boolean;
+  armaPermiteAtaqueOportunidade: boolean;
 }): { disponivel: boolean; usaReacao: boolean; ataqueDeOportunidadeADistancia: boolean; motivo: string } {
-  if (!objetoBooleanosExatos(args, ['habilidadeAtiva', 'usoDisponivelNaRodada', 'inimigoPercebido', 'dentroDeAlcanceMedio', 'adquiriuNovaCondicaoPenalizante'])) {
+  if (!objetoBooleanosExatos(args, ['habilidadeAtiva', 'usoDisponivelNaRodada', 'inimigoPercebido', 'dentroDeAlcanceMedio', 'adquiriuNovaCondicaoPenalizante', 'armaDeFogoCarregada', 'armaPermiteAtaqueOportunidade'])) {
     throw new Error('Gatilho de Na Minha Mira inválido.');
   }
   const disponivel = Object.values(args).every(Boolean);
   return {
     disponivel, usaReacao: disponivel, ataqueDeOportunidadeADistancia: disponivel,
     motivo: disponivel
-      ? 'Pode usar uma Reação para Ataque de Oportunidade à distância com arma de fogo; respeite alcance e regras da arma.'
-      : 'Na Minha Mira exige Habilidade ativa, uso disponível na rodada, inimigo percebido em até Alcance Médio e aquisição de nova Condição penalizante/restritiva.',
+      ? 'Pode usar uma Reação para Ataque de Oportunidade à distância com arma de fogo; execute o Ataque e confira as regras da arma manualmente.'
+      : 'Na Minha Mira exige Habilidade ativa, uso disponível na rodada, inimigo percebido em até Alcance Médio, nova Condição penalizante/restritiva e arma de fogo carregada apta ao Ataque de Oportunidade.',
   };
+}
+
+/** Registra apenas a Reação de Na Minha Mira; o Ataque à distância continua manual. */
+export function registrarNaMinhaMira(args: {
+  economia: EstadoEconomiaAcoes;
+  avaliacao: ReturnType<typeof avaliarNaMinhaMira>;
+}): { economia: EstadoEconomiaAcoes; reacaoAdicionalComprada: boolean } {
+  if (!args || typeof args !== 'object' || Array.isArray(args)
+    || Object.getPrototypeOf(args) !== Object.prototype
+    || Object.keys(args).sort().join('|') !== ['avaliacao', 'economia'].sort().join('|')
+    || !args.avaliacao || typeof args.avaliacao !== 'object' || Array.isArray(args.avaliacao)
+    || Object.getPrototypeOf(args.avaliacao) !== Object.prototype
+    || Object.keys(args.avaliacao).sort().join('|') !== ['ataqueDeOportunidadeADistancia', 'disponivel', 'motivo', 'usaReacao'].sort().join('|')
+    || typeof args.avaliacao.disponivel !== 'boolean'
+    || typeof args.avaliacao.usaReacao !== 'boolean'
+    || typeof args.avaliacao.ataqueDeOportunidadeADistancia !== 'boolean'
+    || typeof args.avaliacao.motivo !== 'string' || !args.avaliacao.motivo.trim()) {
+    throw new Error('Dados de registro de Na Minha Mira inválidos.');
+  }
+  if (!args.avaliacao.disponivel || !args.avaliacao.usaReacao || !args.avaliacao.ataqueDeOportunidadeADistancia) {
+    throw new Error('Na Minha Mira não está disponível para este gatilho.');
+  }
+  if (!estadoEconomiaAcoesValido(args.economia)) throw new Error('Estado da economia de ações inválido para Na Minha Mira.');
+  let economia = args.economia;
+  let reacaoAdicionalComprada = false;
+  if (!economia.normaisUsados.reacao) economia = consumirRecursoNormal(economia, 'reacao');
+  else {
+    economia = comprarRecursoPorEsforco(economia, 'reacao');
+    reacaoAdicionalComprada = true;
+  }
+  return { economia, reacaoAdicionalComprada };
 }
 
 /** VOCÊ APAROU UM MÍSSIL!?; narrativa e gatilho são confirmados pela Mesa. */
