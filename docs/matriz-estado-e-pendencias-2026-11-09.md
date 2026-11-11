@@ -708,3 +708,21 @@ Esta atualização substitui qualquer ordem anterior incompatível nesta matriz.
 **VALIDAÇÃO**
 - Teste adicionado; não executado localmente neste ambiente.
 - CI do novo HEAD precisa concluir; validação humana pendente; sem merge ou publicação.
+
+
+## 14. Atualização — lembretes de CURIOSA e auditoria de Tentativa e Erro (11/11/2026)
+
+**IMPLEMENTADO NA BRANCH**
+- `src/CalculadoraTesteLocal.tsx` apresenta lembrete contextual quando CURIOSA está ativa: Vantagem em Percepção/Investigação somente com tempo de análise e sem Pressão Imediata; não se aplica a combate, perseguições, fugas ou quando o Narrador negar tempo.
+- A interface não concede Vantagem automaticamente para CURIOSA: a pessoa confirma a circunstância e seleciona Vantagem manualmente.
+- O lembrete também registra a opção de 1 vez por Descanso Completo: Teste de AST DT 12 para pedir direção ou pista curta dedutível.
+- Teste estático acrescentado em `tests/ataques-calculadora.test.mjs`.
+
+**AUDITORIA — TENTATIVA E ERRO**
+- A Habilidade já está integrada: `FichaLocal.tsx` deriva `temTentativaEErro` das Habilidades de Progressão ativas e passa o estado à calculadora.
+- `pericias.ts` aplica +1 somente quando a Perícia permanece não Treinada e permite a Perícia adicional escolhida ser Treinada sem duplicar o bônus.
+- `tests/pericias.test.mjs` já cobre a função de bônus e as fontes distintas de Treinamento. Nenhuma alteração de regra foi necessária.
+
+**VALIDAÇÃO**
+- Teste estático novo para CURIOSA; testes de Perícias existentes auditados.
+- Sem execução local; CI do HEAD pendente; validação humana pendente; sem merge ou publicação.
