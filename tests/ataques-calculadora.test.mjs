@@ -199,3 +199,11 @@ test('PARRUDO concede Vantagem somente em Testes de Fortitude', () => {
   assert.match(ui, /parrudoAtivo = escopo === 'testes' && tipo === 'pericia' && periciaEfetiva === 'Fortitude' && habilidadesAtivas.includes\('parrudo'\)/);
   assert.match(ui, /PARRUDO: Vantagem automática em Testes de Fortitude/);
 });
+
+
+test('CURIOSA apresenta lembrete contextual sem conceder Vantagem automaticamente', () => {
+  assert.match(ui, /curiosaAtiva = escopo === 'testes' && tipo === 'pericia' && habilidadesAtivas.includes\('curiosa'\)/);
+  assert.match(ui, /\['Percepção', 'Investigação'\]\.includes\(periciaEfetiva\)/);
+  assert.match(ui, /Se a situação cumprir os requisitos, selecione Vantagem manualmente/);
+  assert.match(ui, /Uma vez por Descanso Completo, também permite Teste de AST DT 12/);
+});
