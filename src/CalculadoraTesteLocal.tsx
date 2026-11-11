@@ -40,9 +40,10 @@ type Props = {
   desvantagemBI?: boolean;
   condicoesAtivas?: CondicaoId[];
   habilidadesAtivas?: string[];
+  academicoDisponivel?: boolean;
 };
 
-export default function CalculadoraTesteLocal({ atributos, treinada, distribuicao, periciaOrigemExtra = '', periciaTentativaErroTreinada = '', temTentativaEErro = false, modoDados, origem = '', saDisponivel = 0, aoFalharCriticoAtaque, penalidadeMorteNivel1 = false, bonusAtaqueBI = 0, desvantagemBI = false, condicoesAtivas = [], habilidadesAtivas = [], escopo = 'testes', armaOperario = '' }: Props) {
+export default function CalculadoraTesteLocal({ atributos, treinada, distribuicao, periciaOrigemExtra = '', periciaTentativaErroTreinada = '', temTentativaEErro = false, modoDados, origem = '', saDisponivel = 0, aoFalharCriticoAtaque, penalidadeMorteNivel1 = false, bonusAtaqueBI = 0, desvantagemBI = false, condicoesAtivas = [], habilidadesAtivas = [], escopo = 'testes', armaOperario = '', academicoDisponivel = false }: Props) {
   const [tipo, setTipo] = useState<'pericia' | 'atributo' | 'ataque-corpo' | 'ataque-distancia'>(escopo === 'ataques' ? 'ataque-corpo' : 'pericia');
   const [pericia, setPericia] = useState('Percepção');
   const [armaId, setArmaId] = useState(() => escopo === 'ataques' && origem === 'Operário' ? listarPerfisArma().find(perfil => perfil.nome === armaOperario)?.id ?? '' : '');
@@ -63,6 +64,7 @@ export default function CalculadoraTesteLocal({ atributos, treinada, distribuica
   const [dado1, setDado1] = useState('');
   const [dado2, setDado2] = useState('');
   const [gastoSAConfirmado, setGastoSAConfirmado] = useState(false);
+  const [usarSaberEAPoder, setUsarSaberEAPoder] = useState(false);
   const [finalidade, setFinalidade] = useState<'procurar_pista' | 'outra'>('outra');
   const [metodo, setMetodo] = useState<'fisico' | 'virtual'>(modoDados === 'virtuais' ? 'virtual' : 'fisico');
   const [dadosConfirmados, setDadosConfirmados] = useState<{ dado1: number; dado2?: number } | null>(null);
@@ -105,6 +107,8 @@ export default function CalculadoraTesteLocal({ atributos, treinada, distribuica
   const codeVeronicaAtiva = escopo === 'testes' && tipo === 'pericia' && habilidadesAtivas.includes('code-veronica');
   const parrudoAtivo = escopo === 'testes' && tipo === 'pericia' && periciaEfetiva === 'Fortitude' && habilidadesAtivas.includes('parrudo');
   const curiosaAtiva = escopo === 'testes' && tipo === 'pericia' && habilidadesAtivas.includes('curiosa');
+  const academicoAplicavel = escopo === 'testes' && academicoDisponivel && origem === 'Acadêmico'
+    && (tipo === 'atributo' ? atributo === 'astucia' : tipo === 'pericia' && atributoAssociado === 'astucia');
   const curiosaContextual = curiosaAtiva && ['Percepção', 'Investigação'].includes(periciaEfetiva);
   const quantoMaisMelhorAtiva = escopo === 'ataques' && habilidadesAtivas.includes('quanto-mais-melhor');
   const armeiroAtivo = escopo === 'ataques' && habilidadesAtivas.includes('armeiro');
@@ -115,11 +119,12 @@ export default function CalculadoraTesteLocal({ atributos, treinada, distribuica
   const anatomiaDeCombateAtiva = escopo === 'ataques' && habilidadesAtivas.includes('anatomia-de-combate');
   const golpeSujoAtivo = escopo === 'ataques' && tipo === 'ataque-corpo' && habilidadesAtivas.includes('golpe-sujo');
   const ambidestriaAtiva = escopo === 'ataques' && tipo === 'ataque-distancia' && habilidadesAtivas.includes('ambidestria');
-  const existeVantagem = vantagem === 'vantagem' || codeVeronicaAtiva || parrudoAtivo;
+  const existeVantagem = vantagem === 'vantagem' || codeVeronicaAtiva || parrudoAtivo || (academicoAplicavel && usarSaberEAPoder);
   const existeDesvantagem = vantagem === 'desvantagem' || desvantagemBI || desvantagensCondicao.length > 0 || desvantagemDesarmado;
   const vantagemEfetiva: VantagemTeste = existeVantagem && existeDesvantagem ? 'normal'
     : existeVantagem ? 'vantagem'
     : existeDesvantagem ? 'desvantagem' : 'normal';
+  useEffect(() => { setUsarSaberEAPoder(false); }, [tipo, periciaEfetiva, atributo]);
   useEffect(() => {
     setDadosConfirmados(null);
     setDado1('');
@@ -399,6 +404,10 @@ export default function CalculadoraTesteLocal({ atributos, treinada, distribuica
       <input type="checkbox" checked={impossivel} onChange={evento => { setImpossivel(evento.target.checked); setDado1(''); setDado2(''); setDadosConfirmados(null); setErroRolagem(''); }} />
       Impossível — sem Teste
     </label>}
+    {academicoAplicavel && <div className="ficha-local-editor">
+      <label className="ficha-local-opcao"><input type="checkbox" checked={usarSaberEAPoder} onChange={evento => { setUsarSaberEAPoder(evento.target.checked); setDado1(''); setDado2(''); setDadosConfirmados(null); setErroRolagem(''); }} /> Usar Saber é Poder neste Teste · Vantagem</label>
+      <small>Acadêmico: uma vez por Descanso Completo, em um Teste puro de AST ou de Perícia associada a AST. Se usar o benefício, marque o uso como realizado no painel Benefícios limitados a Descanso Completo. Vantagem não acumula com outra fonte.</small>
+    </div>}
     {curiosaAtiva && <p className="ficha-local-aviso" role="status">CURIOSA: quando houver tempo para observar/investigar sem Pressão Imediata, concede Vantagem em Percepção e Investigação, mesmo sem Treinamento. Não se aplica em combate, perseguições, fugas ou quando o Narrador determinar que não há tempo para análise cuidadosa. Se a situação cumprir os requisitos, selecione Vantagem manualmente. Uma vez por Descanso Completo, também permite Teste de AST DT 12 para pedir direção ou pista curta dedutível.</p>}
     {curiosaContextual && <p className="ficha-local-legenda">Esta Perícia é abrangida por Curiosa; confirme com a Mesa se há tempo e ausência de Pressão Imediata antes de aplicar Vantagem.</p>}
     {parrudoAtivo && <p className="ficha-local-aviso" role="status">PARRUDO: Vantagem automática em Testes de Fortitude.</p>}
