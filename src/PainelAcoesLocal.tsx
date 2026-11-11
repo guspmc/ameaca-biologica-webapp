@@ -63,9 +63,9 @@ export default function PainelAcoesLocal({ dados, saAtual, aoSalvar, origemDados
   const [confirmouCombateCorpoACorpo, setConfirmouCombateCorpoACorpo] = useState(false);
   const [resultadoAtaqueDefensivo, setResultadoAtaqueDefensivo] = useState('');
   const [dadoNaturalDefensivo, setDadoNaturalDefensivo] = useState('');
-  const [ataqueCorpoACorpoDefensivo, setAtaqueCorpoACorpoDefensivo] = useState(true);
-  const [ataqueAcertouDefensivo, setAtaqueAcertouDefensivo] = useState(true);
-  const [ataqueAparavelDefensivo, setAtaqueAparavelDefensivo] = useState(true);
+  const [ataqueCorpoACorpoDefensivo, setAtaqueCorpoACorpoDefensivo] = useState(false);
+  const [ataqueAcertouDefensivo, setAtaqueAcertouDefensivo] = useState(false);
+  const [ataqueAparavelDefensivo, setAtaqueAparavelDefensivo] = useState(false);
   const [gatilhoEsquivaAutorizado, setGatilhoEsquivaAutorizado] = useState(false);
   const [janelaDefensiva, setJanelaDefensiva] = useState<JanelaReacao | null>(null);
   const [erroJanelaDefensiva, setErroJanelaDefensiva] = useState('');
