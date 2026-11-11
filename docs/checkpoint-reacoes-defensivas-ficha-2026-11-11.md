@@ -83,3 +83,12 @@
 ## Próximo passo
 
 Consultar o HEAD e a CI da branch. Os workflows foram acionados, mas ainda constam como `queued`; não há resultado de aprovação disponível. Corrigir qualquer falha real. Em seguida, continuar a auditoria/integração das Reações, sem habilitar Aparar até existir estado seguro de equipamento e Durabilidade. Não iniciar Inventário ativo, não alterar `main`, não fazer merge ou deploy.
+
+
+## Revisão de integridade da declaração defensiva — 11/11/2026
+
+- **Achado:** após salvar a declaração de Esquiva, os campos do Ataque e do gatilho continuavam editáveis. Alterá-los limpava o estado local da declaração sem estornar a Reação já consumida; isso poderia levar a uma segunda declaração/cobrança para o mesmo evento ou perder a referência do Teste pendente.
+- **Correção implementada:** `src/PainelAcoesLocal.tsx` agora bloqueia os campos do contexto e a reavaliação da janela enquanto `reacaoDefensivaDeclarada` estiver ativa. O custo já salvo permanece íntegro e o contexto necessário ao Teste não pode ser alterado acidentalmente.
+- **Teste adicionado:** `tests/reacao-defensiva-ficha.test.mjs` verifica os campos e o bloqueio da reavaliação. Não executado localmente.
+- **Limite preservado:** não há comando de estorno/revogação da Reação depois da declaração. Se o jogador declarar com informação errada, a correção continua dependendo da decisão da Mesa; o app não devolve SA automaticamente.
+- **Canon conferido:** o Arquivo do Jogador v1.0, p.80, permite usar uma Reação cujo gatilho ocorreu mesmo se o Ataque errou; somente 20 natural fecha a janela defensiva normal. O código mantém Aparar restrito a acerto Corpo a Corpo aparável e Esquiva restrita à autorização de Habilidade/regra.
