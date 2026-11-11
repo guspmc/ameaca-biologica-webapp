@@ -19,6 +19,7 @@ import type { ResultadoConferenciaCriacaoLocal } from './servidorLocal';
 import CalculadoraTesteLocal from './CalculadoraTesteLocal';
 import RoladoresBasicosLocal from './RoladoresBasicosLocal';
 import RecursosFichaLocal from './RecursosFichaLocal';
+import BeneficiosOrigemContextuaisLocal from './BeneficiosOrigemContextuaisLocal';
 import DescansoFichaLocal from './DescansoFichaLocal';
 import UsosDescansoCompletoLocal from './UsosDescansoCompletoLocal';
 import ReanimacaoFichaLocal from './ReanimacaoFichaLocal';
@@ -413,7 +414,8 @@ export default function FichaLocal({ nome, mesa, contextoId, dados, aoFechar, ao
 
         {origem === 'Agente de Saúde' && <p className="ficha-local-aviso">AGENTE DE SAÚDE: ao curar um aliado com item ou efeito, acrescente +1d4 aos Dados de Cura. O benefício não se aplica à própria personagem; a cura do aliado continua sendo registrada na ficha correspondente.</p>}
 
-        <RecursosFichaLocal origemDados={origemDados} autoSalvar={autoSalvar}
+        <BeneficiosOrigemContextuaisLocal dados={dados as Record<string, unknown>} origem={origem} aoSalvar={aoSalvarRecursos} />
+                <RecursosFichaLocal origemDados={origemDados} autoSalvar={autoSalvar}
           dados={dados}
           pvMaximo={pv}
           saMaximo={sa}
