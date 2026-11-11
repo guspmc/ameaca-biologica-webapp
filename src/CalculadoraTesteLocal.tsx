@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { ATRIBUTO_PERICIA, bonusTentativaErro, valorBasePericia } from './pericias';
 import { bonusCondicionalOrigemTeste } from './efeitosOrigens';
 import { calcularTesteManual, calcularRolagemAtaqueManual, type VantagemTeste } from './testes';
-import { condicoesQueImpoemDesvantagem } from './condicoesCalculadora';
+import { condicoesQueImpoemDesvantagem, restricoesDeAtaquePorCondicoes } from './condicoesCalculadora';
 import { CATALOGO_CONDICOES, type CondicaoId } from './condicoesFicha';
 import { sortearDados, validarResultadosFisicos } from './rolagemDados';
 import type { ModoDados } from './funcionamentoFicha';
@@ -86,6 +86,7 @@ export default function CalculadoraTesteLocal({ atributos, treinada, distribuica
   });
   const bonusTentativa = temTentativaEErro && testeDePericia ? bonusTentativaErro(periciaEfetiva, treinada || null, distribuicao, periciaOrigemExtra || null, periciaTentativaErroTreinada || null) : 0;
   const modificadorAtaqueBI = tipo === 'ataque-corpo' || tipo === 'ataque-distancia' ? bonusAtaqueBI : 0;
+  const restricoesAtaque = escopo === 'ataques' ? restricoesDeAtaquePorCondicoes(condicoesAtivas) : [];
   const desvantagensCondicao = condicoesQueImpoemDesvantagem(condicoesAtivas, {
     escopo,
     tipoTeste: testeDePericia ? 'pericia' : 'atributo',
@@ -242,6 +243,7 @@ export default function CalculadoraTesteLocal({ atributos, treinada, distribuica
         {escopo === 'ataques' && <><option value="ataque-corpo">Ataque Corpo a Corpo · Luta</option><option value="ataque-distancia">Ataque à distância · Pontaria</option></>}
       </select>
     </label>
+    {escopo === 'ataques' && restricoesAtaque.length > 0 && <div className="ficha-local-aviso" role="status"><strong>Condições que restringem Ataques</strong>{restricoesAtaque.map(item => <p key={item.condicao}>{item.motivo}</p>)}<small>Este aviso não bloqueia a rolagem nem altera a narrativa; confira se a Condição ainda está ativa e se existe uma exceção aplicável.</small></div>}
     {(tipo === 'ataque-corpo' || tipo === 'ataque-distancia') && <div className="ficha-local-editor">
       <label>Perfil de arma para consulta (opcional)
         <select value={armaId} onChange={evento => { setArmaId(evento.target.value); setResultadoDadosDano(''); setResultadoDadosAdicionais(''); setCriticoDano(false); setVarianteDanoEspecial('normal'); setCartuchoGM79('acido'); setModoGM79('direto'); setModoBearCommander('rifle'); setModoDisparoAutomatico('normal'); setCoronhaMatildaConfirmada(false); }}>
