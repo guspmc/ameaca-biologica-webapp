@@ -340,3 +340,43 @@ test('registro de Durabilidade rejeita payload externo com campos extras', async
     automacaoAtiva: true, custoExtra: 0,
   }), /Estado de Aparar inválido/);
 });
+
+
+test('Não Vai Escapar registra Reação e deslocamento adjacente de até 3 m', async () => {
+  const { avaliarNaoVaiEscapar, registrarNaoVaiEscapar } = await import('../src/reacoesCombate.ts');
+  const avaliacao = avaliarNaoVaiEscapar({
+    habilidadeAtiva: true, criaturaProvocouAtaqueDeOportunidade: true,
+    gatilhoFoiParaVoceOuAliado: true, combateCorpoACorpo: true,
+  });
+  const resultado = registrarNaoVaiEscapar({ economia: economiaAcoesInicial(3), avaliacao });
+  assert.equal(resultado.economia.normaisUsados.reacao, true);
+  assert.equal(resultado.economia.saAtual, 3);
+  assert.equal(resultado.deslocamentoMaximoMetros, 3);
+  assert.equal(resultado.deveTerminarAdjacente, true);
+});
+
+test('Não Vai Escapar compra Reação adicional quando a normal já foi usada', async () => {
+  const { avaliarNaoVaiEscapar, registrarNaoVaiEscapar } = await import('../src/reacoesCombate.ts');
+  const avaliacao = avaliarNaoVaiEscapar({
+    habilidadeAtiva: true, criaturaProvocouAtaqueDeOportunidade: true,
+    gatilhoFoiParaVoceOuAliado: true, combateCorpoACorpo: true,
+  });
+  const economia = consumirRecursoNormal(economiaAcoesInicial(3), 'reacao');
+  const resultado = registrarNaoVaiEscapar({ economia, avaliacao });
+  assert.equal(resultado.economia.saAtual, 2);
+  assert.equal(resultado.economia.comprasEsforco.reacao, 1);
+  assert.equal(resultado.reacaoAdicionalComprada, true);
+});
+
+test('Não Vai Escapar rejeita gatilho inválido e avaliação forjada', async () => {
+  const { avaliarNaoVaiEscapar, registrarNaoVaiEscapar } = await import('../src/reacoesCombate.ts');
+  const invalida = avaliarNaoVaiEscapar({
+    habilidadeAtiva: true, criaturaProvocouAtaqueDeOportunidade: true,
+    gatilhoFoiParaVoceOuAliado: false, combateCorpoACorpo: true,
+  });
+  assert.throws(() => registrarNaoVaiEscapar({ economia: economiaAcoesInicial(3), avaliacao: invalida }), /não está disponível/);
+  assert.throws(() => registrarNaoVaiEscapar({
+    economia: economiaAcoesInicial(3),
+    avaliacao: { disponivel: true, deslocamentoMaximoMetros: 4, deveTerminarAdjacente: true, motivo: 'forjado' },
+  }), /Dados de registro de Não Vai Escapar inválidos/);
+});
