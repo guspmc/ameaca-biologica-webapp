@@ -672,3 +672,22 @@ Esta atualização substitui qualquer ordem anterior incompatível nesta matriz.
 **VALIDAÇÃO**
 - Testes adicionados; ainda sem execução local neste ambiente.
 - CI do HEAD precisa concluir. Sem validação humana, merge ou publicação.
+
+
+## 12. Atualização — integração de CODE VERONICA (11/11/2026)
+
+**IMPLEMENTADO NA BRANCH**
+- A Ficha passa os IDs de Habilidades ativas à Calculadora de Testes.
+- Quando CODE VERONICA está ativa e o tipo é Teste de Perícia, a calculadora aplica Vantagem automaticamente.
+- `src/testes.ts` aplica a regra de resultados naturais 2–9 contarem como 10, preservando 1 natural como Falha Crítica e 20 natural como sucesso automático.
+- Vantagem de CODE VERONICA e fontes de Desvantagem são combinadas sem empilhar dados: se ambas existirem, cancelam-se normalmente. A conversão 2–9 para 10 permanece ativa.
+- Testes unitários e de integração acrescentados em `tests/testes.test.mjs` e `tests/ataques-calculadora.test.mjs`.
+
+**LIMITES**
+- O efeito só é aplicado no modo Automático, pois apenas esse modo apresenta a Calculadora.
+- CODE VERONICA não é aplicado a Testes puros de Atributo nem a Ataques.
+- Conhecimento automático de senhas/códigos, chance de duplicar Ervas e uso de Submetralhadoras sem coronha com Ambidestria continuam como lembretes/efeitos não automatizados.
+
+**VALIDAÇÃO**
+- Testes adicionados; sem execução local neste ambiente.
+- CI do HEAD precisa concluir; validação humana pendente; sem merge ou publicação.
