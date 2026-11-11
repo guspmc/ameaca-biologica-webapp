@@ -17,6 +17,7 @@ export type EstadoTurnoCombate = {
   movimentosAdicionaisConcedidos: number;
   ataqueAdicionalAutorizado: boolean;
   proximoTurnoComprometido: boolean;
+  reacaoDefensivaRegistrada: boolean;
 };
 
 export type OrigemEstadoTurnoCombate = 'composto' | 'legado' | 'novo';
@@ -83,13 +84,15 @@ function migrarEstadoTurnoCombateComposto(valor: unknown): EstadoTurnoCombate | 
   const chavesBasicas = ['economia', 'manobras', 'versao'].sort().join('|');
   const chavesComMarcadores = ['economia', 'manobras', 'versao', 'movimentosAdicionaisConcedidos', 'ataqueAdicionalAutorizado'].sort().join('|');
   const chavesComCompromisso = ['economia', 'manobras', 'versao', 'movimentosAdicionaisConcedidos', 'ataqueAdicionalAutorizado', 'proximoTurnoComprometido'].sort().join('|');
-  if (chavesEstado !== chavesBasicas && chavesEstado !== chavesComMarcadores && chavesEstado !== chavesComCompromisso) return null;
+  const chavesComReacaoDefensiva = ['economia', 'manobras', 'versao', 'movimentosAdicionaisConcedidos', 'ataqueAdicionalAutorizado', 'proximoTurnoComprometido', 'reacaoDefensivaRegistrada'].sort().join('|');
+  if (chavesEstado !== chavesBasicas && chavesEstado !== chavesComMarcadores && chavesEstado !== chavesComCompromisso && chavesEstado !== chavesComReacaoDefensiva) return null;
 
   if ((chavesEstado === chavesComMarcadores || chavesEstado === chavesComCompromisso)
     && (!Number.isSafeInteger(estado.movimentosAdicionaisConcedidos)
       || (estado.movimentosAdicionaisConcedidos as number) < 0
       || typeof estado.ataqueAdicionalAutorizado !== 'boolean'
-      || (chavesEstado === chavesComCompromisso && typeof estado.proximoTurnoComprometido !== 'boolean'))) return null;
+      || ((chavesEstado === chavesComCompromisso || chavesEstado === chavesComReacaoDefensiva) && typeof estado.proximoTurnoComprometido !== 'boolean')
+      || (chavesEstado === chavesComReacaoDefensiva && typeof estado.reacaoDefensivaRegistrada !== 'boolean'))) return null;
 
   if (!estado.manobras || typeof estado.manobras !== 'object' || Array.isArray(estado.manobras)
     || Object.getPrototypeOf(estado.manobras) !== Object.prototype) return null;
@@ -115,7 +118,8 @@ function migrarEstadoTurnoCombateComposto(valor: unknown): EstadoTurnoCombate | 
     },
     movimentosAdicionaisConcedidos: chavesEstado !== chavesBasicas ? estado.movimentosAdicionaisConcedidos as number : 0,
     ataqueAdicionalAutorizado: chavesEstado !== chavesBasicas ? estado.ataqueAdicionalAutorizado as boolean : false,
-    proximoTurnoComprometido: chavesEstado === chavesComCompromisso ? estado.proximoTurnoComprometido as boolean : false,
+    proximoTurnoComprometido: chavesEstado === chavesComCompromisso || chavesEstado === chavesComReacaoDefensiva ? estado.proximoTurnoComprometido as boolean : false,
+    reacaoDefensivaRegistrada: chavesEstado === chavesComReacaoDefensiva ? estado.reacaoDefensivaRegistrada as boolean : false,
   };
 }
 
@@ -133,6 +137,7 @@ export function estadoTurnoCombateInicial(saAtual: number): EstadoTurnoCombate {
     movimentosAdicionaisConcedidos: 0,
     ataqueAdicionalAutorizado: false,
     proximoTurnoComprometido: false,
+    reacaoDefensivaRegistrada: false,
   };
 }
 
@@ -140,11 +145,12 @@ export function estadoTurnoCombateValido(valor: unknown): valor is EstadoTurnoCo
   if (!valor || typeof valor !== 'object' || Array.isArray(valor)
     || Object.getPrototypeOf(valor) !== Object.prototype) return false;
   const estado = valor as Record<string, unknown>;
-  if (Object.keys(estado).sort().join('|') !== ['ataqueAdicionalAutorizado', 'economia', 'manobras', 'movimentosAdicionaisConcedidos', 'proximoTurnoComprometido', 'versao'].sort().join('|')
+  if (Object.keys(estado).sort().join('|') !== ['ataqueAdicionalAutorizado', 'economia', 'manobras', 'movimentosAdicionaisConcedidos', 'proximoTurnoComprometido', 'reacaoDefensivaRegistrada', 'versao'].sort().join('|')
     || estado.versao !== 1 || !estadoEconomiaAcoesValido(estado.economia)
     || !Number.isSafeInteger(estado.movimentosAdicionaisConcedidos) || (estado.movimentosAdicionaisConcedidos as number) < 0
     || typeof estado.ataqueAdicionalAutorizado !== 'boolean'
-    || typeof estado.proximoTurnoComprometido !== 'boolean') return false;
+    || typeof estado.proximoTurnoComprometido !== 'boolean'
+    || typeof estado.reacaoDefensivaRegistrada !== 'boolean') return false;
   const manobras = estado.manobras;
   if (!manobras || typeof manobras !== 'object' || Array.isArray(manobras)
     || Object.getPrototypeOf(manobras) !== Object.prototype) return false;
@@ -180,6 +186,7 @@ export function iniciarTurnoCombate(estado: EstadoTurnoCombate): EstadoTurnoComb
     movimentosAdicionaisConcedidos: 0,
     ataqueAdicionalAutorizado: false,
     proximoTurnoComprometido: false,
+    reacaoDefensivaRegistrada: false,
   };
 }
 
@@ -234,6 +241,7 @@ export function aplicarManobraCombate(
     movimentosAdicionaisConcedidos: estado.movimentosAdicionaisConcedidos + resultado.movimentosAdicionais,
     ataqueAdicionalAutorizado: estado.ataqueAdicionalAutorizado || resultado.ataqueAdicionalAutorizado,
     proximoTurnoComprometido: estado.proximoTurnoComprometido,
+    reacaoDefensivaRegistrada: estado.reacaoDefensivaRegistrada,
   };
   if (!estadoTurnoCombateValido(proximo)) throw new Error('A Manobra produziu um estado de turno inválido.');
   return { estado: proximo, resultado };
@@ -254,6 +262,17 @@ export function aplicarReacaoCombate<T extends { economia: EstadoEconomiaAcoes }
     estado: { ...estado, economia: resultado.economia, manobras: { ...estado.manobras } },
     resultado,
   };
+}
+
+/** Registra uma Reação defensiva e marca sua origem para Contra-Ataque Instintivo persistente. */
+export function aplicarReacaoDefensivaCombate<T extends { economia: EstadoEconomiaAcoes }>(
+  estado: EstadoTurnoCombate,
+  operacao: (economia: EstadoEconomiaAcoes) => T,
+): { estado: EstadoTurnoCombate; resultado: T } {
+  const aplicado = aplicarReacaoCombate(estado, operacao);
+  const proximo = { ...aplicado.estado, reacaoDefensivaRegistrada: true };
+  exigirEstadoValido(proximo);
+  return { estado: proximo, resultado: aplicado.resultado };
 }
 
 function exigirEstadoValido(estado: EstadoTurnoCombate): void {
