@@ -244,3 +244,12 @@ test('GOLPE SUJO apresenta as três opções sem executar Manobras ou aplicar Co
   assert.match(ui, /Cabeçada é Ataque Desarmado/);
   assert.match(ui, /a calculadora não executa as Manobras nem aplica Condições/);
 });
+
+
+test('AMBIDESTRIA apresenta Ataque adicional com Pistola 9 mm na outra mão', () => {
+  assert.match(ui, /ambidestriaAtiva = escopo === 'ataques' && tipo === 'ataque-distancia' && habilidadesAtivas.includes\('ambidestria'\)/);
+  assert.match(ui, /AMBIDESTRIA: se estiver empunhando uma Pistola 9 mm em cada mão/);
+  assert.match(ui, /Ataque adicional com a outra como Ação Bônus, uma vez por turno/);
+  assert.match(ui, /Esse Ataque adiciona AGI ao Dano normalmente/);
+  assert.match(ui, /a Ficha não controla armas nas mãos nem limita o uso por turno/);
+});
