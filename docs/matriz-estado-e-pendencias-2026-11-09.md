@@ -691,3 +691,20 @@ Esta atualização substitui qualquer ordem anterior incompatível nesta matriz.
 **VALIDAÇÃO**
 - Testes adicionados; sem execução local neste ambiente.
 - CI do HEAD precisa concluir; validação humana pendente; sem merge ou publicação.
+
+
+## 13. Atualização — Vantagem de PARRUDO em Fortitude (11/11/2026)
+
+**IMPLEMENTADO NA BRANCH**
+- `src/CalculadoraTesteLocal.tsx` reconhece a Habilidade ativa `parrudo` somente no escopo de Testes, tipo Perícia e Perícia selecionada Fortitude.
+- A fonte concede Vantagem automaticamente; a combinação com Desvantagem segue a regra geral de cancelamento, sem empilhar dados.
+- A interface apresenta aviso explícito quando o efeito está ativo.
+- Teste estático de integração adicionado em `tests/ataques-calculadora.test.mjs`.
+
+**CONFERÊNCIA DE DERIVADOS**
+- `src/derivadosCriacao.ts` já inclui +5 PV Máximos e +3 BI Máxima quando Parrudo é a Habilidade Básica escolhida na criação (`pvParrudo` e `biParrudo`). Nenhuma duplicação foi introduzida.
+- A Vantagem de Fortitude era o efeito da Habilidade que ainda faltava na calculadora.
+
+**VALIDAÇÃO**
+- Teste adicionado; não executado localmente neste ambiente.
+- CI do novo HEAD precisa concluir; validação humana pendente; sem merge ou publicação.
