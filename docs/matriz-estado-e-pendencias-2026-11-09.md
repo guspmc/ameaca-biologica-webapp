@@ -879,3 +879,21 @@ Esta atualização substitui qualquer ordem anterior incompatível nesta matriz.
 - Testes não executados localmente neste ambiente.
 - CI do HEAD final precisa concluir; sem validação humana, merge ou publicação.
 - Checkpoint: `docs/checkpoint-implementacao-finalizacao-2026-11-11.md`.
+
+
+## 23. Lembretes contextuais — Anatomia de Combate e GOLPE SUJO (11/11/2026)
+
+**IMPLEMENTADO NA BRANCH**
+- `CalculadoraTesteLocal.tsx` apresenta Anatomia de Combate no escopo de Ataques quando a Habilidade está ativa: Ação Bônus, Medicina DT 15 e Vantagem no próximo Ataque após sucesso, até o fim do próximo turno.
+- No Ataque Corpo a Corpo, GOLPE SUJO apresenta Derrubar após causar Dano Corpo a Corpo (gastando Movimento), Pisão contra alvo Caído/Menor e Cabeçada com Fortitude DT 10 + FOR.
+- Os lembretes preservam os requisitos e a decisão da Mesa; não presumem alvo, posição, Vulnerabilidade, duração ou sucesso de Teste.
+
+**LIMITES**
+- Anatomia de Combate não registra o alvo nem acompanha a janela de Vantagem.
+- GOLPE SUJO não executa Manobras, Finalização, Morte Instantânea ou Condições.
+- Integração operacional depende do fluxo futuro de Encontros/Combate.
+
+**VALIDAÇÃO**
+- Testes estáticos adicionados em `tests/ataques-calculadora.test.mjs`; não executados localmente.
+- CI do novo HEAD pendente; sem validação humana isolada, merge ou publicação.
+- Checkpoint: `docs/checkpoint-anatomia-golpe-sujo-2026-11-11.md`.
