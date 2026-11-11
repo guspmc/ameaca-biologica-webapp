@@ -1158,3 +1158,34 @@ Esta atualização substitui qualquer ordem anterior incompatível nesta matriz.
 **ESCOPO**
 - Sem alteração em `main`, merge, deploy, publicação, Supabase ou banco de produção.
 - Sem validação humana isolada; Inventário ativo permanece bloqueado até a conclusão da Ficha e da validação humana integrada.
+
+
+## 33. Integração de Não Vai Escapar na Ficha (11/11/2026)
+
+**FONTE CANÔNICA**
+- Arquivo do Jogador v1.0, p. 29: quando uma criatura provocar Ataque de Oportunidade para a personagem ou para um aliado em combate Corpo a Corpo, a personagem pode usar sua Reação para realizar um Ataque de Oportunidade contra ela.
+- Imediatamente antes do Ataque, pode deslocar-se até 3 m, desde que termine adjacente ao alvo; esse deslocamento não provoca Ataques de Oportunidade.
+
+**IMPLEMENTADO NA BRANCH**
+- `src/reacoesCombate.ts` agora contém `registrarNaoVaiEscapar()`, que valida a avaliação contextual e registra Reação normal ou compra adicional por Esforço.
+- `PainelAcoesLocal.tsx` apresenta o controle somente quando o ID `nao-vai-escapar` está entre as Habilidades ativas da personagem.
+- O jogador confirma que a criatura provocou Ataque de Oportunidade para si ou aliado e que o gatilho ocorreu em combate Corpo a Corpo.
+- O registro consome Reação normal sem SA ou compra Reação adicional por 1 SA quando a normal já foi usada, respeitando a janela de 3 SA.
+- A interface informa deslocamento de até 3 m, término adjacente e ausência de Ataques de Oportunidade provocados por esse deslocamento.
+
+**LIMITES**
+- A Ficha não detecta gatilhos espaciais, não valida se a criatura realmente provocou Ataque de Oportunidade e não calcula distância/adjacência.
+- Não executa deslocamento nem Ataque; ambos continuam manuais.
+- Não resolve rolagem, Defesa, Dano ou efeitos no alvo.
+- Não coordena o gatilho com outra ficha ou Encontro compartilhado.
+
+**VALIDAÇÃO**
+- `tests/reacoes-combate.test.mjs`: novos testes de elegibilidade, registro da Reação, compra adicional e rejeição de avaliação inválida.
+- `tests/estado-turno-combate.test.mjs`: teste de persistência da Reação no estado composto.
+- Novo `tests/nao-vai-escapar-ficha.test.mjs`: verifica exibição condicional pela Habilidade, confirmações contextuais e limites da interface.
+- Testes não executados localmente neste ambiente; CI do novo HEAD precisa concluir.
+- Checkpoint: `docs/checkpoint-nao-vai-escapar-ficha-2026-11-11.md`.
+
+**ESCOPO**
+- Sem alteração em `main`, merge, deploy, publicação, Supabase ou banco de produção.
+- Sem validação humana isolada; Inventário ativo permanece bloqueado.
