@@ -196,6 +196,7 @@ test('Progressão neutra exige autorização externa do grupo e novo avanço ap�
   assert.equal(avaliarDisponibilidadeProgressao({ ...base, avancoAutorizado: true }).disponivel, true);
   const aposMorte = { ...base, nivelAtual: 2, avancoAutorizado: false, missoesCompletadasNaUltimaMorte: 2 };
   assert.equal(avaliarDisponibilidadeProgressao(aposMorte).disponivel, false);
+  assert.match(avaliarDisponibilidadeProgressao(aposMorte).motivo, /nova autorização de avanço/);
   assert.equal(avaliarDisponibilidadeProgressao({ ...aposMorte, avancoAutorizado: true }).disponivel, true);
   assert.equal(avaliarDisponibilidadeProgressao({ ...base, avancoAutorizado: true, descansoCompletoEmSalaDescanso: false }).disponivel, false);
 });
