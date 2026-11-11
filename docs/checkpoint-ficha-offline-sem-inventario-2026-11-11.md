@@ -2,7 +2,7 @@
 
 **Data:** 11/11/2026  
 **Branch:** `feat/offline-first-ficha`  
-**HEAD verificado:** `ff1e785538d906bba220d4ab01a14bcc9453e355`
+**HEAD verificado neste ciclo:** `83a1f1de45f030bf5ecfa1fb87d17f0e295910d0`
 
 ## Objetivo deste checkpoint
 
@@ -78,7 +78,8 @@ Dependências que permanecem bloqueadas até Inventário:
 
 - **Implementado:** código e documentação na branch indicada.
 - **Testes locais:** não executados; não há clone/ambiente local do repositório nesta sessão.
-- **CI no HEAD:** `43081389509` (Verificação da ficha offline) e `43081389860` (Validar compilação do WebApp) estão `queued`; nenhum resultado foi presumido.
+- **CI no HEAD:** `43081465600` (Verificação da ficha offline) e `43081465795` (Validar compilação do WebApp) estão `queued`; criados em 11/11/2026 às 18:49 UTC e ainda sem início no momento desta conferência. Nenhum resultado foi presumido.
+- **Revisão estática adicional:** confirmada a integração do painel Amnésico/Militar diretamente na Ficha (`dados` contém o estado persistido e `aoSalvarRecursos` é a operação de gravação); confirmados os contratos de validação estrita dos dois estados. Revisão estática não substitui TypeScript/build/testes.
 - **Validação humana:** ainda não iniciada, conforme combinado.
 - **LAN:** não alterado; considerado funcional conforme testes anteriores relatados.
 - **Supabase/banco:** não alterados.
@@ -86,7 +87,7 @@ Dependências que permanecem bloqueadas até Inventário:
 
 ## Próximo ciclo
 
-1. Aguardar/consultar os dois workflows do HEAD `ff1e7855`; corrigir somente falhas reais.
+1. Aguardar/consultar os dois workflows do HEAD `83a1f1de`; corrigir somente falhas reais.
 2. Se CI apontar erro, corrigir e atualizar checkpoint antes de avançar.
 3. Iniciar implementação do Inventário Offline com contratos canônicos, mantendo Baú/transferências fora do offline.
 4. Após Inventário concluído, realizar auditoria automatizada final e então iniciar a validação humana integrada, sem antecipar testes manuais.
