@@ -188,7 +188,7 @@ test('lembretes de armas especiais derivam do catálogo único de procedimentos'
 test('CODE VERONICA é passado à calculadora e concede Vantagem somente em Testes de Perícia', () => {
   assert.match(ficha, /habilidadesAtivas=\{habilidadesAtivasIds\}/);
   assert.match(ui, /codeVeronicaAtiva = escopo === 'testes' && tipo === 'pericia'/);
-  assert.match(ui, /const existeVantagem = vantagem === 'vantagem' \|\| codeVeronicaAtiva/);
+  assert.match(ui, /const existeVantagem = vantagem === 'vantagem' \\|\\| codeVeronicaAtiva \\|\\| parrudoAtivo/);
   assert.match(ui, /naturalDe2a9Como10: codeVeronicaAtiva/);
   assert.match(ui, /CODE VERONICA: Vantagem automática em Testes de Perícia/);
 });
