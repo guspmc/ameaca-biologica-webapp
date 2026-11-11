@@ -44,6 +44,19 @@
 - `46dc969` — corrige tipagem/mensagens.
 - `28c65b1` — adiciona testes do cálculo defensivo.
 - `8fa7ad1` — atualiza a matriz.
+- `06d96ce` — valida e registra a Reação de Na Minha Mira.
+- `a314e04` — atualiza testes do helper.
+- `fa4d2a8` — integra Na Minha Mira ao Painel.
+- `dcc84b9` — adiciona teste estrutural.
+- `d58215f` — registra a integração na matriz.
+
+## Integração paralela — Na Minha Mira
+
+- `src/reacoesCombate.ts` agora exige, além dos gatilhos já existentes, confirmação de arma de fogo carregada e apta ao Ataque de Oportunidade à distância.
+- `registrarNaMinhaMira()` registra Reação normal ou compra adicional por 1 SA, com validação estrita do resultado.
+- `src/PainelAcoesLocal.tsx` apresenta a seção somente com a Habilidade ativa e exige confirmações manuais de uso disponível na rodada, alvo percebido, Alcance Médio, nova Condição e estado/elegibilidade da arma.
+- O painel não acompanha rodada, posição, percepção, alvo, equipamento ou munição; não executa o Ataque nem aplica efeitos.
+- Teste estrutural novo: `tests/na-minha-mira-ficha.test.mjs`; testes de helper atualizados em `tests/reacoes-combate.test.mjs`. Não executados localmente.
 
 ## Próximo passo
 
