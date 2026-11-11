@@ -8,11 +8,11 @@
 Tornar visíveis na calculadora as regras especiais do RPG-7 e os efeitos da Spark Shot, sem automatizar decisões ou consequências que dependem da mesa.
 
 ## Alterações
-- Criado `src/procedimentosArmasEspeciais.ts` com consultas textuais para RPG-7 e Spark Shot.
+- Criado `src/procedimentosArmasEspeciais.ts` como projeção de lembretes a partir de `consultarProcedimentoArma()`; assim, o texto canônico continua centralizado em `src/catalogoProcedimentosArmas.ts`, sem duplicação de regras.
 - `src/CalculadoraTesteLocal.tsx` passou a exibir:
   - RPG-7: Morte Instantânea e exceções para Perseguidores, Chefes e criaturas com regra própria; lembrete de arma vazia após disparo e recarga por Movimento.
   - Spark Shot: Fortitude DT 15 para alvo atingido e criaturas a até 1,5 m; falha causa Atordoado até o fim do próximo turno e Imobilizado por 1d4 rodadas.
-- Acrescentado teste estático em `tests/ataques-calculadora.test.mjs`.
+- Acrescentados testes estáticos em `tests/ataques-calculadora.test.mjs` e testes unitários em `tests/procedimentos-armas-especiais.test.mjs`.
 - Atualizada a matriz de implementação e pendências.
 
 ## Limites
