@@ -50,6 +50,7 @@ export default function CalculadoraTesteLocal({ atributos, treinada, distribuica
   const [varianteDanoEspecial, setVarianteDanoEspecial] = useState<VarianteDanoEspecial>('normal');
   const [cartuchoGM79, setCartuchoGM79] = useState<CartuchoGM79>('acido');
   const [modoGM79, setModoGM79] = useState<ModoGM79>('direto');
+  const [modoBearCommander, setModoBearCommander] = useState<'rifle' | 'lancador'>('rifle');
   const [modoDisparoAutomatico, setModoDisparoAutomatico] = useState<'normal' | 'cadenciado' | 'rajada'>('normal');
   const [coronhaMatildaConfirmada, setCoronhaMatildaConfirmada] = useState(false);
   const [atributo, setAtributo] = useState<keyof AtributosIniciais>('astucia');
@@ -161,23 +162,25 @@ export default function CalculadoraTesteLocal({ atributos, treinada, distribuica
   const limiteCritico = perfilCorpo?.criticoNatural ?? (criticoTexto ? (/19\s*[–-]\s*20/.test(criticoTexto) ? 19 : 20) : null);
   const multiplicadorCritico = perfilCorpo?.multiplicadorCritico ?? (criticoTexto ? Number(criticoTexto.match(/x\s*(\d+)/i)?.[1] ?? 1) : null);
   const resultadoAtaqueCritico = escopo === 'ataques' && calculado.resultado?.dadoEscolhido === 20;
-  const procedimentoGM79 = perfilFogo?.id === 'gm-79' ? consultarProcedimentoGM79(cartuchoGM79, modoGM79) : null;
+  const bearLauncherSelecionado = perfilFogo?.id === 'bear-commander' && modoBearCommander === 'lancador';
+  const procedimentoGM79 = (perfilFogo?.id === 'gm-79' || bearLauncherSelecionado) ? consultarProcedimentoGM79(cartuchoGM79, modoGM79) : null;
   const ataqueEmAreaGM79 = procedimentoGM79?.danoEmArea ?? false;
   const modosArmaFogo = perfilFogo ? consultarModosDisparoArmaFogo(perfilFogo, coronhaMatildaConfirmada) : null;
   const modoDisparoEfetivo = modoDisparoAutomatico === 'normal' && modosArmaFogo && !modosArmaFogo.disparoUnico
     ? (modosArmaFogo.cadenciado ? 'cadenciado' : modosArmaFogo.rajada ? 'rajada' : 'normal')
     : modoDisparoAutomatico;
-  const rajadaSelecionada = modoDisparoEfetivo === 'rajada' && (modosArmaFogo?.rajada ?? false);
+  const rajadaSelecionada = !bearLauncherSelecionado && modoDisparoEfetivo === 'rajada' && (modosArmaFogo?.rajada ?? false);
   const cadenciadoSelecionado = modoDisparoEfetivo === 'cadenciado' && (modosArmaFogo?.cadenciado ?? false);
   const disparoUnicoIndisponivel = Boolean(modosArmaFogo && !modosArmaFogo.disparoUnico && !rajadaSelecionada && !cadenciadoSelecionado);
   const ataqueEmArea = ataqueEmAreaGM79 || rajadaSelecionada;
   const procedimentoPerfuracao = modosArmaFogo?.perfuracao ?? null;
   useEffect(() => { if (ataqueEmArea) { setCriticoDano(false); setDadosConfirmados(null); setDado1(''); setDado2(''); setErroRolagem(''); } }, [ataqueEmArea]);
   const formulaDanoEspecial = perfilFogo ? consultarFormulaDanoEspecial(perfilFogo.id, varianteDanoEspecial) : null;
-  const formulaDanoConvencional = formulaDanoEspecial ?? (perfilSelecionado?.dano && possuiFormulaDanoConvencional(perfilSelecionado.dano) ? perfilSelecionado.dano : null);
+  const formulaDanoConvencional = bearLauncherSelecionado ? '4d6' : formulaDanoEspecial ?? (perfilSelecionado?.dano && possuiFormulaDanoConvencional(perfilSelecionado.dano) ? perfilSelecionado.dano : null);
+  const multiplicadorCriticoDano = bearLauncherSelecionado ? 4 : multiplicadorCritico;
   const atributoDano = tipo === 'ataque-corpo' ? atributos.forca : atributos.agilidade;
   const calculoDano = useMemo(() => {
-    if (!formulaDanoConvencional || !resultadoDadosDano.trim() || !perfilSelecionado || multiplicadorCritico === null) return null;
+    if (!formulaDanoConvencional || !resultadoDadosDano.trim() || !perfilSelecionado || multiplicadorCriticoDano === null) return null;
     const valor = Number(resultadoDadosDano);
     const adicionais = resultadoDadosAdicionais.trim() === '' ? 0 : Number(resultadoDadosAdicionais);
     if (!Number.isInteger(valor) || valor < 0) return { erro: 'Informe a soma inteira e não negativa dos Dados de Dano.' };
@@ -185,12 +188,12 @@ export default function CalculadoraTesteLocal({ atributos, treinada, distribuica
     try {
       const perfilCalculo = perfilCorpo ?? {
         id: perfilFogo!.id, nome: perfilFogo!.nome, categoria: 'arma-fogo' as const,
-        dano: perfilFogo!.dano!, multiplicadorCritico, criticoNatural: limiteCritico === 19 ? 19 as const : 20 as const,
+        dano: bearLauncherSelecionado ? '4d6' : perfilFogo!.dano!, multiplicadorCritico: multiplicadorCriticoDano, criticoNatural: limiteCritico === 19 ? 19 as const : 20 as const,
         atributoDano: 'agilidade' as const, propriedades: perfilFogo!.propriedades, referencia: perfilFogo!.referencia,
       };
       return { resultado: calcularDanoArma({ dadosRolados: valor, valorAtributo: atributoDano, critico: criticoDano && !ataqueEmArea, perfil: perfilCalculo, armaOperarioEscolhida, dadosAdicionais: adicionais }) };
     } catch (problema) { return { erro: problema instanceof Error ? problema.message : 'Não foi possível calcular o Dano.' }; }
-  }, [formulaDanoConvencional, resultadoDadosDano, resultadoDadosAdicionais, perfilSelecionado, multiplicadorCritico, perfilCorpo, perfilFogo, limiteCritico, atributoDano, criticoDano, armaOperarioEscolhida, ataqueEmAreaGM79]);
+  }, [formulaDanoConvencional, resultadoDadosDano, resultadoDadosAdicionais, perfilSelecionado, multiplicadorCriticoDano, perfilCorpo, perfilFogo, limiteCritico, atributoDano, criticoDano, armaOperarioEscolhida, ataqueEmArea, bearLauncherSelecionado]);
 
   function registrarRolagem() {
     try {
@@ -229,7 +232,7 @@ export default function CalculadoraTesteLocal({ atributos, treinada, distribuica
         <option value="virtual">Dados virtuais</option>
       </select>
     </label>}
-    {(tipo === 'ataque-corpo' || tipo === 'ataque-distancia') && !ataqueEmAreaGM79 && <p>20 natural: Acerto Crítico automático e fecha as Reações defensivas normais. 1 natural: Falha Crítica; Exposto é ativado automaticamente somente no modo Automático. A Ficha apresenta a rolagem e o total, sem comparar com a Defesa ou decidir acerto/erro. {limiteCritico === 19 ? 'Este perfil tem margem 19–20: em 19 natural, confira na mesa se o total alcança a Defesa antes de aplicar o Crítico.' : ''} O cálculo de Dano permanece manual.</p>}
+    {(tipo === 'ataque-corpo' || tipo === 'ataque-distancia') && !ataqueEmArea && <p>20 natural: Acerto Crítico automático e fecha as Reações defensivas normais. 1 natural: Falha Crítica; Exposto é ativado automaticamente somente no modo Automático. A Ficha apresenta a rolagem e o total, sem comparar com a Defesa ou decidir acerto/erro. {limiteCritico === 19 ? 'Este perfil tem margem 19–20: em 19 natural, confira na mesa se o total alcança a Defesa antes de aplicar o Crítico.' : ''} O cálculo de Dano permanece manual.</p>}
 
     <label>{escopo === 'ataques' ? 'Tipo de Ataque' : 'Tipo de Teste'}
       <select value={tipo} onChange={evento => mudarTipo(evento.target.value as 'pericia' | 'atributo' | 'ataque-corpo' | 'ataque-distancia')}>
@@ -239,7 +242,7 @@ export default function CalculadoraTesteLocal({ atributos, treinada, distribuica
     </label>
     {(tipo === 'ataque-corpo' || tipo === 'ataque-distancia') && <div className="ficha-local-editor">
       <label>Perfil de arma para consulta (opcional)
-        <select value={armaId} onChange={evento => { setArmaId(evento.target.value); setResultadoDadosDano(''); setResultadoDadosAdicionais(''); setCriticoDano(false); setVarianteDanoEspecial('normal'); setCartuchoGM79('acido'); setModoGM79('direto'); setModoDisparoAutomatico('normal'); setCoronhaMatildaConfirmada(false); }}>
+        <select value={armaId} onChange={evento => { setArmaId(evento.target.value); setResultadoDadosDano(''); setResultadoDadosAdicionais(''); setCriticoDano(false); setVarianteDanoEspecial('normal'); setCartuchoGM79('acido'); setModoGM79('direto'); setModoBearCommander('rifle'); setModoDisparoAutomatico('normal'); setCoronhaMatildaConfirmada(false); }}>
           <option value="">Sem perfil selecionado</option>
           {perfisDisponiveis.map(perfil => <option key={perfil.id} value={perfil.id}>{perfil.nome}</option>)}
           {tipo === 'ataque-corpo' && <><option value="universal:arma-improvisada">Arma Improvisada</option><option value="universal:ataque-desarmado">Ataque Desarmado</option></>}
@@ -255,7 +258,7 @@ export default function CalculadoraTesteLocal({ atributos, treinada, distribuica
         <small>{perfilSelecionado.referencia}</small>
       </div>}
       {armaOperarioEscolhida && <p className="ficha-local-legenda">Origem Operário: +1 no Teste de Ataque com a arma escolhida na criação.</p>}
-      {perfilFogo && modosArmaFogo && (perfilFogo.id === 'matilda' || modosArmaFogo.cadenciado || modosArmaFogo.rajada || !modosArmaFogo.disparoUnico) && <div className="ficha-local-editor">
+      {perfilFogo && modosArmaFogo && !bearLauncherSelecionado && (perfilFogo.id === 'matilda' || modosArmaFogo.cadenciado || modosArmaFogo.rajada || !modosArmaFogo.disparoUnico) && <div className="ficha-local-editor">
         {perfilFogo.id === 'matilda' && <label className="ficha-local-opcao"><input type="checkbox" checked={coronhaMatildaConfirmada} onChange={evento => { setCoronhaMatildaConfirmada(evento.target.checked); setModoDisparoAutomatico('normal'); setResultadoDadosDano(''); setResultadoDadosAdicionais(''); setCriticoDano(false); }} /> Confirmar Coronha específica da Matilda instalada</label>}
         <label>Modo de disparo
           <select value={modoDisparoEfetivo} onChange={evento => { setModoDisparoAutomatico(evento.target.value as 'normal' | 'cadenciado' | 'rajada'); setResultadoDadosDano(''); setResultadoDadosAdicionais(''); setCriticoDano(false); setDadosConfirmados(null); setDado1(''); setDado2(''); }}>
@@ -268,7 +271,16 @@ export default function CalculadoraTesteLocal({ atributos, treinada, distribuica
         {rajadaSelecionada && <p className="ficha-local-legenda">Cone de 4,5 m: 1 espaço na primeira fileira, 2 na segunda e 3 na terceira. Pode operar no alcance Curto mesmo quando o alcance mínimo normal é Médio.</p>}
       </div>}
       {procedimentoPerfuracao && <div className="ficha-local-aviso" role="status"><strong>Perfuração</strong><p>{procedimentoPerfuracao}</p><small>A calculadora não controla a Linha, os alvos subsequentes, a cobertura ou a redução acumulada dos dados; faça cada Teste de Ataque e ajuste o Dano manualmente.</small></div>}
-      {perfilFogo?.id === 'gm-79' && <div className="ficha-local-editor">
+      {perfilFogo?.id === 'bear-commander' && <div className="ficha-local-editor">
+        <label>Bear Commander — sistema de disparo
+          <select value={modoBearCommander} onChange={evento => { setModoBearCommander(evento.target.value as 'rifle' | 'lancador'); setCartuchoGM79('acido'); setModoGM79('direto'); setResultadoDadosDano(''); setResultadoDadosAdicionais(''); setCriticoDano(false); setDadosConfirmados(null); setDado1(''); setDado2(''); }}>
+            <option value="rifle">Rifle · 1d10 · munição própria</option>
+            <option value="lancador">Lança-granadas integrado · 4d6 · Cartucho GM 79</option>
+          </select>
+        </label>
+        {bearLauncherSelecionado && <p className="ficha-local-legenda">O lançador tem capacidade separada de 1 Cartucho GM 79, alcance Médio e reserva independente dos cartuchos do rifle. Recarga por Ação Bônus.</p>}
+      </div>}
+      {(perfilFogo?.id === 'gm-79' || bearLauncherSelecionado) && <div className="ficha-local-editor">
         <label>Cartucho GM 79
           <select value={cartuchoGM79} onChange={evento => { setCartuchoGM79(evento.target.value as CartuchoGM79); setResultadoDadosDano(''); setCriticoDano(false); }}>
             <option value="acido">Ácido</option><option value="explosivo">Explosivo</option><option value="incendiario">Incendiário</option>
@@ -280,7 +292,7 @@ export default function CalculadoraTesteLocal({ atributos, treinada, distribuica
           </select>
         </label>}
         <div className="ficha-local-aviso" role="status"><strong>{procedimentoGM79?.titulo}</strong><p>{procedimentoGM79?.descricao}</p></div>
-        <small>Todo disparo deixa a GM 79 vazia; recarga por Movimento. A calculadora não consome cartuchos nem resolve os Testes dos alvos.</small>
+        <small>{bearLauncherSelecionado ? 'O lançador comporta 1 cartucho e recarrega por Ação Bônus. A reserva é separada da munição do rifle. A calculadora não consome cartuchos nem resolve os Testes dos alvos.' : 'Todo disparo deixa a GM 79 vazia; recarga por Movimento. A calculadora não consome cartuchos nem resolve os Testes dos alvos.'}</small>
       </div>}
       {perfilFogo?.id === 'spark-shot' && <label>Modo da Spark Shot
         <select value={varianteDanoEspecial === 'carregado' ? 'carregado' : 'normal'} onChange={evento => { setVarianteDanoEspecial(evento.target.value as VarianteDanoEspecial); setResultadoDadosDano(''); setResultadoDadosAdicionais(''); }}>
@@ -309,8 +321,8 @@ export default function CalculadoraTesteLocal({ atributos, treinada, distribuica
         <small>Use este campo somente depois de rolar dados adicionais previstos por uma Peça, Habilidade ou modo de disparo válido, incluindo os +2 dados do Disparo Cadenciado. Na Motosserra, informe aqui a soma dos dados extras gerados por cada resultado 6, incluindo os encadeamentos. A calculadora não presume que você possui Peças ou Habilidades.</small>
         <p>Atributo aplicado: {tipo === 'ataque-corpo' ? 'FOR' : 'AGI'} (+{atributoDano}).</p>
         {armaOperarioEscolhida && <p>Operário: o Dano recebe FOR adicional; esse bônus não é multiplicado no Crítico.</p>}
-        {!ataqueEmArea && <label className="ficha-local-opcao"><input type="checkbox" checked={criticoDano} onChange={evento => setCriticoDano(evento.target.checked)} /> Aplicar Acerto Crítico (×{multiplicadorCritico})</label>}
-        {ataqueEmArea && <small>Disparo em Área: sem Acerto Crítico. Na Rajada, aplique metade do Dano em sucesso no Reflexos DT 12 e Dano integral em falha.</small>}
+        {!ataqueEmArea && <label className="ficha-local-opcao"><input type="checkbox" checked={criticoDano} onChange={evento => setCriticoDano(evento.target.checked)} /> Aplicar Acerto Crítico (×{multiplicadorCriticoDano})</label>}
+        {ataqueEmArea && <small>Disparo em Área: sem Acerto Crítico. Na Rajada, aplique metade do Dano em sucesso no Reflexos DT 12 e Dano integral em falha; nos cartuchos GM 79, siga o procedimento do cartucho.</small>}
         {calculoDano && ('erro' in calculoDano ? <p className="offline-erro" role="alert">{calculoDano.erro}</p> : <div className="offline-status ficha-local-resultado" role="status"><p>Dados: {calculoDano.resultado.dados} × {calculoDano.resultado.multiplicador} · {tipo === 'ataque-corpo' ? 'FOR' : 'AGI'}: {calculoDano.resultado.atributoMultiplicado}{calculoDano.resultado.bonusOperarioNaoMultiplicado ? ` + ${calculoDano.resultado.bonusOperarioNaoMultiplicado} FOR não multiplicado` : ''}</p><strong>Dano calculado: {calculoDano.resultado.total}</strong></div>)}
       </div>}
       {perfilFogo?.id === 'spark-shot' && <p className="ficha-local-legenda">A escolha do modo não confirma Cargas disponíveis nem aplica Atordoado/Imobilizado; confira e resolva esses efeitos na mesa.</p>}
@@ -373,7 +385,7 @@ export default function CalculadoraTesteLocal({ atributos, treinada, distribuica
       </label>}
     </div>}
     {!impossivel && !ataqueEmArea && !disparoUnicoIndisponivel && <button type="button" className="botao-claro" onClick={registrarRolagem}>{metodo === 'virtual' ? (escopo === 'ataques' ? 'Rolar Ataque' : 'Rolar Teste') : (escopo === 'ataques' ? 'Confirmar dados do Ataque' : 'Confirmar dados físicos')}</button>}
-    {ataqueEmArea && <p className="ficha-local-aviso" role="status">{rajadaSelecionada ? 'Rajada: não existe Teste de Ataque. Todos os alvos no cone de 4,5 m, inclusive aliados, fazem Reflexos DT 12; sucesso sofre metade do Dano da arma e falha sofre Dano integral. Ação Completa e 10 cartuchos.' : 'Disparo em Área da GM 79: não existe Teste de Ataque. Use os Testes de Reflexos e a resolução de Dano descritos acima, fora desta rolagem de Ataque.'}</p>}{disparoUnicoIndisponivel && <p className="ficha-local-aviso" role="status">Este perfil não permite Disparo Único. Selecione um modo compatível antes de rolar.</p>}
+    {ataqueEmArea && <p className="ficha-local-aviso" role="status">{rajadaSelecionada ? 'Rajada: não existe Teste de Ataque. Todos os alvos no cone de 4,5 m, inclusive aliados, fazem Reflexos DT 12; sucesso sofre metade do Dano da arma e falha sofre Dano integral. Ação Completa e 10 cartuchos.' : 'Disparo em Área: não existe Teste de Ataque. Use os Testes de Reflexos e a resolução de Dano descritos acima, fora desta rolagem de Ataque.'}</p>}{disparoUnicoIndisponivel && <p className="ficha-local-aviso" role="status">Este perfil não permite Disparo Único. Selecione um modo compatível antes de rolar.</p>}
     {erroRolagem && <p className="offline-erro" role="alert">{erroRolagem}</p>}
     {mensagemCondicao && <p role="status">{mensagemCondicao}</p>}
     {calculado.erro && <p className="offline-erro" role="alert">{calculado.erro}</p>}
