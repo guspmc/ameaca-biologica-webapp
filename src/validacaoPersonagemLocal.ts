@@ -13,6 +13,7 @@ import { estadoTurnoCombateValido, estadoTurnoCombateCompostoLegadoReconhecido }
 import { listaCondicoesValida } from './condicoesFicha.ts';
 import { HABILIDADES_PROGRESSAO, ganhosProgressaoAte, validarProgressaoHabilidades } from './progressaoHabilidades.ts';
 import { usosDescansoCompletoValido } from './usosDescansoCompleto.ts';
+import { beneficioAmnesicoValido, beneficioMilitarValido } from './beneficiosOrigensContextuais.ts';
 import { estadoProgressaoPersistenteValido, pedidoProgressaoPersistenteValido, type EstadoProgressaoPersistente } from './progressaoPersistente.ts';
 
 export type PersonagemValidavel = {
@@ -195,6 +196,8 @@ function validarDadosFicha(valor: unknown): valor is Record<string, unknown> {
     }
   }
   if ('usosDescansoCompleto' in valor && !usosDescansoCompletoValido(valor.usosDescansoCompleto)) return false;
+  if ('beneficioAmnesico' in valor && !beneficioAmnesicoValido(valor.beneficioAmnesico)) return false;
+  if ('beneficioMilitar' in valor && !beneficioMilitarValido(valor.beneficioMilitar)) return false;
   for (const campo of ['pvAtual', 'pvTemporarios', 'saAtual'] as const) {
     if (campo in valor && (!Number.isSafeInteger(valor[campo]) || (valor[campo] as number) < 0)) return false;
   }
