@@ -305,7 +305,7 @@ export default function PainelAcoesLocal({ dados, saAtual, aoSalvar, origemDados
               onClick={() => {
                 try {
                   const avaliacao = avaliarNaMinhaMira({ habilidadeAtiva: true, usoDisponivelNaRodada: miraUsoDisponivel, inimigoPercebido: miraAlvoPercebido, dentroDeAlcanceMedio: miraAlcanceMedio, adquiriuNovaCondicaoPenalizante: miraNovaCondicao, armaDeFogoCarregada: miraArmaCarregada, armaPermiteAtaqueOportunidade: miraArmaElegivel });
-                  void aplicar(atual => comEconomia(atual, economiaAtual => registrarNaMinhaMira({ economia: economiaAtual, avaliacao }).economia),
+                  void aplicar(atual => aplicarReacaoCombate(atual, economiaAtual => registrarNaMinhaMira({ economia: economiaAtual, avaliacao })).estado,
                     economia.normaisUsados.reacao ? 'Na Minha Mira registrado: Reação adicional comprada por 1 SA. Execute o Ataque de Oportunidade à distância manualmente.' : 'Na Minha Mira registrado: Reação normal consumida. Execute o Ataque de Oportunidade à distância manualmente.');
                 } catch (problema) { setErro(problema instanceof Error ? problema.message : 'Não foi possível registrar Na Minha Mira.'); }
               }}>Registrar Na Minha Mira · Reação</button>
