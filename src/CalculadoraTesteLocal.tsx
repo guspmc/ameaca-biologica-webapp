@@ -12,6 +12,7 @@ import { listarPerfisArmasFogo, consultarPerfilArmaFogo } from './catalogoArmasF
 import { consultarFormulaDanoEspecial, type VarianteDanoEspecial } from './variantesDanoArmas';
 import { consultarProcedimentoGM79, type CartuchoGM79, type ModoGM79 } from './procedimentosGM79';
 import { consultarModosDisparoArmaFogo } from './procedimentosDisparoArmas';
+import { consultarProcedimentoArmaEspecial } from './procedimentosArmasEspeciais';
 
 const PERICIAS = Object.keys(ATRIBUTO_PERICIA);
 const ATRIBUTOS: { chave: keyof AtributosIniciais; nome: string }[] = [
@@ -174,6 +175,7 @@ export default function CalculadoraTesteLocal({ atributos, treinada, distribuica
   const disparoUnicoIndisponivel = Boolean(modosArmaFogo && !modosArmaFogo.disparoUnico && !rajadaSelecionada && !cadenciadoSelecionado);
   const ataqueEmArea = ataqueEmAreaGM79 || rajadaSelecionada;
   const procedimentoPerfuracao = modosArmaFogo?.perfuracao ?? null;
+  const procedimentoArmaEspecial = perfilFogo ? consultarProcedimentoArmaEspecial(perfilFogo.id) : null;
   useEffect(() => { if (ataqueEmArea) { setCriticoDano(false); setDadosConfirmados(null); setDado1(''); setDado2(''); setErroRolagem(''); } }, [ataqueEmArea]);
   const formulaDanoEspecial = perfilFogo ? consultarFormulaDanoEspecial(perfilFogo.id, varianteDanoEspecial) : null;
   const formulaDanoConvencional = bearLauncherSelecionado ? '4d6' : formulaDanoEspecial ?? (perfilSelecionado?.dano && possuiFormulaDanoConvencional(perfilSelecionado.dano) ? perfilSelecionado.dano : null);
@@ -325,7 +327,8 @@ export default function CalculadoraTesteLocal({ atributos, treinada, distribuica
         {ataqueEmArea && <small>Disparo em Área: sem Acerto Crítico. Na Rajada, aplique metade do Dano em sucesso no Reflexos DT 12 e Dano integral em falha; nos cartuchos GM 79, siga o procedimento do cartucho.</small>}
         {calculoDano && ('erro' in calculoDano ? <p className="offline-erro" role="alert">{calculoDano.erro}</p> : <div className="offline-status ficha-local-resultado" role="status"><p>Dados: {calculoDano.resultado.dados} × {calculoDano.resultado.multiplicador} · {tipo === 'ataque-corpo' ? 'FOR' : 'AGI'}: {calculoDano.resultado.atributoMultiplicado}{calculoDano.resultado.bonusOperarioNaoMultiplicado ? ` + ${calculoDano.resultado.bonusOperarioNaoMultiplicado} FOR não multiplicado` : ''}</p><strong>Dano calculado: {calculoDano.resultado.total}</strong></div>)}
       </div>}
-      {perfilFogo?.id === 'spark-shot' && <p className="ficha-local-legenda">A escolha do modo não confirma Cargas disponíveis nem aplica Atordoado/Imobilizado; confira e resolva esses efeitos na mesa.</p>}
+      {perfilFogo?.id === 'spark-shot' && <div className="ficha-local-aviso" role="status"><strong>Efeito elétrico — Spark Shot</strong><p>{procedimentoArmaEspecial?.descricao}</p><small>O efeito exige resolução manual: não consome Cargas, não rola Fortitude e não aplica Condições. Confirme também o alcance e quem está a até 1,5 m do alvo.</small></div>}
+      {perfilFogo?.id === 'rpg-7' && procedimentoArmaEspecial && <div className="ficha-local-aviso" role="status"><strong>{procedimentoArmaEspecial.titulo}</strong><p>{procedimentoArmaEspecial.descricao}</p><small>A calculadora não identifica o tipo de criatura, não escolhe avanço de fase/efeito de ficha e não altera estado do alvo. Após o disparo, registre manualmente a arma vazia e a recarga por Movimento.</small></div>}
       {perfilFogo?.id === 'lanca-chamas-quimico' && <p className="ficha-local-legenda">A escolha da fórmula não consome Combustível nem registra turnos ou Movimento; confira esses estados na mesa.</p>}
       {perfilSelecionado && !formulaDanoConvencional && <p className="ficha-local-aviso">Este perfil usa fórmula ou condição especial de Dano. A calculadora não aplica uma aproximação automática; consulte a regra específica do perfil.</p>}
     </div>}
