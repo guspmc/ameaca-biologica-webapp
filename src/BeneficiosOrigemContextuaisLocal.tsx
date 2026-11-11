@@ -18,7 +18,6 @@ export default function BeneficiosOrigemContextuaisLocal({ dados, origem, aoSalv
   const [erro, setErro] = useState('');
   const [localConhecido, setLocalConhecido] = useState(false);
   const [tentativaRealizada, setTentativaRealizada] = useState(false);
-  const [testeBemSucedido, setTesteBemSucedido] = useState(false);
   const [informacaoUtil, setInformacaoUtil] = useState(false);
   const [inimigoMorto, setInimigoMorto] = useState(false);
   const [armaDeFogo, setArmaDeFogo] = useState(false);
@@ -44,12 +43,12 @@ export default function BeneficiosOrigemContextuaisLocal({ dados, origem, aoSalv
   async function registrarVislumbres() {
     try {
       const atualizado = registrarVislumbresDoPassado(amnesico as ReturnType<typeof beneficioAmnesicoInicial>, {
-        localConhecido, tentativaRealizada, testeBemSucedido, informacaoUtil,
+        localConhecido, tentativaRealizada, informacaoUtil,
       });
       const salvo = await salvar({ beneficioAmnesico: atualizado }, atualizado.vantagemSobrevivenciaPendente
         ? 'Vislumbres registrados. Vantagem pendente no próximo Teste de Sobrevivência relacionado.'
         : 'Tentativa de Vislumbres registrada nesta sessão.');
-      if (salvo) { setLocalConhecido(false); setTentativaRealizada(false); setTesteBemSucedido(false); setInformacaoUtil(false); }
+      if (salvo) { setLocalConhecido(false); setTentativaRealizada(false); setInformacaoUtil(false); }
     } catch (problema) {
       setErro(problema instanceof Error ? problema.message : 'Não foi possível registrar Vislumbres do Passado.');
     }
@@ -100,15 +99,14 @@ export default function BeneficiosOrigemContextuaisLocal({ dados, origem, aoSalv
     <summary>Benefícios contextuais da Origem</summary>
     {origem === 'Amnésico' && <>
       <h4>Vislumbres do Passado · 1 vez por sessão</h4>
-      <p>Em local conhecido antes da amnésia, resolva AST DT 10 conforme o modo de funcionamento da Ficha. Registre a tentativa depois de resolvê-la; sucesso com informação útil concede Vantagem no próximo Teste relacionado de Sobrevivência. O WebApp não rola o Teste nem administra sessões automaticamente.</p>
+      <p>Em local conhecido antes da amnésia, resolva AST DT 10 conforme o modo de funcionamento da Ficha. Registre a tentativa depois de resolvê-la; informação útil concede Vantagem no próximo Teste relacionado de Sobrevivência. O WebApp não rola o Teste nem administra sessões automaticamente.</p>
       {!amnesicoValido
         ? <p className="offline-erro" role="alert">O registro de Vislumbres está inválido; o benefício permanece bloqueado até revisão.</p>
         : <>
             <p>{amnesico.usadoNaSessao ? 'Uso já registrado nesta sessão.' : 'Uso disponível nesta sessão.'}</p>
             <label><input type="checkbox" checked={localConhecido} disabled={ocupado || amnesico.usadoNaSessao} onChange={evento => setLocalConhecido(evento.target.checked)} /> Confirmo que o local era conhecido antes da amnésia.</label>
             <label><input type="checkbox" checked={tentativaRealizada} disabled={ocupado || amnesico.usadoNaSessao} onChange={evento => { setTentativaRealizada(evento.target.checked); if (!evento.target.checked) { setTesteBemSucedido(false); setInformacaoUtil(false); } }} /> Confirmo que resolvi o Teste AST DT 10.</label>
-            <label><input type="checkbox" checked={testeBemSucedido} disabled={ocupado || amnesico.usadoNaSessao || !tentativaRealizada} onChange={evento => { setTesteBemSucedido(evento.target.checked); if (!evento.target.checked) setInformacaoUtil(false); }} /> O Teste AST DT 10 foi bem-sucedido.</label>
-            <label><input type="checkbox" checked={informacaoUtil} disabled={ocupado || amnesico.usadoNaSessao || !testeBemSucedido} onChange={evento => setInformacaoUtil(evento.target.checked)} /> A informação obtida foi útil.</label>
+            <label><input type="checkbox" checked={informacaoUtil} disabled={ocupado || amnesico.usadoNaSessao || !tentativaRealizada} onChange={evento => setInformacaoUtil(evento.target.checked)} /> A informação obtida foi útil.</label>
             <button type="button" className="acao" disabled={ocupado || amnesico.usadoNaSessao || !localConhecido || !tentativaRealizada} onClick={() => void registrarVislumbres()}>Registrar uso de Vislumbres do Passado</button>
             <button type="button" className="botao-claro" disabled={ocupado} onClick={() => void novaSessao()}>Registrar início de nova sessão</button>
             {amnesico.vantagemSobrevivenciaPendente && <>
