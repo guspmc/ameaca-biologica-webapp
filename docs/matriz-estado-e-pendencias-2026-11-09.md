@@ -831,3 +831,20 @@ Esta atualização substitui qualquer ordem anterior incompatível nesta matriz.
 
 **VALIDAÇÃO**
 - Testes adicionados, não executados localmente. CI pendente no HEAD final; sem validação humana, merge ou publicação.
+
+
+## 21. Auditoria complementar — integridade de registro de Reações e Durabilidade (11/11/2026)
+
+**CÂNONE CONSULTADO**
+- Arquivo do Jogador v1.0, p. 80–81: janela de Reação, fechamento por 20 natural, Aparar, Esquivar, Contra-Ataque e Ataque de Oportunidade.
+- Arquivo do Jogador v1.0, seção Durabilidade (capítulo Arsenal e Equipamentos): perde 1 por uso ao Aparar, normalmente; ataques e uso comum não gastam; em 0 não pode Aparar; outras funções permanecem normais. Exceções específicas preservadas, como Indestrutível.
+
+**CORREÇÕES**
+- Registro de Ataque de Oportunidade agora exige payloads com estrutura exata e motivo não vazio; rejeita campos extras e estruturas malformadas antes de consumir Reação.
+- Registro de uso de Durabilidade ao Aparar também rejeita campos extras no payload externo.
+- Testes de regressão adicionados para os dois casos.
+
+**LIMITES**
+- O sistema continua sem equipamento ativo conectado ao estado de Durabilidade; helper é domínio isolado, não atualiza ficha/inventário.
+- A decisão narrativa de gatilho, quadrado ameaçado, proteção contra AoO e elegibilidade do item permanece externa/manual.
+- Testes adicionados, não executados localmente; CI pendente.
