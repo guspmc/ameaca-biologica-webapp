@@ -116,6 +116,7 @@ export default function ProgressaoFichaLocal({ dados, classe, nivel, origemDados
   const avaliacao = avaliarDisponibilidadeProgressao({
     nivelAtual: estado.nivelAtual,
     metodo: estado.metodo,
+    avancoAutorizado: estado.avancoAutorizado,
     missoesCompletadas: estado.missoesCompletadas,
     marcoNarrativoConcedido: estado.marcoNarrativoConcedido,
     missoesCompletadasNaUltimaMorte: estado.missoesCompletadasNaUltimaMorte,
