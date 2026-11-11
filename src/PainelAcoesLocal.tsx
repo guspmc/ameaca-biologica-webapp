@@ -181,7 +181,7 @@ export default function PainelAcoesLocal({ dados, saAtual, aoSalvar, origemDados
 
           {habilidadesAtivas.includes('nao-vai-escapar') && <div className="ficha-local-editor">
             <h4>Não Vai Escapar · Ataque de Oportunidade</h4>
-            <p>Quando uma criatura provocar Ataque de Oportunidade para você ou para um aliado em combate Corpo a Corpo, você pode usar sua Reação para atacá-la. Imediatamente antes do Ataque, pode deslocar-se até 3 m, terminando adjacente ao alvo; esse deslocamento não provoca Ataques de Oportunidade.</p>
+            <p>Quando uma criatura provocar Ataque de Oportunidade para você ou para um aliado em combate Corpo a Corpo, você pode usar sua Reação para atacá-la. Imediatamente antes do Ataque, pode deslocar-se até 3 m, terminando adjacente ao alvo; esse deslocamento não provoca Ataques de Oportunidade. A Ficha registra a Reação; o deslocamento e o Ataque continuam manuais.</p>
             <label><input type="checkbox" checked={confirmouAoOParaVoceOuAliado} disabled={salvando} onChange={evento => setConfirmouAoOParaVoceOuAliado(evento.target.checked)} /> Confirmo que a criatura provocou Ataque de Oportunidade para mim ou para um aliado.</label>
             <label><input type="checkbox" checked={confirmouCombateCorpoACorpo} disabled={salvando} onChange={evento => setConfirmouCombateCorpoACorpo(evento.target.checked)} /> Confirmo que o gatilho ocorreu em combate Corpo a Corpo.</label>
             <p className="ficha-local-legenda">{economia.normaisUsados.reacao ? 'A Reação normal já foi usada: este registro comprará outra Reação por 1 SA.' : 'O registro consumirá sua Reação normal, sem custo de SA.'}</p>
