@@ -629,3 +629,30 @@ Esta atualização substitui qualquer ordem anterior incompatível nesta matriz.
 - TESTES ADICIONADOS: verificação estática em tests/ataques-calculadora.test.mjs; execução local não realizada.
 - PENDENTE: CI e validação humana.
 - Checkpoint: docs/checkpoint-bear-commander-2026-11-10.md.
+
+
+## 10. Atualização de auditoria — armas especiais (11/11/2026)
+
+### RPG-7 e Spark Shot
+
+**IMPLEMENTADO NA BRANCH**
+- `src/procedimentosArmasEspeciais.ts` centraliza lembretes canônicos do RPG-7 e da Spark Shot.
+- `CalculadoraTesteLocal.tsx` exibe a exceção de Morte Instantânea do RPG-7: Perseguidores, Chefes e criaturas com regra própria podem avançar de fase ou sofrer o efeito indicado em sua ficha.
+- A interface lembra que o RPG-7 fica vazio após o disparo e exige recarga por Movimento; esses estados continuam manuais.
+- A Spark Shot exibe Fortitude DT 15 para o alvo atingido e criaturas a até 1,5 m; falha causa Atordoado até o fim do próximo turno e Imobilizado por 1d4 rodadas.
+- Teste estático acrescentado em `tests/ataques-calculadora.test.mjs`.
+
+**LIMITES PRESERVADOS**
+- Nenhuma morte, avanço de fase, condição, teste de resistência, consumo de munição/cargas ou alteração de PV é aplicada automaticamente.
+- A regra da Spark Shot foi transcrita como está no livro; não se pressupõe carga disponível.
+
+### PENDÊNCIA CANÔNICA — Besta / Engate Triplo
+
+- O texto da Besta na p. 60 descreve Engate Triplo como procedimento da arma.
+- A tabela de Peças Específicas na p. 64 também lista Engate Triplo como Peça compatível com a Besta, que consome 3 virotes e permite disparos simultâneos.
+- A branch atualmente lista Engate Triplo como propriedade do perfil da Besta. Não foi alterado, pois as duas passagens do livro não esclarecem se o texto da p. 60 pressupõe a Peça instalada ou concede o procedimento à arma por padrão.
+- Decisão necessária antes de alterar a disponibilidade do procedimento ou representar a instalação da Peça.
+
+**VALIDAÇÃO**
+- Testes adicionados, mas ainda não executados localmente.
+- CI do novo HEAD precisa concluir; não houve validação humana, merge ou publicação.
