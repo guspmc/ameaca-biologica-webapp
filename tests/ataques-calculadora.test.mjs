@@ -168,6 +168,18 @@ test('procedimentos especiais do RPG-7 e Spark Shot são exibidos sem automaçã
   assert.match(ui, /rpg-7/);
   assert.match(ui, /não escolhe avanço de fase\/efeito de ficha/);
   assert.match(ui, /Fortitude DT 15/);
-  assert.match(ui, /Atordoados até o fim do próximo turno e Imobilizados por 1d4 rodadas/);
+  assert.match(ui, /Atordoado até o fim do próximo turno e Imobilizado por 1d4 rodadas/);
   assert.match(ui, /não rola Fortitude e não aplica Condições/);
+});
+
+
+test('lembretes de armas especiais derivam do catálogo único de procedimentos', async () => {
+  const [especial, catalogo] = await Promise.all([
+    readFile(new URL('../src/procedimentosArmasEspeciais.ts', import.meta.url), 'utf8'),
+    readFile(new URL('../src/catalogoProcedimentosArmas.ts', import.meta.url), 'utf8'),
+  ]);
+  assert.match(especial, /consultarProcedimentoArma\(id\)/);
+  assert.match(especial, /procedimento\.emCombate\.find/);
+  assert.match(catalogo, /RPG-7: após o disparo/);
+  assert.match(catalogo, /Spark Shot: disparo normal consome 1 Carga/);
 });
