@@ -157,6 +157,18 @@ test('Descanso Completo confirma o pedido apenas na Sala de Descanso', async () 
   assert.throws(() => confirmarDescansoCompletoProgressao(confirmado, estado, 'Agente', 'sala_descanso'), /já foi confirmada/);
 });
 
+test('Morte em Progressão neutra remove autorização anterior e exige nova autorização do grupo', async () => {
+  const { criarEstadoProgressaoInicial, registrarAvancoAutorizadoGrupo, registrarMorteProgressao, solicitarGanhoNivel } = await import('../src/progressaoPersistente.ts');
+  const inicial = criarEstadoProgressaoInicial();
+  const autorizado = registrarAvancoAutorizadoGrupo(inicial, 'Agente');
+  const morte = registrarMorteProgressao(autorizado, 'Agente');
+  assert.equal(morte.avancoAutorizado, false);
+  assert.equal(estadoProgressaoPersistenteValido(morte, 'Agente'), true);
+  assert.throws(() => solicitarGanhoNivel(morte, 'Agente'), /nova autorização de avanço/);
+  const novoAvanco = registrarAvancoAutorizadoGrupo(morte, 'Agente');
+  assert.deepEqual(solicitarGanhoNivel(novoAvanco, 'Agente'), { nivel: 2, estado: 'aguardando_descanso' });
+});
+
 test('registro de Morte no nível 1 ativa penalidade e preserva progresso de Missões', async () => {
   const { registrarMorteProgressao } = await import('../src/progressaoPersistente.ts');
   const original = nivel1();
