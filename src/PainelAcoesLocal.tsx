@@ -253,6 +253,7 @@ export default function PainelAcoesLocal({ dados, saAtual, aoSalvar, origemDados
                     setErroTesteDefensivo('');
                   } catch (problema) { setErroTesteDefensivo(problema instanceof Error ? problema.message : 'Não foi possível resolver o Teste defensivo.'); } }}>{metodoDefensivo === 'virtual' ? 'Rolar Teste de Esquiva' : 'Calcular Teste de Esquiva'}</button>
                   {resultadoDefensivo && <p role="status"><strong>{resultadoDefensivo.estado === 'sucesso' || resultadoDefensivo.estado === 'critico-sucesso' ? 'Esquiva bem-sucedida' : resultadoDefensivo.estado === 'falha-critica' ? 'Falha Crítica' : resultadoDefensivo.estado === 'incompleto' ? 'Teste incompleto' : 'Esquiva não alcançou o resultado do Ataque'}</strong> · {resultadoDefensivo.detalhe} {resultadoDefensivo.total !== null ? `Total ${resultadoDefensivo.total} contra ${resultadoDefensivo.dt}.` : ''}</p>}
+                  {retaliacao.atordoaAgressor && <p className="ficha-local-legenda">Retaliação: após a defesa bem-sucedida, o agressor fica Atordoado. A aplicação da Condição continua manual e depende da resolução com a Mesa.</p>}
                   {erroTesteDefensivo && <p className="offline-erro" role="alert">{erroTesteDefensivo}</p>}
                 </>
                 <p className="ficha-local-legenda">O resultado é informativo e não altera Defesa, Dano, BI ou Condições; confirme a resolução com a Mesa.</p>
@@ -267,7 +268,7 @@ export default function PainelAcoesLocal({ dados, saAtual, aoSalvar, origemDados
             <label><input type="checkbox" checked={confirmouDefesaBemSucedida} disabled={salvando} onChange={evento => setConfirmouDefesaBemSucedida(evento.target.checked)} /> Confirmo que Aparar ou Esquivar foi bem-sucedido.</label>
             <label><input type="checkbox" checked={confirmouAtaqueCorpoACorpo} disabled={salvando} onChange={evento => setConfirmouAtaqueCorpoACorpo(evento.target.checked)} /> O Ataque que originou a defesa foi Corpo a Corpo.</label>
             {economia.normaisUsados.reacao && habilidadesAtivas.includes('contra-ataque-instintivo') && <label><input type="checkbox" checked={confirmouReacaoDaDefesa} disabled={salvando} onChange={evento => setConfirmouReacaoDaDefesa(evento.target.checked)} /> Confirmo que a Reação já consumida foi a usada nesta defesa bem-sucedida; Contra-Ataque Instintivo permite aproveitá-la.</label>}
-            {retaliacao.atordoaAgressor && <p className="ficha-local-legenda">Retaliação: o agressor fica Atordoado; seu Contra-Ataque recebe Vantagem e acrescenta 1 dado de Dano se acertar. A aplicação ao agressor e a rolagem permanecem manuais.</p>}
+            {retaliacao.contraAtaqueComVantagem && <p className="ficha-local-legenda">Retaliação: se fizer o Contra-Ataque, recebe Vantagem e acrescenta 1 dado de Dano se acertar. A rolagem e a aplicação do Dano permanecem manuais.</p>}
             <p className="ficha-local-legenda">{economia.normaisUsados.reacao
               ? habilidadesAtivas.includes('contra-ataque-instintivo')
                 ? 'Se a Reação usada foi a defesa confirmada acima, marque a confirmação para Contra-Ataque Instintivo reutilizá-la; se não marcar, o registro comprará uma Reação adicional por 1 SA.'
