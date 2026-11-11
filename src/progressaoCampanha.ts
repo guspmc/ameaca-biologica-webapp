@@ -145,6 +145,7 @@ export function aplicarBeneficiosNivelProgressao(
     ...estado,
     nivelAtual: nivel,
     marcoNarrativoConcedido: false,
+    ...(estado.metodo === undefined ? { avancoAutorizado: false } : {}),
     penalidadeMorteNivel1: false,
     beneficiosPorNivel: [...estado.beneficiosPorNivel, { nivel, beneficios }],
   };
