@@ -27,7 +27,7 @@ test('Fuga exige Disparada, gasta 1 SA e concede o terceiro Movimento', () => {
   const disparada = registrarDisparada(economiaAcoesInicial(3), inicial);
   const fuga = registrarFuga(disparada.economia, disparada.manobras);
   assert.equal(fuga.economia.saAtual, 2);
-  assert.equal(fuga.economia.saGastaNaJanela, 0);
+  assert.equal(fuga.economia.saGastaNaJanela, 1);
   assert.equal(fuga.movimentosAdicionais, 1);
   assert.equal(fuga.manobras.fugaUsada, true);
   assert.throws(() => registrarFuga(fuga.economia, fuga.manobras), /já foi utilizada/);
