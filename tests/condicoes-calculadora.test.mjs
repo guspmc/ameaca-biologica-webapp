@@ -81,3 +81,20 @@ test('Calculadora de Ataques apresenta restrições sem desabilitar ou resolver 
   assert.match(calc, /Condições que restringem Ataques/);
   assert.match(calc, /Este aviso não bloqueia a rolagem/);
 });
+
+test('Reflexos de Sobrevivente usa a maior Defesa atual ou 10 + Acrobacia somente quando ativo', () => {
+  assert.equal(api.calcularDefesaComReflexosSobrevivente(14, 2, true), 14);
+  assert.equal(api.calcularDefesaComReflexosSobrevivente(12, 4, true), 14);
+  assert.equal(api.calcularDefesaComReflexosSobrevivente(12, 4, false), 12);
+  assert.throws(() => api.calcularDefesaComReflexosSobrevivente(-1, 2, true), /Defesa alternativa inválidos/);
+  assert.throws(() => api.calcularDefesaComReflexosSobrevivente(12, -1, true), /Defesa alternativa inválidos/);
+});
+
+test('Ficha apresenta Defesa alternativa e lembrete contextual de Parede Humana', async () => {
+  const ficha = await readFile(new URL('../src/FichaLocal.tsx', import.meta.url), 'utf8');
+  assert.match(ficha, /valorBasePericia\('Acrobacia'/);
+  assert.match(ficha, /calcularDefesaComReflexosSobrevivente\(defesaAtual, acrobaciaAtual, reflexosSobreviventeAtivo\)/);
+  assert.match(ficha, /DEFESA CONTRA ATAQUES — REFLEXOS DE SOBREVIVENTE/);
+  assert.match(ficha, /paredeHumanaAtiva &&/);
+  assert.match(ficha, /se não tiver gasto o recurso Movimento/);
+});
