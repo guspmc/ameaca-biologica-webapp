@@ -10,7 +10,7 @@ import {
   iniciarTurnoCombate, registrarResolucaoAtaqueAdicional, registrarFinalizacaoDupla, type EstadoTurnoCombate,
 } from './estadoTurnoCombate';
 import { registrarCombateDuasArmas, registrarDisparada, registrarFuga, registrarMirar, registrarAtaque, registrarFinalizar, registrarAjudar } from './manobrasOperacionais';
-import { avaliarAtaqueOportunidade, registrarAtaqueOportunidade, prepararContraAtaque, consultarRetaliacao, avaliarNaoVaiEscapar, registrarNaoVaiEscapar, avaliarJanelaReacao, registrarReacaoDefensiva, resolverTesteDefensivo, type JanelaReacao } from './reacoesCombate';
+import { avaliarAtaqueOportunidade, registrarAtaqueOportunidade, prepararContraAtaque, consultarRetaliacao, avaliarNaoVaiEscapar, registrarNaoVaiEscapar, avaliarJanelaReacao, registrarReacaoDefensiva, resolverTesteDefensivo, avaliarNaMinhaMira, registrarNaMinhaMira, type JanelaReacao } from './reacoesCombate';
 import { sortearDados, validarResultadosFisicos } from './rolagemDados';
 import type { ModoDados } from './funcionamentoFicha';
 import { condicoesQueImpoemDesvantagem } from './condicoesCalculadora';
@@ -85,6 +85,12 @@ export default function PainelAcoesLocal({ dados, saAtual, aoSalvar, origemDados
   const [dadoDefensivo2, setDadoDefensivo2] = useState('');
   const [resultadoDefensivo, setResultadoDefensivo] = useState<ReturnType<typeof resolverTesteDefensivo> | null>(null);
   const [erroTesteDefensivo, setErroTesteDefensivo] = useState('');
+  const [miraUsoDisponivel, setMiraUsoDisponivel] = useState(false);
+  const [miraAlvoPercebido, setMiraAlvoPercebido] = useState(false);
+  const [miraAlcanceMedio, setMiraAlcanceMedio] = useState(false);
+  const [miraNovaCondicao, setMiraNovaCondicao] = useState(false);
+  const [miraArmaCarregada, setMiraArmaCarregada] = useState(false);
+  const [miraArmaElegivel, setMiraArmaElegivel] = useState(false);
   const bloqueioOperacao = useRef(false);
   useEffect(() => {
     setMetodoDefensivo(modoDados === 'virtuais' ? 'virtual' : 'fisico');
@@ -139,6 +145,10 @@ export default function PainelAcoesLocal({ dados, saAtual, aoSalvar, origemDados
       if (mensagemConfirmada?.startsWith('Não Vai Escapar registrado')) {
         setConfirmouAoOParaVoceOuAliado(false);
         setConfirmouCombateCorpoACorpo(false);
+      }
+      if (mensagemConfirmada?.startsWith('Na Minha Mira registrado')) {
+        setMiraUsoDisponivel(false); setMiraAlvoPercebido(false); setMiraAlcanceMedio(false);
+        setMiraNovaCondicao(false); setMiraArmaCarregada(false); setMiraArmaElegivel(false);
       }
       if (mensagemConfirmada?.startsWith('Esquiva declarada')) {
         setReacaoDefensivaDeclarada(true);
@@ -275,6 +285,27 @@ export default function PainelAcoesLocal({ dados, saAtual, aoSalvar, origemDados
                 ? 'Contra-Ataque registrado: Reação adicional comprada por 1 SA e custo de Manobra de 1 SA. Execute o Ataque manualmente.'
                 : 'Contra-Ataque registrado: custo de Manobra de 1 SA. Execute o Ataque manualmente.')}>Registrar Contra-Ataque · Reação + 1 SA</button>
           </div>
+
+
+          {habilidadesAtivas.includes('na-minha-mira') && <div className="ficha-local-editor">
+            <h4>Na Minha Mira · Ataque de Oportunidade à distância</h4>
+            <p>Confirme os requisitos com a Mesa. O uso por rodada e o contexto do alvo são declarações manuais; a Ficha não acompanha rodadas, percepção, distância ou equipamento.</p>
+            <label><input type="checkbox" checked={miraUsoDisponivel} disabled={salvando} onChange={evento => setMiraUsoDisponivel(evento.target.checked)} /> Confirmo que ainda não usei Na Minha Mira nesta rodada.</label>
+            <label><input type="checkbox" checked={miraAlvoPercebido} disabled={salvando} onChange={evento => setMiraAlvoPercebido(evento.target.checked)} /> O inimigo está percebido.</label>
+            <label><input type="checkbox" checked={miraAlcanceMedio} disabled={salvando} onChange={evento => setMiraAlcanceMedio(evento.target.checked)} /> O inimigo está até Alcance Médio.</label>
+            <label><input type="checkbox" checked={miraNovaCondicao} disabled={salvando} onChange={evento => setMiraNovaCondicao(evento.target.checked)} /> O inimigo acabou de adquirir uma nova Condição penalizante ou restritiva.</label>
+            <label><input type="checkbox" checked={miraArmaCarregada} disabled={salvando} onChange={evento => setMiraArmaCarregada(evento.target.checked)} /> Confirmo que tenho uma arma de fogo empunhada e carregada.</label>
+            <label><input type="checkbox" checked={miraArmaElegivel} disabled={salvando} onChange={evento => setMiraArmaElegivel(evento.target.checked)} /> A Mesa confirmou que a arma permite este Ataque de Oportunidade à distância.</label>
+            <p className="ficha-local-legenda">{economia.normaisUsados.reacao ? 'A Reação normal já foi usada: o registro comprará outra por 1 SA.' : 'O registro consumirá a Reação normal sem custo de SA.'}</p>
+            <button type="button" disabled={salvando || !miraUsoDisponivel || !miraAlvoPercebido || !miraAlcanceMedio || !miraNovaCondicao || !miraArmaCarregada || !miraArmaElegivel || (economia.normaisUsados.reacao && (economia.saAtual < 1 || janela >= 3))}
+              onClick={() => {
+                try {
+                  const avaliacao = avaliarNaMinhaMira({ habilidadeAtiva: true, usoDisponivelNaRodada: miraUsoDisponivel, inimigoPercebido: miraAlvoPercebido, dentroDeAlcanceMedio: miraAlcanceMedio, adquiriuNovaCondicaoPenalizante: miraNovaCondicao, armaDeFogoCarregada: miraArmaCarregada, armaPermiteAtaqueOportunidade: miraArmaElegivel });
+                  void aplicar(atual => comEconomia(atual, economiaAtual => registrarNaMinhaMira({ economia: economiaAtual, avaliacao }).economia),
+                    economia.normaisUsados.reacao ? 'Na Minha Mira registrado: Reação adicional comprada por 1 SA. Execute o Ataque de Oportunidade à distância manualmente.' : 'Na Minha Mira registrado: Reação normal consumida. Execute o Ataque de Oportunidade à distância manualmente.');
+                } catch (problema) { setErro(problema instanceof Error ? problema.message : 'Não foi possível registrar Na Minha Mira.'); }
+              }}>Registrar Na Minha Mira · Reação</button>
+          </div>}
 
           {habilidadesAtivas.includes('nao-vai-escapar') && <div className="ficha-local-editor">
             <h4>Não Vai Escapar · Ataque de Oportunidade</h4>
