@@ -61,6 +61,7 @@ export function carregarEstadoTurnoCombate(
         movimentosAdicionaisConcedidos: 0,
         ataqueAdicionalAutorizado: false,
         proximoTurnoComprometido: false,
+        reacaoDefensivaRegistrada: false,
       },
       valido: true,
       origem: 'legado',
@@ -87,7 +88,7 @@ function migrarEstadoTurnoCombateComposto(valor: unknown): EstadoTurnoCombate | 
   const chavesComReacaoDefensiva = ['economia', 'manobras', 'versao', 'movimentosAdicionaisConcedidos', 'ataqueAdicionalAutorizado', 'proximoTurnoComprometido', 'reacaoDefensivaRegistrada'].sort().join('|');
   if (chavesEstado !== chavesBasicas && chavesEstado !== chavesComMarcadores && chavesEstado !== chavesComCompromisso && chavesEstado !== chavesComReacaoDefensiva) return null;
 
-  if ((chavesEstado === chavesComMarcadores || chavesEstado === chavesComCompromisso)
+  if (chavesEstado !== chavesBasicas
     && (!Number.isSafeInteger(estado.movimentosAdicionaisConcedidos)
       || (estado.movimentosAdicionaisConcedidos as number) < 0
       || typeof estado.ataqueAdicionalAutorizado !== 'boolean'
