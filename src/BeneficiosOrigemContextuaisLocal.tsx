@@ -105,7 +105,7 @@ export default function BeneficiosOrigemContextuaisLocal({ dados, origem, aoSalv
         : <>
             <p>{amnesico.usadoNaSessao ? 'Uso já registrado nesta sessão.' : 'Uso disponível nesta sessão.'}</p>
             <label><input type="checkbox" checked={localConhecido} disabled={ocupado || amnesico.usadoNaSessao} onChange={evento => setLocalConhecido(evento.target.checked)} /> Confirmo que o local era conhecido antes da amnésia.</label>
-            <label><input type="checkbox" checked={tentativaRealizada} disabled={ocupado || amnesico.usadoNaSessao} onChange={evento => { setTentativaRealizada(evento.target.checked); if (!evento.target.checked) { setTesteBemSucedido(false); setInformacaoUtil(false); } }} /> Confirmo que resolvi o Teste AST DT 10.</label>
+            <label><input type="checkbox" checked={tentativaRealizada} disabled={ocupado || amnesico.usadoNaSessao} onChange={evento => { setTentativaRealizada(evento.target.checked); if (!evento.target.checked) setInformacaoUtil(false); }} /> Confirmo que resolvi o Teste AST DT 10.</label>
             <label><input type="checkbox" checked={informacaoUtil} disabled={ocupado || amnesico.usadoNaSessao || !tentativaRealizada} onChange={evento => setInformacaoUtil(evento.target.checked)} /> A informação obtida foi útil.</label>
             <button type="button" className="acao" disabled={ocupado || amnesico.usadoNaSessao || !localConhecido || !tentativaRealizada} onClick={() => void registrarVislumbres()}>Registrar uso de Vislumbres do Passado</button>
             <button type="button" className="botao-claro" disabled={ocupado} onClick={() => void novaSessao()}>Registrar início de nova sessão</button>
