@@ -85,7 +85,7 @@ export default function PainelAcoesLocal({ dados, saAtual, aoSalvar, origemDados
       : <>
           <div className="ficha-local-grade">
             <div><small>SURTO DE ADRENALINA</small><strong>{economia.saAtual} SA</strong><p>Disponível para Esforço e Manobras.</p></div>
-            <div><small>JANELA DE 3 SA</small><strong>{janela}/3 SA</strong><p>{economia.janelaEsforcoAtiva ? 'Gasto do fim do último turno ao fim deste turno.' : 'A janela será aberta ao fim deste turno; os gastos feitos agora não pertencem a ela.'}</p></div>
+            <div><small>JANELA DE 3 SA</small><strong>{janela}/3 SA</strong><p>Gasto do fim do último turno ao fim deste turno.</p></div>
             <div><small>TURNO DA PERSONAGEM</small><strong>{economia.turnoEmAndamento ? 'Em andamento' : 'Encerrado'}</strong><p>O painel apenas renova seus próprios marcadores; não controla a Iniciativa nem os turnos do Encontro.</p></div>
             <div><small>INTERAÇÃO GRATUITA</small><strong>{economia.interacaoGratuitaUsada ? 'Utilizada' : 'Disponível'}</strong><p>Recurso paralelo, não comprado por Esforço.</p></div>
           </div>
