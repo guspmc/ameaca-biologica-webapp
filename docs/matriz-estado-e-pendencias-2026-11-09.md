@@ -1052,3 +1052,42 @@ Esta atualização substitui qualquer ordem anterior incompatível nesta matriz.
 **ESCOPO**
 - Sem alteração em `main`, merge, deploy, publicação, Supabase ou banco de produção.
 - Sem validação humana isolada; Inventário ativo permanece bloqueado.
+
+
+## 30. Auditoria de cobertura das Origens (11/11/2026)
+
+**ESCOPO**
+- Auditoria comparativa entre `src/origens.ts` (catálogo canônico usado pelo código) e os pontos de integração da Ficha.
+- Esta seção registra presença de implementação no código; não significa validação humana nem aprovação de CI.
+
+**BENEFÍCIOS COM IMPLEMENTAÇÃO IDENTIFICADA**
+- Acadêmico: Vantagem em Teste elegível de AST, com uso limitado a Descanso Completo e confirmação manual de consumo (`CalculadoraTesteLocal.tsx`).
+- Atleta: +5 em Teste de Perícia baseado em FOR/AGI, exceto Luta/Pontaria, mediante confirmação de gasto de 1 SA (`efeitosOrigens.ts`, `CalculadoraTesteLocal.tsx`).
+- Cobaia: +2 BI Máxima nos derivados e Vantagem nos Testes de Reanimação durante Colapso Viral (`derivadosCriacao.ts`, `ReanimacaoFichaLocal.tsx`).
+- Criminoso: Vantagem em Investigação ao procurar itens/recursos, uma vez por Descanso Completo (`CalculadoraTesteLocal.tsx`).
+- Desgarrado: ao aumentar BI pelo ajuste de Recursos, recebe PV Temporários iguais à metade da BI atual, arredondada para baixo; os PV Temporários não se acumulam (`recursosFicha.ts`).
+- Investigador: +5 em Investigação para procurar pista, mediante confirmação de gasto de 1 SA (`efeitosOrigens.ts`, `CalculadoraTesteLocal.tsx`).
+- Lutador: aumento de categoria em Ataque Desarmado e Arma Improvisada; acumula com Casca-Grossa no Desarmado (`progressaoDano.ts`, `CalculadoraTesteLocal.tsx`; checkpoint seção 29).
+- Mochileiro: +1 Espaço de Inventário nos derivados (`derivadosCriacao.ts`, `equipamento.ts`).
+- Operário: +1 no Teste de Ataque e FOR adicional no Dano com a arma escolhida na criação; bônus de FOR não é multiplicado no Crítico (`CalculadoraTesteLocal.tsx`, `catalogoArmas.ts`).
+- Policial: +2 Defesa nos derivados (`derivadosCriacao.ts`).
+- Servidor Público: Ajudar em Teste de Perícia quando Treinado/Mestre concede Vantagem normal e +2, mediante confirmações (`PainelAcoesLocal.tsx`).
+- Universitária: +1 SA Máxima nos derivados (`derivadosCriacao.ts`).
+
+**BENEFÍCIOS PENDENTES E DEPENDÊNCIAS**
+- Agente de Saúde: +1d4 aos Dados de Cura ao curar aliado com item/efeito. Depende de fluxo de cura de aliado e origem explícita da cura; o painel atual de Recursos administra somente os próprios PV e não representa uso de item/efeito em aliado.
+- Amnésico: Vislumbres do Passado, uma vez por sessão, em local conhecido antes da amnésia, AST DT 10; informação útil concede Vantagem no próximo Teste relacionado de Sobrevivência. Depende de contexto de sessão/local e de registro temporário da Vantagem, ainda não representados pela Ficha.
+- Chef: em Sala de Descanso, ao criar item, pode escolher 10 no d20. Depende do fluxo de criação/fabricação e do Inventário, que permanece fora de escopo até a Ficha completa e validação humana integrada.
+- Mercenário: reação ao hostil oculto que fosse Surpreendê-lo, com arma de fogo carregada, sem ficar Surpreendido; uma vez por Descanso Completo. Depende de Encontro, gatilho de surpresa/hostil oculto e estado de arma carregada/equipada.
+- Militar: após matar inimigo com arma de fogo, Vantagem no primeiro Ataque com arma de fogo do próximo turno. Depende de evento de derrota do alvo, autoria/tipo de ataque e janela do próximo turno no fluxo de Combate/Encontro.
+
+**DECISÃO DE IMPLEMENTAÇÃO**
+- Não criar automações fictícias para esses cinco benefícios sem os contextos que as regras exigem.
+- Não iniciar Inventário ativo para resolver Chef ou Agente de Saúde antes do marco de validação definido pelo projeto.
+- Retomar cada benefício quando a dependência funcional correspondente existir; preservar lembretes manuais somente quando houver base adequada e sem simular controle de estado inexistente.
+
+**VALIDAÇÃO**
+- Arquivos e pontos de integração inspecionados na branch em 11/11/2026.
+- Testes automatizados existentes e adicionados foram identificados, mas não executados localmente neste ambiente.
+- CI do HEAD do ciclo está em fila; consultar o resultado antes de declarar aprovação.
+- Checkpoint: `docs/checkpoint-auditoria-origens-2026-11-11.md`.
