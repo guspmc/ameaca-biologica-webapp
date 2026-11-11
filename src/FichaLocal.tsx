@@ -545,7 +545,8 @@ export default function FichaLocal({ nome, mesa, contextoId, dados, aoFechar, ao
           <h3 className="ficha-local-subtitulo">Defesa e deslocamento</h3>
           <div className="ficha-local-grade">
             <div><small>DEFESA ATUAL</small><strong>{defesaAtual}</strong><p>Base {defesa} · {condicoesAtivasIds.includes('desorientado') ? 'AGI removida por Desorientado' : 'AGI aplicada'}{condicoesAtivasIds.includes('exposto') ? ' · −2 por Exposto' : ''}. Equipamentos ainda não aplicados.</p></div>
-            {reflexosSobreviventeAtivo && <div><small>DEFESA CONTRA ATAQUES — REFLEXOS DE SOBREVIVENTE</small><strong>{defesaContraAtaques}</strong><p>Use o maior entre a Defesa atual e 10 + Acrobacia ({10 + acrobaciaAtual}). A escolha é feita contra cada Ataque; não altera a Defesa-base.</p></div>}
+            {reflexosSobreviventeAtivo && <div><small>DEFESA CONTRA ATAQUES — REFLEXOS DE SOBREVIVENTE</small><strong>{defesaContraAtaques}</strong><p>Use o maior entre a Defesa atual e 10 + Acrobacia ({10 + acrobaciaAtual}). A escolha é feita contra cada Ataque; não altera a Defesa-base.</p><p>Uma vez por rodada, pode Esquivar sem gastar Reação; a próxima Ação Bônus fica comprometida. Também pode atravessar espaços ocupados por personagens ou inimigos Médios e menores sem provocar Ataque de Oportunidade.</p></div>}
+            {habilidadesAtivasIds.includes('rolamento') && <div><small>ROLAMENTO</small><p>Após Esquivar com sucesso, pode reposicionar-se até 3 m sem provocar Ataques de Oportunidade.</p></div>}
             <div><small>MOVIMENTO BASE</small><strong>9 m</strong><p>Deslocamento base informado pela ficha.</p></div>
           </div>
 
