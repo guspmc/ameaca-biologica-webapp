@@ -56,3 +56,10 @@ test('Resultado automático de Esquiva atualiza a confirmação usada por Retali
   assert.match(painel, /setConfirmouDefesaBemSucedida\(resolvido\.estado === 'sucesso' \|\| resolvido\.estado === 'critico-sucesso'\)/);
   assert.match(painel, /defesaBemSucedida: confirmouDefesaBemSucedida/);
 });
+
+
+test('Retaliação informa Atordoado após defesa bem-sucedida, mesmo sem Contra-Ataque', () => {
+  assert.match(painel, /retaliacao\.atordoaAgressor &&/);
+  assert.match(painel, /após a defesa bem-sucedida, o agressor fica Atordoado/);
+  assert.match(painel, /retaliacao\.contraAtaqueComVantagem &&/);
+});
