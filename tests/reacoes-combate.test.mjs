@@ -282,7 +282,7 @@ test('Não Vai Escapar exige provocação em combate Corpo a Corpo para você ou
 
 test('Na Minha Mira só dispara com nova Condição penalizante em alvo percebido até Alcance Médio', async () => {
   const { avaliarNaMinhaMira } = await import('../src/reacoesCombate.ts');
-  const base = { habilidadeAtiva: true, usoDisponivelNaRodada: true, inimigoPercebido: true, dentroDeAlcanceMedio: true, adquiriuNovaCondicaoPenalizante: true };
+  const base = { habilidadeAtiva: true, usoDisponivelNaRodada: true, inimigoPercebido: true, dentroDeAlcanceMedio: true, adquiriuNovaCondicaoPenalizante: true, armaDeFogoCarregada: true, armaPermiteAtaqueOportunidade: true };
   assert.equal(avaliarNaMinhaMira(base).ataqueDeOportunidadeADistancia, true);
   assert.equal(avaliarNaMinhaMira({ ...base, adquiriuNovaCondicaoPenalizante: false }).disponivel, false);
   assert.equal(avaliarNaMinhaMira({ ...base, dentroDeAlcanceMedio: false }).disponivel, false);
@@ -314,7 +314,7 @@ test('helpers de Habilidades de Reação rejeitam campos ausentes ou extras', as
   assert.throws(() => contraAtaqueUsaMesmaReacao({ contraAtaqueInstintivo: true }), /Habilidades de Reação inválidas/);
   assert.throws(() => consultarRetaliacao({ habilidadeAtiva: true }), /Dados de Retaliação inválidos/);
   assert.throws(() => avaliarNaoVaiEscapar({ habilidadeAtiva: true, criaturaProvocouAtaqueDeOportunidade: true, gatilhoFoiParaVoceOuAliado: true, combateCorpoACorpo: true, extra: true }), /Gatilho de Não Vai Escapar inválido/);
-  assert.throws(() => avaliarNaMinhaMira({ habilidadeAtiva: true, usoDisponivelNaRodada: true, inimigoPercebido: true, dentroDeAlcanceMedio: true }), /Gatilho de Na Minha Mira inválido/);
+  assert.throws(() => avaliarNaMinhaMira({ habilidadeAtiva: true, usoDisponivelNaRodada: true, inimigoPercebido: true, dentroDeAlcanceMedio: true, adquiriuNovaCondicaoPenalizante: true, armaDeFogoCarregada: true, armaPermiteAtaqueOportunidade: true }), /Gatilho de Na Minha Mira inválido/);
   assert.throws(() => consultarVoceAparouUmMissil({ habilidadeAtiva: true }), /Dados de VOCÊ APAROU UM MÍSSIL/);
 });
 
@@ -379,4 +379,26 @@ test('Não Vai Escapar rejeita gatilho inválido e avaliação forjada', async (
     economia: economiaAcoesInicial(3),
     avaliacao: { disponivel: true, deslocamentoMaximoMetros: 4, deveTerminarAdjacente: true, motivo: 'forjado' },
   }), /Dados de registro de Não Vai Escapar inválidos/);
+});
+
+
+test('Na Minha Mira exige arma de fogo carregada e apta e registra apenas a Reação', async () => {
+  const { avaliarNaMinhaMira, registrarNaMinhaMira } = await import('../src/reacoesCombate.ts');
+  const base = { habilidadeAtiva: true, usoDisponivelNaRodada: true, inimigoPercebido: true, dentroDeAlcanceMedio: true, adquiriuNovaCondicaoPenalizante: true, armaDeFogoCarregada: true, armaPermiteAtaqueOportunidade: true };
+  assert.equal(avaliarNaMinhaMira({ ...base, armaDeFogoCarregada: false }).disponivel, false);
+  assert.equal(avaliarNaMinhaMira({ ...base, armaPermiteAtaqueOportunidade: false }).disponivel, false);
+  const registrado = registrarNaMinhaMira({ economia: economiaAcoesInicial(2), avaliacao: avaliarNaMinhaMira(base) });
+  assert.equal(registrado.economia.normaisUsados.reacao, true);
+  assert.equal(registrado.economia.saAtual, 2);
+  assert.equal(registrado.reacaoAdicionalComprada, false);
+});
+
+test('Na Minha Mira compra Reação adicional por Esforço quando a normal já foi usada', async () => {
+  const { avaliarNaMinhaMira, registrarNaMinhaMira } = await import('../src/reacoesCombate.ts');
+  const avaliacao = avaliarNaMinhaMira({ habilidadeAtiva: true, usoDisponivelNaRodada: true, inimigoPercebido: true, dentroDeAlcanceMedio: true, adquiriuNovaCondicaoPenalizante: true, armaDeFogoCarregada: true, armaPermiteAtaqueOportunidade: true });
+  const economia = consumirRecursoNormal(economiaAcoesInicial(3), 'reacao');
+  const registrado = registrarNaMinhaMira({ economia, avaliacao });
+  assert.equal(registrado.economia.saAtual, 2);
+  assert.equal(registrado.economia.comprasEsforco.reacao, 1);
+  assert.equal(registrado.reacaoAdicionalComprada, true);
 });
