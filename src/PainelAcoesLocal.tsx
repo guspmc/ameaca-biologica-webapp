@@ -115,6 +115,10 @@ export default function PainelAcoesLocal({ dados, saAtual, aoSalvar, origemDados
 
   const economia = estado.economia;
   const janela = saNaJanelaEsforco(economia);
+  const retaliacao = consultarRetaliacao({
+    habilidadeAtiva: habilidadesAtivas.includes('retaliacao'),
+    defesaBemSucedida: confirmouDefesaBemSucedida,
+  });
   return <details className="ficha-local-editor painel-acoes-local">
     <summary>Economia de Ações · {saNaJanelaEsforco(economia)}/3 SA · {economia.turnoEmAndamento ? 'Meu turno ativo' : 'Meu turno encerrado'}</summary>
     {!inicial.valido
@@ -147,15 +151,14 @@ export default function PainelAcoesLocal({ dados, saAtual, aoSalvar, origemDados
             <label><input type="checkbox" checked={confirmouDefesaBemSucedida} disabled={salvando} onChange={evento => setConfirmouDefesaBemSucedida(evento.target.checked)} /> Confirmo que Aparar ou Esquivar foi bem-sucedido.</label>
             <label><input type="checkbox" checked={confirmouAtaqueCorpoACorpo} disabled={salvando} onChange={evento => setConfirmouAtaqueCorpoACorpo(evento.target.checked)} /> O Ataque que originou a defesa foi Corpo a Corpo.</label>
             {economia.normaisUsados.reacao && habilidadesAtivas.includes('contra-ataque-instintivo') && <label><input type="checkbox" checked={confirmouReacaoDaDefesa} disabled={salvando} onChange={evento => setConfirmouReacaoDaDefesa(evento.target.checked)} /> Confirmo que a Reação já consumida foi a usada nesta defesa bem-sucedida; Contra-Ataque Instintivo permite aproveitá-la.</label>}
-            {habilidadesAtivas.includes('retaliacao') && confirmouDefesaBemSucedida && <p className="ficha-local-legenda">Retaliação: o agressor fica Atordoado; seu Contra-Ataque recebe Vantagem e acrescenta 1 dado de Dano se acertar. A aplicação ao agressor e a rolagem permanecem manuais.</p>}
+            {retaliacao.atordoaAgressor && <p className="ficha-local-legenda">Retaliação: o agressor fica Atordoado; seu Contra-Ataque recebe Vantagem e acrescenta 1 dado de Dano se acertar. A aplicação ao agressor e a rolagem permanecem manuais.</p>}
             <p className="ficha-local-legenda">{economia.normaisUsados.reacao
               ? habilidadesAtivas.includes('contra-ataque-instintivo')
-                ? 'Se a Reação usada foi a defesa confirmada acima, Contra-Ataque Instintivo permite reutilizá-la; caso contrário, será necessária uma Reação adicional por 1 SA.'
+                ? 'Se a Reação usada foi a defesa confirmada acima, marque a confirmação para Contra-Ataque Instintivo reutilizá-la; se não marcar, o registro comprará uma Reação adicional por 1 SA.'
                 : 'Sua Reação normal já foi usada: o Contra-Ataque precisará comprar outra Reação por 1 SA, além do custo de 1 SA da Manobra.'
               : 'O registro consumirá sua Reação normal e 1 SA pela Manobra.'}</p>
             <button type="button"
               disabled={salvando || !confirmouDefesaBemSucedida || !confirmouAtaqueCorpoACorpo
-                || (economia.normaisUsados.reacao && habilidadesAtivas.includes('contra-ataque-instintivo') && !confirmouReacaoDaDefesa)
                 || economia.saAtual < (economia.normaisUsados.reacao && !(habilidadesAtivas.includes('contra-ataque-instintivo') && confirmouReacaoDaDefesa) ? 2 : 1)
                 || janela + (economia.normaisUsados.reacao && !(habilidadesAtivas.includes('contra-ataque-instintivo') && confirmouReacaoDaDefesa) ? 2 : 1) > 3}
               onClick={() => void aplicar(atual => aplicarReacaoCombate(atual, economiaAtual =>
