@@ -5,7 +5,8 @@ export type MetodoProgressaoPersistente = 'marco_narrativo' | 'missoes';
 export type EstadoProgressaoPersistente = {
   versao: 1;
   nivelAtual: number;
-  metodo: MetodoProgressaoPersistente;
+  metodo?: MetodoProgressaoPersistente;
+  avancoAutorizado?: boolean;
   missoesCompletadas: number;
   marcoNarrativoConcedido: boolean;
   missoesCompletadasNaUltimaMorte: number | null;
@@ -25,18 +26,26 @@ const objetoSimples = (v: unknown): v is Record<string, unknown> =>
  * O histórico registra os benefícios dos níveis 2..N; o nível 1 não é perdido.
  */
 export function estadoProgressaoPersistenteValido(valor: unknown, classe: string): valor is EstadoProgressaoPersistente {
-  const chaves = [
-    'versao', 'nivelAtual', 'metodo', 'missoesCompletadas', 'marcoNarrativoConcedido',
+  const chavesBase = [
+    'versao', 'nivelAtual', 'missoesCompletadas', 'marcoNarrativoConcedido',
     'missoesCompletadasNaUltimaMorte', 'nivelNaUltimaMorte', 'marcoNarrativoAposUltimaMorte',
     'penalidadeMorteNivel1', 'beneficiosPorNivel',
   ];
-  const chavesComMorteLocal = [...chaves, 'morteLocalNaoConfirmada'];
+  const chavesLegadas = [...chavesBase, 'metodo'];
+  const chavesNeutras = [...chavesBase, 'avancoAutorizado'];
+  const chavesAceitas = [
+    chavesLegadas, [...chavesLegadas, 'morteLocalNaoConfirmada'],
+    chavesNeutras, [...chavesNeutras, 'morteLocalNaoConfirmada'],
+  ].map(chaves => chaves.sort().join('|'));
   const chavesValor = objetoSimples(valor) ? Object.keys(valor).sort().join('|') : '';
+  const progressaoLegada = objetoSimples(valor) && 'metodo' in valor;
   if (!objetoSimples(valor)
-    || (chavesValor !== [...chaves].sort().join('|') && chavesValor !== chavesComMorteLocal.sort().join('|'))
+    || !chavesAceitas.includes(chavesValor)
+    || (progressaoLegada
+      ? !['marco_narrativo', 'missoes'].includes(String(valor.metodo)) || 'avancoAutorizado' in valor
+      : typeof valor.avancoAutorizado !== 'boolean')
     || valor.versao !== 1 || !Number.isSafeInteger(valor.nivelAtual)
     || (valor.nivelAtual as number) < 1 || (valor.nivelAtual as number) > 10
-    || !['marco_narrativo', 'missoes'].includes(String(valor.metodo))
     || !Number.isSafeInteger(valor.missoesCompletadas) || (valor.missoesCompletadas as number) < 0
     || typeof valor.marcoNarrativoConcedido !== 'boolean'
     || (valor.missoesCompletadasNaUltimaMorte !== null
@@ -104,15 +113,14 @@ export function atualizarContadorMissoes(
  * Não configura nem consulta a Mesa e não concede benefícios.
  */
 export function criarEstadoProgressaoInicial(
-  metodo: MetodoProgressaoPersistente = 'marco_narrativo',
+  metodo?: MetodoProgressaoPersistente,
 ): EstadoProgressaoPersistente {
-  if (metodo !== 'marco_narrativo' && metodo !== 'missoes') {
+  if (metodo !== undefined && metodo !== 'marco_narrativo' && metodo !== 'missoes') {
     throw new Error('Método de Progressão inválido.');
   }
-  return {
-    versao: 1,
+  const base = {
+    versao: 1 as const,
     nivelAtual: 1,
-    metodo,
     missoesCompletadas: 0,
     marcoNarrativoConcedido: false,
     missoesCompletadasNaUltimaMorte: null,
@@ -122,6 +130,7 @@ export function criarEstadoProgressaoInicial(
     morteLocalNaoConfirmada: false,
     beneficiosPorNivel: [],
   };
+  return metodo === undefined ? { ...base, avancoAutorizado: false } : { ...base, metodo };
 }
 
 /** Registra um Marco comunicado pelo Narrador; não sobe Nível nem aplica benefícios. */
@@ -144,6 +153,18 @@ export function registrarMarcoNarrativo(
 }
 
 
+/** Registra apenas que o grupo/Narrador autorizou o próximo avanço; o critério é decidido fora do WebApp. */
+export function registrarAvancoAutorizadoGrupo(
+  estado: EstadoProgressaoPersistente,
+  classe: string,
+): EstadoProgressaoPersistente {
+  if (!estadoProgressaoPersistenteValido(estado, classe) || estado.metodo !== undefined) {
+    throw new Error('Esta operação exige um estado de Progressão neutro válido.');
+  }
+  if (estado.avancoAutorizado) throw new Error('O avanço já foi autorizado pelo grupo.');
+  return { ...structuredClone(estado), avancoAutorizado: true };
+}
+
 export type PedidoProgressaoPersistente = {
   nivel: number;
   estado: 'aguardando_descanso' | 'descanso_confirmado';
@@ -165,6 +186,7 @@ export function pedidoProgressaoPersistenteValido(
   const requisito = avaliarDisponibilidadeProgressao({
     nivelAtual: progressao.nivelAtual,
     metodo: progressao.metodo,
+    avancoAutorizado: progressao.avancoAutorizado,
     missoesCompletadas: progressao.missoesCompletadas,
     marcoNarrativoConcedido: progressao.marcoNarrativoConcedido,
     missoesCompletadasNaUltimaMorte: progressao.missoesCompletadasNaUltimaMorte,
@@ -185,6 +207,7 @@ export function solicitarGanhoNivel(
   const requisito = avaliarDisponibilidadeProgressao({
     nivelAtual: progressao.nivelAtual,
     metodo: progressao.metodo,
+    avancoAutorizado: progressao.avancoAutorizado,
     missoesCompletadas: progressao.missoesCompletadas,
     marcoNarrativoConcedido: progressao.marcoNarrativoConcedido,
     missoesCompletadasNaUltimaMorte: progressao.missoesCompletadasNaUltimaMorte,
@@ -242,6 +265,7 @@ export function registrarMorteProgressao(
     nivelNaUltimaMorte: estado.nivelAtual,
     marcoNarrativoConcedido: false,
     marcoNarrativoAposUltimaMorte: false,
+    ...(estado.metodo === undefined ? { avancoAutorizado: false } : {}),
     penalidadeMorteNivel1: plano.penalidadeMorteNivel1,
     morteLocalNaoConfirmada: true,
     beneficiosPorNivel: estado.beneficiosPorNivel
