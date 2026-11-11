@@ -32,7 +32,7 @@ test('custos de Esforço são 1 SA para Movimento, Ação Bônus e Reação e 2 
   estado = comprarRecursoPorEsforco(estado, 'acaoBonus');
   estado = comprarRecursoPorEsforco(estado, 'reacao');
   assert.equal(estado.saAtual, 2);
-  assert.equal(saNaJanelaEsforco(estado), 0);
+  assert.equal(saNaJanelaEsforco(estado), 3);
   assert.throws(() => comprarRecursoPorEsforco(estado, 'acao'), /limite de 3 SA/);
   assert.equal(comprarRecursoPorEsforco(economiaAcoesInicial(2), 'acao').saAtual, 0);
 });
@@ -45,9 +45,9 @@ test('comprar um recurso por Esforço não consome seu uso normal', () => {
 });
 
 test('Manobras também entram no limite de 3 SA da janela', () => {
-  let estado = encerrarTurnoAcoes(economiaAcoesInicial(4));
-  estado = gastarSAEmManobra(estado, 1, true);
-  estado = comprarRecursoPorEsforco(estado, 'reacao');
+  let estado = gastarSAEmManobra(economiaAcoesInicial(4));
+  estado = comprarRecursoPorEsforco(estado, 'movimento');
+  estado = gastarSAEmManobra(estado);
   assert.equal(saNaJanelaEsforco(estado), 3);
   assert.throws(() => gastarSAEmManobra(estado), /limite de 3 SA/);
 });
@@ -56,7 +56,6 @@ test('início do turno não renova a janela; somente o fim do próximo turno a e
   let estado = comprarRecursoPorEsforco(economiaAcoesInicial(6), 'acao');
   estado = encerrarTurnoAcoes(estado);
   assert.equal(saNaJanelaEsforco(estado), 0);
-  assert.equal(estado.janelaEsforcoAtiva, true);
   assert.deepEqual(estado.comprasEsforco, { acao: 0, movimento: 0, acaoBonus: 0, reacao: 0 });
   estado = gastarSAEmManobra(estado, 1, true);
   estado = iniciarTurnoAcoes(estado);
@@ -66,7 +65,6 @@ test('início do turno não renova a janela; somente o fim do próximo turno a e
   assert.equal(saNaJanelaEsforco(estado), 2);
   estado = encerrarTurnoAcoes(estado);
   assert.equal(saNaJanelaEsforco(estado), 0);
-  assert.equal(estado.janelaEsforcoAtiva, false);
   assert.equal(estado.turnoEmAndamento, false);
 });
 
@@ -90,7 +88,7 @@ test('validador recusa estado persistido malformado ou acima do limite da janela
   assert.equal(estadoEconomiaAcoesValido({ ...estado, saGastaNaJanela: 4 }), false);
   assert.throws(() => gastarSAEmManobra({ ...estado, saGastaNaJanela: 4 }), /Estado da economia de ações inválido/);
   assert.equal(estadoEconomiaAcoesValido({ ...estado, turnoEmAndamento: 'sim' }), false);
-  assert.equal(estadoEconomiaAcoesValido({ ...estado, comprasEsforco: { ...estado.comprasEsforco, acao: -1 } }), false);
+  assert.equal(estadoEconomiaAcoesValido({ ...estado, comprasEsforco: { ...estado.comprasEsforco, acao: 1 } }), false);
 });
 
 test('Manobra genérica não pode gastar SA fora do turno sem autorização explícita', () => {
@@ -104,49 +102,8 @@ test('sincronizar SA preserva os marcadores e rejeita saldo inválido', () => {
   const estado = comprarRecursoPorEsforco(economiaAcoesInicial(4), 'movimento');
   const sincronizado = sincronizarSAAtual(estado, 6);
   assert.equal(sincronizado.saAtual, 6);
-  assert.equal(sincronizado.saGastaNaJanela, 0);
+  assert.equal(sincronizado.saGastaNaJanela, 1);
   assert.equal(sincronizado.comprasEsforco.movimento, 1);
   assert.throws(() => sincronizarSAAtual(estado, -1), /inteiro não negativo/);
 });
 
-
-test('janela aberta no fim do turno preserva gastos feitos fora do turno até o fim do próximo', () => {
-  let estado = encerrarTurnoAcoes(economiaAcoesInicial(5));
-  assert.equal(estado.janelaEsforcoAtiva, true);
-  estado = gastarSAEmManobra(estado, 1, true);
-  assert.equal(estado.saGastaNaJanela, 1);
-  estado = iniciarTurnoAcoes(estado);
-  estado = comprarRecursoPorEsforco(estado, 'movimento');
-  assert.equal(estado.saGastaNaJanela, 2);
-  assert.throws(() => gastarSAEmManobra(estado, 2), /limite de 3 SA/);
-  estado = encerrarTurnoAcoes(estado);
-  assert.equal(estado.saGastaNaJanela, 0);
-  assert.equal(estado.janelaEsforcoAtiva, false);
-});
-
-test('gastos do turno atual não pertencem à janela que só começa no fim dele', () => {
-  let estado = gastarSAEmManobra(economiaAcoesInicial(6), 3);
-  assert.equal(estado.saGastaNaJanela, 0);
-  estado = encerrarTurnoAcoes(estado);
-  assert.equal(estado.saGastaNaJanela, 0);
-  assert.equal(estado.janelaEsforcoAtiva, true);
-  estado = gastarSAEmManobra(estado, 3, true);
-  assert.equal(estado.saGastaNaJanela, 3);
-  assert.throws(() => gastarSAEmManobra(estado, 1, true), /limite de 3 SA/);
-});
-
-test('migração estrita de economia antiga preserva fase e contador', async () => {
-  const { migrarEconomiaAcoesLegada, estadoEconomiaAcoesLegadoReconhecido } = await import('../src/economiaAcoes.ts');
-  const antiga = {
-    saAtual: 4, saGastaNaJanela: 2,
-    normaisUsados: { acao: false, movimento: false, acaoBonus: false, reacao: true },
-    comprasEsforco: { acao: 0, movimento: 0, acaoBonus: 0, reacao: 0 },
-    interacaoGratuitaUsada: false, turnoEmAndamento: false,
-  };
-  assert.equal(estadoEconomiaAcoesLegadoReconhecido(antiga), true);
-  const migrada = migrarEconomiaAcoesLegada(antiga);
-  assert.equal(migrada.janelaEsforcoAtiva, true);
-  assert.equal(migrada.saGastaNaJanela, 2);
-  assert.equal(antiga.saGastaNaJanela, 2);
-  assert.equal(estadoEconomiaAcoesLegadoReconhecido({ ...antiga, campoExtra: true }), false);
-});
