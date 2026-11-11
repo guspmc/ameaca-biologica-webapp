@@ -10,7 +10,7 @@ import {
   iniciarTurnoCombate, registrarResolucaoAtaqueAdicional, registrarFinalizacaoDupla, type EstadoTurnoCombate,
 } from './estadoTurnoCombate';
 import { registrarCombateDuasArmas, registrarDisparada, registrarFuga, registrarMirar, registrarAtaque, registrarFinalizar, registrarAjudar } from './manobrasOperacionais';
-import { avaliarAtaqueOportunidade, registrarAtaqueOportunidade, prepararContraAtaque, consultarRetaliacao, avaliarNaoVaiEscapar, registrarNaoVaiEscapar } from './reacoesCombate';
+import { avaliarAtaqueOportunidade, registrarAtaqueOportunidade, prepararContraAtaque, consultarRetaliacao, avaliarNaoVaiEscapar, registrarNaoVaiEscapar, avaliarJanelaReacao, registrarReacaoDefensiva, type JanelaReacao } from './reacoesCombate';
 
 type Props = {
   dados: Record<string, unknown>;
@@ -61,6 +61,14 @@ export default function PainelAcoesLocal({ dados, saAtual, aoSalvar, origemDados
   const [confirmouReacaoDaDefesa, setConfirmouReacaoDaDefesa] = useState(false);
   const [confirmouAoOParaVoceOuAliado, setConfirmouAoOParaVoceOuAliado] = useState(false);
   const [confirmouCombateCorpoACorpo, setConfirmouCombateCorpoACorpo] = useState(false);
+  const [resultadoAtaqueDefensivo, setResultadoAtaqueDefensivo] = useState('');
+  const [dadoNaturalDefensivo, setDadoNaturalDefensivo] = useState('');
+  const [ataqueCorpoACorpoDefensivo, setAtaqueCorpoACorpoDefensivo] = useState(true);
+  const [ataqueAcertouDefensivo, setAtaqueAcertouDefensivo] = useState(true);
+  const [ataqueAparavelDefensivo, setAtaqueAparavelDefensivo] = useState(true);
+  const [gatilhoEsquivaAutorizado, setGatilhoEsquivaAutorizado] = useState(false);
+  const [janelaDefensiva, setJanelaDefensiva] = useState<JanelaReacao | null>(null);
+  const [erroJanelaDefensiva, setErroJanelaDefensiva] = useState('');
   const bloqueioOperacao = useRef(false);
   useEffect(() => {
     if (salvando) return;
@@ -110,6 +118,12 @@ export default function PainelAcoesLocal({ dados, saAtual, aoSalvar, origemDados
         setConfirmouAoOParaVoceOuAliado(false);
         setConfirmouCombateCorpoACorpo(false);
       }
+      if (mensagemConfirmada?.startsWith('Esquiva declarada')) {
+        setJanelaDefensiva(null);
+        setResultadoAtaqueDefensivo('');
+        setDadoNaturalDefensivo('');
+        setGatilhoEsquivaAutorizado(false);
+      }
       setConfirmacao(mensagemConfirmada ?? (origemDados === 'servidor' ? 'Economia de ações confirmada pelo servidor.' : 'Economia de ações salva neste dispositivo.'));
     } catch (problema) {
       setErro(problema instanceof Error ? problema.message : 'Não foi possível registrar a ação.');
@@ -149,6 +163,36 @@ export default function PainelAcoesLocal({ dados, saAtual, aoSalvar, origemDados
                 <button type="button" disabled={salvando || foraDoTurno || economia.saAtual < (recurso.id === 'acao' ? 2 : 1) || janela >= 3} onClick={() => void aplicar(atual => comEconomia(atual, economiaAtual => comprarRecursoPorEsforco(economiaAtual, recurso.id)))}>Comprar · {recurso.custo}</button>
               </div>;
             })}
+          </div>
+
+          <h4>Reações defensivas · Aparar e Esquivar</h4>
+          <div className="ficha-local-editor">
+            <p>Informe o resultado do Ataque recebido e o d20 natural para identificar a janela. A Reação deve ser declarada imediatamente, antes da resolução de Dano, BI ou Condições. A Ficha registra a declaração e o custo; o Teste defensivo e seus efeitos continuam sendo resolvidos manualmente.</p>
+            <label>Resultado total do Ataque
+              <input type="number" min="1" step="1" value={resultadoAtaqueDefensivo} disabled={salvando} onChange={evento => { setResultadoAtaqueDefensivo(evento.target.value); setJanelaDefensiva(null); }} />
+            </label>
+            <label>Dado natural do Ataque (1–20)
+              <input type="number" min="1" max="20" step="1" value={dadoNaturalDefensivo} disabled={salvando} onChange={evento => { setDadoNaturalDefensivo(evento.target.value); setJanelaDefensiva(null); }} />
+            </label>
+            <label><input type="checkbox" checked={ataqueCorpoACorpoDefensivo} disabled={salvando} onChange={evento => { setAtaqueCorpoACorpoDefensivo(evento.target.checked); setJanelaDefensiva(null); }} /> O Ataque recebido foi Corpo a Corpo.</label>
+            <label><input type="checkbox" checked={ataqueAcertouDefensivo} disabled={salvando} onChange={evento => { setAtaqueAcertouDefensivo(evento.target.checked); setJanelaDefensiva(null); }} /> O Ataque atingiu a Defesa.</label>
+            <label><input type="checkbox" checked={ataqueAparavelDefensivo} disabled={salvando} onChange={evento => { setAtaqueAparavelDefensivo(evento.target.checked); setJanelaDefensiva(null); }} /> A Mesa confirmou que este Ataque pode ser aparado.</label>
+            <label><input type="checkbox" checked={gatilhoEsquivaAutorizado} disabled={salvando} onChange={evento => { setGatilhoEsquivaAutorizado(evento.target.checked); setJanelaDefensiva(null); }} /> Confirmo que uma Habilidade ou regra autoriza Esquivar contra este gatilho.</label>
+            <button type="button" disabled={salvando || !/^\\d+$/.test(resultadoAtaqueDefensivo) || Number(resultadoAtaqueDefensivo) < 1 || !/^\\d+$/.test(dadoNaturalDefensivo) || Number(dadoNaturalDefensivo) < 1 || Number(dadoNaturalDefensivo) > 20}
+              onClick={() => { try { setErroJanelaDefensiva(''); setJanelaDefensiva(avaliarJanelaReacao({ resultadoAtaque: Number(resultadoAtaqueDefensivo), dadoNaturalAtaque: Number(dadoNaturalDefensivo), ataqueCorpoACorpo: ataqueCorpoACorpoDefensivo, ataqueAcertou: ataqueAcertouDefensivo, ataqueAparavel: ataqueAparavelDefensivo, gatilhoEsquivaAutorizado })); } catch (problema) { setErroJanelaDefensiva(problema instanceof Error ? problema.message : 'Não foi possível avaliar a janela.'); } }}>Avaliar janela de Reação</button>
+            {erroJanelaDefensiva && <p className="offline-erro" role="alert">{erroJanelaDefensiva}</p>}
+            {janelaDefensiva && <>
+              <p className="ficha-local-legenda" role="status">{janelaDefensiva.motivo}</p>
+              {janelaDefensiva.fechadaPor20Natural && <p>20 natural: não é possível declarar Reação defensiva normal.</p>}
+              {janelaDefensiva.podeAparar && <p>Aparar seria permitido pelo gatilho, mas o registro está bloqueado até existir estado confiável de equipamento empunhado e Durabilidade. A Ficha não presume uma arma equipada.</p>}
+              {janelaDefensiva.podeEsquivar && <>
+                <p>Esquiva autorizada pelo gatilho confirmado. Declare a Reação antes de resolver o Teste defensivo.</p>
+                <p className="ficha-local-legenda">{economia.normaisUsados.reacao ? 'A Reação normal já foi usada: esta declaração comprará outra por 1 SA.' : 'Esta declaração consumirá sua Reação normal, sem custo de SA.'}</p>
+                <button type="button" disabled={salvando || (economia.normaisUsados.reacao && (economia.saAtual < 1 || janela >= 3))}
+                  onClick={() => void aplicar(atual => aplicarReacaoCombate(atual, economiaAtual => registrarReacaoDefensiva({ economia: economiaAtual, manobra: 'esquivar', janela: janelaDefensiva })).estado, economia.normaisUsados.reacao ? 'Esquiva declarada: Reação adicional comprada por 1 SA. Resolva o Teste defensivo manualmente.' : 'Esquiva declarada: Reação normal consumida. Resolva o Teste defensivo manualmente.')}>Declarar Esquiva · Reação</button>
+              </>}
+            </>}
+            <p className="ficha-local-legenda">Aparar permanece bloqueado nesta etapa porque o módulo ainda não controla arma empunhada, elegibilidade do item e Durabilidade. Esquiva só pode ser declarada quando você confirmar o gatilho autorizado por Habilidade ou regra. O aplicativo não rola o d20 nem aplica Defesa, Dano ou efeitos.</p>
           </div>
 
           <h4>Contra-Ataque</h4>
