@@ -186,3 +186,27 @@ test('não migra estado composto histórico com estrutura ou tipos desconhecidos
   assert.equal(estadoTurnoCombateCompostoLegadoReconhecido(tipoInvalido), false);
   assert.equal(carregarEstadoTurnoCombate(extra, null, 3).valido, false);
 });
+
+
+test('migra economias legadas no formato simples e composto sem perder gastos já registrados', () => {
+  const atual = estadoTurnoCombateInicial(5);
+  const economiaAntiga = {
+    saAtual: 4, saGastaNaJanela: 2,
+    normaisUsados: { acao: false, movimento: false, acaoBonus: false, reacao: true },
+    comprasEsforco: { acao: 0, movimento: 0, acaoBonus: 0, reacao: 0 },
+    interacaoGratuitaUsada: false, turnoEmAndamento: false,
+  };
+  const simples = carregarEstadoTurnoCombate(null, economiaAntiga, 3);
+  assert.equal(simples.valido, true);
+  assert.equal(simples.estado.economia.saAtual, 3);
+  assert.equal(simples.estado.economia.saGastaNaJanela, 2);
+  assert.equal(simples.estado.economia.janelaEsforcoAtiva, true);
+
+  const compostoAntigo = { ...atual, economia: economiaAntiga };
+  assert.equal(estadoTurnoCombateCompostoLegadoReconhecido(compostoAntigo), true);
+  const migrado = carregarEstadoTurnoCombate(compostoAntigo, null, 3);
+  assert.equal(migrado.valido, true);
+  assert.equal(migrado.estado.economia.saGastaNaJanela, 2);
+  assert.equal(migrado.estado.economia.janelaEsforcoAtiva, true);
+  assert.equal(economiaAntiga.saAtual, 4);
+});
