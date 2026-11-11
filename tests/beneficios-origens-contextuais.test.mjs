@@ -10,10 +10,10 @@ import { readFile } from 'node:fs/promises';
 test('Amnésico exige local conhecido e tentativa AST DT 10; sucesso útil gera Vantagem pendente', () => {
   const inicial = beneficioAmnesicoInicial();
   assert.throws(() => registrarVislumbresDoPassado(inicial, {
-    localConhecido: false, tentativaRealizada: true, testeBemSucedido: true, informacaoUtil: true,
+    localConhecido: false, tentativaRealizada: true, informacaoUtil: true,
   }), /local conhecido/);
   const usado = registrarVislumbresDoPassado(inicial, {
-    localConhecido: true, tentativaRealizada: true, testeBemSucedido: true, informacaoUtil: true,
+    localConhecido: true, tentativaRealizada: true, informacaoUtil: true,
   });
   assert.equal(usado.usadoNaSessao, true);
   assert.equal(usado.vantagemSobrevivenciaPendente, true);
@@ -26,9 +26,9 @@ test('Amnésico exige local conhecido e tentativa AST DT 10; sucesso útil gera 
   assert.equal(consumirVantagemAmnesico(novaSessao).vantagemSobrevivenciaPendente, false);
 });
 
-test('Amnésico consome a tentativa mesmo quando AST DT 10 falha, sem conceder Vantagem', () => {
+test('Amnésico consome a tentativa quando a informação não é útil, sem conceder Vantagem', () => {
   const usado = registrarVislumbresDoPassado(beneficioAmnesicoInicial(), {
-    localConhecido: true, tentativaRealizada: true, testeBemSucedido: false, informacaoUtil: false,
+    localConhecido: true, tentativaRealizada: true, informacaoUtil: false,
   });
   assert.equal(usado.usadoNaSessao, true);
   assert.equal(usado.vantagemSobrevivenciaPendente, false);
