@@ -140,7 +140,7 @@ export default function CalculadoraTesteLocal({ atributos, treinada, distribuica
     } catch (problema) {
       return { resultado: null, erro: problema instanceof Error ? problema.message : 'Valores inválidos.' };
     }
-  }, [escopo, impossivel, valorTeste, modificador, dt, dadosConfirmados, vantagemEfetiva]);
+  }, [escopo, impossivel, valorTeste, modificador, dt, dadosConfirmados, vantagemEfetiva, codeVeronicaAtiva]);
 
   function mudarTipo(valor: 'pericia' | 'atributo' | 'ataque-corpo' | 'ataque-distancia') {
     setTipo(valor);
