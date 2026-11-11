@@ -14,6 +14,7 @@ export function calcularTesteManual(args: {
   dado1?: number | null;
   dado2?: number | null;
   vantagem?: VantagemTeste;
+  naturalDe2a9Como10?: boolean;
 }): ResultadoTeste {
   const { valorBase, dt } = args;
   const modificador = args.modificador ?? 0;
@@ -38,12 +39,14 @@ export function calcularTesteManual(args: {
   const escolhido = vantagem === 'vantagem' ? Math.max(d1 as number, d2 as number)
     : vantagem === 'desvantagem' ? Math.min(d1 as number, d2 as number)
     : d1 as number;
-  const total = escolhido + valorBase + modificador;
+  const naturalAplicado = args.naturalDe2a9Como10 && escolhido >= 2 && escolhido <= 9 ? 10 : escolhido;
+  const total = naturalAplicado + valorBase + modificador;
+  const ajusteNatural = naturalAplicado !== escolhido ? `Natural ${escolhido} conta como 10 por CODE VERONICA. ` : '';
   if (escolhido === 20) return { estado: 'critico-sucesso', dadoEscolhido: escolhido, total, dt, detalhe: '20 natural: sucesso automático quando a tarefa é possível.' };
   if (escolhido === 1) return { estado: 'falha-critica', dadoEscolhido: escolhido, total, dt, detalhe: '1 natural: Falha Crítica. A consequência aplicável depende do tipo de resolução e das regras específicas.' };
   return total >= dt
-    ? { estado: 'sucesso', dadoEscolhido: escolhido, total, dt, detalhe: 'Sucesso: o total alcançou a DT.' }
-    : { estado: 'falha', dadoEscolhido: escolhido, total, dt, detalhe: 'Falha: o total não alcançou a DT.' };
+    ? { estado: 'sucesso', dadoEscolhido: escolhido, total, dt, detalhe: `${ajusteNatural}Sucesso: o total alcançou a DT.` }
+    : { estado: 'falha', dadoEscolhido: escolhido, total, dt, detalhe: `${ajusteNatural}Falha: o total não alcançou a DT.` };
 }
 
 /** Calcula somente a rolagem e o total do Ataque; não compara com Defesa nem decide acerto. */
