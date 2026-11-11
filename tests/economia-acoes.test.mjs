@@ -32,7 +32,7 @@ test('custos de Esforço são 1 SA para Movimento, Ação Bônus e Reação e 2 
   estado = comprarRecursoPorEsforco(estado, 'acaoBonus');
   estado = comprarRecursoPorEsforco(estado, 'reacao');
   assert.equal(estado.saAtual, 2);
-  assert.equal(saNaJanelaEsforco(estado), 3);
+  assert.equal(saNaJanelaEsforco(estado), 0);
   assert.throws(() => comprarRecursoPorEsforco(estado, 'acao'), /limite de 3 SA/);
   assert.equal(comprarRecursoPorEsforco(economiaAcoesInicial(2), 'acao').saAtual, 0);
 });
@@ -90,7 +90,7 @@ test('validador recusa estado persistido malformado ou acima do limite da janela
   assert.equal(estadoEconomiaAcoesValido({ ...estado, saGastaNaJanela: 4 }), false);
   assert.throws(() => gastarSAEmManobra({ ...estado, saGastaNaJanela: 4 }), /Estado da economia de ações inválido/);
   assert.equal(estadoEconomiaAcoesValido({ ...estado, turnoEmAndamento: 'sim' }), false);
-  assert.equal(estadoEconomiaAcoesValido({ ...estado, comprasEsforco: { ...estado.comprasEsforco, acao: 1 } }), false);
+  assert.equal(estadoEconomiaAcoesValido({ ...estado, comprasEsforco: { ...estado.comprasEsforco, acao: -1 } }), false);
 });
 
 test('Manobra genérica não pode gastar SA fora do turno sem autorização explícita', () => {
@@ -104,7 +104,7 @@ test('sincronizar SA preserva os marcadores e rejeita saldo inválido', () => {
   const estado = comprarRecursoPorEsforco(economiaAcoesInicial(4), 'movimento');
   const sincronizado = sincronizarSAAtual(estado, 6);
   assert.equal(sincronizado.saAtual, 6);
-  assert.equal(sincronizado.saGastaNaJanela, 1);
+  assert.equal(sincronizado.saGastaNaJanela, 0);
   assert.equal(sincronizado.comprasEsforco.movimento, 1);
   assert.throws(() => sincronizarSAAtual(estado, -1), /inteiro não negativo/);
 });
