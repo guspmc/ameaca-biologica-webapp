@@ -7,7 +7,7 @@
 ## Alterações implementadas
 
 - `src/PainelAcoesLocal.tsx` ganhou um bloco de Reações defensivas.
-- O jogador informa o resultado total do Ataque, o d20 natural e confirma os elementos contextuais do gatilho.
+- O jogador informa o resultado total do Ataque, o d20 natural e confirma os elementos contextuais do gatilho. As confirmações de Corpo a Corpo, acerto e possibilidade de Aparar começam desmarcadas; nenhum desses fatos é presumido.
 - A janela é avaliada por `avaliarJanelaReacao()`; 20 natural mantém o fechamento das Reações defensivas normais.
 - A declaração de Esquiva só aparece quando a janela autoriza Esquivar. O registro usa `registrarReacaoDefensiva()` dentro de `aplicarReacaoCombate()`, preservando a transição integrada da Economia de Ações.
 - Se a Reação normal já foi usada, o registro compra outra por 1 SA e respeita a janela de 3 SA.
@@ -32,7 +32,9 @@
 - `5a84faa` — integra declaração segura de Esquiva na Ficha.
 - `95eff8a` — adiciona teste estrutural.
 - `d9882f1` — atualiza a matriz de auditoria.
+- `0311345` — corrige a validação dos campos numéricos.
+- `6ff8cda` — exige confirmação explícita dos dados contextuais.
 
 ## Próximo passo
 
-Consultar o HEAD e a CI da branch. Corrigir qualquer falha real. Em seguida, continuar a auditoria/integração das Reações, sem habilitar Aparar até existir estado seguro de equipamento e Durabilidade. Não iniciar Inventário ativo, não alterar `main`, não fazer merge ou deploy.
+Consultar o HEAD e a CI da branch. Os workflows foram acionados, mas ainda constam como `queued`; não há resultado de aprovação disponível. Corrigir qualquer falha real. Em seguida, continuar a auditoria/integração das Reações, sem habilitar Aparar até existir estado seguro de equipamento e Durabilidade. Não iniciar Inventário ativo, não alterar `main`, não fazer merge ou deploy.
