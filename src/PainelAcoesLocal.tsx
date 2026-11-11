@@ -10,7 +10,7 @@ import {
   iniciarTurnoCombate, registrarResolucaoAtaqueAdicional, registrarFinalizacaoDupla, type EstadoTurnoCombate,
 } from './estadoTurnoCombate';
 import { registrarCombateDuasArmas, registrarDisparada, registrarFuga, registrarMirar, registrarAtaque, registrarFinalizar, registrarAjudar } from './manobrasOperacionais';
-import { avaliarAtaqueOportunidade, registrarAtaqueOportunidade, prepararContraAtaque, consultarRetaliacao } from './reacoesCombate';
+import { avaliarAtaqueOportunidade, registrarAtaqueOportunidade, prepararContraAtaque, consultarRetaliacao, avaliarNaoVaiEscapar, registrarNaoVaiEscapar } from './reacoesCombate';
 
 type Props = {
   dados: Record<string, unknown>;
@@ -59,6 +59,8 @@ export default function PainelAcoesLocal({ dados, saAtual, aoSalvar, origemDados
   const [confirmouDefesaBemSucedida, setConfirmouDefesaBemSucedida] = useState(false);
   const [confirmouAtaqueCorpoACorpo, setConfirmouAtaqueCorpoACorpo] = useState(false);
   const [confirmouReacaoDaDefesa, setConfirmouReacaoDaDefesa] = useState(false);
+  const [confirmouAoOParaVoceOuAliado, setConfirmouAoOParaVoceOuAliado] = useState(false);
+  const [confirmouCombateCorpoACorpo, setConfirmouCombateCorpoACorpo] = useState(false);
   const bloqueioOperacao = useRef(false);
   useEffect(() => {
     if (salvando) return;
@@ -103,6 +105,10 @@ export default function PainelAcoesLocal({ dados, saAtual, aoSalvar, origemDados
         setConfirmouDefesaBemSucedida(false);
         setConfirmouAtaqueCorpoACorpo(false);
         setConfirmouReacaoDaDefesa(false);
+      }
+      if (mensagemConfirmada?.startsWith('Não Vai Escapar registrado')) {
+        setConfirmouAoOParaVoceOuAliado(false);
+        setConfirmouCombateCorpoACorpo(false);
       }
       setConfirmacao(mensagemConfirmada ?? (origemDados === 'servidor' ? 'Economia de ações confirmada pelo servidor.' : 'Economia de ações salva neste dispositivo.'));
     } catch (problema) {
@@ -172,6 +178,31 @@ export default function PainelAcoesLocal({ dados, saAtual, aoSalvar, origemDados
                 ? 'Contra-Ataque registrado: Reação adicional comprada por 1 SA e custo de Manobra de 1 SA. Execute o Ataque manualmente.'
                 : 'Contra-Ataque registrado: custo de Manobra de 1 SA. Execute o Ataque manualmente.')}>Registrar Contra-Ataque · Reação + 1 SA</button>
           </div>
+
+          {habilidadesAtivas.includes('nao-vai-escapar') && <div className="ficha-local-editor">
+            <h4>Não Vai Escapar · Ataque de Oportunidade</h4>
+            <p>Quando uma criatura provocar Ataque de Oportunidade para você ou para um aliado em combate Corpo a Corpo, você pode usar sua Reação para atacá-la. Imediatamente antes do Ataque, pode deslocar-se até 3 m, terminando adjacente ao alvo; esse deslocamento não provoca Ataques de Oportunidade.</p>
+            <label><input type="checkbox" checked={confirmouAoOParaVoceOuAliado} disabled={salvando} onChange={evento => setConfirmouAoOParaVoceOuAliado(evento.target.checked)} /> Confirmo que a criatura provocou Ataque de Oportunidade para mim ou para um aliado.</label>
+            <label><input type="checkbox" checked={confirmouCombateCorpoACorpo} disabled={salvando} onChange={evento => setConfirmouCombateCorpoACorpo(evento.target.checked)} /> Confirmo que o gatilho ocorreu em combate Corpo a Corpo.</label>
+            <p className="ficha-local-legenda">{economia.normaisUsados.reacao ? 'A Reação normal já foi usada: este registro comprará outra Reação por 1 SA.' : 'O registro consumirá sua Reação normal, sem custo de SA.'}</p>
+            <button type="button"
+              disabled={salvando || !confirmouAoOParaVoceOuAliado || !confirmouCombateCorpoACorpo
+                || (economia.normaisUsados.reacao && (economia.saAtual < 1 || janela >= 3))}
+              onClick={() => {
+                const avaliacao = avaliarNaoVaiEscapar({
+                  habilidadeAtiva: habilidadesAtivas.includes('nao-vai-escapar'),
+                  criaturaProvocouAtaqueDeOportunidade: true,
+                  gatilhoFoiParaVoceOuAliado: confirmouAoOParaVoceOuAliado,
+                  combateCorpoACorpo: confirmouCombateCorpoACorpo,
+                });
+                const comprada = economia.normaisUsados.reacao;
+                void aplicar(atual => aplicarReacaoCombate(atual, economiaAtual =>
+                  registrarNaoVaiEscapar({ economia: economiaAtual, avaliacao }),
+                ).estado, comprada
+                  ? 'Não Vai Escapar registrado: Reação adicional comprada por 1 SA. Desloque-se até 3 m e termine adjacente antes do Ataque.'
+                  : 'Não Vai Escapar registrado: Reação normal consumida. Desloque-se até 3 m e termine adjacente antes do Ataque.');
+              }}>Registrar Não Vai Escapar · Reação</button>
+          </div>}
 
           <h4>Ataque de Oportunidade</h4>
           <div className="ficha-local-editor">
