@@ -6,7 +6,7 @@ import {
   registrarMarcoNarrativo,
   solicitarGanhoNivel,
   pedidoProgressaoPersistenteValido,
-  type MetodoProgressaoPersistente,
+  registrarAvancoAutorizadoGrupo,
   type EstadoProgressaoPersistente,
   type PedidoProgressaoPersistente,
 } from './progressaoPersistente';
@@ -23,7 +23,6 @@ type Props = {
 };
 
 export default function ProgressaoFichaLocal({ dados, classe, nivel, origemDados = 'local', aoSalvar }: Props) {
-  const [metodoInicial, setMetodoInicial] = useState<MetodoProgressaoPersistente>('marco_narrativo');
   const [ocupado, setOcupado] = useState(false);
   const [mensagem, setMensagem] = useState('');
   const [erro, setErro] = useState('');
@@ -78,14 +77,8 @@ export default function ProgressaoFichaLocal({ dados, classe, nivel, origemDados
       {nivel !== 1
         ? <p className="offline-erro" role="alert">Esta personagem já está no nível {nivel}, mas não possui histórico de Progressão. Não vou criar benefícios retroativos nem presumir escolhas. O histórico precisa ser recuperado ou conferido antes de habilitar novas evoluções.</p>
         : <>
-            <p>A Progressão pertence a esta Ficha. Escolha como registrar o avanço da personagem. Marco Narrativo é o método preferencial; a contagem de Missões é uma alternativa.</p>
-            <label>Método de Progressão
-              <select value={metodoInicial} disabled={ocupado} onChange={e => setMetodoInicial(e.target.value as MetodoProgressaoPersistente)}>
-                <option value="marco_narrativo">Marco Narrativo</option>
-                <option value="missoes">Missões Completadas</option>
-              </select>
-            </label>
-            <button type="button" className="acao" disabled={ocupado} onClick={() => void salvar(criarEstadoProgressaoInicial(metodoInicial), true)}>
+            <p>A Progressão pertence a esta Ficha. O grupo decide o critério de avanço fora do WebApp; a Ficha não exige método, não configura a Mesa e registra apenas a autorização de avanço comunicada pelo grupo/Narrador.</p>
+            <button type="button" className="acao" disabled={ocupado} onClick={() => void salvar(criarEstadoProgressaoInicial(), true)}>
               Inicializar Progressão no nível 1 <span>→</span>
             </button>
           </>}
@@ -113,6 +106,7 @@ export default function ProgressaoFichaLocal({ dados, classe, nivel, origemDados
   const requisito = avaliarDisponibilidadeProgressao({
     nivelAtual: estado.nivelAtual,
     metodo: estado.metodo,
+    avancoAutorizado: estado.avancoAutorizado,
     missoesCompletadas: estado.missoesCompletadas,
     marcoNarrativoConcedido: estado.marcoNarrativoConcedido,
     missoesCompletadasNaUltimaMorte: estado.missoesCompletadasNaUltimaMorte,
@@ -157,6 +151,11 @@ export default function ProgressaoFichaLocal({ dados, classe, nivel, origemDados
     catch (e) { setErro(e instanceof Error ? e.message : 'Não foi possível registrar o Marco Narrativo.'); }
   }
 
+  async function autorizarAvancoGrupo() {
+    try { await salvar(registrarAvancoAutorizadoGrupo(estado, classe)); }
+    catch (e) { setErro(e instanceof Error ? e.message : 'Não foi possível registrar a autorização do grupo.'); }
+  }
+
   async function cancelarSolicitacao() {
     if (ocupado || pedido === null || pedido.estado !== 'aguardando_descanso') return;
     setOcupado(true); setErro(''); setMensagem('');
@@ -172,7 +171,7 @@ export default function ProgressaoFichaLocal({ dados, classe, nivel, origemDados
 
   async function registrarMorte() {
     if (ocupado || origemDados !== 'local') return;
-    const confirmacao = window.confirm('Registrar a Morte desta personagem? A Ficha perderá 1 Nível e reverterá os benefícios exatos desse Nível. O histórico de Missões será preservado e qualquer pedido de Progressão pendente será cancelado. Confirme somente após a decisão narrativa correspondente.');
+    const confirmacao = window.confirm('Registrar a Morte desta personagem? A Ficha perderá 1 Nível e reverterá os benefícios exatos desse Nível. O histórico de Progressão será preservado e qualquer pedido pendente será cancelado. Confirme somente após a decisão narrativa correspondente.');
     if (!confirmacao) return;
     setOcupado(true); setErro(''); setMensagem('');
     try {
@@ -216,22 +215,30 @@ export default function ProgressaoFichaLocal({ dados, classe, nivel, origemDados
     <p>A Progressão é registrada nesta Ficha e não depende de uma configuração da Mesa.</p>
     <div className="ficha-local-grade">
       <div><small>NÍVEL ATUAL</small><strong>{estado.nivelAtual} / 10</strong></div>
-      <div><small>MÉTODO</small><strong>{estado.metodo === 'marco_narrativo' ? 'Marco Narrativo' : 'Missões'}</strong></div>
+      <div><small>CRITÉRIO DE AVANÇO</small><strong>{estado.metodo === undefined ? 'Decidido pelo grupo' : estado.metodo === 'marco_narrativo' ? 'Marco Narrativo' : 'Missões'}</strong></div>
     </div>
-    {estado.metodo === 'missoes'
-      ? <div className="ficha-local-grade">
-          <div><small>MISSÕES CONCLUÍDAS</small><strong>{estado.missoesCompletadas}</strong></div>
-          <div className="progressao-controles">
-            <button type="button" className="botao-claro" disabled={ocupado || pedido !== null || estado.missoesCompletadas === 0} onClick={() => void alterarMissoes(-1)}>− 1</button>
-            <button type="button" className="botao-claro" disabled={ocupado || pedido !== null} onClick={() => void alterarMissoes(1)}>+ 1 concluída</button>
-          </div>
-        </div>
-      : <div>
-          <p>{estado.marcoNarrativoConcedido ? 'Marco Narrativo registrado pelo Jogador conforme comunicação do Narrador.' : 'Aguardando o Narrador comunicar um Marco Narrativo.'}</p>
-          <button type="button" className="acao" disabled={ocupado || pedido !== null || estado.marcoNarrativoConcedido} onClick={() => void concederMarco()}>
-            Registrar Marco Narrativo <span>→</span>
+    {estado.metodo === undefined
+      ? <div>
+          <p>O critério de progressão é decidido pelo grupo fora do WebApp. Registre esta autorização somente depois que o grupo/Narrador confirmar que a personagem conquistou o próximo Nível.</p>
+          <p>{estado.avancoAutorizado ? 'Autorização de avanço registrada.' : 'Aguardando autorização do grupo/Narrador.'}</p>
+          <button type="button" className="acao" disabled={ocupado || pedido !== null || estado.avancoAutorizado === true} onClick={() => void autorizarAvancoGrupo()}>
+            Registrar avanço autorizado pelo grupo <span>→</span>
           </button>
-        </div>}
+        </div>
+      : estado.metodo === 'missoes'
+        ? <div className="ficha-local-grade">
+            <div><small>MISSÕES CONCLUÍDAS</small><strong>{estado.missoesCompletadas}</strong></div>
+            <div className="progressao-controles">
+              <button type="button" className="botao-claro" disabled={ocupado || pedido !== null || estado.missoesCompletadas === 0} onClick={() => void alterarMissoes(-1)}>− 1</button>
+              <button type="button" className="botao-claro" disabled={ocupado || pedido !== null} onClick={() => void alterarMissoes(1)}>+ 1 concluída</button>
+            </div>
+          </div>
+        : <div>
+            <p>{estado.marcoNarrativoConcedido ? 'Marco Narrativo registrado pelo Jogador conforme comunicação do Narrador.' : 'Aguardando o Narrador comunicar um Marco Narrativo.'}</p>
+            <button type="button" className="acao" disabled={ocupado || pedido !== null || estado.marcoNarrativoConcedido} onClick={() => void concederMarco()}>
+              Registrar Marco Narrativo <span>→</span>
+            </button>
+          </div>}
     {pedido === null
       ? <>
           <p className="ficha-local-legenda">{avaliacao.motivo}</p>
@@ -287,7 +294,7 @@ export default function ProgressaoFichaLocal({ dados, classe, nivel, origemDados
           </>}
     {estado.morteLocalNaoConfirmada && <p className="offline-aviso" role="status">Morte registrada localmente e ainda não confirmada pelo Mestre. Na futura reconciliação LAN, este registro deverá ser revisado; não o trate como Morte confirmada automaticamente.</p>}
     {estado.penalidadeMorteNivel1 && <p className="offline-erro" role="status">Penalidade de Morte ativa: −2 em Testes de Atributo, Perícia e Ataque até recuperar o Nível 2.</p>}
-    {estado.nivelNaUltimaMorte !== null && <p>Última Morte registrada no Nível {estado.nivelNaUltimaMorte}. Missões preservadas: {estado.missoesCompletadasNaUltimaMorte} no momento da Morte.</p>}
+    {estado.nivelNaUltimaMorte !== null && <p>Última Morte registrada no Nível {estado.nivelNaUltimaMorte}. {estado.metodo === 'missoes' ? `Missões preservadas: ${estado.missoesCompletadasNaUltimaMorte} no momento da Morte.` : estado.metodo === 'marco_narrativo' ? 'Um novo Marco Narrativo deve ser comunicado pelo Narrador.' : 'O grupo/Narrador precisa autorizar um novo avanço após a Morte.'}</p>}
     {origemDados === 'local' && <button type="button" className="botao-claro" disabled={ocupado} onClick={() => void registrarMorte()}>Registrar Morte da personagem</button>}
     {estado.beneficiosPorNivel.length > 0 && <p>Histórico de benefícios registrado: {estado.beneficiosPorNivel.length} nível(is) com escolhas preservadas.</p>}
     {erro && <p className="offline-erro" role="alert">{erro}</p>}
