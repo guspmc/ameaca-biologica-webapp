@@ -15,7 +15,7 @@
 - **PENDENTE HUMANO:** depende de navegador, aparelho, rede ou observação humana. A bateria integrada está deliberadamente adiada até a Ficha estar completa.
 - **DECISÃO PENDENTE:** não implementar por suposição.
 
-A hierarquia normativa é: Arquivo do Jogador v1.0 e Arquivo do Mestre v1.0; decisões funcionais expressamente aprovadas; Planejamento v2.6 como guia de implementação aprovado para orientar o trabalho, com palavra final por deliberação conjunta; protótipos congelados apenas como referência visual; código e checkpoints como evidência técnica. Livro oficial prevalece sobre protótipo e código.
+A hierarquia normativa é: Arquivo do Jogador v1.0 e Arquivo do Mestre v1.0; decisões funcionais expressamente aprovadas; Documento Mestre de Planejamento do WebApp v2.5 (21/10/2026) como planejamento aprovado; v2.6 permanece rascunho e não substitui v2.5 sem aprovação expressa; protótipos congelados apenas como referência visual; código e checkpoints como evidência técnica. Livro oficial prevalece sobre protótipo e código.
 
 ## 2. Ficha do Jogador — implementação restante
 
@@ -95,15 +95,15 @@ A hierarquia normativa é: Arquivo do Jogador v1.0 e Arquivo do Mestre v1.0; dec
 - O servidor rejeita Progressão persistida inválida ou dessincronizada.
 
 **Falta**
-1. Definir a configuração do método de Progressão por Mesa. O contrato atual da Mesa tem `creationMethod` e `maxLevel`, mas não o método de Progressão. Não confundir método de criação com método de Progressão.
-2. Resolver a decisão para Mesas existentes e novas; o Arquivo do Mestre prefere Marco Narrativo, Missões é opcional. Não inicializar estado com um padrão técnico inventado.
-3. Inicializar Progressão em Personagens elegíveis sem quebrar fichas antigas.
-4. Criar fluxos próprios para concessão/reconhecimento de Marco Narrativo e edição do contador conforme a regra aprovada.
-5. Integrar a elegibilidade e a aplicação atômica de nível ao Descanso Completo na Sala de Descanso.
-6. Integrar escolhas de Habilidade, Atributo e Perícia e registrar exatamente o benefício aplicado em cada nível.
-7. Persistir tudo em IndexedDB/backup e LAN, com revisão, autorização, concorrência e migração estrita.
-8. Integrar nível máximo configurado na Mesa, respeitando o limite da campanha.
-9. Preservar cronologia de Missões/Marcos após Morte para exigir progresso posterior real.
+- Reavaliar a interface e o contrato atual: a escolha de método foi expressamente retirada do escopo do WebApp em 11/11/2026. A UI atual ainda exige selecionar Marco Narrativo ou Missões, portanto está em divergência com a decisão aprovada.
+- Definir uma representação neutra da Progressão que não exija escolha/configuração no WebApp e que preserve os dados históricos já gravados. Não presumir se o grupo usa Marco ou Missões nem apagar o campo legado `metodo` sem estratégia de compatibilidade.
+- Inicializar Progressão em Personagens elegíveis sem quebrar fichas antigas.
+- Reavaliar como registrar os requisitos de avanço e reconhecer a decisão do grupo sem criar uma escolha administrativa obrigatória no produto.
+- Integrar a elegibilidade e a aplicação atômica de nível ao Descanso Completo na Sala de Descanso.
+- Integrar escolhas de Habilidade, Atributo e Perícia e registrar exatamente o benefício aplicado em cada nível.
+- Persistir tudo em IndexedDB/backup e LAN, com revisão, autorização, concorrência e migração estrita.
+- Respeitar o limite de nível aplicável à campanha sem criar configuração de método de Progressão na Mesa.
+- Preservar cronologia e histórico de benefícios após Morte para exigir progresso posterior real.
 
 **Testes**
 - Elegibilidade nos requisitos acumulados de Missões e por Marco Narrativo.
@@ -114,7 +114,7 @@ A hierarquia normativa é: Arquivo do Jogador v1.0 e Arquivo do Mestre v1.0; dec
 - Backup/importação e migração de fichas sem Progressão.
 - Autorização entre Jogador e Mestre.
 
-**Decisão pendente:** método de Progressão por Mesa e política de inicialização para Mesas antigas/novas.
+**Decisão de produto:** método de Progressão fora do WebApp (11/11/2026). **PENDENTE TÉCNICO:** desenho neutro/compatível da interface e do registro de requisitos, sem escolha de método no produto.
 
 ### 2.5 Consequência de Morte
 
@@ -990,3 +990,31 @@ Esta atualização substitui qualquer ordem anterior incompatível nesta matriz.
 - Esta decisão retira apenas a configuração/decisão de método do escopo do produto. Não autoriza remover silenciosamente os contratos, histórico ou regras de Progressão já existentes; a integração da Progressão na Ficha deve ser reavaliada para não impor uma escolha administrativa ao grupo.
 - A implementação deve continuar priorizando o funcionamento Offline da Ficha. Qualquer interface existente que exija selecionar um método antes de usar a Progressão deverá ser revista no contexto da implementação, sem presumir um padrão obrigatório nem converter decisão do grupo em configuração de sistema.
 - Esta decisão substitui as pendências anteriores desta matriz que exigiam definir método por Mesa ou resolver política de método para Mesas existentes/novas.
+
+
+## 28. Revisão de conformidade da Progressão após decisão de produto (11/11/2026)
+
+**EVIDÊNCIA INSPECIONADA NA BRANCH**
+- HEAD consultado: `77cfc696f61b603fb20cef41c06cddd1976f7c0a` (`feat/offline-first-ficha`).
+- `src/ProgressaoFichaLocal.tsx` ainda apresenta seletor obrigatório de método ao inicializar personagem de Nível 1 sem estado de Progressão.
+- O mesmo componente condiciona o registro de avanço a um único método persistido: contador de Missões ou registro de Marco Narrativo; apresenta o método na UI e calcula elegibilidade usando `estado.metodo`.
+- `src/progressaoPersistente.ts` mantém `metodo` como campo obrigatório no contrato v1, inicializa por padrão em `marco_narrativo` e rejeita registros sem esse campo.
+- `src/FichaLocal.tsx` integra confirmação de pedido de Progressão ao Descanso Completo na Sala de Descanso.
+
+**CONCLUSÃO**
+- A decisão de 11/11/2026 não está refletida na UI atual: ainda há escolha administrativa obrigatória dentro da Ficha.
+- Não foi feita alteração de código neste ciclo. Remover apenas o seletor não resolveria o problema: o contrato, os validadores, a elegibilidade, o registro de marcos/missões, a persistência e a compatibilidade histórica continuam dependentes do método.
+- O campo legado e os históricos existentes devem ser preservados até que uma representação neutra e uma migração compatível sejam especificadas.
+
+**CI E TESTES**
+- Execução GitHub Actions `43061691733` (`Verificação da ficha offline`) foi encontrada para o HEAD e estava `queued` no momento da consulta.
+- A consulta de workflows associados ao commit, que retorna somente execuções disparadas por pull request, não trouxe resultados; a execução acima foi confirmada pela lista geral de Actions.
+- Testes locais não executados neste ambiente. Nenhuma aprovação de CI foi presumida.
+
+**PRÓXIMO PASSO**
+- Manter a Progressão sem novas alterações até desenhar uma integração neutra que respeite a decisão do grupo, sem escolha de método no WebApp e sem apagar contratos/históricos existentes.
+- Continuar a implementação das demais lacunas da Ficha que não dependam dessa decisão.
+
+**ESCOPO E SEGURANÇA**
+- Nenhuma alteração em `main`, merge, deploy, publicação, banco de produção ou Supabase.
+- Nenhuma validação humana solicitada; Inventário ativo permanece bloqueado.
