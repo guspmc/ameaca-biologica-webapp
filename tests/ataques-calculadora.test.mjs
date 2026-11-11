@@ -228,3 +228,19 @@ test('Habilidades de combate adicionais exibem lembretes sem automatizar ação 
   assert.match(ui, /controleDeFogoAtivo = escopo === 'ataques' && habilidadesAtivas.includes\('controle-de-fogo'\)/);
   assert.match(ui, /até 6 espaços conectados entre si/);
 });
+
+
+test('ANATOMIA DE COMBATE apresenta procedimento de Medicina e Vantagem no próximo Ataque', () => {
+  assert.match(ui, /anatomiaDeCombateAtiva = escopo === 'ataques' && habilidadesAtivas.includes\('anatomia-de-combate'\)/);
+  assert.match(ui, /ANATOMIA DE COMBATE: como Ação Bônus, faça Medicina DT 15/);
+  assert.match(ui, /Vantagem no próximo Ataque contra ele, utilizável até o fim do seu próximo turno/);
+  assert.match(ui, /a Ficha não acompanha o alvo nem a duração do benefício/);
+});
+
+test('GOLPE SUJO apresenta as três opções sem executar Manobras ou aplicar Condições', () => {
+  assert.match(ui, /golpeSujoAtivo = escopo === 'ataques' && tipo === 'ataque-corpo'/);
+  assert.match(ui, /após causar Dano Corpo a Corpo, você pode gastar Movimento para tentar Derrubar/);
+  assert.match(ui, /Pisão contra alvo Caído acrescenta 1 Dado ao Ataque Desarmado/);
+  assert.match(ui, /Cabeçada é Ataque Desarmado/);
+  assert.match(ui, /a calculadora não executa as Manobras nem aplica Condições/);
+});
