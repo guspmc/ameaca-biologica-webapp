@@ -201,7 +201,7 @@ export default function PainelAcoesLocal({ dados, saAtual, aoSalvar, origemDados
 
           <h4>Reações defensivas · Aparar e Esquivar</h4>
           <div className="ficha-local-editor">
-            <p>Informe o resultado do Ataque recebido e o d20 natural para identificar a janela. A Reação deve ser declarada imediatamente, antes da resolução de Dano, BI ou Condições. No modo Automático, a Ficha também calcula o Teste de Esquiva após a declaração; nos modos Misto e Manual, a resolução permanece com os procedimentos escolhidos pelo grupo.</p>
+            <p>Informe o resultado do Ataque recebido e o d20 natural para identificar a janela. A Reação deve ser declarada imediatamente, antes da resolução de Dano, BI ou Condições. Após declarar a Esquiva, você pode solicitar o cálculo do Teste em qualquer modo de funcionamento. A preferência de dados determina se informará dados físicos, solicitará dados virtuais ou escolherá entre ambos.</p>
             <label>Resultado total do Ataque
               <input type="number" min="1" step="1" value={resultadoAtaqueDefensivo} disabled={salvando} onChange={evento => { setResultadoAtaqueDefensivo(evento.target.value); setJanelaDefensiva(null); setConfirmouDefesaBemSucedida(false); setReacaoDefensivaDeclarada(false); setResultadoDefensivo(null); }} />
             </label>
@@ -227,8 +227,8 @@ export default function PainelAcoesLocal({ dados, saAtual, aoSalvar, origemDados
               </>}
               {janelaDefensiva.podeEsquivar && reacaoDefensivaDeclarada && <div className="ficha-local-editor">
                 <strong>Teste de Esquiva · Reflexos contra {resultadoAtaqueDefensivo}</strong>
-                {modo !== 'automatico' && <p className="ficha-local-legenda">Modo {modo === 'misto' ? 'Misto' : 'Manual'}: resolva o Teste com os procedimentos escolhidos pelo grupo. O modo Automático habilita o cálculo informativo nesta Ficha.</p>}
-                {modo === 'automatico' && <>
+                <p className="ficha-local-legenda">Modo {modo === 'automatico' ? 'Automático' : modo === 'misto' ? 'Misto' : 'Manual'}: esta rolagem só acontece após sua solicitação. A Ficha calcula o resultado, mas não aplica efeitos nem altera recursos.</p>
+                <>
                   <p>Valor base de Reflexos: +{valorReflexos}. A Desvantagem por Condição ou Fase da BI é aplicada quando presente; uma Vantagem e uma Desvantagem se cancelam.</p>
                   {modoDados === 'mistos' && <label>Método desta rolagem
                     <select value={metodoDefensivo} onChange={evento => { setMetodoDefensivo(evento.target.value as 'fisico' | 'virtual'); setDadoDefensivo1(''); setDadoDefensivo2(''); setResultadoDefensivo(null); }}>
@@ -254,7 +254,7 @@ export default function PainelAcoesLocal({ dados, saAtual, aoSalvar, origemDados
                   } catch (problema) { setErroTesteDefensivo(problema instanceof Error ? problema.message : 'Não foi possível resolver o Teste defensivo.'); } }}>{metodoDefensivo === 'virtual' ? 'Rolar Teste de Esquiva' : 'Calcular Teste de Esquiva'}</button>
                   {resultadoDefensivo && <p role="status"><strong>{resultadoDefensivo.estado === 'sucesso' || resultadoDefensivo.estado === 'critico-sucesso' ? 'Esquiva bem-sucedida' : resultadoDefensivo.estado === 'falha-critica' ? 'Falha Crítica' : resultadoDefensivo.estado === 'incompleto' ? 'Teste incompleto' : 'Esquiva não alcançou o resultado do Ataque'}</strong> · {resultadoDefensivo.detalhe} {resultadoDefensivo.total !== null ? `Total ${resultadoDefensivo.total} contra ${resultadoDefensivo.dt}.` : ''}</p>}
                   {erroTesteDefensivo && <p className="offline-erro" role="alert">{erroTesteDefensivo}</p>}
-                </>}
+                </>
                 <p className="ficha-local-legenda">O resultado é informativo e não altera Defesa, Dano, BI ou Condições; confirme a resolução com a Mesa.</p>
               </div>}
             </>}
