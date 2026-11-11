@@ -277,7 +277,9 @@ export function avaliarDisponibilidadeProgressao(estado: EstadoProgressao): {
         : estado.marcoNarrativoAposUltimaMorte === true;
     if (!avancouAposMorte) return {
       disponivel: false, proximoNivel,
-      motivo: 'Após perder um Nível por Morte, é necessário concluir uma nova Missão ou alcançar um novo Marco Narrativo.',
+      motivo: estado.metodo === undefined
+        ? 'Após perder um Nível por Morte, é necessária nova autorização de avanço pelo grupo/Narrador.'
+        : 'Após perder um Nível por Morte, é necessário concluir uma nova Missão ou alcançar um novo Marco Narrativo.',
     };
   }
   if (!estado.descansoCompletoEmSalaDescanso) return {
