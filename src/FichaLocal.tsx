@@ -411,6 +411,8 @@ export default function FichaLocal({ nome, mesa, contextoId, dados, aoFechar, ao
 
         <CondicoesFichaLocal dados={dados} pvAtual={recursosAtuais.pvAtual} pvMaximo={pv} biAtual={biAtual} biMaximo={bi} aoSalvar={aoSalvarRecursos} origemDados={origemDados} />
 
+        {origem === 'Agente de Saúde' && <p className="ficha-local-aviso">AGENTE DE SAÚDE: ao curar um aliado com item ou efeito, acrescente +1d4 aos Dados de Cura. O benefício não se aplica à própria personagem; a cura do aliado continua sendo registrada na ficha correspondente.</p>}
+
         <RecursosFichaLocal origemDados={origemDados} autoSalvar={autoSalvar}
           dados={dados}
           pvMaximo={pv}
