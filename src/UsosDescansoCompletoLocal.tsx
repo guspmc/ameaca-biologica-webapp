@@ -49,10 +49,12 @@ export default function UsosDescansoCompletoLocal({ dados, origem, habilidades, 
         <strong>{fonte.nome}</strong>
         <p>{fonte.descricao}</p>
         <small>{fonte.tipo} · {usado ? 'Uso já registrado' : 'Uso disponível'}</small>
-        <button type="button" className="acao" disabled={ocupado || !registroValido || usado}
-          onClick={() => void marcar(fonte.chave)}>
-          {usado ? 'Uso registrado' : 'Marcar uso como realizado'}
-        </button>
+        {fonte.chave === 'origem:mercenario'
+          ? <p className="ficha-local-legenda">O uso é registrado junto com a Reação no Painel de Combate, para preservar o custo e o limite de Descanso Completo na mesma gravação.</p>
+          : <button type="button" className="acao" disabled={ocupado || !registroValido || usado}
+              onClick={() => void marcar(fonte.chave)}>
+              {usado ? 'Uso registrado' : 'Marcar uso como realizado'}
+            </button>}
       </div>;
     })}
     {erro && <p className="offline-erro" role="alert">{erro}</p>}
