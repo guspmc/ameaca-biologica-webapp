@@ -25,7 +25,7 @@
 | Condições | `CondicoesFichaLocal.tsx` e `condicoesFicha.ts`. | `condicoes-ficha.test.mjs`, `lembretes-condicoes-turno.test.mjs` | A Ficha informa que Condições são informativas e dependem da aplicação das regras pela Mesa; progressões temporais não são atualizadas automaticamente no Descanso Completo. |
 | Reanimação | `ReanimacaoFichaLocal.tsx` e `reanimacaoFicha.ts`. | `reanimacao-ficha.test.mjs`, `reanimacao-integracao-ficha.test.mjs` | Há integração explícita com recursos e salvamento; a auditoria não substitui validação manual de todos os cenários narrativos e de Mesa. |
 | Descanso | `DescansoFichaLocal.tsx`, `descansoFicha.ts`, `usosDescansoCompleto.ts`. | `descanso-ficha.test.mjs`, `usos-descanso-completo.test.mjs` | Atualização automática de Condições e progressões temporais permanece fora do comportamento descrito no painel. |
-| Combate — economia e manobras | `PainelAcoesLocal.tsx`, `estadoTurnoCombate.ts`, `manobrasOperacionais.ts`, `reacoesCombate.ts`. | `estado-turno-combate.test.mjs`, `economia-acoes.test.mjs`, `manobras-operacionais.test.mjs`, `manobras-universais.test.mjs`, `reacoes-combate.test.mjs` | A Ficha registra escolhas/ações sem presumir gatilhos nem resolver efeitos por conta própria. Iniciativa da Mesa e gestão de Encontros não fazem parte do painel atual. |
+| Combate — economia e manobras | `PainelAcoesLocal.tsx`, `estadoTurnoCombate.ts`, `manobrasOperacionais.ts`, `reacoesCombate.ts`. | `estado-turno-combate.test.mjs`, `economia-acoes.test.mjs`, `manobras-operacionais.test.mjs`, `manobras-universais.test.mjs`, `reacoes-combate.test.mjs`, `reacao-defensiva-ficha.test.mjs` | A Ficha registra escolhas/ações sem presumir gatilhos nem resolver efeitos por conta própria. A interface agora permite avaliar a janela e declarar Esquiva autorizada. Aparar permanece bloqueado até existir estado confiável de equipamento empunhado e Durabilidade. Iniciativa da Mesa e gestão de Encontros não fazem parte do painel atual. |
 | Testes e roladores | `RoladoresBasicosLocal.tsx`, `CalculadoraTesteLocal.tsx`, `rolagemDados.ts`, `testes.ts`. | `roladores-ficha.test.mjs`, `testes.test.mjs`, `ataques-calculadora.test.mjs` | Os testes existentes verificam restrição de roladores ao modo Automático; Misto/Manual não devem ganhar calculadoras por acidente. |
 | Iniciativa | A Ficha exibe modificador derivado de AGI e permite rolagem pontual no modo Automático. | `iniciativa-ficha.test.mjs` | A própria suíte confirma que a Ficha não administra ordem de turnos nem Encontros. |
 | Progressão e Morte | `ProgressaoFichaLocal.tsx`, `progressaoPersistente.ts`, `progressaoMorte.ts`. | `progressao-persistente.test.mjs`, `progressao-morte.test.mjs`, `progressao-campanha.test.mjs` | Edição/registro disponíveis Offline; integração LAN requer fluxo próprio de autorização e gravação. Registro de Morte na LAN aguarda confirmação do Mestre. |
@@ -162,3 +162,14 @@ A entidade de Inventário precisa distinguir, no mínimo, exemplar e catálogo, 
 5. Como o modo Manual/Misto deve registrar consumo de munição sem automatizar ações que o grupo decide manualmente.
 
 Nenhum desses pontos deve ser resolvido por inferência durante a implementação.
+
+
+## Reações defensivas na Ficha — 11/11/2026
+
+**Implementado no código:** `src/PainelAcoesLocal.tsx` agora permite informar o resultado total do Ataque, o d20 natural e as confirmações contextuais de Corpo a Corpo, acerto, possibilidade de Aparar e autorização de Esquiva. A interface usa `avaliarJanelaReacao()` e só apresenta a declaração de Esquiva quando `podeEsquivar` é verdadeiro. O custo é aplicado por `registrarReacaoDefensiva()` dentro de `aplicarReacaoCombate()`, preservando a transição integrada da Economia de Ações.
+
+**Proteção deliberada:** Aparar não pode ser registrado nesta etapa. Embora o gatilho possa indicar que o Ataque seria aparável, a Ficha ainda não dispõe de estado confiável para validar arma empunhada, elegibilidade e Durabilidade. O sistema não presume equipamento.
+
+**Limites:** a interface não rola o Teste defensivo, não determina sucesso, não aplica Defesa, Dano, BI ou Condições. A autorização de Esquiva é uma confirmação do jogador com a Mesa; não é inferida de uma Habilidade. A interpretação de 20 natural permanece a regra já codificada: fecha as Reações defensivas normais.
+
+**Teste adicionado:** `tests/reacao-defensiva-ficha.test.mjs`. Teste estrutural adicionado; não executado localmente. CI ainda precisa confirmar o resultado.
