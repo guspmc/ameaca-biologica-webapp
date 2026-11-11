@@ -141,10 +141,14 @@ export function registrarAtaqueOportunidade(args: {
   gatilho: ReturnType<typeof avaliarAtaqueOportunidade>;
 }): { economia: EstadoEconomiaAcoes; reacaoAdicionalComprada: boolean; interrompeMovimento: false } {
   if (!args || typeof args !== 'object' || Array.isArray(args)
-    || !args.gatilho || typeof args.gatilho !== 'object'
+    || Object.getPrototypeOf(args) !== Object.prototype
+    || Object.keys(args).sort().join('|') !== ['economia', 'gatilho'].sort().join('|')
+    || !args.gatilho || typeof args.gatilho !== 'object' || Array.isArray(args.gatilho)
+    || Object.getPrototypeOf(args.gatilho) !== Object.prototype
+    || Object.keys(args.gatilho).sort().join('|') !== ['disponivel', 'interrompeMovimento', 'motivo'].sort().join('|')
     || typeof args.gatilho.disponivel !== 'boolean'
     || args.gatilho.interrompeMovimento !== false
-    || typeof args.gatilho.motivo !== 'string') {
+    || typeof args.gatilho.motivo !== 'string' || args.gatilho.motivo.trim().length === 0) {
     throw new Error('Dados de registro do Ataque de Oportunidade inválidos.');
   }
   if (!args.gatilho.disponivel) throw new Error('Ataque de Oportunidade não está disponível para este gatilho.');
@@ -170,7 +174,11 @@ export function registrarUsoAparar(args: {
   item: EstadoDurabilidadeAparar;
   automacaoAtiva: boolean;
 }): EstadoDurabilidadeAparar {
-  if (!args || typeof args !== 'object' || Array.isArray(args)) throw new Error('Estado de Aparar inválido.');
+  if (!args || typeof args !== 'object' || Array.isArray(args)
+    || Object.getPrototypeOf(args) !== Object.prototype
+    || Object.keys(args).sort().join('|') !== ['automacaoAtiva', 'item'].sort().join('|')) {
+    throw new Error('Estado de Aparar inválido.');
+  }
   const { item, automacaoAtiva } = args;
   if (!item || typeof item !== 'object' || Array.isArray(item)
     || Object.getPrototypeOf(item) !== Object.prototype
