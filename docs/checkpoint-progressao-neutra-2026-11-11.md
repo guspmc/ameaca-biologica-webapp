@@ -45,6 +45,8 @@ O grupo decide fora do WebApp se usará Marco Narrativo ou Missões. A Ficha nã
 - `de615bf`, `f34ff16`, `cc07410` — testes de aplicação e interface.
 - `96a9be2` — atualiza comentários do contrato.
 - `2970521` — atualiza matriz.
+- `a5f89aa` — impede autorização no Nível máximo.
+- `38f6c6a`, `ca9b0ed` — esclarece e testa nova autorização após Morte.
 
 ## Validação
 
