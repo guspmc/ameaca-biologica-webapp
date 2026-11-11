@@ -28,14 +28,16 @@ export default function BeneficiosOrigemContextuaisLocal({ dados, origem, aoSalv
   const amnesicoValido = beneficioAmnesicoValido(amnesico);
   const militarValido = beneficioMilitarValido(militar);
 
-  async function salvar(patch: Record<string, unknown>, sucesso: string) {
-    if (ocupado) return;
+  async function salvar(patch: Record<string, unknown>, sucesso: string): Promise<boolean> {
+    if (ocupado) return false;
     setOcupado(true); setErro(''); setMensagem('');
     try {
       if (!await aoSalvar(patch)) throw new Error('O armazenamento não confirmou o benefício.');
       setMensagem(sucesso);
+      return true;
     } catch (problema) {
       setErro(problema instanceof Error ? problema.message : 'Não foi possível salvar o benefício.');
+      return false;
     } finally { setOcupado(false); }
   }
 
@@ -44,10 +46,10 @@ export default function BeneficiosOrigemContextuaisLocal({ dados, origem, aoSalv
       const atualizado = registrarVislumbresDoPassado(amnesico as ReturnType<typeof beneficioAmnesicoInicial>, {
         localConhecido, tentativaRealizada, testeBemSucedido, informacaoUtil,
       });
-      await salvar({ beneficioAmnesico: atualizado }, atualizado.vantagemSobrevivenciaPendente
+      const salvo = await salvar({ beneficioAmnesico: atualizado }, atualizado.vantagemSobrevivenciaPendente
         ? 'Vislumbres registrados. Vantagem pendente no próximo Teste de Sobrevivência relacionado.'
         : 'Tentativa de Vislumbres registrada nesta sessão.');
-      setLocalConhecido(false); setTentativaRealizada(false); setTesteBemSucedido(false); setInformacaoUtil(false);
+      if (salvo) { setLocalConhecido(false); setTentativaRealizada(false); setTesteBemSucedido(false); setInformacaoUtil(false); }
     } catch (problema) {
       setErro(problema instanceof Error ? problema.message : 'Não foi possível registrar Vislumbres do Passado.');
     }
@@ -75,8 +77,8 @@ export default function BeneficiosOrigemContextuaisLocal({ dados, origem, aoSalv
   async function registrarMilitar() {
     try {
       const atualizado = registrarMorteComArmaDeFogo(militar as ReturnType<typeof beneficioMilitarInicial>, { inimigoMorto, armaDeFogo });
-      await salvar({ beneficioMilitar: atualizado }, 'Benefício Militar registrado: Vantagem pendente no primeiro Ataque com arma de fogo do próximo turno.');
-      setInimigoMorto(false); setArmaDeFogo(false);
+      const salvo = await salvar({ beneficioMilitar: atualizado }, 'Benefício Militar registrado: Vantagem pendente no primeiro Ataque com arma de fogo do próximo turno.');
+      if (salvo) { setInimigoMorto(false); setArmaDeFogo(false); }
     } catch (problema) {
       setErro(problema instanceof Error ? problema.message : 'Não foi possível registrar o benefício Militar.');
     }
@@ -117,7 +119,7 @@ export default function BeneficiosOrigemContextuaisLocal({ dados, origem, aoSalv
     </>}
     {origem === 'Militar' && <>
       <h4>Resposta disciplinada · benefício após abate com arma de fogo</h4>
-      <p>Após matar um inimigo com arma de fogo, recebe Vantagem no primeiro Ataque com arma de fogo no próximo turno. Confirme o evento com a Mesa; a Ficha não verifica a morte nem administra o turno.</p>
+      <p>Após matar um inimigo com arma de fogo, recebe Vantagem no primeiro Ataque com arma de fogo no próximo turno. Confirme o evento com a Mesa e aplique Vantagem manualmente; a Ficha não verifica a morte nem administra o turno.</p>
       {!militarValido
         ? <p className="offline-erro" role="alert">O registro do benefício Militar está inválido; nenhum estado será alterado.</p>
         : <>
