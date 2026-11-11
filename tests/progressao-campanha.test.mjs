@@ -23,6 +23,27 @@ const escolhasPorNivel = {
   10: { habilidadeId: 'voce-aparou-um-missil' },
 };
 
+test('Progressão Offline neutra registra autorização externa, exige Descanso e consome a autorização ao subir', async () => {
+  const inicial = registrarAvancoAutorizadoGrupo(criarEstadoProgressaoInicial(), 'Agente');
+  const { registrarAvancoAutorizadoGrupo } = await import('../src/progressaoPersistente.ts');
+  const inicial = registrarAvancoAutorizadoGrupo(criarEstadoProgressaoInicial(), 'Agente');
+  const pedido = solicitarGanhoNivel(inicial, 'Agente');
+  const confirmado = confirmarDescansoCompletoProgressao(pedido, inicial, 'Agente', 'sala_descanso');
+  const dados = {
+    versaoModelo: 1, estadoFicha: 'rascunho', classe: 'Agente', origem: 'Acadêmico',
+    nivel: 1, habilidadeBasica: 'anatomia-de-combate',
+    habilidadesAdquiridas: [{ nivel: 1, habilidadeId: 'anatomia-de-combate' }],
+    atributos: { forca: 1, agilidade: 2, vigor: 2, astucia: 2 },
+    periciaOrigemTreinada: 'Investigação', periciaOrigemExtra: null,
+    distribuicaoPericias: { Luta: 0 },
+    progressao: inicial, pedidoProgressao: confirmado,
+  };
+  const patch = aplicarBeneficiosNivelProgressao(dados, { habilidadeId: 'nao-vai-escapar' });
+  assert.equal(patch.progressao.nivelAtual, 2);
+  assert.equal(patch.progressao.avancoAutorizado, false);
+  assert.equal('metodo' in patch.progressao, false);
+});
+
 test('aplica sequencialmente todos os benefícios dos níveis 2 a 10 e preserva o histórico exato', () => {
   const progressao = criarEstadoProgressaoInicial('missoes');
   progressao.missoesCompletadas = 42;
