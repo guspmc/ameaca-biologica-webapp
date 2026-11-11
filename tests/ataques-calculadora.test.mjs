@@ -253,3 +253,15 @@ test('AMBIDESTRIA apresenta Ataque adicional com Pistola 9 mm na outra mão', ()
   assert.match(ui, /Esse Ataque adiciona AGI ao Dano normalmente/);
   assert.match(ui, /a Ficha não controla armas nas mãos nem limita o uso por turno/);
 });
+
+
+test('Origem Lutador e Casca-Grossa aplicam categorias de Dano em ataques universais', async () => {
+  const progressao = await readFile(new URL('../src/progressaoDano.ts', import.meta.url), 'utf8');
+  assert.match(ui, /categoriasAtaqueUniversal\(origem, cascaGrossaAtiva, perfilCorpo\.id\)/);
+  assert.match(ui, /aumentarCategoriaDano\(formulaDanoBase, categoriasDanoUniversal\)/);
+  assert.match(ui, /LUTADOR: Ataque Desarmado e Arma Improvisada sobem automaticamente uma categoria/);
+  assert.match(ui, /acumula com Casca-Grossa no Ataque Desarmado/);
+  assert.match(ui, /Em Coronhada, aplique a categoria manualmente/);
+  assert.match(progressao, /origem === 'Lutador'/);
+  assert.match(progressao, /perfilId === 'universal-ataque-desarmado'/);
+});
