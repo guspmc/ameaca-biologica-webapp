@@ -938,3 +938,24 @@ Esta atualização substitui qualquer ordem anterior incompatível nesta matriz.
 - Teste de domínio existente confirma consumo de Ação; novo tests/ajudar-ficha.test.mjs cobre a integração e as confirmações.
 - Testes não executados localmente; CI do novo HEAD pendente. Sem validação humana isolada, merge ou publicação.
 - Checkpoint: docs/checkpoint-ajudar-servidor-publico-2026-11-11.md.
+
+
+## 26. Integração de Saber é Poder — Origem Acadêmico (11/11/2026)
+
+**FONTE CANÔNICA**
+- Arquivo do Jogador v1.0, p. 23: uma vez por Descanso Completo, Vantagem em um Teste puro de AST ou em Teste de Perícia associada a AST.
+
+**IMPLEMENTADO NA BRANCH**
+- A Calculadora oferece opção explícita de usar o benefício somente nos Testes elegíveis.
+- A opção entra na resolução comum de Vantagem/Desvantagem, respeitando cancelamento e sem acumular fontes.
+- A disponibilidade depende do registro persistido origem:academico em usosDescansoCompleto, renovado pelo fluxo existente de Descanso Completo.
+- O jogador marca o uso como realizado no painel de benefícios limitados, após aplicá-lo ao Teste.
+
+**LIMITES**
+- Não consome o uso automaticamente após a rolagem; depende de confirmação do jogador no painel existente.
+- Não se aplica a Ataques nem a Perícias associadas a outro Atributo.
+
+**VALIDAÇÃO**
+- Novo tests/academico-saber-e-poder.test.mjs; tests/usos-descanso-completo.test.mjs já cobre disponibilidade e renovação do uso.
+- Testes não executados localmente; CI do novo HEAD pendente. Sem validação humana isolada, merge ou publicação.
+- Checkpoint: docs/checkpoint-saber-e-poder-academico-2026-11-11.md.
