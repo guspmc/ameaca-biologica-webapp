@@ -58,6 +58,14 @@ export function calcularDefesaComCondicoes(
     - (ativas.has('exposto') ? 2 : 0);
 }
 
+/** Defesa alternativa de Reflexos de Sobrevivente; não altera a Defesa-base. */
+export function calcularDefesaComReflexosSobrevivente(defesaAtual: number, valorAcrobacia: number, habilidadeAtiva: boolean): number {
+  if (!Number.isSafeInteger(defesaAtual) || defesaAtual < 0 || !Number.isSafeInteger(valorAcrobacia) || valorAcrobacia < 0 || typeof habilidadeAtiva !== 'boolean') {
+    throw new Error('Valores da Defesa alternativa inválidos.');
+  }
+  return habilidadeAtiva ? Math.max(defesaAtual, 10 + valorAcrobacia) : defesaAtual;
+}
+
 
 export type RestricaoAtaqueCondicao = { condicao: CondicaoId; motivo: string };
 
