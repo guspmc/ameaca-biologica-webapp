@@ -34,7 +34,7 @@ import { calcularFaseBioInfeccao } from './bioInfeccao';
 import { reanimacaoValida } from './reanimacaoFicha';
 import { adicionarInstanciaCondicao, condicoesAtivas, gerarIdCondicao, listaCondicoesValida } from './condicoesFicha';
 import { classePersonagem, termoPersonagem } from './textoPersonagem';
-import { calcularDefesaComCondicoes } from './condicoesCalculadora';
+import { calcularDefesaComCondicoes, calcularDefesaComReflexosSobrevivente } from './condicoesCalculadora';
 import { confirmarDescansoCompletoProgressao, estadoProgressaoPersistenteValido, pedidoProgressaoPersistenteValido, type PedidoProgressaoPersistente } from './progressaoPersistente';
 
 type DadosFichaLocal = {
@@ -305,6 +305,10 @@ export default function FichaLocal({ nome, mesa, contextoId, dados, aoFechar, ao
   const penalidadeMorteNivel1 = progressaoValida && (ficha.progressao as { penalidadeMorteNivel1: boolean }).penalidadeMorteNivel1;
   const defesa = derivados?.defesa ?? 10 + numero(atributos.agilidade);
   const defesaAtual = calcularDefesaComCondicoes(defesa, numero(atributos.agilidade), condicoesAtivasIds);
+  const acrobaciaAtual = valorBasePericia('Acrobacia', atributos, treinada || null, distribuicao, extra || null, extraTentativa || null);
+  const reflexosSobreviventeAtivo = habilidadesAtivasIds.includes('reflexos-de-sobrevivente');
+  const defesaContraAtaques = calcularDefesaComReflexosSobrevivente(defesaAtual, acrobaciaAtual, reflexosSobreviventeAtivo);
+  const paredeHumanaAtiva = habilidadesAtivasIds.includes('parede-humana');
   const capacidade = derivados?.inventario ?? capacidadeInventario(numero(atributos.forca), origem);
   const listaPericias = [...new Set([...(PERICIAS_CLASSE[classe] ?? []), ...(dadosOrigem?.pericias ?? []), ...(treinada ? [treinada] : []), ...(extra ? [extra] : []), ...(extraTentativa ? [extraTentativa] : []), ...Object.keys(distribuicao)])].sort();
   const itensClasse = caracteristicos(classe);
@@ -541,6 +545,7 @@ export default function FichaLocal({ nome, mesa, contextoId, dados, aoFechar, ao
           <h3 className="ficha-local-subtitulo">Defesa e deslocamento</h3>
           <div className="ficha-local-grade">
             <div><small>DEFESA ATUAL</small><strong>{defesaAtual}</strong><p>Base {defesa} · {condicoesAtivasIds.includes('desorientado') ? 'AGI removida por Desorientado' : 'AGI aplicada'}{condicoesAtivasIds.includes('exposto') ? ' · −2 por Exposto' : ''}. Equipamentos ainda não aplicados.</p></div>
+            {reflexosSobreviventeAtivo && <div><small>DEFESA CONTRA ATAQUES — REFLEXOS DE SOBREVIVENTE</small><strong>{defesaContraAtaques}</strong><p>Use o maior entre a Defesa atual e 10 + Acrobacia ({10 + acrobaciaAtual}). A escolha é feita contra cada Ataque; não altera a Defesa-base.</p></div>}
             <div><small>MOVIMENTO BASE</small><strong>9 m</strong><p>Deslocamento base informado pela ficha.</p></div>
           </div>
 
@@ -567,6 +572,7 @@ export default function FichaLocal({ nome, mesa, contextoId, dados, aoFechar, ao
           <div className="ficha-local-grade">
             <div><small>MODIFICADOR DE INICIATIVA</small><strong>+{numero(atributos.agilidade)}</strong><p>AGI da personagem. A rolagem pontual fica disponível no modo Automático; a ordem do Encontro pertence ao Painel do Mestre.</p></div>
           </div>
+          {paredeHumanaAtiva && <p className="ficha-local-aviso">PAREDE HUMANA: ao fim do seu turno, se não tiver gasto o recurso Movimento, até o início do próximo turno recebe +VIG na Defesa e RD igual a 1 + metade do Nível de Operador (arredondada para baixo; máximo 6). Confirme o gatilho e a duração na Mesa; a Ficha não acompanha o gasto de Movimento nem ativa esse efeito automaticamente.</p>}
           {configuracaoFuncionamento.modo === 'automatico' && <CalculadoraTesteLocal escopo="ataques" atributos={atributos} treinada={treinada} periciaOrigemExtra={extra} periciaTentativaErroTreinada={extraTentativa} temTentativaEErro={temTentativaEErro} distribuicao={distribuicao} modoDados={configuracaoFuncionamento.modoDados} origem={origem} saDisponivel={recursosAtuais.saAtual} aoFalharCriticoAtaque={registrarExpostoPorFalhaCritica} armaOperario={armaOperario} penalidadeMorteNivel1={penalidadeMorteNivel1} bonusAtaqueBI={faseBi.bonusTesteAtaque ?? 0} desvantagemBI={faseBi.desvantagemAtaquesETestes === true} condicoesAtivas={condicoesAtivasIds} habilidadesAtivas={habilidadesAtivasIds} />}
           <p className="ficha-local-aviso">O painel registra usos de Ação, Movimento, Ação Bônus, Reação, Interação Gratuita, Esforço e gastos de Manobra; ele não presume gatilhos nem aplica efeitos. PV, SA e BI continuam administrados nos painéis próprios. A Ficha Automática disponibiliza a consulta de perfis de armas, o Teste de Ataque e o cálculo manual de Dano; nenhum resultado altera PV. As demais modalidades de Ficha não exibem roladores nem calculadoras. Condições próprias já aplicam à calculadora as Desvantagens expressamente previstas para cada tipo de Teste/Ataque, além dos ajustes de Exposto e Desorientado na Defesa apresentada. Condições do alvo, bloqueios de Ação, efeitos dependentes de percepção, duração em turnos e demais consequências continuam sob controle da mesa. O controle de munição e recarga será integrado ao Inventário, respeitando as regras de cada arma. Iniciativa da Mesa, propriedades operacionais das armas e consumo de munição permanecem pendentes.</p>
         </section>
