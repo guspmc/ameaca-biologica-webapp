@@ -63,3 +63,21 @@ test('Ficha alimenta os cálculos com Condições ativas e cancela Vantagem/Desv
   assert.match(ficha, /calcularDefesaComCondicoes\(defesa, numero\(atributos\.agilidade\), condicoesAtivasIds\)/);
   assert.match(ficha, /DEFESA ATUAL/);
 });
+
+
+test('Condições que proíbem Ações ou Atacar geram lembretes sem bloquear rolagens', () => {
+  assert.deepEqual(api.restricoesDeAtaquePorCondicoes(['desorientado','atordoado','incapacitado','surpreendido']), [
+    { condicao: 'desorientado', motivo: 'Desorientado: não pode usar Atacar.' },
+    { condicao: 'atordoado', motivo: 'Atordoado: não pode realizar Ações, Reações ou Movimento.' },
+    { condicao: 'incapacitado', motivo: 'Incapacitado: não pode realizar Ações nem Reações.' },
+    { condicao: 'surpreendido', motivo: 'Surpreendido: no primeiro turno, não pode se mover nem realizar Ações.' },
+  ]);
+  assert.deepEqual(api.restricoesDeAtaquePorCondicoes(['caido','imobilizado','intoxicado']), []);
+});
+
+test('Calculadora de Ataques apresenta restrições sem desabilitar ou resolver ações', async () => {
+  const calc = await readFile(new URL('../src/CalculadoraTesteLocal.tsx', import.meta.url), 'utf8');
+  assert.match(calc, /restricoesDeAtaquePorCondicoes/);
+  assert.match(calc, /Condições que restringem Ataques/);
+  assert.match(calc, /Este aviso não bloqueia a rolagem/);
+});
