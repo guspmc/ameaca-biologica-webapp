@@ -170,7 +170,7 @@ Nenhum desses pontos deve ser resolvido por inferência durante a implementaçã
 
 **Proteção deliberada:** Aparar não pode ser registrado nesta etapa. Embora o gatilho possa indicar que o Ataque seria aparável, a Ficha ainda não dispõe de estado confiável para validar arma empunhada, elegibilidade e Durabilidade. O sistema não presume equipamento.
 
-**Limites:** a interface não rola o Teste defensivo, não determina sucesso, não aplica Defesa, Dano, BI ou Condições. A autorização de Esquiva é uma confirmação do jogador com a Mesa; não é inferida de uma Habilidade. A interpretação de 20 natural permanece a regra já codificada: fecha as Reações defensivas normais.
+**Limites:** o cálculo do Teste de Esquiva ocorre somente após solicitação explícita e não aplica Defesa, Dano, BI ou Condições. A autorização de Esquiva é uma confirmação do jogador com a Mesa; não é inferida de uma Habilidade. A interpretação de 20 natural permanece a regra já codificada: fecha as Reações defensivas normais.
 
 **Teste adicionado:** `tests/reacao-defensiva-ficha.test.mjs`. Teste estrutural adicionado; não executado localmente. CI ainda precisa confirmar o resultado.
 
