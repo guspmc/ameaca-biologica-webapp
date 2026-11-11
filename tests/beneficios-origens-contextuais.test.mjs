@@ -7,7 +7,7 @@ import {
 } from '../src/beneficiosOrigensContextuais.ts';
 import { readFile } from 'node:fs/promises';
 
-test('Amnésico exige local conhecido e tentativa AST DT 10; sucesso útil gera Vantagem pendente', () => {
+test('Amnésico exige local conhecido e tentativa AST DT 10; informação útil gera Vantagem pendente', () => {
   const inicial = beneficioAmnesicoInicial();
   assert.throws(() => registrarVislumbresDoPassado(inicial, {
     localConhecido: false, tentativaRealizada: true, informacaoUtil: true,
@@ -18,7 +18,7 @@ test('Amnésico exige local conhecido e tentativa AST DT 10; sucesso útil gera 
   assert.equal(usado.usadoNaSessao, true);
   assert.equal(usado.vantagemSobrevivenciaPendente, true);
   assert.throws(() => registrarVislumbresDoPassado(usado, {
-    localConhecido: true, tentativaRealizada: true, testeBemSucedido: true, informacaoUtil: true,
+    localConhecido: true, tentativaRealizada: true, informacaoUtil: true,
   }), /já foi usado/);
   const novaSessao = renovarSessaoAmnesico(usado);
   assert.equal(novaSessao.usadoNaSessao, false);
