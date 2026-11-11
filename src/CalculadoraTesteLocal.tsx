@@ -41,9 +41,10 @@ type Props = {
   condicoesAtivas?: CondicaoId[];
   habilidadesAtivas?: string[];
   academicoDisponivel?: boolean;
+  criminosoDisponivel?: boolean;
 };
 
-export default function CalculadoraTesteLocal({ atributos, treinada, distribuicao, periciaOrigemExtra = '', periciaTentativaErroTreinada = '', temTentativaEErro = false, modoDados, origem = '', saDisponivel = 0, aoFalharCriticoAtaque, penalidadeMorteNivel1 = false, bonusAtaqueBI = 0, desvantagemBI = false, condicoesAtivas = [], habilidadesAtivas = [], escopo = 'testes', armaOperario = '', academicoDisponivel = false }: Props) {
+export default function CalculadoraTesteLocal({ atributos, treinada, distribuicao, periciaOrigemExtra = '', periciaTentativaErroTreinada = '', temTentativaEErro = false, modoDados, origem = '', saDisponivel = 0, aoFalharCriticoAtaque, penalidadeMorteNivel1 = false, bonusAtaqueBI = 0, desvantagemBI = false, condicoesAtivas = [], habilidadesAtivas = [], escopo = 'testes', armaOperario = '', academicoDisponivel = false, criminosoDisponivel = false }: Props) {
   const [tipo, setTipo] = useState<'pericia' | 'atributo' | 'ataque-corpo' | 'ataque-distancia'>(escopo === 'ataques' ? 'ataque-corpo' : 'pericia');
   const [pericia, setPericia] = useState('Percepção');
   const [armaId, setArmaId] = useState(() => escopo === 'ataques' && origem === 'Operário' ? listarPerfisArma().find(perfil => perfil.nome === armaOperario)?.id ?? '' : '');
@@ -65,6 +66,8 @@ export default function CalculadoraTesteLocal({ atributos, treinada, distribuica
   const [dado2, setDado2] = useState('');
   const [gastoSAConfirmado, setGastoSAConfirmado] = useState(false);
   const [usarSaberEAPoder, setUsarSaberEAPoder] = useState(false);
+  const [finalidadeCriminoso, setFinalidadeCriminoso] = useState<'outra' | 'procurar_itens_recursos'>('outra');
+  const [usarBeneficioCriminoso, setUsarBeneficioCriminoso] = useState(false);
   const [finalidade, setFinalidade] = useState<'procurar_pista' | 'outra'>('outra');
   const [metodo, setMetodo] = useState<'fisico' | 'virtual'>(modoDados === 'virtuais' ? 'virtual' : 'fisico');
   const [dadosConfirmados, setDadosConfirmados] = useState<{ dado1: number; dado2?: number } | null>(null);
@@ -109,6 +112,8 @@ export default function CalculadoraTesteLocal({ atributos, treinada, distribuica
   const curiosaAtiva = escopo === 'testes' && tipo === 'pericia' && habilidadesAtivas.includes('curiosa');
   const academicoAplicavel = escopo === 'testes' && academicoDisponivel && origem === 'Acadêmico'
     && (tipo === 'atributo' ? atributo === 'astucia' : tipo === 'pericia' && atributoAssociado === 'astucia');
+  const criminosoAplicavel = escopo === 'testes' && criminosoDisponivel && origem === 'Criminoso'
+    && tipo === 'pericia' && periciaEfetiva === 'Investigação' && finalidadeCriminoso === 'procurar_itens_recursos';
   const curiosaContextual = curiosaAtiva && ['Percepção', 'Investigação'].includes(periciaEfetiva);
   const quantoMaisMelhorAtiva = escopo === 'ataques' && habilidadesAtivas.includes('quanto-mais-melhor');
   const armeiroAtivo = escopo === 'ataques' && habilidadesAtivas.includes('armeiro');
@@ -119,12 +124,13 @@ export default function CalculadoraTesteLocal({ atributos, treinada, distribuica
   const anatomiaDeCombateAtiva = escopo === 'ataques' && habilidadesAtivas.includes('anatomia-de-combate');
   const golpeSujoAtivo = escopo === 'ataques' && tipo === 'ataque-corpo' && habilidadesAtivas.includes('golpe-sujo');
   const ambidestriaAtiva = escopo === 'ataques' && tipo === 'ataque-distancia' && habilidadesAtivas.includes('ambidestria');
-  const existeVantagem = vantagem === 'vantagem' || codeVeronicaAtiva || parrudoAtivo || (academicoAplicavel && usarSaberEAPoder);
+  const existeVantagem = vantagem === 'vantagem' || codeVeronicaAtiva || parrudoAtivo
+    || (academicoAplicavel && usarSaberEAPoder) || (criminosoAplicavel && usarBeneficioCriminoso);
   const existeDesvantagem = vantagem === 'desvantagem' || desvantagemBI || desvantagensCondicao.length > 0 || desvantagemDesarmado;
   const vantagemEfetiva: VantagemTeste = existeVantagem && existeDesvantagem ? 'normal'
     : existeVantagem ? 'vantagem'
     : existeDesvantagem ? 'desvantagem' : 'normal';
-  useEffect(() => { setUsarSaberEAPoder(false); }, [tipo, periciaEfetiva, atributo]);
+  useEffect(() => { setUsarSaberEAPoder(false); setUsarBeneficioCriminoso(false); }, [tipo, periciaEfetiva, atributo, finalidadeCriminoso]);
   useEffect(() => {
     setDadosConfirmados(null);
     setDado1('');
@@ -404,6 +410,16 @@ export default function CalculadoraTesteLocal({ atributos, treinada, distribuica
       <input type="checkbox" checked={impossivel} onChange={evento => { setImpossivel(evento.target.checked); setDado1(''); setDado2(''); setDadosConfirmados(null); setErroRolagem(''); }} />
       Impossível — sem Teste
     </label>}
+    {origem === 'Criminoso' && escopo === 'testes' && tipo === 'pericia' && periciaEfetiva === 'Investigação' && criminosoDisponivel && <div className="ficha-local-editor">
+      <label>Finalidade da Investigação
+        <select value={finalidadeCriminoso} onChange={evento => { setFinalidadeCriminoso(evento.target.value as 'outra' | 'procurar_itens_recursos'); setUsarBeneficioCriminoso(false); setDado1(''); setDado2(''); setDadosConfirmados(null); }}>
+          <option value="outra">Outra finalidade</option>
+          <option value="procurar_itens_recursos">Procurar itens ou recursos</option>
+        </select>
+      </label>
+      {finalidadeCriminoso === 'procurar_itens_recursos' && <label className="ficha-local-opcao"><input type="checkbox" checked={usarBeneficioCriminoso} onChange={evento => { setUsarBeneficioCriminoso(evento.target.checked); setDado1(''); setDado2(''); setDadosConfirmados(null); }} /> Usar benefício do Criminoso neste Teste · Vantagem</label>}
+      {finalidadeCriminoso === 'procurar_itens_recursos' && <small>Criminoso: uma vez por Descanso Completo, Vantagem em Investigação ao procurar itens ou recursos. Se usar, marque o consumo no painel Benefícios limitados a Descanso Completo. Vantagem não acumula com outra fonte.</small>}
+    </div>}
     {academicoAplicavel && <div className="ficha-local-editor">
       <label className="ficha-local-opcao"><input type="checkbox" checked={usarSaberEAPoder} onChange={evento => { setUsarSaberEAPoder(evento.target.checked); setDado1(''); setDado2(''); setDadosConfirmados(null); setErroRolagem(''); }} /> Usar Saber é Poder neste Teste · Vantagem</label>
       <small>Acadêmico: uma vez por Descanso Completo, em um Teste puro de AST ou de Perícia associada a AST. Se usar o benefício, marque o uso como realizado no painel Benefícios limitados a Descanso Completo. Vantagem não acumula com outra fonte.</small>
