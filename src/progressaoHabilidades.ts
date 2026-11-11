@@ -254,6 +254,8 @@ export function avaliarDisponibilidadeProgressao(estado: EstadoProgressao): {
   }
   if (estado.nivelAtual >= 10) return { disponivel: false, proximoNivel: null, motivo: 'A personagem já alcançou o nível máximo.' };
   const proximoNivel = estado.nivelAtual + 1;
+  const houveMorteRegistrada = estado.missoesCompletadasNaUltimaMorte !== undefined
+    && estado.missoesCompletadasNaUltimaMorte !== null;
   const requisitoCumprido = estado.metodo === undefined
     ? estado.avancoAutorizado === true
     : estado.metodo === 'marco_narrativo'
@@ -262,13 +264,13 @@ export function avaliarDisponibilidadeProgressao(estado: EstadoProgressao): {
   if (!requisitoCumprido) return {
     disponivel: false, proximoNivel,
     motivo: estado.metodo === undefined
-      ? 'Aguardando autorização de avanço pelo grupo/Narrador; o critério é decidido fora do WebApp.'
+      ? houveMorteRegistrada
+        ? 'Após perder um Nível por Morte, é necessária nova autorização de avanço pelo grupo/Narrador.'
+        : 'Aguardando autorização de avanço pelo grupo/Narrador; o critério é decidido fora do WebApp.'
       : estado.metodo === 'marco_narrativo'
         ? 'Aguardando concessão de Marco Narrativo pelo Narrador.'
         : `A personagem precisa alcançar ${MISSOES_POR_NIVEL[proximoNivel - 1]} Missões Completadas.`,
   };
-  const houveMorteRegistrada = estado.missoesCompletadasNaUltimaMorte !== undefined
-    && estado.missoesCompletadasNaUltimaMorte !== null;
   if (houveMorteRegistrada) {
     const avancouAposMorte = estado.metodo === undefined
       ? estado.avancoAutorizado === true
