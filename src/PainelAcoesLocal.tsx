@@ -14,6 +14,7 @@ import { avaliarAtaqueOportunidade, registrarAtaqueOportunidade, prepararContraA
 import { sortearDados, validarResultadosFisicos } from './rolagemDados';
 import type { ModoDados } from './funcionamentoFicha';
 import { condicoesQueImpoemDesvantagem } from './condicoesCalculadora';
+import type { CondicaoId } from './condicoesFicha';
 
 type Props = {
   dados: Record<string, unknown>;
@@ -27,7 +28,7 @@ type Props = {
   modo?: 'automatico' | 'misto' | 'manual';
   modoDados?: ModoDados;
   desvantagemBI?: boolean;
-  condicoesAtivas?: string[];
+  condicoesAtivas?: CondicaoId[];
 };
 
 const RECURSOS: { id: RecursoAcao; nome: string; custo: string }[] = [
@@ -225,7 +226,7 @@ export default function PainelAcoesLocal({ dados, saAtual, aoSalvar, origemDados
                   </label>}
                   {modoDados !== 'mistos' && <p>Método: {modoDados === 'fisicos' ? 'Dados físicos' : 'Dados virtuais'}.</p>}
                   {metodoDefensivo === 'fisico' && <>
-                    <label>Resultado do d20{condicoesQueImpoemDesvantagem(condicoesAtivas as never, { escopo: 'testes', tipoTeste: 'pericia', pericia: 'Reflexos' }).length || desvantagemBI ? ' · Desvantagem ativa: informe dois dados' : ''}
+                    <label>Resultado do d20{condicoesQueImpoemDesvantagem(condicoesAtivas, { escopo: 'testes', tipoTeste: 'pericia', pericia: 'Reflexos' }).length || desvantagemBI ? ' · Desvantagem ativa: informe dois dados' : ''}
                       <input type="number" min="1" max="20" step="1" value={dadoDefensivo1} disabled={salvando} onChange={evento => { setDadoDefensivo1(evento.target.value); setResultadoDefensivo(null); }} />
                     </label>
                     {(condicoesQueImpoemDesvantagem(condicoesAtivas as never, { escopo: 'testes', tipoTeste: 'pericia', pericia: 'Reflexos' }).length > 0 || desvantagemBI) && <label>Segundo d20
