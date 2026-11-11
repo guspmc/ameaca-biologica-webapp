@@ -56,6 +56,7 @@ test('início do turno não renova a janela; somente o fim do próximo turno a e
   let estado = comprarRecursoPorEsforco(economiaAcoesInicial(6), 'acao');
   estado = encerrarTurnoAcoes(estado);
   assert.equal(saNaJanelaEsforco(estado), 0);
+  assert.equal(estado.janelaEsforcoAtiva, true);
   assert.deepEqual(estado.comprasEsforco, { acao: 0, movimento: 0, acaoBonus: 0, reacao: 0 });
   estado = gastarSAEmManobra(estado, 1, true);
   estado = iniciarTurnoAcoes(estado);
@@ -65,6 +66,7 @@ test('início do turno não renova a janela; somente o fim do próximo turno a e
   assert.equal(saNaJanelaEsforco(estado), 2);
   estado = encerrarTurnoAcoes(estado);
   assert.equal(saNaJanelaEsforco(estado), 0);
+  assert.equal(estado.janelaEsforcoAtiva, false);
   assert.equal(estado.turnoEmAndamento, false);
 });
 
@@ -105,4 +107,46 @@ test('sincronizar SA preserva os marcadores e rejeita saldo inválido', () => {
   assert.equal(sincronizado.saGastaNaJanela, 1);
   assert.equal(sincronizado.comprasEsforco.movimento, 1);
   assert.throws(() => sincronizarSAAtual(estado, -1), /inteiro não negativo/);
+});
+
+
+test('janela aberta no fim do turno preserva gastos feitos fora do turno até o fim do próximo', () => {
+  let estado = encerrarTurnoAcoes(economiaAcoesInicial(5));
+  assert.equal(estado.janelaEsforcoAtiva, true);
+  estado = gastarSAEmManobra(estado, 1, true);
+  assert.equal(estado.saGastaNaJanela, 1);
+  estado = iniciarTurnoAcoes(estado);
+  estado = comprarRecursoPorEsforco(estado, 'movimento');
+  assert.equal(estado.saGastaNaJanela, 2);
+  assert.throws(() => gastarSAEmManobra(estado, 2), /limite de 3 SA/);
+  estado = encerrarTurnoAcoes(estado);
+  assert.equal(estado.saGastaNaJanela, 0);
+  assert.equal(estado.janelaEsforcoAtiva, false);
+});
+
+test('gastos do turno atual não pertencem à janela que só começa no fim dele', () => {
+  let estado = gastarSAEmManobra(economiaAcoesInicial(5), 2);
+  assert.equal(estado.saGastaNaJanela, 2);
+  estado = encerrarTurnoAcoes(estado);
+  assert.equal(estado.saGastaNaJanela, 0);
+  assert.equal(estado.janelaEsforcoAtiva, true);
+  estado = gastarSAEmManobra(estado, 3, true);
+  assert.equal(estado.saGastaNaJanela, 3);
+  assert.throws(() => gastarSAEmManobra(estado, 1, true), /limite de 3 SA/);
+});
+
+test('migração estrita de economia antiga preserva fase e contador', async () => {
+  const { migrarEconomiaAcoesLegada, estadoEconomiaAcoesLegadoReconhecido } = await import('../src/economiaAcoes.ts');
+  const antiga = {
+    saAtual: 4, saGastaNaJanela: 2,
+    normaisUsados: { acao: false, movimento: false, acaoBonus: false, reacao: true },
+    comprasEsforco: { acao: 0, movimento: 0, acaoBonus: 0, reacao: 0 },
+    interacaoGratuitaUsada: false, turnoEmAndamento: false,
+  };
+  assert.equal(estadoEconomiaAcoesLegadoReconhecido(antiga), true);
+  const migrada = migrarEconomiaAcoesLegada(antiga);
+  assert.equal(migrada.janelaEsforcoAtiva, true);
+  assert.equal(migrada.saGastaNaJanela, 2);
+  assert.equal(antiga.saGastaNaJanela, 2);
+  assert.equal(estadoEconomiaAcoesLegadoReconhecido({ ...antiga, campoExtra: true }), false);
 });
