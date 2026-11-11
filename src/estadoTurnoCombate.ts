@@ -1,5 +1,7 @@
 import {
   economiaAcoesInicial,
+  consumirRecursoNormal,
+  gastarSAEmManobra,
   iniciarTurnoAcoes,
   encerrarTurnoAcoes,
   estadoEconomiaAcoesValido,
@@ -14,6 +16,7 @@ export type EstadoTurnoCombate = {
   manobras: EstadoManobrasTurno;
   movimentosAdicionaisConcedidos: number;
   ataqueAdicionalAutorizado: boolean;
+  proximoTurnoComprometido: boolean;
 };
 
 export type OrigemEstadoTurnoCombate = 'composto' | 'legado' | 'novo';
@@ -56,6 +59,7 @@ export function carregarEstadoTurnoCombate(
         manobras: { disparadaUsada: false, fugaUsada: false, mirarPreparado: false, ataqueNormalRealizado: false, combateDuasArmasUsado: false },
         movimentosAdicionaisConcedidos: 0,
         ataqueAdicionalAutorizado: false,
+        proximoTurnoComprometido: false,
       },
       valido: true,
       origem: 'legado',
@@ -78,12 +82,14 @@ function migrarEstadoTurnoCombateComposto(valor: unknown): EstadoTurnoCombate | 
   const chavesEstado = Object.keys(estado).sort().join('|');
   const chavesBasicas = ['economia', 'manobras', 'versao'].sort().join('|');
   const chavesComMarcadores = ['economia', 'manobras', 'versao', 'movimentosAdicionaisConcedidos', 'ataqueAdicionalAutorizado'].sort().join('|');
-  if (chavesEstado !== chavesBasicas && chavesEstado !== chavesComMarcadores) return null;
+  const chavesComCompromisso = ['economia', 'manobras', 'versao', 'movimentosAdicionaisConcedidos', 'ataqueAdicionalAutorizado', 'proximoTurnoComprometido'].sort().join('|');
+  if (chavesEstado !== chavesBasicas && chavesEstado !== chavesComMarcadores && chavesEstado !== chavesComCompromisso) return null;
 
-  if (chavesEstado === chavesComMarcadores
+  if ((chavesEstado === chavesComMarcadores || chavesEstado === chavesComCompromisso)
     && (!Number.isSafeInteger(estado.movimentosAdicionaisConcedidos)
       || (estado.movimentosAdicionaisConcedidos as number) < 0
-      || typeof estado.ataqueAdicionalAutorizado !== 'boolean')) return null;
+      || typeof estado.ataqueAdicionalAutorizado !== 'boolean'
+      || (chavesEstado === chavesComCompromisso && typeof estado.proximoTurnoComprometido !== 'boolean'))) return null;
 
   if (!estado.manobras || typeof estado.manobras !== 'object' || Array.isArray(estado.manobras)
     || Object.getPrototypeOf(estado.manobras) !== Object.prototype) return null;
@@ -108,7 +114,8 @@ function migrarEstadoTurnoCombateComposto(valor: unknown): EstadoTurnoCombate | 
       combateDuasArmasUsado: manobras.combateDuasArmasUsado as boolean,
     },
     movimentosAdicionaisConcedidos: chavesEstado === chavesComMarcadores ? estado.movimentosAdicionaisConcedidos as number : 0,
-    ataqueAdicionalAutorizado: chavesEstado === chavesComMarcadores ? estado.ataqueAdicionalAutorizado as boolean : false,
+    ataqueAdicionalAutorizado: chavesEstado !== chavesBasicas ? estado.ataqueAdicionalAutorizado as boolean : false,
+    proximoTurnoComprometido: chavesEstado === chavesComCompromisso ? estado.proximoTurnoComprometido as boolean : false,
   };
 }
 
@@ -125,6 +132,7 @@ export function estadoTurnoCombateInicial(saAtual: number): EstadoTurnoCombate {
     },
     movimentosAdicionaisConcedidos: 0,
     ataqueAdicionalAutorizado: false,
+    proximoTurnoComprometido: false,
   };
 }
 
@@ -132,10 +140,11 @@ export function estadoTurnoCombateValido(valor: unknown): valor is EstadoTurnoCo
   if (!valor || typeof valor !== 'object' || Array.isArray(valor)
     || Object.getPrototypeOf(valor) !== Object.prototype) return false;
   const estado = valor as Record<string, unknown>;
-  if (Object.keys(estado).sort().join('|') !== ['ataqueAdicionalAutorizado', 'economia', 'manobras', 'movimentosAdicionaisConcedidos', 'versao'].sort().join('|')
+  if (Object.keys(estado).sort().join('|') !== ['ataqueAdicionalAutorizado', 'economia', 'manobras', 'movimentosAdicionaisConcedidos', 'proximoTurnoComprometido', 'versao'].sort().join('|')
     || estado.versao !== 1 || !estadoEconomiaAcoesValido(estado.economia)
     || !Number.isSafeInteger(estado.movimentosAdicionaisConcedidos) || (estado.movimentosAdicionaisConcedidos as number) < 0
-    || typeof estado.ataqueAdicionalAutorizado !== 'boolean') return false;
+    || typeof estado.ataqueAdicionalAutorizado !== 'boolean'
+    || typeof estado.proximoTurnoComprometido !== 'boolean') return false;
   const manobras = estado.manobras;
   if (!manobras || typeof manobras !== 'object' || Array.isArray(manobras)
     || Object.getPrototypeOf(manobras) !== Object.prototype) return false;
@@ -154,7 +163,10 @@ export function estadoTurnoCombateValido(valor: unknown): valor is EstadoTurnoCo
 /** Inicia o turno e renova os marcadores de uso por turno; Mirar permanece até o próximo Ataque. */
 export function iniciarTurnoCombate(estado: EstadoTurnoCombate): EstadoTurnoCombate {
   exigirEstadoValido(estado);
-  const economia = iniciarTurnoAcoes(estado.economia);
+  const economiaBase = iniciarTurnoAcoes(estado.economia);
+  const economia = estado.proximoTurnoComprometido
+    ? { ...economiaBase, normaisUsados: { ...economiaBase.normaisUsados, acao: true, movimento: true } }
+    : economiaBase;
   return {
     versao: 1,
     economia,
@@ -167,6 +179,7 @@ export function iniciarTurnoCombate(estado: EstadoTurnoCombate): EstadoTurnoComb
     },
     movimentosAdicionaisConcedidos: 0,
     ataqueAdicionalAutorizado: false,
+    proximoTurnoComprometido: false,
   };
 }
 
@@ -174,6 +187,29 @@ export function iniciarTurnoCombate(estado: EstadoTurnoCombate): EstadoTurnoComb
 export function encerrarTurnoCombate(estado: EstadoTurnoCombate): EstadoTurnoCombate {
   exigirEstadoValido(estado);
   return { ...estado, economia: encerrarTurnoAcoes(estado.economia), manobras: { ...estado.manobras } };
+}
+
+
+/** Registra Finalização Dupla; as condições contextuais são confirmadas pela Mesa, não inferidas. */
+export function registrarFinalizacaoDupla(
+  estado: EstadoTurnoCombate,
+  contexto: { aliadoFinalizou: boolean; alvoSobreviveu: boolean; personagemAindaNaoAgioNaRodada: boolean },
+): EstadoTurnoCombate {
+  exigirEstadoValido(estado);
+  if (!contexto || typeof contexto !== 'object' || Array.isArray(contexto)
+    || Object.getPrototypeOf(contexto) !== Object.prototype
+    || Object.keys(contexto).sort().join('|') !== ['aliadoFinalizou', 'alvoSobreviveu', 'personagemAindaNaoAgioNaRodada'].sort().join('|')
+    || contexto.aliadoFinalizou !== true || contexto.alvoSobreviveu !== true
+    || contexto.personagemAindaNaoAgioNaRodada !== true) {
+    throw new Error('Finalização Dupla exige confirmação de Finalização por aliado, sobrevivência do alvo e personagem ainda não agiu na rodada.');
+  }
+  if (estado.proximoTurnoComprometido) throw new Error('Ação e Movimento do próximo turno já estão comprometidos.');
+  if (estado.economia.normaisUsados.reacao) throw new Error('Finalização Dupla exige uma Reação disponível.');
+  const comReacao = consumirRecursoNormal(estado.economia, 'reacao');
+  const economia = gastarSAEmManobra(comReacao, 3, true);
+  const proximo = { ...estado, economia, proximoTurnoComprometido: true };
+  exigirEstadoValido(proximo);
+  return proximo;
 }
 
 /** Aplica uma Manobra e atualiza Economia + marcadores como uma única transição pura. */
@@ -197,6 +233,7 @@ export function aplicarManobraCombate(
     manobras: { ...resultado.manobras },
     movimentosAdicionaisConcedidos: estado.movimentosAdicionaisConcedidos + resultado.movimentosAdicionais,
     ataqueAdicionalAutorizado: estado.ataqueAdicionalAutorizado || resultado.ataqueAdicionalAutorizado,
+    proximoTurnoComprometido: estado.proximoTurnoComprometido,
   };
   if (!estadoTurnoCombateValido(proximo)) throw new Error('A Manobra produziu um estado de turno inválido.');
   return { estado: proximo, resultado };
