@@ -57,3 +57,31 @@ export function calcularDefesaComCondicoes(
     - (ativas.has('desorientado') ? agilidade : 0)
     - (ativas.has('exposto') ? 2 : 0);
 }
+
+
+export type RestricaoAtaqueCondicao = { condicao: CondicaoId; motivo: string };
+
+/** Lembretes de Condições que proíbem Ações ou o uso de Atacar; não bloqueia a rolagem. */
+export function restricoesDeAtaquePorCondicoes(
+  condicoes: readonly CondicaoId[],
+): RestricaoAtaqueCondicao[] {
+  const ativas = new Set(condicoes);
+  const restricoes: RestricaoAtaqueCondicao[] = [];
+  if (ativas.has('desorientado')) restricoes.push({
+    condicao: 'desorientado',
+    motivo: 'Desorientado: não pode usar Atacar.',
+  });
+  if (ativas.has('atordoado')) restricoes.push({
+    condicao: 'atordoado',
+    motivo: 'Atordoado: não pode realizar Ações, Reações ou Movimento.',
+  });
+  if (ativas.has('incapacitado')) restricoes.push({
+    condicao: 'incapacitado',
+    motivo: 'Incapacitado: não pode realizar Ações nem Reações.',
+  });
+  if (ativas.has('surpreendido')) restricoes.push({
+    condicao: 'surpreendido',
+    motivo: 'Surpreendido: no primeiro turno, não pode se mover nem realizar Ações.',
+  });
+  return restricoes;
+}
