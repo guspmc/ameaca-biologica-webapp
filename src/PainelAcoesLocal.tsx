@@ -6,10 +6,11 @@ import {
   saNaJanelaEsforco, type EstadoEconomiaAcoes, type RecursoAcao,
 } from './economiaAcoes';
 import {
-  aplicarManobraCombate, carregarEstadoTurnoCombate, encerrarTurnoCombate,
+  aplicarManobraCombate, aplicarReacaoCombate, carregarEstadoTurnoCombate, encerrarTurnoCombate,
   iniciarTurnoCombate, registrarResolucaoAtaqueAdicional, registrarFinalizacaoDupla, type EstadoTurnoCombate,
 } from './estadoTurnoCombate';
 import { registrarCombateDuasArmas, registrarDisparada, registrarFuga, registrarMirar, registrarAtaque, registrarFinalizar, registrarAjudar } from './manobrasOperacionais';
+import { avaliarAtaqueOportunidade, registrarAtaqueOportunidade } from './reacoesCombate';
 
 type Props = {
   dados: Record<string, unknown>;
@@ -51,6 +52,9 @@ export default function PainelAcoesLocal({ dados, saAtual, aoSalvar, origemDados
   const [confirmouAliadoFinalizou, setConfirmouAliadoFinalizou] = useState(false);
   const [confirmouAlvoSobreviveu, setConfirmouAlvoSobreviveu] = useState(false);
   const [confirmouAindaNaoAgio, setConfirmouAindaNaoAgio] = useState(false);
+  const [confirmouSaidaVoluntaria, setConfirmouSaidaVoluntaria] = useState(false);
+  const [confirmouQuadradoAmeacado, setConfirmouQuadradoAmeacado] = useState(false);
+  const [confirmouSemProtecaoAoO, setConfirmouSemProtecaoAoO] = useState(false);
   const bloqueioOperacao = useRef(false);
   useEffect(() => {
     if (salvando) return;
@@ -85,6 +89,11 @@ export default function PainelAcoesLocal({ dados, saAtual, aoSalvar, origemDados
         setConfirmouAliadoFinalizou(false);
         setConfirmouAlvoSobreviveu(false);
         setConfirmouAindaNaoAgio(false);
+      }
+      if (mensagemConfirmada?.startsWith('Ataque de Oportunidade')) {
+        setConfirmouSaidaVoluntaria(false);
+        setConfirmouQuadradoAmeacado(false);
+        setConfirmouSemProtecaoAoO(false);
       }
       setConfirmacao(mensagemConfirmada ?? (origemDados === 'servidor' ? 'Economia de ações confirmada pelo servidor.' : 'Economia de ações salva neste dispositivo.'));
     } catch (problema) {
@@ -121,6 +130,30 @@ export default function PainelAcoesLocal({ dados, saAtual, aoSalvar, origemDados
                 <button type="button" disabled={salvando || foraDoTurno || economia.saAtual < (recurso.id === 'acao' ? 2 : 1) || janela >= 3} onClick={() => void aplicar(atual => comEconomia(atual, economiaAtual => comprarRecursoPorEsforco(economiaAtual, recurso.id)))}>Comprar · {recurso.custo}</button>
               </div>;
             })}
+          </div>
+
+          <h4>Ataque de Oportunidade</h4>
+          <div className="ficha-local-editor">
+            <p>Registre somente depois de confirmar com a Mesa que a criatura saiu voluntariamente de um quadrado ameaçado por você e não estava protegida contra esse gatilho. O Ataque não interrompe o Movimento do alvo. A Ficha registra a Reação, mas não realiza o Ataque nem verifica posições.</p>
+            <label><input type="checkbox" checked={confirmouSaidaVoluntaria} disabled={salvando} onChange={evento => setConfirmouSaidaVoluntaria(evento.target.checked)} /> A saída da criatura foi voluntária.</label>
+            <label><input type="checkbox" checked={confirmouQuadradoAmeacado} disabled={salvando} onChange={evento => setConfirmouQuadradoAmeacado(evento.target.checked)} /> A criatura saiu de um quadrado ameaçado por mim.</label>
+            <label><input type="checkbox" checked={confirmouSemProtecaoAoO} disabled={salvando} onChange={evento => setConfirmouSemProtecaoAoO(evento.target.checked)} /> A criatura não estava protegida contra Ataque de Oportunidade.</label>
+            <p className="ficha-local-legenda">{economia.normaisUsados.reacao ? 'Sua Reação normal já foi usada: registrar este Ataque comprará outra Reação por 1 SA, respeitando a janela de 3 SA.' : 'O registro consumirá sua Reação normal, sem custo de SA.'}</p>
+            <button type="button"
+              disabled={salvando || !confirmouSaidaVoluntaria || !confirmouQuadradoAmeacado || !confirmouSemProtecaoAoO || (economia.normaisUsados.reacao && (economia.saAtual < 1 || janela >= 3))}
+              onClick={() => {
+                const gatilho = avaliarAtaqueOportunidade({
+                  saiuVoluntariamente: confirmouSaidaVoluntaria,
+                  saiuQuadradoAmeacado: confirmouQuadradoAmeacado,
+                  protegidoContraGatilho: !confirmouSemProtecaoAoO,
+                });
+                const comprada = economia.normaisUsados.reacao;
+                void aplicar(atual => aplicarReacaoCombate(atual, economiaAtual =>
+                  registrarAtaqueOportunidade({ economia: economiaAtual, gatilho }),
+                ).estado, comprada
+                  ? 'Ataque de Oportunidade registrado: Reação adicional comprada por 1 SA. O Movimento do alvo não é interrompido.'
+                  : 'Ataque de Oportunidade registrado: Reação normal consumida. O Movimento do alvo não é interrompido.');
+              }}>Registrar Ataque de Oportunidade · Reação</button>
           </div>
 
           <h4>Ajudar</h4>
