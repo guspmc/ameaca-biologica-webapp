@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  estadoTurnoCombateInicial, estadoTurnoCombateValido, carregarEstadoTurnoCombate, estadoTurnoCombateCompostoLegadoReconhecido,
+  estadoTurnoCombateInicial, estadoTurnoCombateValido, carregarEstadoTurnoCombate, estadoTurnoCombateCompostoLegadoReconhecido, aplicarReacaoDefensivaCombate,
   iniciarTurnoCombate, encerrarTurnoCombate,
   aplicarManobraCombate, aplicarReacaoCombate, registrarFinalizacaoDupla,
 } from '../src/estadoTurnoCombate.ts';
@@ -14,6 +14,7 @@ test('estado integrado nasce versionado e valida sua estrutura completa', () => 
   assert.equal(estado.movimentosAdicionaisConcedidos, 0);
   assert.equal(estado.ataqueAdicionalAutorizado, false);
   assert.equal(estado.proximoTurnoComprometido, false);
+  assert.equal(estado.reacaoDefensivaRegistrada, false);
   assert.equal(estadoTurnoCombateValido(estado), true);
   assert.equal(estadoTurnoCombateValido({ ...estado, campoExtra: true }), false);
   assert.equal(estadoTurnoCombateValido({ ...estado, manobras: { ...estado.manobras, fugaUsada: true } }), false);
@@ -42,6 +43,23 @@ test('Manobras encadeadas preservam Economia e marcadores no mesmo estado', () =
   assert.equal(estado.manobras.disparadaUsada, true);
   assert.equal(estado.manobras.fugaUsada, true);
   assert.equal(estado.movimentosAdicionaisConcedidos, 2);
+});
+
+test('Reação defensiva fica identificada no estado persistente para Contra-Ataque Instintivo', () => {
+  let estado = estadoTurnoCombateInicial(4);
+  const janela = avaliarJanelaReacao({
+    resultadoAtaque: 12, dadoNaturalAtaque: 12, ataqueCorpoACorpo: true,
+    ataqueAcertou: true, ataqueAparavel: true, gatilhoEsquivaAutorizado: true,
+  });
+  estado = aplicarReacaoDefensivaCombate(estado, economia =>
+    registrarReacaoDefensiva({ economia, manobra: 'esquivar', janela }),
+  ).estado;
+  assert.equal(estado.reacaoDefensivaRegistrada, true);
+  const recarregado = carregarEstadoTurnoCombate(estado, null, 4);
+  assert.equal(recarregado.valido, true);
+  assert.equal(recarregado.estado.reacaoDefensivaRegistrada, true);
+  const proximoTurno = iniciarTurnoCombate(encerrarTurnoCombate(recarregado.estado));
+  assert.equal(proximoTurno.reacaoDefensivaRegistrada, false);
 });
 
 test('Reação defensiva atualiza Economia sem apagar estado das Manobras', () => {
@@ -242,6 +260,7 @@ test('migração de estado composto anterior adiciona compromisso falso sem perd
   assert.equal(migrado.estado.movimentosAdicionaisConcedidos, 2);
   assert.equal(migrado.estado.ataqueAdicionalAutorizado, true);
   assert.equal(migrado.estado.proximoTurnoComprometido, false);
+  assert.equal(migrado.estado.reacaoDefensivaRegistrada, false);
 });
 
 
