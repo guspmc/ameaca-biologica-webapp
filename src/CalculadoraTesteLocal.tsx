@@ -104,6 +104,8 @@ export default function CalculadoraTesteLocal({ atributos, treinada, distribuica
   const desvantagemDesarmado = perfilCorpo?.id === 'universal-ataque-desarmado';
   const codeVeronicaAtiva = escopo === 'testes' && tipo === 'pericia' && habilidadesAtivas.includes('code-veronica');
   const parrudoAtivo = escopo === 'testes' && tipo === 'pericia' && periciaEfetiva === 'Fortitude' && habilidadesAtivas.includes('parrudo');
+  const curiosaAtiva = escopo === 'testes' && tipo === 'pericia' && habilidadesAtivas.includes('curiosa');
+  const curiosaContextual = curiosaAtiva && ['Percepção', 'Investigação'].includes(periciaEfetiva);
   const existeVantagem = vantagem === 'vantagem' || codeVeronicaAtiva || parrudoAtivo;
   const existeDesvantagem = vantagem === 'desvantagem' || desvantagemBI || desvantagensCondicao.length > 0 || desvantagemDesarmado;
   const vantagemEfetiva: VantagemTeste = existeVantagem && existeDesvantagem ? 'normal'
@@ -379,6 +381,8 @@ export default function CalculadoraTesteLocal({ atributos, treinada, distribuica
       <input type="checkbox" checked={impossivel} onChange={evento => { setImpossivel(evento.target.checked); setDado1(''); setDado2(''); setDadosConfirmados(null); setErroRolagem(''); }} />
       Impossível — sem Teste
     </label>}
+    {curiosaAtiva && <p className="ficha-local-aviso" role="status">CURIOSA: quando houver tempo para observar/investigar sem Pressão Imediata, concede Vantagem em Percepção e Investigação, mesmo sem Treinamento. Não se aplica em combate, perseguições, fugas ou quando o Narrador determinar que não há tempo para análise cuidadosa. Se a situação cumprir os requisitos, selecione Vantagem manualmente. Uma vez por Descanso Completo, também permite Teste de AST DT 12 para pedir direção ou pista curta dedutível.</p>}
+    {curiosaContextual && <p className="ficha-local-legenda">Esta Perícia é abrangida por Curiosa; confirme com a Mesa se há tempo e ausência de Pressão Imediata antes de aplicar Vantagem.</p>}
     {parrudoAtivo && <p className="ficha-local-aviso" role="status">PARRUDO: Vantagem automática em Testes de Fortitude.</p>}
     {codeVeronicaAtiva && <p className="ficha-local-aviso" role="status">CODE VERONICA: Vantagem automática em Testes de Perícia; resultados naturais de 2 a 9 contam como 10. Um 1 natural continua sendo Falha Crítica. Fontes de Desvantagem cancelam a Vantagem normalmente.</p>}
     <label>Condição da rolagem
