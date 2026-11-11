@@ -849,29 +849,33 @@ Esta atualização substitui qualquer ordem anterior incompatível nesta matriz.
 - A decisão narrativa de gatilho, quadrado ameaçado, proteção contra AoO e elegibilidade do item permanece externa/manual.
 - Testes adicionados, não executados localmente; CI pendente.
 
-## 22. Auditoria de Finalizar e Finalização Dupla (11/11/2026)
+## 22. Implementação inicial de Finalizar e Finalização Dupla (11/11/2026)
 
 **CÂNONE CONSULTADO — Arquivo do Jogador v1.0, pp. 77–79**
 - Finalizar custa 3 SA; é uma Manobra cujo custo completo inclui o Ataque e o deslocamento de até o Movimento exclusivamente para alcançar o alvo. Não consome a Ação nem o Movimento normais.
-- Em acerto, o alvo faz Fortitude contra DT igual ao resultado do Ataque; em falha, sofre Dano normal +3d6. Se estiver Vulnerável e puder sofrer Morte Instantânea, é morto.
+- Em acerto, o alvo realiza Fortitude com DT igual ao resultado do Ataque. Em falha, sofre Dano normal +3d6. Se estiver Vulnerável e puder sofrer Morte Instantânea, é morto.
 - Finalização Dupla custa Reação +3 SA; só pode ser usada depois que um aliado Finalizar e o alvo sobreviver, por personagem que ainda não agiu na rodada.
 - Finalização Dupla compromete a Ação e o Movimento do próximo turno, preservando Ação Bônus e Ação Livre.
-- O custo de 3 SA é integral para Finalizar. A janela de Esforço limita a 3 SA gastos em Esforço e Manobras, renovada somente ao fim do próximo turno da personagem. Custos de Habilidades não entram nesse limite salvo texto expresso.
 
-**AUDITORIA DA IMPLEMENTAÇÃO**
-- src/economiaAcoes.ts já permite registrar um gasto de Manobra de 3 SA e aplica o teto de 3 SA por janela. Isso é infraestrutura genérica, não implementação de Finalizar.
-- src/manobrasOperacionais.ts não contém operação Finalizar nem Finalização Dupla.
-- src/estadoTurnoCombate.ts não possui marcador persistente para comprometer Ação + Movimento do próximo turno. iniciarTurnoCombate() renova ambos os recursos normalmente, portanto não representa a penalidade da Finalização Dupla.
-- src/reacoesCombate.ts não oferece operação integrada de Finalização Dupla. O helper de Contra-Ataque Instintivo e a exceção de VOCÊ APAROU UM MÍSSIL!? não substituem a Manobra Finalizar.
-- A calculadora de Ataques não resolve essa Manobra nem a Fortitude do alvo; não há registro operacional de alvo sobrevivente após Finalização.
+**IMPLEMENTADO NA BRANCH**
+- `src/manobrasOperacionais.ts`: `registrarFinalizar()` gasta os 3 SA como custo integral, exige turno próprio ativo e preserva Ação/Movimento normais. O ataque, deslocamento e resolução do alvo continuam manuais.
+- `src/estadoTurnoCombate.ts`: `registrarFinalizacaoDupla()` exige confirmação contextual estrita de aliado que Finalizou, alvo sobrevivente e personagem ainda não agiu; consome a Reação normal e 3 SA; grava `proximoTurnoComprometido`.
+- O marcador persiste no estado composto. Ao iniciar o próximo turno próprio, Ação e Movimento são marcados como usados; Ação Bônus, Reação e Interação Gratuita são renovadas normalmente. O marcador é então consumido.
+- Estados compostos históricos conhecidos continuam migráveis e recebem compromisso falso por padrão; estruturas desconhecidas permanecem bloqueadas.
+- `src/PainelAcoesLocal.tsx`: controles nomeados para as duas Manobras. Finalização Dupla exige três confirmações explícitas, sem inferir iniciativa ou sobrevivência do alvo.
 
-**RESULTADO**
-- **PENDENTE / NÃO IMPLEMENTADO:** Finalizar e Finalização Dupla como operações de domínio e fluxo integrado.
-- **SEM CORREÇÃO DE CÓDIGO NESTE CICLO:** não foi seguro simular a penalidade da Finalização Dupla apenas marcando recursos do turno atual, pois a regra compromete o próximo turno e o estado atual os renova no início. A implementação exige evolução explícita e persistente do estado de turno.
-- **DECISÕES CANÔNICAS NÃO NECESSÁRIAS:** o texto das pp. 77–79 é suficiente para especificar os custos e os compromissos. Permanecem externas as condições narrativas/operacionais que o livro deixa para a Mesa, como confirmação de que o alvo sobreviveu e de que a personagem ainda não agiu na rodada.
+**AUDITORIA DA JANELA DE SA**
+- A releitura do texto da p. 77 confirmou que o contador existente em `src/economiaAcoes.ts` já corresponde à janela: gastos a partir do fim do turno anterior permanecem até o fim do turno próprio seguinte, quando o contador é renovado. Nenhuma alteração foi feita nessa economia.
+
+**LIMITES**
+- A Ficha não executa o Ataque de Finalizar, não mede deslocamento, não rola Fortitude do alvo, não aplica Dano +3d6 nem Morte Instantânea.
+- Finalização Dupla não verifica Iniciativa, ordem da rodada, autoria da primeira Finalização nem sobrevivência do alvo: as três condições são confirmadas manualmente.
+- A penalidade é aplicada quando a pessoa registra o início do próximo turno no painel. A Ficha não controla a Iniciativa do Encontro.
+- O helper exige a Reação normal disponível; compra de Reação adicional não é integrada à Finalização Dupla.
+- A integração é local ao Painel de Economia de Ações; não existe fluxo de Encontro/Mestre para coordenar as duas personagens.
 
 **VALIDAÇÃO**
-- Auditoria estática do código e testes existentes; nenhum teste novo foi executado.
-- Não houve alteração de código, validação humana, merge ou publicação.
-- CI do HEAD b233b3f foi consultado novamente: workflows de build e verificação offline ainda estavam em fila no momento da consulta.
-- Checkpoint: docs/checkpoint-auditoria-finalizacao-dupla-2026-11-11.md.
+- Testes unitários adicionados para custo de Finalizar, preservação de Ação/Movimento, validação contextual, gasto de Reação +3 SA, persistência após recarga e aplicação da penalidade no próximo turno.
+- Testes não executados localmente neste ambiente.
+- CI do HEAD final precisa concluir; sem validação humana, merge ou publicação.
+- Checkpoint: `docs/checkpoint-implementacao-finalizacao-2026-11-11.md`.
