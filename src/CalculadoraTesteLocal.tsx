@@ -39,9 +39,10 @@ type Props = {
   bonusAtaqueBI?: number;
   desvantagemBI?: boolean;
   condicoesAtivas?: CondicaoId[];
+  habilidadesAtivas?: string[];
 };
 
-export default function CalculadoraTesteLocal({ atributos, treinada, distribuicao, periciaOrigemExtra = '', periciaTentativaErroTreinada = '', temTentativaEErro = false, modoDados, origem = '', saDisponivel = 0, aoFalharCriticoAtaque, penalidadeMorteNivel1 = false, bonusAtaqueBI = 0, desvantagemBI = false, condicoesAtivas = [], escopo = 'testes', armaOperario = '' }: Props) {
+export default function CalculadoraTesteLocal({ atributos, treinada, distribuicao, periciaOrigemExtra = '', periciaTentativaErroTreinada = '', temTentativaEErro = false, modoDados, origem = '', saDisponivel = 0, aoFalharCriticoAtaque, penalidadeMorteNivel1 = false, bonusAtaqueBI = 0, desvantagemBI = false, condicoesAtivas = [], habilidadesAtivas = [], escopo = 'testes', armaOperario = '' }: Props) {
   const [tipo, setTipo] = useState<'pericia' | 'atributo' | 'ataque-corpo' | 'ataque-distancia'>(escopo === 'ataques' ? 'ataque-corpo' : 'pericia');
   const [pericia, setPericia] = useState('Percepção');
   const [armaId, setArmaId] = useState(() => escopo === 'ataques' && origem === 'Operário' ? listarPerfisArma().find(perfil => perfil.nome === armaOperario)?.id ?? '' : '');
@@ -101,10 +102,12 @@ export default function CalculadoraTesteLocal({ atributos, treinada, distribuica
   const bonusOperario = tipo === 'ataque-corpo' ? bonusAtaqueOperario(armaOperarioEscolhida) : 0;
   const valorTeste = valorBase + bonusOrigem + bonusTentativa + modificadorAtaqueBI + bonusOperario + (penalidadeMorteNivel1 ? -2 : 0);
   const desvantagemDesarmado = perfilCorpo?.id === 'universal-ataque-desarmado';
-  const existeDesvantagem = desvantagemBI || desvantagensCondicao.length > 0 || desvantagemDesarmado;
-  const vantagemEfetiva: VantagemTeste = existeDesvantagem
-    ? (vantagem === 'vantagem' ? 'normal' : 'desvantagem')
-    : vantagem;
+  const codeVeronicaAtiva = escopo === 'testes' && tipo === 'pericia' && habilidadesAtivas.includes('code-veronica');
+  const existeVantagem = vantagem === 'vantagem' || codeVeronicaAtiva;
+  const existeDesvantagem = vantagem === 'desvantagem' || desvantagemBI || desvantagensCondicao.length > 0 || desvantagemDesarmado;
+  const vantagemEfetiva: VantagemTeste = existeVantagem && existeDesvantagem ? 'normal'
+    : existeVantagem ? 'vantagem'
+    : existeDesvantagem ? 'desvantagem' : 'normal';
   useEffect(() => {
     setDadosConfirmados(null);
     setDado1('');
@@ -130,6 +133,7 @@ export default function CalculadoraTesteLocal({ atributos, treinada, distribuica
           dado1: dadosConfirmados?.dado1 ?? null,
           dado2: dadosConfirmados?.dado2 ?? null,
           vantagem: vantagemEfetiva,
+          naturalDe2a9Como10: codeVeronicaAtiva,
         }),
         erro: '',
       };
@@ -210,7 +214,7 @@ export default function CalculadoraTesteLocal({ atributos, treinada, distribuica
       const ehAtaque = tipo === 'ataque-corpo' || tipo === 'ataque-distancia';
       const resultado = ehAtaque
         ? calcularRolagemAtaqueManual({ valorBase: valorTeste, modificador: Number(modificador || 0), dado1: resultados[0], dado2: resultados[1] ?? null, vantagem: vantagemEfetiva })
-        : calcularTesteManual({ valorBase: valorTeste, modificador: Number(modificador || 0), dt: Number(dt), dado1: resultados[0], dado2: resultados[1] ?? null, vantagem: vantagemEfetiva });
+        : calcularTesteManual({ valorBase: valorTeste, modificador: Number(modificador || 0), dt: Number(dt), dado1: resultados[0], dado2: resultados[1] ?? null, vantagem: vantagemEfetiva, naturalDe2a9Como10: codeVeronicaAtiva });
       const ataqueFoiCritico = ehAtaque && resultado.dadoEscolhido === 20;
       if (ehAtaque) setCriticoDano(ataqueFoiCritico);
       if (ehAtaque && resultado.estado === 'falha-critica' && aoFalharCriticoAtaque) {
@@ -374,6 +378,7 @@ export default function CalculadoraTesteLocal({ atributos, treinada, distribuica
       <input type="checkbox" checked={impossivel} onChange={evento => { setImpossivel(evento.target.checked); setDado1(''); setDado2(''); setDadosConfirmados(null); setErroRolagem(''); }} />
       Impossível — sem Teste
     </label>}
+    {codeVeronicaAtiva && <p className="ficha-local-aviso" role="status">CODE VERONICA: Vantagem automática em Testes de Perícia; resultados naturais de 2 a 9 contam como 10. Um 1 natural continua sendo Falha Crítica. Fontes de Desvantagem cancelam a Vantagem normalmente.</p>}
     <label>Condição da rolagem
       <select value={vantagem} disabled={impossivel} onChange={evento => { setVantagem(evento.target.value as VantagemTeste); setDado1(''); setDado2(''); setDadosConfirmados(null); setErroRolagem(''); }}>
         <option value="normal">Normal · 1d20</option>
