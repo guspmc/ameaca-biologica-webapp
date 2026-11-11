@@ -34,11 +34,13 @@ test('Aparar e Esquivar usam as Perícias próprias, sem duplicar Atributo', () 
   }).total, 13);
 });
 
-test('A interface oferece cálculo apenas no modo Automático e respeita o método de dados', () => {
-  assert.match(painel, /modo === 'automatico'/);
+test('A interface permite solicitar o cálculo em qualquer modo e respeita o método de dados', () => {
+  assert.match(painel, /esta rolagem só acontece após sua solicitação/);
+  assert.doesNotMatch(painel, /modo === 'automatico' &&/);
   assert.match(painel, /sortearDados\(desvantagem \? 2 : 1, 20\)/);
   assert.match(painel, /validarResultadosFisicos/);
   assert.match(painel, /modoDados === 'mistos'/);
+  assert.match(painel, /modoDados === 'virtuais'/);
   assert.match(ficha, /valorBasePericia\('Reflexos'/);
   assert.match(ficha, /desvantagemBI=\{faseBi\.desvantagemAtaquesETestes === true\}/);
 });
