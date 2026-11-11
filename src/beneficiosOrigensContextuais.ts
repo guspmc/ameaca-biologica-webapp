@@ -32,9 +32,9 @@ export function beneficioAmnesicoValido(valor: unknown): valor is EstadoBenefici
 
 export function registrarVislumbresDoPassado(
   estado: EstadoBeneficioAmnesico,
-  confirmacoes: { localConhecido: boolean; tentativaRealizada: boolean; testeBemSucedido: boolean; informacaoUtil: boolean },
+  confirmacoes: { localConhecido: boolean; tentativaRealizada: boolean; informacaoUtil: boolean },
 ): EstadoBeneficioAmnesico {
-  if (!beneficioAmnesicoValido(estado) || !confirmacoes || Object.keys(confirmacoes).sort().join('|') !== 'informacaoUtil|localConhecido|tentativaRealizada|testeBemSucedido'
+  if (!beneficioAmnesicoValido(estado) || !confirmacoes || Object.keys(confirmacoes).sort().join('|') !== 'informacaoUtil|localConhecido|tentativaRealizada'
     || Object.values(confirmacoes).some(valor => typeof valor !== 'boolean')) {
     throw new Error('Estado ou confirmações de Vislumbres do Passado inválidos.');
   }
@@ -42,14 +42,11 @@ export function registrarVislumbresDoPassado(
   if (!confirmacoes.localConhecido || !confirmacoes.tentativaRealizada) {
     throw new Error('Vislumbres do Passado exige local conhecido antes da amnésia e tentativa AST DT 10 realizada.');
   }
-  if (confirmacoes.informacaoUtil && !confirmacoes.testeBemSucedido) {
-    throw new Error('Informação útil só pode ser registrada após sucesso no Teste AST DT 10.');
-  }
   return {
     versao: 1,
     usadoNaSessao: true,
     vantagemSobrevivenciaPendente: estado.vantagemSobrevivenciaPendente
-      || (confirmacoes.testeBemSucedido && confirmacoes.informacaoUtil),
+      || confirmacoes.informacaoUtil,
   };
 }
 
