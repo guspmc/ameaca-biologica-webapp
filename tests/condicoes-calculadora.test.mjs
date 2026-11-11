@@ -98,3 +98,13 @@ test('Ficha apresenta Defesa alternativa e lembrete contextual de Parede Humana'
   assert.match(ficha, /paredeHumanaAtiva &&/);
   assert.match(ficha, /se não tiver gasto o recurso Movimento/);
 });
+
+
+test('Ficha apresenta todos os benefícios contextuais de Reflexos de Sobrevivente e Rolamento', async () => {
+  const ficha = await readFile(new URL('../src/FichaLocal.tsx', import.meta.url), 'utf8');
+  assert.match(ficha, /Uma vez por rodada, pode Esquivar sem gastar Reação/);
+  assert.match(ficha, /próxima Ação Bônus fica comprometida/);
+  assert.match(ficha, /atravessar espaços ocupados por personagens ou inimigos Médios e menores/);
+  assert.match(ficha, /habilidadesAtivasIds\.includes\('rolamento'\)/);
+  assert.match(ficha, /reposicionar-se até 3 m sem provocar Ataques de Oportunidade/);
+});
