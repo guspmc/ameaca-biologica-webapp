@@ -152,6 +152,7 @@ export default function PainelAcoesLocal({ dados, saAtual, aoSalvar, origemDados
       }
       if (mensagemConfirmada?.startsWith('Esquiva declarada')) {
         setReacaoDefensivaDeclarada(true);
+        setConfirmouDefesaBemSucedida(false);
         setDadoDefensivo1('');
         setDadoDefensivo2('');
         setResultadoDefensivo(null);
@@ -202,17 +203,17 @@ export default function PainelAcoesLocal({ dados, saAtual, aoSalvar, origemDados
           <div className="ficha-local-editor">
             <p>Informe o resultado do Ataque recebido e o d20 natural para identificar a janela. A Reação deve ser declarada imediatamente, antes da resolução de Dano, BI ou Condições. No modo Automático, a Ficha também calcula o Teste de Esquiva após a declaração; nos modos Misto e Manual, a resolução permanece com os procedimentos escolhidos pelo grupo.</p>
             <label>Resultado total do Ataque
-              <input type="number" min="1" step="1" value={resultadoAtaqueDefensivo} disabled={salvando} onChange={evento => { setResultadoAtaqueDefensivo(evento.target.value); setJanelaDefensiva(null); setReacaoDefensivaDeclarada(false); setResultadoDefensivo(null); }} />
+              <input type="number" min="1" step="1" value={resultadoAtaqueDefensivo} disabled={salvando} onChange={evento => { setResultadoAtaqueDefensivo(evento.target.value); setJanelaDefensiva(null); setConfirmouDefesaBemSucedida(false); setReacaoDefensivaDeclarada(false); setResultadoDefensivo(null); }} />
             </label>
             <label>Dado natural do Ataque (1–20)
-              <input type="number" min="1" max="20" step="1" value={dadoNaturalDefensivo} disabled={salvando} onChange={evento => { setDadoNaturalDefensivo(evento.target.value); setJanelaDefensiva(null); setReacaoDefensivaDeclarada(false); setResultadoDefensivo(null); }} />
+              <input type="number" min="1" max="20" step="1" value={dadoNaturalDefensivo} disabled={salvando} onChange={evento => { setDadoNaturalDefensivo(evento.target.value); setJanelaDefensiva(null); setConfirmouDefesaBemSucedida(false); setReacaoDefensivaDeclarada(false); setResultadoDefensivo(null); }} />
             </label>
-            <label><input type="checkbox" checked={ataqueCorpoACorpoDefensivo} disabled={salvando} onChange={evento => { setAtaqueCorpoACorpoDefensivo(evento.target.checked); setJanelaDefensiva(null); }} /> O Ataque recebido foi Corpo a Corpo.</label>
-            <label><input type="checkbox" checked={ataqueAcertouDefensivo} disabled={salvando} onChange={evento => { setAtaqueAcertouDefensivo(evento.target.checked); setJanelaDefensiva(null); }} /> O Ataque atingiu a Defesa.</label>
-            <label><input type="checkbox" checked={ataqueAparavelDefensivo} disabled={salvando} onChange={evento => { setAtaqueAparavelDefensivo(evento.target.checked); setJanelaDefensiva(null); }} /> A Mesa confirmou que este Ataque pode ser aparado.</label>
-            <label><input type="checkbox" checked={gatilhoEsquivaAutorizado} disabled={salvando} onChange={evento => { setGatilhoEsquivaAutorizado(evento.target.checked); setJanelaDefensiva(null); }} /> Confirmo que uma Habilidade ou regra autoriza Esquivar contra este gatilho.</label>
+            <label><input type="checkbox" checked={ataqueCorpoACorpoDefensivo} disabled={salvando} onChange={evento => { setAtaqueCorpoACorpoDefensivo(evento.target.checked); setJanelaDefensiva(null); setConfirmouDefesaBemSucedida(false); }} /> O Ataque recebido foi Corpo a Corpo.</label>
+            <label><input type="checkbox" checked={ataqueAcertouDefensivo} disabled={salvando} onChange={evento => { setAtaqueAcertouDefensivo(evento.target.checked); setJanelaDefensiva(null); setConfirmouDefesaBemSucedida(false); }} /> O Ataque atingiu a Defesa.</label>
+            <label><input type="checkbox" checked={ataqueAparavelDefensivo} disabled={salvando} onChange={evento => { setAtaqueAparavelDefensivo(evento.target.checked); setJanelaDefensiva(null); setConfirmouDefesaBemSucedida(false); }} /> A Mesa confirmou que este Ataque pode ser aparado.</label>
+            <label><input type="checkbox" checked={gatilhoEsquivaAutorizado} disabled={salvando} onChange={evento => { setGatilhoEsquivaAutorizado(evento.target.checked); setJanelaDefensiva(null); setConfirmouDefesaBemSucedida(false); }} /> Confirmo que uma Habilidade ou regra autoriza Esquivar contra este gatilho.</label>
             <button type="button" disabled={salvando || !/^\d+$/.test(resultadoAtaqueDefensivo) || Number(resultadoAtaqueDefensivo) < 1 || !/^\d+$/.test(dadoNaturalDefensivo) || Number(dadoNaturalDefensivo) < 1 || Number(dadoNaturalDefensivo) > 20}
-              onClick={() => { try { setErroJanelaDefensiva(''); setJanelaDefensiva(avaliarJanelaReacao({ resultadoAtaque: Number(resultadoAtaqueDefensivo), dadoNaturalAtaque: Number(dadoNaturalDefensivo), ataqueCorpoACorpo: ataqueCorpoACorpoDefensivo, ataqueAcertou: ataqueAcertouDefensivo, ataqueAparavel: ataqueAparavelDefensivo, gatilhoEsquivaAutorizado })); setReacaoDefensivaDeclarada(false); setResultadoDefensivo(null); } catch (problema) { setErroJanelaDefensiva(problema instanceof Error ? problema.message : 'Não foi possível avaliar a janela.'); } }}>Avaliar janela de Reação</button>
+              onClick={() => { try { setErroJanelaDefensiva(''); setJanelaDefensiva(avaliarJanelaReacao({ resultadoAtaque: Number(resultadoAtaqueDefensivo), dadoNaturalAtaque: Number(dadoNaturalDefensivo), ataqueCorpoACorpo: ataqueCorpoACorpoDefensivo, ataqueAcertou: ataqueAcertouDefensivo, ataqueAparavel: ataqueAparavelDefensivo, gatilhoEsquivaAutorizado })); setReacaoDefensivaDeclarada(false); setConfirmouDefesaBemSucedida(false); setResultadoDefensivo(null); } catch (problema) { setErroJanelaDefensiva(problema instanceof Error ? problema.message : 'Não foi possível avaliar a janela.'); } }}>Avaliar janela de Reação</button>
             {erroJanelaDefensiva && <p className="offline-erro" role="alert">{erroJanelaDefensiva}</p>}
             {janelaDefensiva && <>
               <p className="ficha-local-legenda" role="status">{janelaDefensiva.motivo}</p>
