@@ -50,6 +50,9 @@
 - `fa4d2a8` — integra Na Minha Mira ao Painel.
 - `dcc84b9` — adiciona teste estrutural.
 - `d58215f` — registra a integração na matriz.
+- `7370f33` — aplica Na Minha Mira pela transição validada de Reação.
+- `d13cef8` — testa a transição integrada.
+- `185979f` — atualiza a matriz sobre a transição.
 - `42ce3c2` — sincroniza o resultado da Esquiva com Retaliação.
 - `5ef334f` — adiciona teste dessa integração.
 - `1c4bcf0` — limpa sucesso anterior ao mudar o gatilho.
@@ -63,6 +66,8 @@
 ## Integração paralela — Na Minha Mira
 
 - `src/reacoesCombate.ts` agora exige, além dos gatilhos já existentes, confirmação de arma de fogo carregada e apta ao Ataque de Oportunidade à distância.
+- A interface registra a Reação via `aplicarReacaoCombate()`, preservando a validação do estado integrado, em vez de alterar a Economia isoladamente.
+- Teste estrutural exige essa transição: `tests/na-minha-mira-ficha.test.mjs`.
 - `registrarNaMinhaMira()` registra Reação normal ou compra adicional por 1 SA, com validação estrita do resultado.
 - `src/PainelAcoesLocal.tsx` apresenta a seção somente com a Habilidade ativa e exige confirmações manuais de uso disponível na rodada, alvo percebido, Alcance Médio, nova Condição e estado/elegibilidade da arma.
 - O painel não acompanha rodada, posição, percepção, alvo, equipamento ou munição; não executa o Ataque nem aplica efeitos.
