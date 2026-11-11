@@ -897,3 +897,22 @@ Esta atualização substitui qualquer ordem anterior incompatível nesta matriz.
 - Testes estáticos adicionados em `tests/ataques-calculadora.test.mjs`; não executados localmente.
 - CI do novo HEAD pendente; sem validação humana isolada, merge ou publicação.
 - Checkpoint: `docs/checkpoint-anatomia-golpe-sujo-2026-11-11.md`.
+
+
+## 24. Lembrete contextual — Ambidestria (11/11/2026)
+
+**FONTE CANÔNICA**
+- Arquivo do Jogador v1.0, p. 33: duas Pistolas 9 mm empunhadas; ao Atacar com uma, Ataque adicional com a outra como Ação Bônus, uma vez por turno; soma AGI ao Dano normalmente; sacar ambas usa uma Interação Gratuita com Objeto.
+
+**IMPLEMENTADO NA BRANCH**
+- `CalculadoraTesteLocal.tsx` apresenta lembrete contextual no escopo de Ataques à distância quando Ambidestria está ativa.
+- Não presume armas empunhadas nem controla o limite por turno.
+
+**LIMITES**
+- Sem estado de equipamento nas mãos ou integração operacional com Combate com Duas Armas.
+- Arsenal Improvável/Magnums e a exceção de CODE VERONICA para Submetralhadoras sem coronha não foram ampliados.
+
+**VALIDAÇÃO**
+- Teste estático adicionado em `tests/ataques-calculadora.test.mjs`; não executado localmente.
+- CI pendente; sem validação humana isolada, merge ou publicação.
+- Checkpoint: `docs/checkpoint-ambidestria-2026-11-11.md`.
