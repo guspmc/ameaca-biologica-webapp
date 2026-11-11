@@ -9,7 +9,8 @@ import {
   aplicarManobraCombate, carregarEstadoTurnoCombate, encerrarTurnoCombate,
   iniciarTurnoCombate, registrarResolucaoAtaqueAdicional, type EstadoTurnoCombate,
 } from './estadoTurnoCombate';
-import { registrarCombateDuasArmas, registrarDisparada, registrarFuga, registrarMirar, registrarAtaque } from './manobrasOperacionais';
+import { registrarCombateDuasArmas, registrarDisparada, registrarFuga, registrarMirar, registrarAtaque, registrarFinalizar } from './manobrasOperacionais';
+import { registrarFinalizacaoDupla } from './estadoTurnoCombate';
 
 type Props = {
   dados: Record<string, unknown>;
@@ -45,6 +46,9 @@ export default function PainelAcoesLocal({ dados, saAtual, aoSalvar, origemDados
   const [erro, setErro] = useState('');
   const [confirmacao, setConfirmacao] = useState('');
   const [confirmouDuasArmas, setConfirmouDuasArmas] = useState(false);
+  const [confirmouAliadoFinalizou, setConfirmouAliadoFinalizou] = useState(false);
+  const [confirmouAlvoSobreviveu, setConfirmouAlvoSobreviveu] = useState(false);
+  const [confirmouAindaNaoAgio, setConfirmouAindaNaoAgio] = useState(false);
   const bloqueioOperacao = useRef(false);
   useEffect(() => {
     if (salvando) return;
@@ -67,6 +71,11 @@ export default function PainelAcoesLocal({ dados, saAtual, aoSalvar, origemDados
         || (!estado.manobras.combateDuasArmasUsado && proximo.manobras.combateDuasArmasUsado)) {
         setConfirmouDuasArmas(false);
       }
+      if (!estado.proximoTurnoComprometido && proximo.proximoTurnoComprometido) {
+        setConfirmouAliadoFinalizou(false);
+        setConfirmouAlvoSobreviveu(false);
+        setConfirmouAindaNaoAgio(false);
+      }
       setConfirmacao(origemDados === 'servidor' ? 'Economia de ações confirmada pelo servidor.' : 'Economia de ações salva neste dispositivo.');
     } catch (problema) {
       setErro(problema instanceof Error ? problema.message : 'Não foi possível registrar a ação.');
@@ -87,6 +96,7 @@ export default function PainelAcoesLocal({ dados, saAtual, aoSalvar, origemDados
             <div><small>SURTO DE ADRENALINA</small><strong>{economia.saAtual} SA</strong><p>Disponível para Esforço e Manobras.</p></div>
             <div><small>JANELA DE 3 SA</small><strong>{janela}/3 SA</strong><p>Gasto do fim do último turno ao fim deste turno.</p></div>
             <div><small>TURNO DA PERSONAGEM</small><strong>{economia.turnoEmAndamento ? 'Em andamento' : 'Encerrado'}</strong><p>O painel apenas renova seus próprios marcadores; não controla a Iniciativa nem os turnos do Encontro.</p></div>
+            <div><small>PRÓXIMO TURNO</small><strong>{estado.proximoTurnoComprometido ? 'Ação + Movimento comprometidos' : 'Sem compromisso'}</strong><p>Penalidade da Finalização Dupla, quando registrada.</p></div>
             <div><small>INTERAÇÃO GRATUITA</small><strong>{economia.interacaoGratuitaUsada ? 'Utilizada' : 'Disponível'}</strong><p>Recurso paralelo, não comprado por Esforço.</p></div>
           </div>
 
@@ -115,6 +125,22 @@ export default function PainelAcoesLocal({ dados, saAtual, aoSalvar, origemDados
             <button type="button" disabled={salvando || !economia.turnoEmAndamento || economia.saAtual < 3 || janela > 0} onClick={() => void aplicar(atual => comEconomia(atual, economiaAtual => gastarSAEmManobra(economiaAtual, 3)))}>Registrar Manobra · 3 SA</button>
           </div>
           <p className="ficha-local-legenda">Use o registro de Manobra somente após uma regra autorizar o gasto. Contra-Ataque, por exemplo, exige defesa bem-sucedida e 1 SA + Reação. O painel não faz rolagens nem presume gatilhos.</p>
+
+          <h4>Finalizar e Finalização Dupla</h4>
+          <div className="recursos-controles">
+            <button type="button" disabled={salvando || !economia.turnoEmAndamento || economia.saAtual < 3 || janela + 3 > 3} onClick={() => void aplicar(atual => aplicarManobraCombate(atual, registrarFinalizar).estado)}>Registrar Finalizar · 3 SA</button>
+          </div>
+          <p className="ficha-local-legenda">Finalizar não consome Ação nem Movimento normais. O Ataque contra a Defesa e o deslocamento de até seu Movimento exclusivamente para alcançar o alvo fazem parte da Manobra e continuam sendo resolvidos manualmente. Em acerto, registre a Fortitude do alvo contra DT igual ao resultado do Ataque; a Ficha não rola pelo alvo nem aplica Dano.</p>
+          <div className="ficha-local-editor">
+            <strong>Finalização Dupla · Reação + 3 SA</strong>
+            <p>Confirme as três condições da regra antes de registrar: um aliado Finalizou, o alvo sobreviveu e esta personagem ainda não agiu na rodada. A confirmação é contextual e não é inferida pela Ficha.</p>
+            <label><input type="checkbox" checked={confirmouAliadoFinalizou} disabled={salvando || estado.proximoTurnoComprometido} onChange={evento => setConfirmouAliadoFinalizou(evento.target.checked)} /> Um aliado realizou Finalizar.</label>
+            <label><input type="checkbox" checked={confirmouAlvoSobreviveu} disabled={salvando || estado.proximoTurnoComprometido} onChange={evento => setConfirmouAlvoSobreviveu(evento.target.checked)} /> O alvo sobreviveu à primeira Finalização.</label>
+            <label><input type="checkbox" checked={confirmouAindaNaoAgio} disabled={salvando || estado.proximoTurnoComprometido} onChange={evento => setConfirmouAindaNaoAgio(evento.target.checked)} /> Minha personagem ainda não agiu nesta rodada.</label>
+            <button type="button" disabled={salvando || estado.proximoTurnoComprometido || economia.normaisUsados.reacao || economia.saAtual < 3 || janela + 3 > 3 || !confirmouAliadoFinalizou || !confirmouAlvoSobreviveu || !confirmouAindaNaoAgio}
+              onClick={() => void aplicar(atual => registrarFinalizacaoDupla(atual, { aliadoFinalizou: confirmouAliadoFinalizou, alvoSobreviveu: confirmouAlvoSobreviveu, personagemAindaNaoAgioNaRodada: confirmouAindaNaoAgio }))}>Registrar Finalização Dupla</button>
+            {estado.proximoTurnoComprometido && <p role="status">Ação e Movimento do próximo turno estão comprometidos. Ação Bônus e Ação Livre permanecem disponíveis.</p>}
+          </div>
 
           <h4>Manobras registradas</h4>
           <div className="ficha-local-grade">
