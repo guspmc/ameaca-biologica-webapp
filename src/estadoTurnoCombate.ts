@@ -3,7 +3,6 @@ import {
   iniciarTurnoAcoes,
   encerrarTurnoAcoes,
   estadoEconomiaAcoesValido,
-  migrarEconomiaAcoesLegada,
   sincronizarSAAtual,
   type EstadoEconomiaAcoes,
 } from './economiaAcoes.ts';
@@ -47,14 +46,13 @@ export function carregarEstadoTurnoCombate(
     return { estado: estadoTurnoCombateInicial(saAtual), valido: false, origem: 'composto' };
   }
   if (legado !== undefined && legado !== null) {
-    const economiaLegada = estadoEconomiaAcoesValido(legado) ? legado : migrarEconomiaAcoesLegada(legado);
-    if (!economiaLegada) {
+    if (!estadoEconomiaAcoesValido(legado)) {
       return { estado: estadoTurnoCombateInicial(saAtual), valido: false, origem: 'legado' };
     }
     return {
       estado: {
         versao: 1,
-        economia: sincronizarSAAtual(economiaLegada, saAtual),
+        economia: sincronizarSAAtual(legado, saAtual),
         manobras: { disparadaUsada: false, fugaUsada: false, mirarPreparado: false, ataqueNormalRealizado: false, combateDuasArmasUsado: false },
         movimentosAdicionaisConcedidos: 0,
         ataqueAdicionalAutorizado: false,
@@ -75,8 +73,7 @@ function migrarEstadoTurnoCombateComposto(valor: unknown): EstadoTurnoCombate | 
   if (!valor || typeof valor !== 'object' || Array.isArray(valor)
     || Object.getPrototypeOf(valor) !== Object.prototype) return null;
   const estado = valor as Record<string, unknown>;
-  const economia = estadoEconomiaAcoesValido(estado.economia) ? estado.economia : migrarEconomiaAcoesLegada(estado.economia);
-  if (estado.versao !== 1 || !economia) return null;
+  if (estado.versao !== 1 || !estadoEconomiaAcoesValido(estado.economia)) return null;
 
   const chavesEstado = Object.keys(estado).sort().join('|');
   const chavesBasicas = ['economia', 'manobras', 'versao'].sort().join('|');
@@ -102,7 +99,7 @@ function migrarEstadoTurnoCombateComposto(valor: unknown): EstadoTurnoCombate | 
 
   return {
     versao: 1,
-    economia,
+    economia: estado.economia,
     manobras: {
       disparadaUsada: manobras.disparadaUsada as boolean,
       fugaUsada: manobras.fugaUsada as boolean,
