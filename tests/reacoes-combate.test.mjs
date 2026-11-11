@@ -382,6 +382,35 @@ test('Não Vai Escapar rejeita gatilho inválido e avaliação forjada', async (
 });
 
 
+test('Mercenário exige hostil oculto que surpreenderia e arma de fogo carregada', async () => {
+  const { avaliarRespostaMercenario, registrarRespostaMercenario } = await import('../src/reacoesCombate.ts');
+  const base = { origemMercenario: true, usoDisponivel: true, hostilOculto: true, hostilSurpreenderia: true, armaFogoCarregada: true };
+  assert.equal(avaliarRespostaMercenario({ ...base, hostilOculto: false }).disponivel, false);
+  assert.equal(avaliarRespostaMercenario({ ...base, hostilSurpreenderia: false }).disponivel, false);
+  assert.equal(avaliarRespostaMercenario({ ...base, armaFogoCarregada: false }).disponivel, false);
+  const registrado = registrarRespostaMercenario({ economia: economiaAcoesInicial(3), avaliacao: avaliarRespostaMercenario(base) });
+  assert.equal(registrado.economia.normaisUsados.reacao, true);
+  assert.equal(registrado.economia.saAtual, 3);
+  assert.equal(registrado.reacaoAdicionalComprada, false);
+});
+
+test('Mercenário compra Reação adicional por 1 SA se a normal já foi usada', async () => {
+  const { avaliarRespostaMercenario, registrarRespostaMercenario } = await import('../src/reacoesCombate.ts');
+  const avaliacao = avaliarRespostaMercenario({ origemMercenario: true, usoDisponivel: true, hostilOculto: true, hostilSurpreenderia: true, armaFogoCarregada: true });
+  const economia = consumirRecursoNormal(economiaAcoesInicial(3), 'reacao');
+  const registrado = registrarRespostaMercenario({ economia, avaliacao });
+  assert.equal(registrado.economia.saAtual, 2);
+  assert.equal(registrado.economia.comprasEsforco.reacao, 1);
+  assert.equal(registrado.reacaoAdicionalComprada, true);
+});
+
+test('Mercenário não permite ultrapassar o limite de 3 SA na janela', async () => {
+  const { avaliarRespostaMercenario, registrarRespostaMercenario } = await import('../src/reacoesCombate.ts');
+  const avaliacao = avaliarRespostaMercenario({ origemMercenario: true, usoDisponivel: true, hostilOculto: true, hostilSurpreenderia: true, armaFogoCarregada: true });
+  const economia = { ...economiaAcoesInicial(3), saGastaNaJanela: 3, normaisUsados: { acao: false, movimento: false, acaoBonus: false, reacao: true } };
+  assert.throws(() => registrarRespostaMercenario({ economia, avaliacao }), /limite de 3 SA/);
+});
+
 test('Na Minha Mira exige arma de fogo carregada e apta e registra apenas a Reação', async () => {
   const { avaliarNaMinhaMira, registrarNaMinhaMira } = await import('../src/reacoesCombate.ts');
   const base = { habilidadeAtiva: true, usoDisponivelNaRodada: true, inimigoPercebido: true, dentroDeAlcanceMedio: true, adquiriuNovaCondicaoPenalizante: true, armaDeFogoCarregada: true, armaPermiteAtaqueOportunidade: true };
