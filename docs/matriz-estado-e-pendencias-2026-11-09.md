@@ -916,3 +916,25 @@ Esta atualização substitui qualquer ordem anterior incompatível nesta matriz.
 - Teste estático adicionado em `tests/ataques-calculadora.test.mjs`; não executado localmente.
 - CI pendente; sem validação humana isolada, merge ou publicação.
 - Checkpoint: `docs/checkpoint-ambidestria-2026-11-11.md`.
+
+
+## 25. Integração da Manobra Ajudar e Origem Servidor Público (11/11/2026)
+
+**FONTE CANÔNICA**
+- Arquivo do Jogador v1.0, p. 78: Ajudar custa Ação em combate; se a tarefa admitir auxílio e a personagem cumprir os requisitos de treinamento, o aliado recebe Vantagem. Alguns Testes não podem ser ajudados.
+- Arquivo do Jogador v1.0, p. 25: Servidor Público concede, ao Ajudar em Teste de Perícia no qual seja Treinado ou Mestre, a Vantagem normal e +2 no Teste.
+
+**IMPLEMENTADO NA BRANCH**
+- PainelAcoesLocal.tsx oferece registro explícito de Ajudar, consumindo Ação pela transição de domínio já existente.
+- Confirmação contextual evita presumir que qualquer tarefa pode receber auxílio ou que requisitos de treinamento foram cumpridos.
+- Para Servidor Público, uma segunda confirmação declara Treinamento/Mestria na Perícia do aliado; a confirmação de salvamento informa Vantagem +2.
+- FichaLocal.tsx passa a Origem ao painel, sem dependência do Inventário.
+
+**LIMITES**
+- A Ficha não escolhe a Perícia do aliado, não avalia a tarefa, nem aplica Vantagem/+2 à rolagem de outra personagem.
+- Não há coordenação entre fichas distintas nem Encontro compartilhado nesta etapa.
+
+**VALIDAÇÃO**
+- Teste de domínio existente confirma consumo de Ação; novo tests/ajudar-ficha.test.mjs cobre a integração e as confirmações.
+- Testes não executados localmente; CI do novo HEAD pendente. Sem validação humana isolada, merge ou publicação.
+- Checkpoint: docs/checkpoint-ajudar-servidor-publico-2026-11-11.md.
