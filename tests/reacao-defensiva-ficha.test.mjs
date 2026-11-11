@@ -27,3 +27,13 @@ test('20 natural é informado como fechamento da janela e a Esquiva não resolve
   assert.match(painel, /Resolva o Teste defensivo manualmente/);
   assert.match(painel, /não rola o d20 nem aplica Defesa, Dano ou efeitos/);
 });
+
+
+test('A interface bloqueia alterações no gatilho depois de declarar a Reação defensiva', () => {
+  const trecho = painel.slice(painel.indexOf('Reações defensivas · Aparar e Esquivar'), painel.indexOf('Teste de Esquiva · Reflexos'));
+  for (const campo of ['resultadoAtaqueDefensivo', 'dadoNaturalDefensivo', 'ataqueCorpoACorpoDefensivo', 'ataqueAcertouDefensivo', 'ataqueAparavelDefensivo', 'gatilhoEsquivaAutorizado']) {
+    assert.match(trecho, new RegExp(campo + '[\\\\s\\\\S]*reacaoDefensivaDeclarada'));
+  }
+  assert.match(trecho, /Avaliar janela de Reação/);
+  assert.match(trecho, /disabled=\\{salvando \\|\\| reacaoDefensivaDeclarada/);
+});
