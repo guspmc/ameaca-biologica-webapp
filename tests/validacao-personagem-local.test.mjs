@@ -81,6 +81,15 @@ test('valida compras iniciais usando o simulador de inventário existente', () =
   assert.equal(validarPersonagemLocal(base({ ...dados, revisaoCompras: -1 })), false);
 });
 
+test('valida estados persistidos de benefícios contextuais de Origem', async () => {
+  const { beneficioAmnesicoInicial, beneficioMilitarInicial } = await import('../src/beneficiosOrigensContextuais.ts');
+  const dados = { versaoModelo: 1, estadoFicha: 'rascunho' };
+  assert.equal(validarPersonagemLocal(base({ ...dados, beneficioAmnesico: beneficioAmnesicoInicial() })), true);
+  assert.equal(validarPersonagemLocal(base({ ...dados, beneficioMilitar: beneficioMilitarInicial() })), true);
+  assert.equal(validarPersonagemLocal(base({ ...dados, beneficioAmnesico: { versao: 1, usadoNaSessao: 'sim', vantagemSobrevivenciaPendente: false } })), false);
+  assert.equal(validarPersonagemLocal(base({ ...dados, beneficioMilitar: { versao: 1, vantagemAtaqueFogoPendente: 1 } })), false);
+});
+
 test('valida BI atual como inteiro não negativo quando o campo estiver presente', () => {
   assert.equal(validarPersonagemLocal(base({ versaoModelo: 1, estadoFicha: 'rascunho', biAtual: 0 })), true);
   assert.equal(validarPersonagemLocal(base({ versaoModelo: 1, estadoFicha: 'rascunho', biAtual: 8 })), true);
