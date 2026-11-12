@@ -100,3 +100,15 @@ test('Desacordado é derivado de 0 PV ou Colapso Viral e não pode ser ativado m
   assert.match(ui, /id !== 'desacordado'/);
   assert.match(ui, /Vulnerável, Desacordado e Colapso Viral são derivados/);
 });
+
+
+test('catálogo descreve integralmente as transformações e identifica seus efeitos não automatizados na UI', async () => {
+  const catalogo = await readFile(new URL('../src/condicoesFicha.ts', import.meta.url), 'utf8');
+  const ui = await readFile(new URL('../src/CondicoesFichaLocal.tsx', import.meta.url), 'utf8');
+  assert.match(catalogo, /deve atacar a criatura consciente mais próxima/);
+  assert.match(catalogo, /permanece inerte por 1 hora/);
+  assert.match(catalogo, /fica Desacordada por 1 hora/);
+  assert.match(catalogo, /também causam \+2 BI/);
+  assert.match(ui, /Registro informativo de transformação/);
+  assert.match(ui, /não aplica automaticamente recuperação de Dados de Vida/);
+});
