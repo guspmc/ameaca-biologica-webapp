@@ -64,6 +64,7 @@ test('a interface salva após confirmação e não aplica efeitos automaticament
   assert.match(ui, /Registro anterior que será retificado/);
   assert.match(ui, /retificaRegistroId/);
   assert.match(ui, /Vincular ao desfecho de Reanimação pendente/);
+  assert.match(ui, /itens\.find\(item => item\.id === retificaRegistroId\).*reanimacaoId/);
 });
 
 
