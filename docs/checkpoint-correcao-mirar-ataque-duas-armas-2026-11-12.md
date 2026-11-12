@@ -2,7 +2,7 @@
 
 **Data:** 12/11/2026  
 **Branch:** `feat/offline-first-ficha`  
-**HEAD de código após as alterações:** `84d74e0d126852535cd73ee75aa36fd75cd64156`  
+**HEAD de código/testes após os ajustes finais:** `087315742622a8e4e744fbe47091a7df2cb648e0`  
 **Escopo:** corrigir o registro de Ataque normal independente de Mirar e conectar Mirar à calculadora, sem alterar regras, visual identity, Inventário ou LAN.
 
 ## 1. Fontes canônicas conferidas
@@ -36,7 +36,9 @@ Arquivo do Jogador v1.0:
 - O bônus não é incorporado ao cálculo de Dano.
 - A lógica de Vantagem/Desvantagem permanece separada; Mirar não cancela Desvantagem.
 - Quando Mirar está preparado, a calculadora apresenta campo textual para a região específica escolhida. Não foi criado catálogo de regiões porque o cânone consultado não fornece uma lista fechada.
-- A confirmação da rolagem fica indisponível até que a região seja informada.
+- A confirmação da rolagem fica indisponível até que a região seja informada no modo Automático.
+- O resultado automático identifica o bônus +2 e a região escolhida.
+- O painel também exibe o bônus e a exigência de região nos modos Misto/Manual, nos quais a rolagem permanece manual e o jogador aplica +2 ao resultado físico/externo.
 - A alteração do marcador de Mirar limpa os dados da rolagem e o campo de região, evitando reutilizar um resultado de outro estado.
 
 ### 2.4 Testes adicionados — `tests/ataques-calculadora.test.mjs`
@@ -47,7 +49,8 @@ Foram acrescentadas verificações estruturais para:
 - não aplicação de bônus no Dano e não remoção de impossibilidade;
 - exigência de região antes da confirmação da rolagem;
 - disponibilidade do registro de Ataque sem Mirar;
-- passagem do marcador persistido para a calculadora.
+- passagem do marcador persistido para a calculadora;
+- lembrete de Mirar nos modos Misto/Manual e identificação da região no resultado automático.
 
 O teste de domínio `tests/manobras-operacionais.test.mjs` já exercita `registrarAtaque()` sem Mirar e a pré-condição de Combate com Duas Armas; ele foi inspecionado, mas não alterado neste ciclo.
 
