@@ -444,6 +444,9 @@ export default function FichaLocal({ nome, mesa, contextoId, dados, aoFechar, ao
           modo={configuracaoFuncionamento.modo}
           aoSalvar={aoSalvarRecursos}
           aoPrepararPatchCompleto={() => {
+            if (!usosDescansoCompletoValido(dados.usosDescansoCompleto ?? {})) {
+              throw new Error('Não foi possível concluir o Descanso Completo: o registro de usos está inválido e precisa ser revisado.');
+            }
             if (origemDados !== 'local' || dados.pedidoProgressao === undefined || dados.pedidoProgressao === null) return {};
             if (!estadoProgressaoPersistenteValido(dados.progressao, classe)
               || !pedidoProgressaoPersistenteValido(dados.pedidoProgressao, dados.progressao, classe)) {
