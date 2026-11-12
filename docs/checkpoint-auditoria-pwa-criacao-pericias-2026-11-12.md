@@ -93,3 +93,37 @@ A pendência indicada na seção 3 foi investigada nesta mesma sequência:
 - A Perícia adicional escolhida é tratada como Treinada pelo cálculo de grau, e portanto não recebe o +1 de Perícia Não Treinada.
 
 **Conclusão estática:** o caminho identificado aplica o +1 no escopo esperado e evita aplicá-lo a Teste puro de Atributo ou Perícia já Treinada. Isso não substitui conferir todas as restrições específicas de cada aplicação que exige Treinamento, nem teste de interface/rolagem em navegador. A pendência de rastreamento geral desta Habilidade fica **resolvida por inspeção estática**, com validação automatizada/CI e humana ainda não comprovadas nesta sessão.
+
+
+## 6. Auditoria estática — Recursos, Fases de BI e Reanimação
+
+### Regras oficiais confrontadas
+
+- Arquivo do Jogador v1.0, p. 17: PV em 0 deixa a personagem Desacordada e inicia Reanimação; SA máximo básico AGI + AST; BI mede contaminação.
+- p. 86: em 0 PV, no próximo turno começam Testes de Reanimação contra DT 12, sem modificador salvo regra específica; até 5 tentativas, 3 sucessos reanimam e 3 falhas causam morte. Cura durante 0 PV acumula e só desperta após o terceiro sucesso, com pelo menos 1 PV ou o total acumulado, respeitando máximo. Ajuda de Medicina DT 15 bem-sucedida concede Vantagem ao próximo Teste.
+- p. 90: BI começa em 0; BI Máxima = BI Base da Classe + AST + bônus; BI só aumenta por fonte infectante com Dano final superior a 0, salvo efeitos específicos; BI não progride sozinha. Fases são calculadas por quintos e, ao alcançar/ultrapassar BI Máxima, ocorre Colapso Viral. Durante Colapso, Testes de Reanimação são imediatos, DT 12; Cobaia tem Vantagem em cada Teste.
+- p. 24: Cobaia recebe +2 BI Máxima e Vantagem nos Testes de Reanimação do Colapso; Desgarrado recebe PV Temporários iguais à metade da BI atual ao aumentá-la.
+
+### Código inspecionado
+
+- `src/recursosFicha.ts`: PV temporários absorvem dano antes dos PV atuais; cura afeta somente PV atuais; PV temporários novos conservam o maior valor em vez de somar; SA é limitada entre 0 e máximo; BI pode alcançar ou ultrapassar máximo. Para Desgarrado, ao aumentar BI por esta operação, concede PV Temporários iguais à metade da BI atual arredondada para baixo.
+- `src/bioInfeccao.ts`: calcula fase por `floor(BI atual × 5 / BI máxima) + 1`, só antes do Colapso; implementa movimento +3 m nas fases 2–4, bônus de Ataque +2 na fase 3, +3 total e +1d4 Corpo a Corpo na fase 4, e perda dos benefícios anteriores, Movimento -6 m e Desvantagem em Ataques/Testes na fase 5. Não altera BI nem aplica efeitos.
+- `src/RecursosFichaLocal.tsx`: expõe ajustes explícitos e salvamento; informa que BI não aumenta sozinha e que atingir o máximo sinaliza Colapso. Edição direta de PV é bloqueada durante Reanimação por 0 PV.
+- `src/ReanimacaoFichaLocal.tsx`: inicia Reanimação por 0 PV aguardando próximo turno; inicia Colapso imediatamente ao atingir BI Máxima; escolhe dados físicos/virtuais conforme modo e preferência, com escolha por rolagem em Misto; apresenta Ajuda de Medicina, acúmulo de cura durante Reanimação por 0 PV e redução de BI para encerrar o Colapso. A interface não decide morte/transformação narrativa; sinaliza o resultado para registro/ação da Mesa.
+
+### Testes existentes identificados
+
+- `tests/recursos-ficha.test.mjs`
+- `tests/bio-infeccao.test.mjs`
+- `tests/reanimacao-ficha.test.mjs`
+- `tests/reanimacao-integracao-ficha.test.mjs`
+
+Os casos inspecionados cobrem limites de recursos, dano/cura/PV temporários, bônus de Desgarrado, fronteiras das cinco Fases, Colapso, Cobaia, Ajuda de Medicina, cura acumulada, sucessos/falhas, estados terminais e validação do registro.
+
+### Classificação e limites
+
+- Fórmulas e transições centrais: **IMPLEMENTADAS; coerência estática com os trechos oficiais consultados**.
+- Testes automatizados: **existem**, mas sua execução/CI neste HEAD não foi confirmada por esta sessão.
+- Uso real com salvamento IndexedDB, recarga, perda de conexão e modo Misto em navegador: **PENDENTE DE TESTE HUMANO**.
+- A Ficha mantém o aumento de BI como ação expressa do usuário/Mesa, em vez de inferir automaticamente que um ataque infectante causou Dano final positivo. Isso respeita a separação de responsabilidades descrita no produto, mas exige que o usuário registre a BI após resolver o evento na Mesa.
+- Nenhuma falha concreta foi demonstrada nesta inspeção que justifique alterar estes módulos.
