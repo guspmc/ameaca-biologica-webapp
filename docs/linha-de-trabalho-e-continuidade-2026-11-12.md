@@ -305,3 +305,14 @@ Prosseguir pelo catálogo de Condições e sua aplicação na calculadora: confr
 - **Checkpoint:** `docs/checkpoint-auditoria-transformacoes-condicoes-2026-11-12.md`.
 - **Testes estruturais:** ampliados; não executados nesta sessão. Validação humana pendente.
 - **Próxima frente:** revisar se as Condições remanescentes e as consequências de Bio-Infecção estão corretamente delimitadas entre estado derivado, registro manual e fluxo mecânico; depois fechar a matriz de lacunas da Ficha antes de propor qualquer módulo novo.
+
+
+## Atualização de continuidade — Transformações e Reanimação (12/11/2026)
+
+- Achado: a Reanimação comum por 0 PV era iniciada sem verificar se Infectado Especial ou Cabeça Carmesim estavam ativos.
+- Correção localizada: a Ficha agora passa a Transformação ativa ao painel de Reanimação. Com Transformação ativa e PV 0, não inicia Reanimação comum nem Colapso automático; mostra o desfecho previsto no Arquivo do Jogador e preserva/bloqueia qualquer registro de Reanimação não concluído que entre em conflito.
+- Se duas Transformações estiverem ativas, ou se 0 PV coincidir com BI Máxima, a Ficha não escolhe a prioridade narrativa; a Mesa resolve.
+- Teste estrutural adicionado em `tests/reanimacao-integracao-ficha.test.mjs`; não executado nesta sessão. Sem validação humana.
+- A correção não implementa cronômetros, transições, Dados de Vida, restrições da Transformação, reversão da Cabeça Carmesim a BI 0, hora Desacordada ou registro de morte. Esses pontos permanecem pendentes.
+- Checkpoint: `docs/checkpoint-interacao-transformacoes-reanimacao-2026-11-12.md`.
+- Próxima ação: auditar a reversão a BI 0 e a hora Desacordada, especialmente a interação com Descanso Completo e encerramento manual da Condição, antes de decidir qualquer novo estado persistente.
