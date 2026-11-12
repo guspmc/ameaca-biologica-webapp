@@ -86,7 +86,7 @@ O bloqueio de Descanso Completo durante períodos explicitamente sem seus benef�
 - `PersonagemLocal.dados` é um objeto extensível; `validarPersonagemLocal` verifica segurança JSON e campos conhecidos, sem allowlist fechada de todas as chaves.
 - `salvarPatchPersonagem` mescla patches por chave em transação IndexedDB e recusa sobrescrita concorrente na mesma chave.
 - Exportação/importação de backup clona e valida os dados completos da personagem; campos JSON seguros desconhecidos são preservados.
-- Portanto, um futuro campo estruturado (por exemplo, `registrosMesa`) aparentemente não exige aumento da versão do IndexedDB, mas ainda exige contrato próprio de validação, limites de tamanho, testes de concorrência, recarga e ida/volta do backup. Não foi implementado nesta etapa.
+- Naquele checkpoint, o campo ainda não havia sido implementado. A implementação posterior está documentada na seção seguinte e no checkpoint `docs/checkpoint-registro-decisoes-mesa-2026-11-12.md`.
 
 ## Implementação posterior — Registro de Decisões da Mesa (12/11/2026)
 
