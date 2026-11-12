@@ -186,3 +186,22 @@ A ordem é deliberada. Não antecipar módulos posteriores nem misturar suas dep
 
 ### Próxima ação
 Corrigir em alteração mínima a integração do Ataque normal e Combate com Duas Armas, e integrar Mirar ao Teste de Ataque sem remover Desvantagem. Antes de editar, inspecionar os testes de calculadora/combate e os contratos de salvamento relevantes. Em seguida decidir o nível de integração operacional das Manobras universais restantes. Atualizar checkpoint e continuidade novamente ao final do próximo ciclo.
+
+
+## Atualização de ciclo — 12/11/2026 (correção de Mirar e Ataque normal)
+
+- **Branch:** `feat/offline-first-ficha`; nenhuma branch nova criada.
+- **HEAD de código após as alterações:** `84d74e0d126852535cd73ee75aa36fd75cd64156`.
+- **Checkpoint:** `docs/checkpoint-correcao-mirar-ataque-duas-armas-2026-11-12.md`.
+- **Matriz:** seção “Correção de Mirar e registro de Ataque normal — 12/11/2026” em `docs/matriz-auditoria-funcional-ficha.md`.
+- **Código alterado:** `src/PainelAcoesLocal.tsx`, `src/CalculadoraTesteLocal.tsx`, `src/FichaLocal.tsx`.
+- **Teste estrutural alterado:** `tests/ataques-calculadora.test.mjs`.
+- **Correções:** registro de Atacar agora é independente de Mirar e atualiza `ataqueNormalRealizado`; o estado persistido válido de Mirar é passado à calculadora; +2 é aplicado ao Teste de Ataque; região específica precisa ser informada antes da rolagem; Desvantagem não é removida; Dano não recebe bônus.
+- **Combate com Duas Armas:** o pré-requisito de Ataque inicial agora pode ser registrado sem Mirar. Elegibilidade das armas segue confirmação manual, sem inventar equipamento que ainda depende do Inventário.
+- **Validação:** testes estruturais adicionados; testes automatizados e build **não executados nesta sessão**; nenhum teste humano executado. Status CI consultado no commit de teste não apresentou status check reportado; não interpretar isso como aprovação.
+- **Restrições:** sem alteração de regras, sem redesign, sem LAN, Supabase, banco, `main`, merge, deploy ou publicação. Inventário ativo segue bloqueado até validação humana da Ficha Offline.
+- **Commits de código/teste deste ciclo:** `01020ec75eb148449a27c7bf5909b2a596d00f63` (Painel), `72f901f3aa0a20828177621151cf44cbf4726be4` (calculadora), `d13661bc20c7d58c9f557f306bc54fc47c862df1` (Ficha), `84d74e0d126852535cd73ee75aa36fd75cd64156` (testes).
+- **Commits documentais:** checkpoint `e7a2d366b3e7f3cb879fa223a897aa453c2756a2`; matriz `bb59090ce7d4e6482b89122d6d39f109dfbbdace`.
+
+### Próxima ação
+Verificar se o workflow/CI foi acionado para o HEAD e obter resultado real de testes/build. Depois executar a bateria humana dirigida: Ataque sem Mirar → Duas Armas; Mirar → região → Ataque +2 → consumo; preservação de Desvantagem; nenhum bônus em Dano/Área; reabertura da Ficha e persistência. Somente após isso seguir para Desengajar e Usar Objeto. Atualizar checkpoint e continuidade ao fim do próximo ciclo.
