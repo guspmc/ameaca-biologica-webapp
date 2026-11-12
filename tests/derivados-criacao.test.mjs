@@ -109,3 +109,11 @@ test('capacidade de Inventário acompanha FOR de 0 a 5 e o bônus de Mochileiro'
     assert.equal(mochileiro.inventario, 5 + forca);
   }
 });
+
+const fichaLocalFonte = readFileSync(resolve(raiz, 'src/FichaLocal.tsx'), 'utf8');
+
+test('Ficha ativa calcula PV Máximos com o Nível atual da personagem', () => {
+  const chamada = fichaLocalFonte.match(/calcularDerivadosCriacao\\(\\{([\\s\\S]*?)\\}\\)/);
+  assert.ok(chamada, 'FichaLocal deve chamar calcularDerivadosCriacao');
+  assert.match(chamada[1], /nivel:\\s*nivelAtual/);
+});
