@@ -181,7 +181,8 @@ A ordem é deliberada. Não antecipar módulos posteriores nem misturar suas dep
 - **Código:** nenhum arquivo de código alterado. Nenhum teste local, CI ou humano executado por esta sessão.
 - **Restrições:** sem mudança visual, sem refatoração LAN, sem Supabase, sem alteração de banco, sem `main`, merge, deploy ou publicação; nenhuma branch criada; Inventário ativo continua bloqueado.
 - **Commits documentais deste ciclo:** checkpoint `36cfdc448ec7c35a153dcfa14128bb46959d443b`; matriz `f00a80512bd8e87132e56ac0936e4898be2b5f0f`.
-- **HEAD após as atualizações documentais:** `f00a80512bd8e87132e56ac0936e4898be2b5f0f`.
+- **HEAD após a gravação do checkpoint e da matriz, imediatamente antes desta atualização de continuidade:** `f00a80512bd8e87132e56ac0936e4898be2b5f0f`.
+- **Commit desta atualização de continuidade:** `4e1219440ef04b87f16f32e02372c5ba43a33d98`.
 
 ### Próxima ação
 Corrigir em alteração mínima a integração do Ataque normal e Combate com Duas Armas, e integrar Mirar ao Teste de Ataque sem remover Desvantagem. Antes de editar, inspecionar os testes de calculadora/combate e os contratos de salvamento relevantes. Em seguida decidir o nível de integração operacional das Manobras universais restantes. Atualizar checkpoint e continuidade novamente ao final do próximo ciclo.
