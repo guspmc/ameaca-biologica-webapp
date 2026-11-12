@@ -285,3 +285,14 @@ Nenhum desses pontos deve ser resolvido por inferência durante a implementaçã
 - **Cobertura:** teste de domínio existente para Desengajar; teste atualizado para exigir Interação Gratuita antes de Usar um Objeto. Testes e build não executados nesta sessão.
 - **Validação humana:** pendente, incluindo persistência, falha de salvamento, turno encerrado e disponibilidade de Ação/Movimento.
 - **Restrições:** sem CSS/redesign, LAN, servidor, Supabase, banco, merge, deploy ou publicação. Inventário ativo permanece bloqueado.
+
+
+## Auditoria das Manobras Universais restantes — 12/11/2026
+
+**Checkpoint:** docs/checkpoint-auditoria-manobras-restantes-2026-11-12.md.
+
+- **Adiar Ação:** permanece como consulta canônica/manual. Altera ordem de Iniciativa e rodada, que não são geridas pela Ficha do Jogador.
+- **Agarrar e Empurrar/Derrubar:** catálogo documentado, mas integração operacional pendente. A regra diz “substitui um Ataque”; não foi mapeado automaticamente para consumo de Ação nem para o marcador de Ataque inicial de Combate com Duas Armas, pois isso poderia liberar indevidamente a manobra de duas armas. Testes resistidos e efeitos permanecem com a Mesa.
+- **Esconder-se:** catálogo documentado, integração operacional pendente. Embora o custo Ação esteja claro, os requisitos ambientais e a escolha entre Percepção Passiva/ativa dependem da situação e da Mesa; não declarar ocultação automaticamente.
+- **Não houve alteração de código.** Testes, build e validação humana não foram executados nesta sessão.
+- **Limites:** sem motor de turnos, gestão de posições/alvos, aplicação de Condições em terceiros ou redesign. Inventário ativo segue bloqueado.
