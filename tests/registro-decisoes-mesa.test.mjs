@@ -21,7 +21,7 @@ test('valida e acrescenta decisões sem alterar registros anteriores', () => {
   const lista = api.adicionarDecisaoMesa([], base);
   assert.deepEqual(lista, [base]);
   assert.equal(api.listaDecisoesMesaValida(lista), true);
-  assert.equal(api.adicionarDecisaoMesa(lista, { ...base, id: 'evento-2', tipo: 'retificacao' }).length, 2);
+  assert.equal(api.adicionarDecisaoMesa(lista, { ...base, id: 'evento-2', tipo: 'retificacao', retificaRegistroId: 'evento-1' }).length, 2);
   assert.equal(lista.length, 1);
 });
 
@@ -31,8 +31,12 @@ test('recusa tipos, textos, datas, chaves extras e IDs duplicados', () => {
   assert.equal(api.registroDecisaoMesaValido({ ...base, responsavel: '' }), false);
   assert.equal(api.registroDecisaoMesaValido({ ...base, ocorridoEm: 'ontem' }), false);
   assert.equal(api.registroDecisaoMesaValido({ ...base, extra: true }), false);
+  assert.equal(api.registroDecisaoMesaValido({ ...base, tipo: 'retificacao' }), false);
+  assert.equal(api.registroDecisaoMesaValido({ ...base, tipo: 'retificacao', retificaRegistroId: 'evento-1' }), true);
   assert.equal(api.listaDecisoesMesaValida([base, base]), false);
   assert.throws(() => api.adicionarDecisaoMesa([base], base), /Identificador/);
+  assert.equal(api.listaDecisoesMesaValida([{ ...base, tipo: 'retificacao', retificaRegistroId: 'inexistente' }]), false);
+  assert.equal(api.listaDecisoesMesaValida([{ ...base, tipo: 'retificacao', retificaRegistroId: base.id }]), false);
 });
 
 test('limita o histórico a 30 registros e protege contra lista inválida', () => {
@@ -54,4 +58,15 @@ test('a interface salva após confirmação e não aplica efeitos automaticament
   assert.match(ui, /não altera PV, BI, Condições, Reanimação/);
   assert.match(ui, /Responsável informado/);
   assert.match(ui, /Retificação/);
+  assert.match(ui, /Registro anterior que será retificado/);
+  assert.match(ui, /retificaRegistroId/);
+  assert.match(ui, /Vincular ao desfecho de Reanimação pendente/);
+});
+
+
+test('decisões de Mesa podem apontar para uma instância específica de Reanimação', () => {
+  const vinculada = { ...base, reanimacaoId: 'reanimacao-1' };
+  assert.equal(api.registroDecisaoMesaValido(vinculada), true);
+  assert.equal(api.listaDecisoesMesaValida([vinculada]), true);
+  assert.equal(api.registroDecisaoMesaValido({ ...base, reanimacaoId: '' }), false);
 });
