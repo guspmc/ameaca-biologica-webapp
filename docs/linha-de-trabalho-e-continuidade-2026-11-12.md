@@ -329,3 +329,5 @@ Prosseguir pelo catálogo de Condições e sua aplicação na calculadora: confr
 - Lacuna: ainda não existe histórico estruturado específico para decisões da Mesa sobre morte da Cabeça Carmesim ou transformação após a hora inerte do Infectado Especial. Auditar contratos de persistência/backup antes de propor esse registro.
 - Descanso Completo continua bloqueado enquanto as Condições correspondentes aos períodos sem benefício estiverem ativas; a Mesa pode encerrar a Condição manualmente quando decidir que o período terminou. Sem cronômetro.
 - Testes estruturais atualizados, não executados nesta sessão. Sem validação humana.
+
+- Auditoria de persistência para futuro Registro de Decisões da Mesa: `PersonagemLocal.dados` aceita campos JSON seguros extensíveis; patches IndexedDB mesclam por chave com detecção de concorrência; backup clona/valida a personagem completa. Um campo próprio de eventos pode dispensar migração de versão do banco, mas requer validador e testes de concorrência, recarga e backup. Nenhum campo/evento novo foi criado.
