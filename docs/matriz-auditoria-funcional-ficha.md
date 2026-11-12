@@ -259,3 +259,16 @@ Nenhum desses pontos deve ser resolvido por inferência durante a implementaçã
 - **Adiar Ação, Agarrar, Empurrar/Derrubar e Esconder-se:** não foram identificados controles operacionais específicos no painel consultado. O catálogo textual não deve ser contabilizado como integração funcional.
 
 **Validação:** os testes de domínio/interface listados no checkpoint existem no repositório, mas não foram executados nesta sessão. Nenhum teste humano foi realizado. Não houve alteração de código.
+
+
+## Correção de Mirar e registro de Ataque normal — 12/11/2026
+
+**Checkpoint:** `docs/checkpoint-correcao-mirar-ataque-duas-armas-2026-11-12.md`.
+
+- **Ataque normal sem Mirar — IMPLEMENTADO NO CÓDIGO:** o painel agora permite registrar a Ação Atacar sem exigir preparação de Mirar. O helper registra `ataqueNormalRealizado`, permitindo cumprir o pré-requisito interno de Combate com Duas Armas.
+- **Combate com Duas Armas — INTEGRAÇÃO CORRIGIDA NO CÓDIGO:** o registro de Ataque inicial não depende mais do botão de Mirar. A confirmação da elegibilidade das armas continua manual, conforme o escopo atual; equipamento autoritativo depende do Inventário.
+- **Mirar — IMPLEMENTADO NO CÓDIGO:** a Ficha repassa à calculadora o marcador persistido de Mirar somente quando o estado de turno é válido. A calculadora aplica +2 ao Teste de Ataque, sem adicionar ao Dano, sem remover Desvantagem e sem permitir Ataque impossível.
+- **Região específica — IMPLEMENTADO NO CÓDIGO:** campo textual obrigatório antes da confirmação da rolagem enquanto Mirar está preparado. Não há catálogo fechado de regiões na fonte canônica consultada; por isso, o app não inventa uma lista.
+- **Área:** o bônus não é aplicado às modalidades de Área sem Teste de Ataque.
+- **Cobertura:** verificações estruturais foram adicionadas a `tests/ataques-calculadora.test.mjs`; os testes existentes de `tests/manobras-operacionais.test.mjs` cobrem o helper de Ataque sem Mirar. **Nenhum teste/build foi executado nesta sessão.**
+- **Validação humana:** pendente, incluindo persistência, ciclo Mirar → Ataque, consumo do marcador, região, modos de dados e manutenção de Desvantagem.
