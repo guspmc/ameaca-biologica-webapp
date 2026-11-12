@@ -43,9 +43,10 @@ type Props = {
   habilidadesAtivas?: string[];
   academicoDisponivel?: boolean;
   criminosoDisponivel?: boolean;
+  mirarPreparado?: boolean;
 };
 
-export default function CalculadoraTesteLocal({ atributos, treinada, distribuicao, periciaOrigemExtra = '', periciaTentativaErroTreinada = '', temTentativaEErro = false, modoDados, origem = '', saDisponivel = 0, aoFalharCriticoAtaque, penalidadeMorteNivel1 = false, bonusAtaqueBI = 0, desvantagemBI = false, condicoesAtivas = [], habilidadesAtivas = [], escopo = 'testes', armaOperario = '', academicoDisponivel = false, criminosoDisponivel = false }: Props) {
+export default function CalculadoraTesteLocal({ atributos, treinada, distribuicao, periciaOrigemExtra = '', periciaTentativaErroTreinada = '', temTentativaEErro = false, modoDados, origem = '', saDisponivel = 0, aoFalharCriticoAtaque, penalidadeMorteNivel1 = false, bonusAtaqueBI = 0, desvantagemBI = false, condicoesAtivas = [], habilidadesAtivas = [], escopo = 'testes', armaOperario = '', academicoDisponivel = false, criminosoDisponivel = false, mirarPreparado = false }: Props) {
   const [tipo, setTipo] = useState<'pericia' | 'atributo' | 'ataque-corpo' | 'ataque-distancia'>(escopo === 'ataques' ? 'ataque-corpo' : 'pericia');
   const [pericia, setPericia] = useState('Percepção');
   const [armaId, setArmaId] = useState(() => escopo === 'ataques' && origem === 'Operário' ? listarPerfisArma().find(perfil => perfil.nome === armaOperario)?.id ?? '' : '');
@@ -74,12 +75,20 @@ export default function CalculadoraTesteLocal({ atributos, treinada, distribuica
   const [dadosConfirmados, setDadosConfirmados] = useState<{ dado1: number; dado2?: number } | null>(null);
   const [erroRolagem, setErroRolagem] = useState('');
   const [mensagemCondicao, setMensagemCondicao] = useState('');
+  const [regiaoMirada, setRegiaoMirada] = useState('');
 
   useEffect(() => {
     setMetodo(modoDados === 'virtuais' ? 'virtual' : 'fisico');
     setDadosConfirmados(null);
     setErroRolagem('');
   }, [modoDados]);
+  useEffect(() => {
+    setRegiaoMirada('');
+    setDadosConfirmados(null);
+    setDado1('');
+    setDado2('');
+    setErroRolagem('');
+  }, [mirarPreparado]);
 
   const periciaEfetiva = tipo === 'ataque-corpo' ? 'Luta' : tipo === 'ataque-distancia' ? 'Pontaria' : pericia;
   const testeDePericia = tipo !== 'atributo';
@@ -106,7 +115,7 @@ export default function CalculadoraTesteLocal({ atributos, treinada, distribuica
   const perfilSelecionado = perfilCorpo ?? perfilFogo;
   const armaOperarioEscolhida = origem === 'Operário' && perfilCorpo?.nome === armaOperario;
   const bonusOperario = tipo === 'ataque-corpo' ? bonusAtaqueOperario(armaOperarioEscolhida) : 0;
-  const valorTeste = valorBase + bonusOrigem + bonusTentativa + modificadorAtaqueBI + bonusOperario + (penalidadeMorteNivel1 ? -2 : 0);
+  const valorTesteBase = valorBase + bonusOrigem + bonusTentativa + modificadorAtaqueBI + bonusOperario + (penalidadeMorteNivel1 ? -2 : 0);
   const desvantagemDesarmado = perfilCorpo?.id === 'universal-ataque-desarmado';
   const codeVeronicaAtiva = escopo === 'testes' && tipo === 'pericia' && habilidadesAtivas.includes('code-veronica');
   const parrudoAtivo = escopo === 'testes' && tipo === 'pericia' && periciaEfetiva === 'Fortitude' && habilidadesAtivas.includes('parrudo');
@@ -207,6 +216,8 @@ export default function CalculadoraTesteLocal({ atributos, treinada, distribuica
   const cadenciadoSelecionado = modoDisparoEfetivo === 'cadenciado' && (modosArmaFogo?.cadenciado ?? false);
   const disparoUnicoIndisponivel = Boolean(modosArmaFogo && !modosArmaFogo.disparoUnico && !rajadaSelecionada && !cadenciadoSelecionado);
   const ataqueEmArea = ataqueEmAreaGM79 || rajadaSelecionada;
+  const bonusMirar = escopo === 'ataques' && mirarPreparado && !ataqueEmArea ? 2 : 0;
+  const valorTeste = valorTesteBase + bonusMirar;
   const procedimentoPerfuracao = modosArmaFogo?.perfuracao ?? null;
   const procedimentoArmaEspecial = perfilFogo ? consultarProcedimentoArmaEspecial(perfilFogo.id) : null;
   useEffect(() => { if (ataqueEmArea) { setCriticoDano(false); setDadosConfirmados(null); setDado1(''); setDado2(''); setErroRolagem(''); } }, [ataqueEmArea]);
@@ -416,6 +427,12 @@ export default function CalculadoraTesteLocal({ atributos, treinada, distribuica
     <p><strong>Modificador da Origem: {bonusOrigem >= 0 ? '+' : ''}{bonusOrigem}</strong>{bonusOrigem ? ' · aplicado somente a este Teste' : ''}</p>
     {temTentativaEErro && testeDePericia && <p><strong>Tentativa e Erro: +{bonusTentativa}</strong>{bonusTentativa ? ' · somente por esta Perícia estar Não Treinada' : ' · sem bônus: a Perícia está Treinada'}</p>}
     {temTentativaEErro && testeDePericia && <small>Você pode realizar Testes com Perícias não Treinadas, inclusive aplicações normalmente restritas a Treinamento, salvo requisito adicional expresso.</small>}
+    {mirarPreparado && !ataqueEmArea && <div className="ficha-local-editor">
+      <p><strong>Mirar ativo: +2 no Teste de Ataque.</strong> O bônus não aumenta Dano, não remove Desvantagem e não torna possível um Ataque impossível.</p>
+      <label>Região específica escolhida no alvo
+        <input type="text" value={regiaoMirada} onChange={evento => { setRegiaoMirada(evento.target.value); setDadosConfirmados(null); setDado1(''); setDado2(''); }} placeholder="Informe a região combinada com a Mesa" />
+      </label>
+    </div>}
     <label>Modificador circunstancial
       <input type="number" step="1" value={modificador} onChange={evento => setModificador(evento.target.value)} />
     </label>
@@ -459,7 +476,7 @@ export default function CalculadoraTesteLocal({ atributos, treinada, distribuica
         <input type="number" min="1" max="20" step="1" value={dado2} onChange={evento => { setDado2(evento.target.value); setDadosConfirmados(null); setCriticoDano(false); }} placeholder="1–20" />
       </label>}
     </div>}
-    {!impossivel && !ataqueEmArea && !disparoUnicoIndisponivel && <button type="button" className="botao-claro" onClick={registrarRolagem}>{metodo === 'virtual' ? (escopo === 'ataques' ? 'Rolar Ataque' : 'Rolar Teste') : (escopo === 'ataques' ? 'Confirmar dados do Ataque' : 'Confirmar dados físicos')}</button>}
+    {!impossivel && !ataqueEmArea && !disparoUnicoIndisponivel && (!mirarPreparado || Boolean(regiaoMirada.trim())) && <button type="button" className="botao-claro" onClick={registrarRolagem}>{metodo === 'virtual' ? (escopo === 'ataques' ? 'Rolar Ataque' : 'Rolar Teste') : (escopo === 'ataques' ? 'Confirmar dados do Ataque' : 'Confirmar dados físicos')}</button>}
     {ataqueEmArea && <p className="ficha-local-aviso" role="status">{rajadaSelecionada ? 'Rajada: não existe Teste de Ataque. Todos os alvos no cone de 4,5 m, inclusive aliados, fazem Reflexos DT 12; sucesso sofre metade do Dano da arma e falha sofre Dano integral. Ação Completa e 10 cartuchos.' : 'Disparo em Área: não existe Teste de Ataque. Use os Testes de Reflexos e a resolução de Dano descritos acima, fora desta rolagem de Ataque.'}</p>}{disparoUnicoIndisponivel && <p className="ficha-local-aviso" role="status">Este perfil não permite Disparo Único. Selecione um modo compatível antes de rolar.</p>}
     {erroRolagem && <p className="offline-erro" role="alert">{erroRolagem}</p>}
     {mensagemCondicao && <p role="status">{mensagemCondicao}</p>}
