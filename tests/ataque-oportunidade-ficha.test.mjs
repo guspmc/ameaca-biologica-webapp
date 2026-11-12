@@ -38,4 +38,5 @@ test('Finalização à Distância e Luta Livre exibem seus requisitos sem automa
   assert.match(painel, /luta-livre/);
   assert.match(painel, /até 12 m em linha reta/);
   assert.match(painel, /máximo 10d8/);
+  assert.match(painel, /não reconhece essa exceção e sempre registra 3 SA/);
 });
