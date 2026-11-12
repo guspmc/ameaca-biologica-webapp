@@ -493,6 +493,7 @@ export default function CalculadoraTesteLocal({ atributos, treinada, distribuica
       {resultadoAtaqueCritico && <p><strong>Acerto Crítico</strong>{multiplicadorCritico ? ` · multiplicador ×${multiplicadorCritico}` : ' · consulte a regra específica do perfil'}</p>}
       {bonusOperario > 0 && <p>Bônus da Origem Operário: +{bonusOperario} no Ataque.</p>}
       {calculado.resultado.total !== null && <p>Dado escolhido: {calculado.resultado.dadoEscolhido} · Valor base: {valorTeste} · Modificador: {Number(modificador || 0)} · Total: {calculado.resultado.total} · {escopo === 'ataques' ? 'Compare com a Defesa do alvo na mesa.' : `DT: ${calculado.resultado.dt}`}</p>}
+      {bonusMirar > 0 && <p>Mirar aplicado: +2 no Teste · Região escolhida: {regiaoMirada}</p>}
     </div>}
   </details>;
 }
