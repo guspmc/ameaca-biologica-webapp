@@ -35,7 +35,7 @@ import { normalizarConfiguracaoFuncionamento, type ConfiguracaoFuncionamento } f
 import { calcularFaseBioInfeccao } from './bioInfeccao';
 import { reanimacaoValida } from './reanimacaoFicha';
 import { usosDescansoCompletoValido } from './usosDescansoCompleto';
-import { adicionarInstanciaCondicao, condicoesAtivas, gerarIdCondicao, listaCondicoesValida } from './condicoesFicha';
+import { adicionarInstanciaCondicao, condicoesAtivas, gerarIdCondicao, listaCondicoesValida, type CondicaoId } from './condicoesFicha';
 import { classePersonagem, termoPersonagem } from './textoPersonagem';
 import { calcularDefesaComCondicoes, calcularDefesaComReflexosSobrevivente } from './condicoesCalculadora';
 import { confirmarDescansoCompletoProgressao, estadoProgressaoPersistenteValido, pedidoProgressaoPersistenteValido, type PedidoProgressaoPersistente } from './progressaoPersistente';
