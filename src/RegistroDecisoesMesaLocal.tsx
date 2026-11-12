@@ -55,7 +55,7 @@ export default function RegistroDecisoesMesaLocal({ dados, aoSalvar, origemDados
   }
 
   return <details className="ficha-local-editor registro-decisoes-mesa">
-    <summary>Registro de decisões da Mesa <span>{itens.length} / 100</span></summary>
+    <summary>Registro de decisões da Mesa <span>{itens.length} / 30</span></summary>
     <p>Registre aqui decisões e acontecimentos definidos pelo Mestre/Jogador responsável. Este histórico não altera PV, BI, Condições, Reanimação ou qualquer outro estado da ficha. O responsável é informado manualmente e não representa uma identificação autenticada da conta.</p>
     {!valido && <p className="offline-erro" role="alert">O histórico de decisões está inválido. Os dados originais foram preservados e a edição foi bloqueada para evitar sobrescrita. Faça um backup e revise o registro.</p>}
     <h4>Novo registro</h4>
@@ -66,10 +66,10 @@ export default function RegistroDecisoesMesaLocal({ dados, aoSalvar, origemDados
         </select>
       </label>
       <label>Descrição da decisão ou do resultado
-        <textarea value={descricao} maxLength={1200} rows={4} disabled={!valido || salvando || itens.length >= 100} onChange={evento => setDescricao(evento.target.value)} placeholder="Descreva o que a Mesa decidiu ou o que aconteceu." />
+        <textarea value={descricao} maxLength={500} rows={4} disabled={!valido || salvando || itens.length >= 100} onChange={evento => setDescricao(evento.target.value)} placeholder="Descreva o que a Mesa decidiu ou o que aconteceu." />
       </label>
       <label>Responsável pela decisão
-        <input value={responsavel} maxLength={120} disabled={!valido || salvando || itens.length >= 100} onChange={evento => setResponsavel(evento.target.value)} placeholder="Nome ou apelido informado pela Mesa" />
+        <input value={responsavel} maxLength={80} disabled={!valido || salvando || itens.length >= 100} onChange={evento => setResponsavel(evento.target.value)} placeholder="Nome ou apelido informado pela Mesa" />
       </label>
       <label>Quando aconteceu
         <input type="datetime-local" value={ocorridoEm} disabled={!valido || salvando || itens.length >= 100} onChange={evento => setOcorridoEm(evento.target.value)} />
@@ -85,7 +85,7 @@ export default function RegistroDecisoesMesaLocal({ dados, aoSalvar, origemDados
       </li>)}</ol>
       <p className="ficha-local-legenda">Os registros não são editados nem apagados nesta versão. Para corrigir uma informação, acrescente uma Retificação que identifique o registro anterior e descreva a correção.</p>
     </>}
-    {itens.length >= 100 && <p className="ficha-local-aviso">Limite de 100 registros atingido. Exporte um backup antes de qualquer ampliação do histórico.</p>}
+    {itens.length >= 100 && <p className="ficha-local-aviso">Limite de 30 registros atingido. Exporte um backup antes de qualquer ampliação do histórico.</p>}
     {mensagem && <p role="status">{mensagem}</p>}
   </details>;
 }
