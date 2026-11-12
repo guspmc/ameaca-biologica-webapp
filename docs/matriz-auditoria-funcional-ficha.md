@@ -350,3 +350,15 @@ Nenhum desses pontos deve ser resolvido por inferência durante a implementaçã
 - **Defeito corrigido no código:** `FichaLocal.tsx` agora repassa `nivelAtual` para `calcularDerivadosCriacao()`; antes, a omissão do parâmetro mantinha PV Máximos calculados como Nível 1 após a progressão. Teste estrutural de regressão adicionado a `tests/derivados-criacao.test.mjs`. A fórmula canônica não foi alterada.
 - **Testes/build/CI:** não executados nesta sessão; o HEAD consultado não retornou status de CI. Validação humana pendente, especialmente PV por Nível com e sem Parrudo e revisão dos lembretes nos três modos.
 - **Restrições:** sem alteração de cânone, esquema, LAN, Supabase, redesign, merge, publicação ou deploy.
+
+
+## Consulta de Habilidades e dependências do Inventário — 12/11/2026
+
+**Checkpoint:** `docs/checkpoint-habilidades-visiveis-e-dependencias-inventario-2026-11-12.md`.
+
+- **Correção de consulta:** Ficha ativa agora lista todas as Habilidades adquiridas com nome, Nível de aquisição (quando consta do histórico), grau e descrição. Teste estrutural adicionado em `tests/progressao-habilidades.test.mjs`.
+- **Inventário:** equipamento inicial é planejado/materializado; o modelo de consulta por exemplar valida snapshots e estados, mas `PainelInventarioLocal` é somente leitura e `EditorInventarioLocal` altera apenas o planejamento da criação. A Ficha ativa declara que movimentação e gerenciamento contínuo ainda não estão integrados.
+- **Dependências não implementadas:** equipar/empunhar, recarregar, munição, Durabilidade, Aparar, instalar Peças, consumir itens, fabricar/combinar Ervas, aplicar PV Temporários/cura e registrar efeitos de cura em aliados. Por isso, Herbalista, Farmácia de Campo, Primeiros Socorros, VOCÊ APAROU UM MÍSSIL!? e bônus de Habilidades dependentes de armas/Peças permanecem sem integração operacional.
+- **Segurança mecânica:** não conectar efeitos a snapshot de consulta somente leitura nem simular uso/consumo/equipamento sem transação verificável.
+- **Testes/build/CI:** não executados nesta sessão; validação humana da lista de Habilidades em níveis variados e telas mobile/desktop pendente.
+- **Próximo:** auditoria das regras de ataques e reações existentes (Aparar, Esquivar, Finalizar e Ataque de Oportunidade), sem ultrapassar a dependência do Inventário ativo.
