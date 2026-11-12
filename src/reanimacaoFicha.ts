@@ -8,6 +8,8 @@ export type EstadoReanimacao =
   | 'concluida';
 
 export type Reanimacao = {
+  /** Identificador estável desta instância; opcional apenas em registros legados. */
+  id?: string;
   causa: CausaReanimacao;
   estado: EstadoReanimacao;
   sucessos: number;
@@ -32,7 +34,9 @@ export function reanimacaoValida(valor: unknown): valor is Reanimacao {
   if (!valor || typeof valor !== 'object' || Array.isArray(valor)) return false;
   if (Object.getPrototypeOf(valor) !== Object.prototype && Object.getPrototypeOf(valor) !== null) return false;
   const chaves = ['causa', 'estado', 'sucessos', 'falhas', 'tentativas', 'curaAcumulada', 'vantagemProximoTeste'];
-  if (Object.keys(valor).sort().join('|') !== [...chaves].sort().join('|')) return false;
+  const presentes = Object.keys(valor);
+  if (presentes.some(chave => ![...chaves, 'id'].includes(chave)) || chaves.some(chave => !(chave in valor))) return false;
+  if ('id' in valor && (typeof (valor as { id?: unknown }).id !== 'string' || !(valor as { id: string }).id.trim() || (valor as { id: string }).id.length > 100)) return false;
   const r = valor as Reanimacao;
   return ['pv_zero', 'colapso_bi'].includes(r.causa)
     && ['aguardando_proximo_turno', 'em_andamento', 'desacordada_ate_reducao_bi', 'morte_a_registrar', 'transformacao_no_proximo_turno', 'concluida'].includes(r.estado)
@@ -58,9 +62,15 @@ function validarEstado(r: Reanimacao): void {
 }
 
 /** A causa é explícita: 0 PV e Colapso Viral nunca compartilham desfecho. */
+function novoIdReanimacao(): string {
+  if (typeof globalThis.crypto?.randomUUID === 'function') return globalThis.crypto.randomUUID();
+  return `reanimacao-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+}
+
 export function iniciarReanimacao(causa: CausaReanimacao): Reanimacao {
   if (causa !== 'pv_zero' && causa !== 'colapso_bi') throw new Error('Causa de Reanimação inválida.');
   return {
+    id: novoIdReanimacao(),
     causa,
     estado: causa === 'pv_zero' ? 'aguardando_proximo_turno' : 'em_andamento',
     sucessos: 0,
