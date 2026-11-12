@@ -25,6 +25,7 @@ import UsosDescansoCompletoLocal from './UsosDescansoCompletoLocal';
 import ReanimacaoFichaLocal from './ReanimacaoFichaLocal';
 import PainelAcoesLocal from './PainelAcoesLocal';
 import CondicoesFichaLocal from './CondicoesFichaLocal';
+import RegistroDecisoesMesaLocal from './RegistroDecisoesMesaLocal';
 import PlanejadorHabilidadesCriacaoLocal from './PlanejadorHabilidadesCriacaoLocal';
 import ProgressaoFichaLocal from './ProgressaoFichaLocal';
 import { recursosIniciais } from './recursosFicha';
@@ -420,6 +421,7 @@ export default function FichaLocal({ nome, mesa, contextoId, dados, aoFechar, ao
         <ProgressaoFichaLocal dados={dados} classe={classe} nivel={nivelAtual} origemDados={origemDados} aoSalvar={aoSalvarRecursos} />
 
         <CondicoesFichaLocal dados={dados} pvAtual={recursosAtuais.pvAtual} pvMaximo={pv} biAtual={biAtual} biMaximo={bi} aoSalvar={aoSalvarRecursos} origemDados={origemDados} />
+        <RegistroDecisoesMesaLocal dados={dados} aoSalvar={aoSalvarRecursos} origemDados={origemDados} />
 
         {origem === 'Agente de Saúde' && <p className="ficha-local-aviso">AGENTE DE SAÚDE: ao curar um aliado com item ou efeito, acrescente +1d4 aos Dados de Cura. O benefício não se aplica à própria personagem; a cura do aliado continua sendo registrada na ficha correspondente.</p>}
 
