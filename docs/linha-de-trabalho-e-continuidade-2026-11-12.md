@@ -217,3 +217,10 @@ A revisão final identificou que a calculadora de Ataques só aparece no modo Au
 - **Teste estrutural adicional:** lembrete em Misto/Manual e identificação da região no resultado automático.
 - **Validação continua não executada:** sem testes automatizados, build ou teste humano nesta sessão. A consulta de status/checks não retornou verificações associadas; isso não comprova sucesso.
 - **Próxima ação inalterada:** verificar workflow real e executar testes/build; depois bateria humana dirigida antes de seguir para Desengajar e Usar Objeto.
+
+
+**Rastreabilidade complementar dos últimos ajustes do ciclo:**
+- Painel — lembretes de Mirar para Misto/Manual: `6a916c506999e3095bead22ad14f1a1680a07d6f`.
+- Calculadora — identificação da região no resultado automático: `8726592dd1251f12c4db71323cb9e3d2c90e28dd`.
+- Teste estrutural — lembrete nos modos manuais e região no resultado: `087315742622a8e4e744fbe47091a7df2cb648e0`.
+- Este complemento de rastreabilidade não altera o HEAD de código/testes registrado acima.
