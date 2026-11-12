@@ -75,8 +75,9 @@ test('Ficha alimenta os cálculos com Condições ativas e cancela Vantagem/Desv
 
 
 test('Condições que proíbem Ações ou Atacar geram lembretes sem bloquear rolagens', () => {
-  assert.deepEqual(api.restricoesDeAtaquePorCondicoes(['desorientado','atordoado','incapacitado','surpreendido']), [
+  assert.deepEqual(api.restricoesDeAtaquePorCondicoes(['desorientado','desacordado','atordoado','incapacitado','surpreendido']), [
     { condicao: 'desorientado', motivo: 'Desorientado: não pode usar Atacar.' },
+    { condicao: 'desacordado', motivo: 'Desacordado: não pode realizar Ações nem Reações e não percebe conscientemente o ambiente.' },
     { condicao: 'atordoado', motivo: 'Atordoado: não pode realizar Ações, Reações ou Movimento.' },
     { condicao: 'incapacitado', motivo: 'Incapacitado: não pode realizar Ações nem Reações.' },
     { condicao: 'surpreendido', motivo: 'Surpreendido: no primeiro turno, não pode se mover nem realizar Ações.' },
