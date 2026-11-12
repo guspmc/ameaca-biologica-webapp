@@ -82,6 +82,7 @@ export default function CondicoesFichaLocal({ dados, pvAtual, pvMaximo, biAtual,
           <p>{regra.efeito}</p>
           {item.observacao && <p>Observação: {item.observacao}</p>}
           <small>{origemDados === 'servidor' ? 'A duração em rodadas é acompanhada separadamente pelo Mestre na aba Combate.' : 'Sem contador de rodadas: encerre manualmente quando a Condição terminar.'}</small>
+          {(item.condicao === 'infectado-especial' || item.condicao === 'cabeca-carmesim') && <p className="ficha-local-aviso" role="status">Registro informativo de transformação. Esta seção não aplica automaticamente recuperação de Dados de Vida, perda de Habilidades, restrições de comportamento/armas, ganho de BI, períodos de inconsciência ou morte. Consulte Bio-Infecção no Arquivo do Jogador e resolva esses efeitos manualmente com a Mesa.</p>}
           <p><button type="button" className="botao-claro" disabled={salvando} onClick={() => void encerrar(item.id, regra.nome)}>Encerrar Condição</button></p>
         </li>;
       })}
