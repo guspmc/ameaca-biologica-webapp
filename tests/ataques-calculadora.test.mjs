@@ -313,3 +313,11 @@ test('Mirar informa o bônus também nos modos Misto/Manual e identifica região
   assert.match(painel, /Próximo Ataque: \+2 no Teste; escolha uma região específica/);
   assert.match(ui, /Mirar aplicado: \+2 no Teste · Região escolhida:/);
 });
+
+test('4ª Fase da BI lembra o +1d4 no Dano Corpo a Corpo sem rolagem automática', () => {
+  assert.match(ficha, /danoCorpoACorpoAdicionalBI=\{faseBi\.danoCorpoACorpoAdicional\}/);
+  assert.match(ui, /danoCorpoACorpoAdicionalBI\?: string \| null/);
+  assert.match(ui, /tipo === 'ataque-corpo' && danoCorpoACorpoAdicionalBI/);
+  assert.match(ui, /role \{danoCorpoACorpoAdicionalBI\} adicional de Dano Corpo a Corpo/);
+  assert.match(ui, /não se aplica a Ataques à distância e não é rolado automaticamente/);
+});
