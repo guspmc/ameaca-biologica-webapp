@@ -135,6 +135,9 @@ export function registrarAjudar(economia: EstadoEconomiaAcoes, manobras: EstadoM
 /** Usar um Objeto consome Ação para uma interação adicional; regras específicas podem alterar o custo. */
 export function registrarUsarObjeto(economia: EstadoEconomiaAcoes, manobras: EstadoManobrasTurno): ResultadoManobraOperacional {
   validarEstadoManobras(manobras);
+  if (!economia.interacaoGratuitaUsada) {
+    throw new Error('Usar um Objeto exige que a Interação Gratuita com Objeto já tenha sido utilizada.');
+  }
   return {
     economia: consumirRecursoNormal(economia, 'acao'),
     manobras: { ...manobras },
