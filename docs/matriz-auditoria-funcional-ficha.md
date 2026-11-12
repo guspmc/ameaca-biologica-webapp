@@ -308,3 +308,17 @@ Nenhum desses pontos deve ser resolvido por inferência durante a implementaçã
 - **Correção implementada:** a Ficha agora repassa o dado adicional à calculadora, que exibe lembrete somente em Ataques Corpo a Corpo na 4ª Fase. O jogador rola o dado conforme seu modo de dados e informa a soma manualmente; nenhum Dano é aplicado automaticamente.
 - Ataques à distância não recebem o +1d4. A 5ª Fase continua sem os benefícios anteriores.
 - Teste estrutural atualizado; não executado nesta sessão. Build e validação humana pendentes.
+
+
+## Condições — integração com calculadora e painel de ações — 12/11/2026
+
+**Checkpoint:** `docs/checkpoint-auditoria-condicoes-ficha-2026-11-12.md`.  
+**Fonte:** Arquivo do Jogador v1.0, pp. 81–83 e referência contextual da p. 45.
+
+- **Imobilizado:** corrigida a ausência de Desvantagem em Testes de Reflexos; a correção também alcança a Esquiva, que já consulta a função comum de Desvantagens.
+- **Desacordado:** condição derivada de PV 0 ou Colapso Viral agora é propagada à lista efetiva usada pelos avisos de restrição.
+- **Restrições de atuação:** Painel de Ações exibe lembretes para Desacordado, Atordoado, Incapacitado, Surpreendido e Desorientado. Avisos não bloqueiam controles nem resolvem exceções.
+- **Movimento:** Painel relembra Movimento 0 (Agarrado/Imobilizado), rastejar/levantar (Caído) e redução de 3 m (Intoxicado); distância e posições permanecem manuais.
+- **Amedrontado:** calculadora apresenta lembrete contextual; percepção da fonte e aplicabilidade do Teste continuam sob confirmação do jogador/Mesa, sem Desvantagem automática.
+- **Condições do alvo:** Vantagem contra alvos Caídos, Cegos ou Atordoados não é inferida pela Ficha do jogador.
+- **Cobertura:** `tests/condicoes-calculadora.test.mjs` ampliado. Testes/build não executados nesta sessão; validação humana pendente.
