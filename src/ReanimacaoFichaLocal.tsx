@@ -27,9 +27,10 @@ type Props = {
 };
 
 export default function ReanimacaoFichaLocal({ dados, recursos, origem, pvMaximo, biMaximo, modoDados, modo, bloqueado, origemDados = 'local', aoSalvar }: Props) {
-  const inicial = dados.reanimacao === null || dados.reanimacao === undefined
-    ? null
-    : reanimacaoValida(dados.reanimacao) ? dados.reanimacao : null;
+  const registroReanimacaoPresente = dados.reanimacao !== null && dados.reanimacao !== undefined;
+  const registroReanimacaoValido = !registroReanimacaoPresente || reanimacaoValida(dados.reanimacao);
+  const registroReanimacaoInvalido = !registroReanimacaoValido;
+  const inicial = registroReanimacaoPresente && registroReanimacaoValido ? dados.reanimacao as Reanimacao : null;
   const [reanimacao, setReanimacao] = useState<Reanimacao | null>(inicial);
   useEffect(() => { setReanimacao(inicial); }, [inicial]);
   const [metodo, setMetodo] = useState<'fisico' | 'virtual'>(modo === 'automatico' && modoDados === 'virtuais' ? 'virtual' : 'fisico');
@@ -44,8 +45,8 @@ export default function ReanimacaoFichaLocal({ dados, recursos, origem, pvMaximo
   const pvZeroAutoTentado = useRef(false);
 
   const reanimacaoAnteriorConcluida = reanimacao?.estado === 'concluida';
-  const podeIniciarPV = recursos.pvAtual === 0 && (reanimacao === null || reanimacaoAnteriorConcluida);
-  const podeIniciarColapso = biMaximo > 0 && recursos.biAtual >= biMaximo && (reanimacao === null || reanimacaoAnteriorConcluida);
+  const podeIniciarPV = !registroReanimacaoInvalido && recursos.pvAtual === 0 && (reanimacao === null || reanimacaoAnteriorConcluida);
+  const podeIniciarColapso = !registroReanimacaoInvalido && biMaximo > 0 && recursos.biAtual >= biMaximo && (reanimacao === null || reanimacaoAnteriorConcluida);
   const vantagem = !!reanimacao && (reanimacao.vantagemProximoTeste || (reanimacao.causa === 'colapso_bi' && origem === 'Cobaia'));
   const primeiro = Number(primeiroDado);
   const segundo = Number(segundoDado);
@@ -57,7 +58,7 @@ export default function ReanimacaoFichaLocal({ dados, recursos, origem, pvMaximo
   const estadoPV0 = reanimacao?.causa === 'pv_zero' && ['aguardando_proximo_turno', 'em_andamento'].includes(reanimacao.estado);
 
   async function persistir(proxima: Reanimacao, recursosPatch: Partial<RecursosAtuais> = {}) {
-    if (ocupado || bloqueado) return;
+    if (ocupado || bloqueado || registroReanimacaoInvalido) return;
     setOcupado(true); setErro(''); setMensagem('');
     try {
       if (!await aoSalvar({ ...recursos, ...recursosPatch, reanimacao: proxima })) {
@@ -141,7 +142,7 @@ export default function ReanimacaoFichaLocal({ dados, recursos, origem, pvMaximo
     catch (e) { setErro(e instanceof Error ? e.message : 'Não foi possível encerrar o Colapso.'); }
   }
 
-  if (!reanimacao && !podeIniciarPV && !podeIniciarColapso) return null;
+  if (!reanimacao && !podeIniciarPV && !podeIniciarColapso && !registroReanimacaoInvalido) return null;
 
   return <details className="ficha-local-editor reanimacao-ficha" open={!!reanimacao}>
     <summary>Reanimação e estados críticos</summary>
@@ -150,6 +151,7 @@ export default function ReanimacaoFichaLocal({ dados, recursos, origem, pvMaximo
     {modo === 'automatico' && modoDados !== 'mistos' && <p>Método: {modoDados === 'fisicos' ? 'Dados físicos' : 'Dados virtuais'}.</p>}
     {modo !== 'automatico' && <p>Modo {modo === 'misto' ? 'Misto' : 'Manual'}: roladores integrados ocultos. Informe abaixo o resultado obtido fora da Ficha.</p>}
     {bloqueado && <p role="status">Salve ou descarte outras alterações pendentes da ficha antes de alterar a Reanimação.</p>}
+    {registroReanimacaoInvalido && <p className="offline-erro" role="alert">O registro de Reanimação está inválido. Os dados originais foram preservados; nenhuma Reanimação será iniciada ou alterada automaticamente. Faça backup e revise o registro antes de continuar.</p>}
     {!reanimacao && <>
       {podeIniciarPV && <button type="button" className="acao" disabled={ocupado || bloqueado} onClick={() => void iniciar('pv_zero')}>Tentar registrar estado de 0 PV <span>→</span></button>}
       {podeIniciarColapso && <button type="button" className="acao" disabled={ocupado || bloqueado} onClick={() => void iniciar('colapso_bi')}>Tentar iniciar Reanimação por Colapso Viral <span>→</span></button>}
