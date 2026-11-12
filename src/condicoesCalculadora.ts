@@ -35,6 +35,7 @@ export function condicoesQueImpoemDesvantagem(
   if (contexto.tipoTeste === 'pericia') {
     if (ativas.has('desorientado')) resultado.add('desorientado');
     if (ativas.has('intoxicado')) resultado.add('intoxicado');
+    if (contexto.pericia === 'Reflexos' && ativas.has('imobilizado')) resultado.add('imobilizado');
   }
   if (contexto.atributo === 'forca' || contexto.pericia === 'Fortitude') {
     if (ativas.has('enfraquecido')) resultado.add('enfraquecido');
@@ -89,7 +90,7 @@ export function restricoesDeAtaquePorCondicoes(
   });
   if (ativas.has('surpreendido')) restricoes.push({
     condicao: 'surpreendido',
-    motivo: 'Surpreendido: no primeiro turno, não pode se mover nem realizar Ações.',
+    motivo: 'Surpreendido: no primeiro turno, não pode se mover nem realizar Ações; enquanto durar, não pode usar Reações nem gastar SA.',
   });
   return restricoes;
 }
