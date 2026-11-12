@@ -34,6 +34,15 @@ test('Enfraquecido afeta Testes baseados em FOR, Fortitude e Ataques corpo a cor
   }), []);
 });
 
+test('Imobilizado impõe Desvantagem em Reflexos, inclusive na Esquiva', () => {
+  assert.deepEqual(api.condicoesQueImpoemDesvantagem(['imobilizado'], {
+    escopo:'testes', tipoTeste:'pericia', pericia:'Reflexos', atributo:'agilidade',
+  }), ['imobilizado']);
+  assert.deepEqual(api.condicoesQueImpoemDesvantagem(['imobilizado'], {
+    escopo:'testes', tipoTeste:'pericia', pericia:'Fortitude', atributo:'vigor',
+  }), []);
+});
+
 test('Desorientado e Intoxicado afetam Testes de Perícia; Intoxicado não afeta Testes de Atributo', () => {
   assert.deepEqual(api.condicoesQueImpoemDesvantagem(['desorientado','intoxicado'], {
     escopo:'testes', tipoTeste:'pericia', pericia:'Investigação', atributo:'astucia',
@@ -80,6 +89,10 @@ test('Calculadora de Ataques apresenta restrições sem desabilitar ou resolver 
   assert.match(calc, /restricoesDeAtaquePorCondicoes/);
   assert.match(calc, /Condições que restringem Ataques/);
   assert.match(calc, /Este aviso não bloqueia a rolagem/);
+  const painel = await readFile(new URL('../src/PainelAcoesLocal.tsx', import.meta.url), 'utf8');
+  assert.match(painel, /restricoesDeAtaquePorCondicoes\(condicoesAtivas\)/);
+  assert.match(painel, /Condições que restringem sua atuação/);
+  assert.match(painel, /não bloqueia os controles/);
 });
 
 test('Reflexos de Sobrevivente usa a maior Defesa atual ou 10 + Acrobacia somente quando ativo', () => {
