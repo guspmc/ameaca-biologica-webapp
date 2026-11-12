@@ -108,6 +108,10 @@ A base de domínio e a cobertura automatizada do Inventário são substanciais. 
 
 Os blocos de criação da Ficha têm base funcional e testes substanciais. As pendências principais identificadas nesta frente são integração LAN de campos excluídos da allowlist genérica, Progressão e validação manual completa. Não foi encontrada, nesta inspeção parcial, justificativa para reescrever os editores de criação; priorizar lacunas de integração e testes de ponta a ponta.
 
+### Checkpoint adicional — Atributos, Perícias e Identidade (12/11/2026)
+
+A revisão estática cruzou `atributosCriacao.ts`, `periciasCriacao.ts`, `pericias.ts`, `derivadosCriacao.ts`, `EditorAtributosPericiasLocal.tsx`, `IdentidadeLocal.tsx`, `EditorCaracteristicasLocal.tsx`, `conferenciaCriacao.ts` e `validacaoPersonagemLocal.ts` com o Arquivo do Jogador v1.0. Não foi identificada divergência mecânica nas fórmulas e restrições de criação examinadas. Identidade permanece narrativa e opcional; alterações de Classe/Origem preservam escolhas dependentes e exigem revisão de incompatibilidades. Há limites de caracteres da UI menores que os limites do validador para alguns campos narrativos, sem regra canônica correspondente; registrado como diferença de UX. Testes não executados e validação humana pendente. Ver `docs/checkpoint-auditoria-criacao-atributos-pericias-identidade-2026-11-12.md`.
+
 
 ## Auditoria do transporte LAN para Inventário — incremento 2
 
