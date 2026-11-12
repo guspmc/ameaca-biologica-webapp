@@ -74,6 +74,14 @@ test('Reanimação não sobrescreve outras seções ainda pendentes', () => {
   assert.match(painel, /Salve ou descarte outras alterações pendentes/);
 });
 
+test('Descanso Completo é bloqueado durante as horas de transformação que não concedem seus benefícios', () => {
+  assert.match(ficha, /periodoTransformacaoSemDescansoCompleto = \(condicoesRegistradasIds\.includes\('infectado-especial'\)/);
+  assert.match(ficha, /bloquearDescansoCompleto=\{periodoTransformacaoSemDescansoCompleto\}/);
+  assert.match(descanso, /bloquearDescansoCompleto\?: boolean/);
+  assert.match(descanso, /!bloquearDescansoCompleto/);
+  assert.match(descanso, /A Ficha não mede o tempo/);
+});
+
 test('descanso não restaura PV enquanto Reanimação ou transformação estiver pendente', () => {
   assert.match(ficha, /reanimacaoEmCurso/);
   assert.match(ficha, /bloqueado=\{secoesPendentes\.size > 0 \|\| reanimacaoEmCurso\}/);
