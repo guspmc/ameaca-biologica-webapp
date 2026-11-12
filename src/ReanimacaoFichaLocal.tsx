@@ -24,9 +24,10 @@ type Props = {
   bloqueado: boolean;
   origemDados?: 'local' | 'servidor';
   aoSalvar: (patch: Record<string, unknown>) => Promise<boolean>;
+  transformacaoAtiva?: 'infectado-especial' | 'cabeca-carmesim' | 'conflito' | null;
 };
 
-export default function ReanimacaoFichaLocal({ dados, recursos, origem, pvMaximo, biMaximo, modoDados, modo, bloqueado, origemDados = 'local', aoSalvar }: Props) {
+export default function ReanimacaoFichaLocal({ dados, recursos, origem, pvMaximo, biMaximo, modoDados, modo, bloqueado, origemDados = 'local', aoSalvar, transformacaoAtiva = null }: Props) {
   const registroReanimacaoPresente = dados.reanimacao !== null && dados.reanimacao !== undefined;
   const registroReanimacaoValido = !registroReanimacaoPresente || reanimacaoValida(dados.reanimacao);
   const registroReanimacaoInvalido = !registroReanimacaoValido;
@@ -45,8 +46,10 @@ export default function ReanimacaoFichaLocal({ dados, recursos, origem, pvMaximo
   const pvZeroAutoTentado = useRef(false);
 
   const reanimacaoAnteriorConcluida = reanimacao?.estado === 'concluida';
-  const podeIniciarPV = !registroReanimacaoInvalido && recursos.pvAtual === 0 && (reanimacao === null || reanimacaoAnteriorConcluida);
-  const podeIniciarColapso = !registroReanimacaoInvalido && biMaximo > 0 && recursos.biAtual >= biMaximo && (reanimacao === null || reanimacaoAnteriorConcluida);
+  const transformacaoBloqueiaReanimacao = transformacaoAtiva !== null && recursos.pvAtual <= 0;
+  const reanimacaoPV0EmConflito = transformacaoBloqueiaReanimacao && reanimacao?.causa === 'pv_zero' && reanimacao.estado !== 'concluida';
+  const podeIniciarPV = !registroReanimacaoInvalido && !transformacaoBloqueiaReanimacao && recursos.pvAtual === 0 && (reanimacao === null || reanimacaoAnteriorConcluida);
+  const podeIniciarColapso = !registroReanimacaoInvalido && !transformacaoBloqueiaReanimacao && biMaximo > 0 && recursos.biAtual >= biMaximo && (reanimacao === null || reanimacaoAnteriorConcluida);
   const vantagem = !!reanimacao && (reanimacao.vantagemProximoTeste || (reanimacao.causa === 'colapso_bi' && origem === 'Cobaia'));
   const primeiro = Number(primeiroDado);
   const segundo = Number(segundoDado);
@@ -54,8 +57,8 @@ export default function ReanimacaoFichaLocal({ dados, recursos, origem, pvMaximo
   const rolagemVirtualAtiva = modo === 'automatico' && metodo === 'virtual';
   const resultadoValido = rolagemVirtualAtiva || (primeiroDado.trim() !== '' && dadoValido(primeiro)
     && (vantagem ? segundoDado.trim() !== '' && dadoValido(segundo) : segundoDado.trim() === ''));
-  const estadoAtivo = reanimacao?.estado === 'em_andamento';
-  const estadoPV0 = reanimacao?.causa === 'pv_zero' && ['aguardando_proximo_turno', 'em_andamento'].includes(reanimacao.estado);
+  const estadoAtivo = reanimacao?.estado === 'em_andamento' && !transformacaoBloqueiaReanimacao;
+  const estadoPV0 = reanimacao?.causa === 'pv_zero' && ['aguardando_proximo_turno', 'em_andamento'].includes(reanimacao.estado) && !transformacaoBloqueiaReanimacao;
 
   async function persistir(proxima: Reanimacao, recursosPatch: Partial<RecursosAtuais> = {}) {
     if (ocupado || bloqueado || registroReanimacaoInvalido) return;
@@ -142,11 +145,13 @@ export default function ReanimacaoFichaLocal({ dados, recursos, origem, pvMaximo
     catch (e) { setErro(e instanceof Error ? e.message : 'Não foi possível encerrar o Colapso.'); }
   }
 
-  if (!reanimacao && !podeIniciarPV && !podeIniciarColapso && !registroReanimacaoInvalido) return null;
+  if (!reanimacao && !podeIniciarPV && !podeIniciarColapso && !transformacaoBloqueiaReanimacao && !registroReanimacaoInvalido) return null;
 
   return <details className="ficha-local-editor reanimacao-ficha" open={!!reanimacao}>
     <summary>Reanimação e estados críticos</summary>
     <p>Ao atingir a BI Máxima, o Colapso Viral e a Reanimação específica são iniciados automaticamente; a Ficha não avança turnos nem decide a narrativa de morte ou transformação.</p>
+    {transformacaoBloqueiaReanimacao && <p className="ficha-local-aviso" role="alert">{transformacaoAtiva === 'infectado-especial' ? 'Infectado Especial a 0 PV: o cânone determina 1 hora inerte antes da transformação em Cabeça Carmesim, salvo impedimento específico. A Reanimação comum por 0 PV não será iniciada; controle o período e a transformação com a Mesa.' : transformacaoAtiva === 'cabeca-carmesim' ? 'Cabeça Carmesim a 0 PV antes da reversão: o cânone determina a morte da personagem. A Ficha não inicia Reanimação nem registra a morte automaticamente; confirme e registre com a Mesa.' : 'Há mais de uma transformação ativa com 0 PV. A Ficha bloqueou a Reanimação automática porque não pode determinar qual desfecho narrativo prevalece; resolva com a Mesa.'} Se a BI também estiver na faixa de Colapso, a prioridade entre os dois estados não é automatizada.</p>}
+    {reanimacaoPV0EmConflito && <p className="offline-erro" role="alert">Existe um registro anterior de Reanimação por 0 PV incompatível com a transformação ativa. Os dados foram preservados, mas seus controles estão bloqueados para evitar aplicar o fluxo errado. Revise o histórico com a Mesa; não apague o registro automaticamente.</p>}
     {modo === 'automatico' && modoDados === 'mistos' && <label>Método deste Teste<select value={metodo} onChange={e => { setMetodo(e.target.value as 'fisico' | 'virtual'); setPrimeiroDado(''); setSegundoDado(''); }}><option value="fisico">Dados físicos</option><option value="virtual">Dados virtuais</option></select></label>}
     {modo === 'automatico' && modoDados !== 'mistos' && <p>Método: {modoDados === 'fisicos' ? 'Dados físicos' : 'Dados virtuais'}.</p>}
     {modo !== 'automatico' && <p>Modo {modo === 'misto' ? 'Misto' : 'Manual'}: roladores integrados ocultos. Informe abaixo o resultado obtido fora da Ficha.</p>}
@@ -169,7 +174,7 @@ export default function ReanimacaoFichaLocal({ dados, recursos, origem, pvMaximo
       } as Record<string, string>)[reanimacao.estado]}</strong></p>
       <p>Sucessos: {reanimacao.sucessos}/3 · Falhas: {reanimacao.falhas}/3 · Tentativas: {reanimacao.tentativas}/5</p>
       {reanimacao.causa === 'pv_zero' && <p>Cura acumulada: {reanimacao.curaAcumulada} PV. A cura não desperta a personagem antes do terceiro sucesso.</p>}
-      {reanimacao.estado === 'aguardando_proximo_turno' && <button type="button" className="acao" disabled={ocupado || bloqueado} onClick={() => void iniciarProximoTurno()}>Iniciar Testes no próximo turno <span>→</span></button>}
+      {reanimacao.estado === 'aguardando_proximo_turno' && !transformacaoBloqueiaReanimacao && <button type="button" className="acao" disabled={ocupado || bloqueado} onClick={() => void iniciarProximoTurno()}>Iniciar Testes no próximo turno <span>→</span></button>}
       {estadoPV0 && <>
         <h4>Primeiros Socorros · Medicina DT 15</h4>
         <p>O ajudante realiza o Teste de Medicina DT 15 na própria Ficha, considerando seu Atributo, Treinamento e modificadores. Registre aqui apenas o resultado final. Sucesso concede Vantagem ao próximo Teste de Reanimação.</p>
@@ -192,7 +197,7 @@ export default function ReanimacaoFichaLocal({ dados, recursos, origem, pvMaximo
           </div> : <p>{vantagem ? 'A Ficha rolará virtualmente dois d20 e usará o melhor.' : 'A Ficha rolará virtualmente um d20.'}</p>}
           <button type="button" className="acao" disabled={ocupado || bloqueado || !resultadoValido} onClick={() => void registrarTeste()}>{rolagemVirtualAtiva ? 'Rolar e registrar Teste' : 'Registrar resultado do Teste'} <span>→</span></button>
         </>}
-      {reanimacao.estado === 'desacordada_ate_reducao_bi' && <button type="button" className="acao" disabled={ocupado || bloqueado || recursos.biAtual >= biMaximo} onClick={() => void encerrarColapso()}>Confirmar BI abaixo do máximo e encerrar <span>→</span></button>}
+      {reanimacao.estado === 'desacordada_ate_reducao_bi' && !transformacaoBloqueiaReanimacao && <button type="button" className="acao" disabled={ocupado || bloqueado || recursos.biAtual >= biMaximo} onClick={() => void encerrarColapso()}>Confirmar BI abaixo do máximo e encerrar <span>→</span></button>}
       {reanimacao.estado === 'morte_a_registrar' && <p>A regra sinaliza morte após três falhas. O registro e as consequências de campanha permanecem sob responsabilidade do Mestre.</p>}
       {reanimacao.estado === 'transformacao_no_proximo_turno' && <p>A regra determina o retorno como Zumbi Especial no próximo turno. A ficha não altera o controle da personagem nem aplica a transformação automaticamente.</p>}
     </>}
