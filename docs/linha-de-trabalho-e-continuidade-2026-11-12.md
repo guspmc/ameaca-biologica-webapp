@@ -310,7 +310,7 @@ Prosseguir pelo catálogo de Condições e sua aplicação na calculadora: confr
 ## Atualização de continuidade — Transformações e Reanimação (12/11/2026)
 
 - Achado: a Reanimação comum por 0 PV era iniciada sem verificar se Infectado Especial ou Cabeça Carmesim estavam ativos.
-- Correção localizada: a Ficha agora passa a Transformação ativa ao painel de Reanimação. Com Transformação ativa e PV 0, não inicia Reanimação comum nem Colapso automático; mostra o desfecho previsto no Arquivo do Jogador e preserva/bloqueia qualquer registro de Reanimação não concluído que entre em conflito.
+- Correção inicial (SUPERSEDIDA): a Ficha bloqueava Reanimação e controles em conflito. Essa restrição foi removida na retificação posterior; o comportamento atual permite registrar a decisão da Mesa e preserva os controles dos registros existentes.
 - Se duas Transformações estiverem ativas, ou se 0 PV coincidir com BI Máxima, a Ficha não escolhe a prioridade narrativa; a Mesa resolve.
 - Teste estrutural adicionado em `tests/reanimacao-integracao-ficha.test.mjs`; não executado nesta sessão. Sem validação humana.
 - A correção não implementa cronômetros, transições, Dados de Vida, restrições da Transformação, reversão da Cabeça Carmesim a BI 0, hora Desacordada ou registro de morte. Esses pontos permanecem pendentes.
@@ -331,3 +331,15 @@ Prosseguir pelo catálogo de Condições e sua aplicação na calculadora: confr
 - Testes estruturais atualizados, não executados nesta sessão. Sem validação humana.
 
 - Auditoria de persistência para futuro Registro de Decisões da Mesa: `PersonagemLocal.dados` aceita campos JSON seguros extensíveis; patches IndexedDB mesclam por chave com detecção de concorrência; backup clona/valida a personagem completa. Um campo próprio de eventos pode dispensar migração de versão do banco, mas requer validador e testes de concorrência, recarga e backup. Nenhum campo/evento novo foi criado.
+
+## Checkpoint — Registro de Decisões da Mesa (12/11/2026)
+
+- Criados `src/registroDecisoesMesa.ts` e `src/RegistroDecisoesMesaLocal.tsx`; painel integrado à Ficha contínua logo após Condições.
+- Tipos: Morte, Transformação, Reversão de transformação, Desfecho de Reanimação, Exceção/decisão especial, Retificação e Outro acontecimento.
+- Campos: descrição (até 500 caracteres), responsável informado manualmente (até 80), data/hora do acontecimento, carimbo do dispositivo e ID. O carimbo é produzido pelo relógio do dispositivo, não é timestamp confiável de servidor.
+- O registro exige confirmação e salvamento confirmado. Não altera PV, BI, Condições, Reanimação, Progressão ou qualquer efeito. Histórico é append-only na UI; correções são novos registros do tipo Retificação.
+- Limite de 30 registros por personagem, escolhido para respeitar o limite atual de 32 KB do corpo de gravação LAN sem alterar o servidor globalmente. Limite deve ser reavaliado se os dados da ficha crescerem.
+- Validação aplicada no cliente (`validacaoPersonagemLocal.ts`) e no endpoint LAN (`server/personagens-local.mjs`). Backup já preserva campos JSON adicionais, mas teste explícito de exportação/importação com esse novo campo ainda está pendente.
+- Permissões: LAN continua permitindo escrita somente à conta Jogador proprietária da ficha. O nome do responsável é autodeclarado; não autentica o Mestre nem concede a ele editor da ficha. O Jogador pode registrar a decisão comunicada pela Mesa. Não houve ampliação de permissões.
+- Testes estruturais e teste HTTP LAN foram adicionados/atualizados; não executados nesta sessão. Validação humana pendente.
+- Não foi alterado CSS, layout geral, navegação, IndexedDB versionamento, SQLite schema, inventário, publicação ou `main`.
