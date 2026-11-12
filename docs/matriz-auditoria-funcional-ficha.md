@@ -212,4 +212,27 @@ Nenhum desses pontos deve ser resolvido por inferência durante a implementaçã
 
 **Fora da Ficha do Jogador:** ordem de Iniciativa e coordenação de Encontros pertencem ao Painel do Mestre; a Ficha do Jogador exibe o modificador e a rolagem pontual quando aplicável.
 
-**Validação:** os testes automatizados foram ampliados ao longo dos ciclos, mas ainda aguardam execução/conclusão dos workflows do GitHub. A validação humana integrada em navegador e dispositivos reais começa somente depois da conclusão funcional do Inventário. LAN, `main`, merge e publicação não fazem parte deste ciclo.
+**Validação:** os testes automatizados foram ampliados ao longo dos ciclos, mas ainda aguardam execução/conclusão dos workflows do GitHub. A auditoria geral da Ficha Offline e a bateria de validação humana em navegador devem ser concluídas antes de iniciar o Inventário ativo. LAN, `main`, merge e publicação não fazem parte deste ciclo.
+
+
+## Atualização da auditoria geral — 12/11/2026
+
+**Base consultada:** branch `feat/offline-first-ficha`, HEAD `d1ca7170cf665b896f3504fc2b8ea1814a0a9a99`.
+
+**Persistência local — evidências estáticas conferidas:**
+- IndexedDB v3 mantém as fichas na store `personagens`; a store `vinculosLan` é separada. A migração v1→v3 atribui geração às fichas legadas sem reescrever seus dados; v2→v3 preserva os registros.
+- Gravações de patch leem e validam o registro vigente dentro da transação `readwrite`, recusam conflito na mesma seção e aceitam alterações em chaves diferentes. A geração impede que uma aba antiga grave sobre um conjunto restaurado.
+- Substituição/importação em lote ocorre em transação única; abortamento não deve deixar substituição parcial. A fila serializada mantém operações locais ordenadas.
+- A interface aguarda a conclusão da transação antes de apresentar confirmação de salvamento; erros de transação são apresentados como falha, não como sucesso.
+- Backup JSON tem formato e versão explícitos, valida os registros antes de importar, rejeita IDs duplicados e dados que seriam perdidos na serialização. A importação oferece cópias com novos IDs ou substituição com novas gerações.
+- O Service Worker guarda apenas o shell estático (HTML, assets, manifesto e ícone). Não intercepta nem armazena respostas de API ou dados de personagens.
+
+**Cobertura e limites:**
+- Existem testes dedicados para gravação/abortamento, patches concorrentes, conflito na mesma chave, restauração com geração nova, migrações, versionchange, backup/restauração e validação dos dados.
+- Parte dos testes usa IndexedDB simulado em Node. Eles não substituem a rodada humana com IndexedDB real, duas abas e PWA em navegador/dispositivo.
+- Não foi encontrada nesta inspeção estática uma falha concreta que justifique alterar o código de persistência. Isso não equivale a homologação.
+- A exportação só ocorre na tela de lista; o fluxo normal de fechamento da Ficha aguarda a fila de gravação e impede fechar com campos cuja gravação falhou. Alterações ainda não salvas são descartadas somente após confirmação explícita.
+
+**CI:** os workflows associados ao HEAD consultado permaneciam `queued`, sem resultado de build ou testes. Nenhum teste local ou humano foi executado nesta etapa.
+
+**Sequência obrigatória preservada:** concluir auditoria geral → consolidar/atualizar bateria humana → validação humana e correções → somente então iniciar Inventário ativo. LAN permanece fora do escopo.
