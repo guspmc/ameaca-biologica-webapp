@@ -87,3 +87,20 @@ O bloqueio de Descanso Completo durante períodos explicitamente sem seus benef�
 - `salvarPatchPersonagem` mescla patches por chave em transação IndexedDB e recusa sobrescrita concorrente na mesma chave.
 - Exportação/importação de backup clona e valida os dados completos da personagem; campos JSON seguros desconhecidos são preservados.
 - Portanto, um futuro campo estruturado (por exemplo, `registrosMesa`) aparentemente não exige aumento da versão do IndexedDB, mas ainda exige contrato próprio de validação, limites de tamanho, testes de concorrência, recarga e ida/volta do backup. Não foi implementado nesta etapa.
+
+## Implementação posterior — Registro de Decisões da Mesa (12/11/2026)
+
+O histórico que antes constava como lacuna agora tem uma primeira implementação:
+
+- Painel separado integrado à Ficha contínua após Condições.
+- Categorias: Morte, Transformação, Reversão de transformação, Desfecho de Reanimação, Exceção/decisão especial, Retificação e Outro.
+- Campos: descrição, responsável informado manualmente, data/hora do acontecimento, carimbo do dispositivo e ID.
+- Exige confirmação e salvamento; não altera nenhum recurso, Condição ou estado de Reanimação. Histórico append-only na interface; correções são novos registros de Retificação.
+- Limite: 30 eventos por personagem e descrição de até 500 caracteres, considerando o limite de 32 KB do corpo da API LAN.
+- Validação no cliente e servidor LAN; testes unitários estruturais e HTTP foram adicionados, mas não executados nesta sessão.
+- O carimbo de registro usa relógio do dispositivo e não é prova temporal de servidor. O responsável é autodeclarado, não autenticado.
+- LAN preserva a permissão atual: somente o Jogador proprietário grava a ficha. O campo responsável não concede acesso ao Mestre nem altera a autorização. O Jogador pode registrar uma decisão tomada pela Mesa.
+- Backup deve preservar o novo campo pelo formato JSON extensível; teste explícito de ida/volta do novo histórico ainda pendente.
+- Sem migração IndexedDB, alteração de schema SQLite, mudança de CSS/layout, publicação ou merge.
+
+**Atenção para validação humana:** verificar registro Offline, recarga, exportação/importação de backup, registro LAN, conflito de revisão e tentativa de gravação por conta sem propriedade da personagem.
