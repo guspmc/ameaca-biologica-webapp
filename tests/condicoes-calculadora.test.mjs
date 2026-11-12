@@ -92,10 +92,15 @@ test('Calculadora de Ataques apresenta restrições sem desabilitar ou resolver 
   assert.match(calc, /restricoesDeAtaquePorCondicoes/);
   assert.match(calc, /Condições que restringem Ataques/);
   assert.match(calc, /Este aviso não bloqueia a rolagem/);
+  assert.match(calc, /Amedrontado: confirme se a personagem ainda percebe a fonte do medo/);
+  assert.match(calc, /selecione Desvantagem manualmente/);
   const painel = await readFile(new URL('../src/PainelAcoesLocal.tsx', import.meta.url), 'utf8');
   assert.match(painel, /restricoesDeAtaquePorCondicoes\(condicoesAtivas\)/);
   assert.match(painel, /Condições que restringem sua atuação/);
   assert.match(painel, /não bloqueia os controles/);
+  assert.match(painel, /Restrições de Movimento/);
+  assert.match(painel, /Agarrado: Movimento 0/);
+  assert.match(painel, /Caído: só pode se deslocar Rastejando/);
 });
 
 test('Reflexos de Sobrevivente usa a maior Defesa atual ou 10 + Acrobacia somente quando ativo', () => {
