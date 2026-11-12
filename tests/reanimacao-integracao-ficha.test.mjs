@@ -112,6 +112,14 @@ test('Transformações a 0 PV exibem o cânone como referência e permitem regis
   assert.doesNotMatch(painel, /estado === 'aguardando_proximo_turno' && !transformacao/);
 });
 
+test('três falhas registram resultado mecânico e deixam o desfecho para a Mesa', () => {
+  assert.match(painel, /resultado mecânico registrado — decisão da Mesa pendente/);
+  assert.match(painel, /Consulte o desfecho previsto no cânone e registre a decisão da Mesa no histórico/);
+  assert.match(painel, /A Ficha não declara morte, não transforma a personagem e não aplica consequências narrativas/);
+  assert.match(painel, /Registro de Decisões da Mesa/);
+  assert.doesNotMatch(painel, /Morte sinalizada para registro do Mestre|retorno como Zumbi Especial pendente para o próximo turno/);
+});
+
 test('0 PV inicia automaticamente o estado de Reanimação, aguardando o próximo turno', () => {
   assert.match(painel, /pvZeroAutoTentado/);
   assert.match(painel, /void iniciar\('pv_zero'\)/);
