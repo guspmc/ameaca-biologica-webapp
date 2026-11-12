@@ -175,6 +175,12 @@ export default function PainelAcoesLocal({ dados, saAtual, aoSalvar, origemDados
   const economia = estado.economia;
   const janela = saNaJanelaEsforco(economia);
   const restricoesCondicao = restricoesDeAtaquePorCondicoes(condicoesAtivas);
+  const lembretesMovimentoCondicionado = [
+    ...(condicoesAtivas.includes('agarrado') ? ['Agarrado: Movimento 0; não recebe bônus de Movimento.'] : []),
+    ...(condicoesAtivas.includes('imobilizado') ? ['Imobilizado: Movimento 0.'] : []),
+    ...(condicoesAtivas.includes('caido') ? ['Caído: só pode se deslocar Rastejando; levantar custa metade do Movimento.'] : []),
+    ...(condicoesAtivas.includes('intoxicado') ? ['Intoxicado: Movimento reduzido em 3 m.'] : []),
+  ];
   const usosDescanso = dados.usosDescansoCompleto ?? {};
   const fontesUsosDescanso = listarFontesUsosDescansoCompleto(origem, habilidadesAtivas);
   const usoMercenarioValido = usosDescansoCompletoValido(usosDescanso);
@@ -188,6 +194,7 @@ export default function PainelAcoesLocal({ dados, saAtual, aoSalvar, origemDados
   return <details className="ficha-local-editor painel-acoes-local">
     <summary>Economia de Ações · {saNaJanelaEsforco(economia)}/3 SA · {economia.turnoEmAndamento ? 'Meu turno ativo' : 'Meu turno encerrado'}</summary>
     {restricoesCondicao.length > 0 && <div className="ficha-local-aviso" role="status"><strong>Condições que restringem sua atuação</strong>{restricoesCondicao.map(item => <p key={item.condicao}>{item.motivo}</p>)}<small>Este aviso não bloqueia os controles nem resolve exceções; confira a condição, sua duração e a situação com a Mesa.</small></div>}
+    {lembretesMovimentoCondicionado.length > 0 && <div className="ficha-local-aviso" role="status"><strong>Restrições de Movimento</strong>{lembretesMovimentoCondicionado.map(item => <p key={item}>{item}</p>)}<small>A ficha não calcula deslocamento nem altera posições; aplique os limites manualmente com a Mesa.</small></div>}
     {!inicial.valido
       ? <p className="offline-erro" role="alert">O registro salvo da economia de ações está inválido. Ele foi preservado e o painel foi bloqueado para evitar sobrescrever dados.</p>
       : <>
