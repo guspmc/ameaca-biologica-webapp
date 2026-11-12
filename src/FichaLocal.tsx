@@ -315,6 +315,8 @@ export default function FichaLocal({ nome, mesa, contextoId, dados, aoFechar, ao
     ...condicoesRegistradasIds,
     ...(desacordadoPorRecursos ? ['desacordado' as const] : []),
   ])];
+  const periodoTransformacaoSemDescansoCompleto = (condicoesRegistradasIds.includes('infectado-especial') && recursosAtuais.pvAtual <= 0)
+    || (condicoesRegistradasIds.includes('cabeca-carmesim') && biAtual === 0);
   const progressaoValida = estadoProgressaoPersistenteValido(ficha.progressao, classe);
   const penalidadeMorteNivel1 = progressaoValida && (ficha.progressao as { penalidadeMorteNivel1: boolean }).penalidadeMorteNivel1;
   const defesa = derivados?.defesa ?? 10 + numero(atributos.agilidade);
@@ -466,6 +468,7 @@ export default function FichaLocal({ nome, mesa, contextoId, dados, aoFechar, ao
             return { pedidoProgressao: confirmarDescansoCompletoProgressao(pedidoAtual, dados.progressao, classe, 'sala_descanso') };
           }}
           bloqueado={secoesPendentes.size > 0 || reanimacaoEmCurso}
+          bloquearDescansoCompleto={periodoTransformacaoSemDescansoCompleto}
         />
 
         <ReanimacaoFichaLocal
