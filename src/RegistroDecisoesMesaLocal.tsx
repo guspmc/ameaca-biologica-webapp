@@ -51,6 +51,8 @@ export default function RegistroDecisoesMesaLocal({ dados, aoSalvar, origemDados
         ocorridoEm: ocorrido.toISOString(),
         registradoEm: new Date().toISOString(),
         ...(tipo === 'retificacao' ? { retificaRegistroId } : {}),
+        ...(tipo === 'retificacao' && itens.find(item => item.id === retificaRegistroId)?.reanimacaoId
+          ? { reanimacaoId: itens.find(item => item.id === retificaRegistroId)!.reanimacaoId } : {}),
         ...(reanimacaoAtual && reanimacaoVinculada === reanimacaoAtual.id ? { reanimacaoId: reanimacaoAtual.id } : {}),
       });
       if (!await aoSalvar({ registrosMesa: atualizados })) {
