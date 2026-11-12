@@ -62,7 +62,7 @@ function validarEstado(r: Reanimacao): void {
 }
 
 /** A causa é explícita: 0 PV e Colapso Viral nunca compartilham desfecho. */
-function novoIdReanimacao(): string {
+export function gerarIdReanimacao(): string {
   if (typeof globalThis.crypto?.randomUUID === 'function') return globalThis.crypto.randomUUID();
   return `reanimacao-${Date.now()}-${Math.random().toString(16).slice(2)}`;
 }
@@ -70,7 +70,7 @@ function novoIdReanimacao(): string {
 export function iniciarReanimacao(causa: CausaReanimacao): Reanimacao {
   if (causa !== 'pv_zero' && causa !== 'colapso_bi') throw new Error('Causa de Reanimação inválida.');
   return {
-    id: novoIdReanimacao(),
+    id: gerarIdReanimacao(),
     causa,
     estado: causa === 'pv_zero' ? 'aguardando_proximo_turno' : 'em_andamento',
     sucessos: 0,
