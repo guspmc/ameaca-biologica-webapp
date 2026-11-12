@@ -236,3 +236,26 @@ Nenhum desses pontos deve ser resolvido por inferência durante a implementaçã
 **CI:** os workflows associados ao HEAD consultado permaneciam `queued`, sem resultado de build ou testes. Nenhum teste local ou humano foi executado nesta etapa.
 
 **Sequência obrigatória preservada:** concluir auditoria geral → consolidar/atualizar bateria humana → validação humana e correções → somente então iniciar Inventário ativo. LAN permanece fora do escopo.
+
+
+
+## Auditoria de integração das Manobras e Reações — 12/11/2026
+
+**Base consultada:** `feat/offline-first-ficha`, código consultado no HEAD `bc211a1d1f9d880fa7806dd7b358e5f115659eea`; checkpoint: `docs/checkpoint-auditoria-integracao-manobras-reacoes-2026-11-12.md`.
+
+### Economia e estado de turno
+- **Implementado:** Economia de Ações, compras por Esforço, teto de 3 SA por janela, Interação Gratuita separada, transições de início/fim de turno e estado composto versionado.
+- **Implementado:** migração em memória de estruturas históricas reconhecidas; estrutura composta inválida bloqueia fallback para evitar mascarar corrupção.
+- **Pendente de teste humano:** persistência e recuperação do estado de turno em navegador real, duas abas e concorrência.
+
+### Integrações identificadas
+- Disparada, Fuga, Finalizar, Finalização Dupla, Ajudar, Ação Completa e Interação Gratuita possuem registros/controles operacionais nos limites descritos no checkpoint.
+- Reações defensivas e contextuais possuem validações e transições descritas no checkpoint. Aparar continua bloqueado deliberadamente por falta de estado autoritativo de arma empunhada/elegibilidade/Durabilidade.
+
+### Lacunas/defeitos de integração
+- **Mirar — INCOMPLETO:** o marcador de preparação e o custo de 1 SA existem, mas o +2 no Teste de Ataque e a escolha de região específica não chegam à `CalculadoraTesteLocal`.
+- **Combate com Duas Armas — COM ERRO DE INTEGRAÇÃO:** o helper exige `ataqueNormalRealizado`, mas o único controle que o define depende de Mirar. Consumir a Ação Atacar pelo controle genérico não registra o Ataque inicial para a elegibilidade de Duas Armas.
+- **Desengajar e Usar Objeto — INCOMPLETO na UI:** há helpers de domínio, mas não controles específicos no painel; o gasto genérico de Movimento/Ação não registra a Manobra nem seu efeito.
+- **Adiar Ação, Agarrar, Empurrar/Derrubar e Esconder-se:** não foram identificados controles operacionais específicos no painel consultado. O catálogo textual não deve ser contabilizado como integração funcional.
+
+**Validação:** os testes de domínio/interface listados no checkpoint existem no repositório, mas não foram executados nesta sessão. Nenhum teste humano foi realizado. Não houve alteração de código.
