@@ -5,6 +5,7 @@ import { validarCriacaoNoServidor } from '../src/validarCriacaoServidor.ts';
 import { estadoEconomiaAcoesValido } from '../src/economiaAcoes.ts';
 import { estadoTurnoCombateValido, estadoTurnoCombateCompostoLegadoReconhecido } from '../src/estadoTurnoCombate.ts';
 import { estadoProgressaoPersistenteValido } from '../src/progressaoPersistente.ts';
+import { listaDecisoesMesaValida } from '../src/registroDecisoesMesa.ts';
 
 function responder(res, status, body) {
   res.writeHead(status, {
@@ -297,6 +298,10 @@ export async function tratarRotaPersonagensLocal(req, res, url, db, notificarCon
             responder(res, 403, { error: 'Somente o contador de Missões pode ser editado diretamente pelo Jogador; benefícios, Nível, método, Marcos e registros de Morte exigem os fluxos próprios.' });
             return true;
           }
+        }
+        if (Object.prototype.hasOwnProperty.call(corpo.data, 'registrosMesa') && !listaDecisoesMesaValida(corpo.data.registrosMesa)) {
+          responder(res, 422, { error: 'O histórico de decisões da Mesa é inválido.' });
+          return true;
         }
         if (Object.prototype.hasOwnProperty.call(corpo.data, 'estadoTurnoCombate')) {
           const turno = corpo.data.estadoTurnoCombate;
