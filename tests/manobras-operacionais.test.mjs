@@ -57,9 +57,7 @@ test('Usar um Objeto exige Interação Gratuita já usada e então consome Açã
     () => registrarUsarObjeto(economiaInicial, estadoManobrasTurnoInicial()),
     /Interação Gratuita com Objeto já tenha sido utilizada/,
   );
-  const comInteracao = consumirRecursoNormal === undefined
-    ? economiaInicial
-    : { ...economiaInicial, interacaoGratuitaUsada: true };
+  const comInteracao = { ...economiaInicial, interacaoGratuitaUsada: true };
   const resultado = registrarUsarObjeto(comInteracao, estadoManobrasTurnoInicial());
   assert.equal(resultado.economia.normaisUsados.acao, true);
   assert.equal(resultado.economia.interacaoGratuitaUsada, true);
