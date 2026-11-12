@@ -36,9 +36,9 @@ test('recusa tipos, textos, datas, chaves extras e IDs duplicados', () => {
 });
 
 test('limita o histórico a 100 registros e protege contra lista inválida', () => {
-  const lista = Array.from({ length: 100 }, (_, i) => ({ ...base, id: 'evento-' + i }));
+  const lista = Array.from({ length: 30 }, (_, i) => ({ ...base, id: 'evento-' + i }));
   assert.equal(api.listaDecisoesMesaValida(lista), true);
-  assert.throws(() => api.adicionarDecisaoMesa(lista, { ...base, id: 'novo' }), /Limite de 100/);
+  assert.throws(() => api.adicionarDecisaoMesa(lista, { ...base, id: 'novo' }), /Limite de 30/);
   assert.throws(() => api.adicionarDecisaoMesa([base, base], { ...base, id: 'novo' }), /inválido/);
 });
 
