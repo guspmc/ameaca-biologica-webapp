@@ -469,6 +469,7 @@ export default function FichaLocal({ nome, mesa, contextoId, dados, aoFechar, ao
         />
 
         <ReanimacaoFichaLocal
+          transformacaoAtiva={condicoesRegistradasIds.includes('infectado-especial') && condicoesRegistradasIds.includes('cabeca-carmesim') ? 'conflito' : condicoesRegistradasIds.includes('infectado-especial') ? 'infectado-especial' : condicoesRegistradasIds.includes('cabeca-carmesim') ? 'cabeca-carmesim' : null}
           origemDados={origemDados}
           dados={dados}
           recursos={recursosAtuais}
