@@ -139,3 +139,13 @@ test('roladores de Reanimação ficam disponíveis somente no modo Automático',
   assert.match(painel, /modo === 'automatico' && modoDados === 'mistos'/);
   assert.match(painel, /modo !== 'automatico' && <p>Modo/);
 });
+
+
+test('decisão vinculada substitui o aviso de pendência sem executar efeitos narrativos', () => {
+  assert.match(painel, /decisoesVinculadas/);
+  assert.match(painel, /Decisão da Mesa registrada/);
+  assert.match(painel, /Vincule-a a esta Reanimação/);
+  assert.match(painel, /Preparar vínculo para esta Reanimação/);
+  assert.match(painel, /gerarIdReanimacao/);
+  assert.match(painel, /não executa consequências narrativas/);
+});
