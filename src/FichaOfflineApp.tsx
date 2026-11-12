@@ -22,6 +22,7 @@ export default function FichaOfflineApp() {
   const [exclusaoPendente, setExclusaoPendente] = useState<string | null>(null);
   const [backupPendente, setBackupPendente] = useState<ReturnType<typeof lerArquivoBackup> | null>(null);
   const [arquivoInputKey, setArquivoInputKey] = useState(0);
+  const [revisaoMontagemFicha, setRevisaoMontagemFicha] = useState(0);
   const filaGravacao = useRef(criarFilaSerializada());
   const camposPendentesRef = useRef(new Set<string>());
   const secoesNaoSalvasRef = useRef(new Set<string>());
@@ -175,6 +176,8 @@ export default function FichaOfflineApp() {
       camposPendentesRef.current.clear();
       secoesNaoSalvasRef.current.clear();
       setTemEdicoesPendentes(false);
+      // A recarga descarta também o estado interno ainda sujo dos editores filhos.
+      setRevisaoMontagemFicha(revisao => revisao + 1);
       selecionadoRef.current = atualizada;
       setSelecionado(atualizada);
       setPersonagens(lista => lista.map(p => p.id === atualizada.id ? atualizada : p).sort((x,y) => y.atualizadoEm.localeCompare(x.atualizadoEm)));
@@ -298,6 +301,7 @@ export default function FichaOfflineApp() {
   }
 
   if (selecionado) return <FichaLocal
+    key={`${selecionado.id}:${revisaoMontagemFicha}`}
     nome={selecionado.nome} mesa="DISPOSITIVO LOCAL" dados={selecionado.dados}
     aoFechar={() => { void fecharFicha(); }}
     aoRecarregar={recarregarFicha}
