@@ -75,7 +75,7 @@ export default function EditorInventarioLocal({ classe, capacidade, kitInicial, 
     <label>Equipamento Inicial<select value={kit} disabled={ocupado} onChange={e => alterarKit(e.target.value)}>
       <option value="">Selecione um conjunto</option>{kit && !opcoes.some(item => item.id === kit) && <option value={kit}>{kit} · incompatível com a Classe</option>}{opcoes.map(item => <option key={item.id} value={item.id}>{item.id} · {item.nome}</option>)}
     </select></label>
-    {kit === 'C' && <PreviaCompras capacidade={capacidade} plano={plano} revisao={revisao} autoSalvar={autoSalvar} aoAlterarPlano={alterarPlano} aoAlterarPrevia={pendente => {
+    {kit === 'C' && <PreviaCompras capacidade={capacidade} plano={plano} revisao={revisao} autoSalvar={autoSalvar} bloqueado={ocupado} aoAlterarPlano={alterarPlano} aoAlterarPrevia={pendente => {
       setPrevisaoPendente(pendente);
       if (!autoSalvar && pendente) aoAlterarPendencia(true);
     }} />}
