@@ -316,3 +316,5 @@ Prosseguir pelo catálogo de Condições e sua aplicação na calculadora: confr
 - A correção não implementa cronômetros, transições, Dados de Vida, restrições da Transformação, reversão da Cabeça Carmesim a BI 0, hora Desacordada ou registro de morte. Esses pontos permanecem pendentes.
 - Checkpoint: `docs/checkpoint-interacao-transformacoes-reanimacao-2026-11-12.md`.
 - Próxima ação: auditar a reversão a BI 0 e a hora Desacordada, especialmente a interação com Descanso Completo e encerramento manual da Condição, antes de decidir qualquer novo estado persistente.
+
+- Incremento posterior: Descanso Completo agora fica bloqueado enquanto Infectado Especial estiver ativo a 0 PV ou Cabeça Carmesim permanecer ativa com BI 0 (hora de reversão/inconsciência). A UI orienta só encerrar a Condição após a Mesa confirmar o fim da hora. Não há cronômetro; Descanso Parcial não foi bloqueado porque a regra consultada não o proíbe expressamente. Testes estruturais adicionados, não executados.
