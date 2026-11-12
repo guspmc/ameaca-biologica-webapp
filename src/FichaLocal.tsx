@@ -245,7 +245,7 @@ export default function FichaLocal({ nome, mesa, contextoId, dados, aoFechar, ao
     }
   }, [autoSalvar, fecharAposSalvar, secoesPendentes, aoFechar]);
   const ficha = dados as DadosFichaLocal;
-  const condicoesAtivasIds = listaCondicoesValida(dados.condicoes)
+  const condicoesRegistradasIds = listaCondicoesValida(dados.condicoes)
     ? [...new Set(condicoesAtivas(dados.condicoes).map(item => item.condicao))]
     : [];
   const estadoReanimacao = (dados as Record<string, unknown>).reanimacao;
@@ -310,6 +310,11 @@ export default function FichaLocal({ nome, mesa, contextoId, dados, aoFechar, ao
   const estadoTurnoCombateAtual = carregarEstadoTurnoCombate(dados.estadoTurnoCombate, dados.economiaAcoes, recursosAtuais.saAtual);
   const biAtual = recursosAtuais.biAtual;
   const faseBi = calcularFaseBioInfeccao(biAtual, bi);
+  const desacordadoPorRecursos = recursosAtuais.pvAtual <= 0 || faseBi.estado === 'colapso';
+  const condicoesAtivasIds: CondicaoId[] = [...new Set([
+    ...condicoesRegistradasIds,
+    ...(desacordadoPorRecursos ? ['desacordado' as const] : []),
+  ])];
   const progressaoValida = estadoProgressaoPersistenteValido(ficha.progressao, classe);
   const penalidadeMorteNivel1 = progressaoValida && (ficha.progressao as { penalidadeMorteNivel1: boolean }).penalidadeMorteNivel1;
   const defesa = derivados?.defesa ?? 10 + numero(atributos.agilidade);
