@@ -11,6 +11,7 @@ import { reanimacaoValida } from './reanimacaoFicha.ts';
 import { estadoEconomiaAcoesValido } from './economiaAcoes.ts';
 import { estadoTurnoCombateValido, estadoTurnoCombateCompostoLegadoReconhecido } from './estadoTurnoCombate.ts';
 import { listaCondicoesValida } from './condicoesFicha.ts';
+import { listaDecisoesMesaValida } from './registroDecisoesMesa.ts';
 import { HABILIDADES_PROGRESSAO, ganhosProgressaoAte, validarProgressaoHabilidades } from './progressaoHabilidades.ts';
 import { usosDescansoCompletoValido } from './usosDescansoCompleto.ts';
 import { beneficioAmnesicoValido, beneficioMilitarValido } from './beneficiosOrigensContextuais.ts';
@@ -204,6 +205,7 @@ function validarDadosFicha(valor: unknown): valor is Record<string, unknown> {
   if ('configuracaoFuncionamento' in valor && !configuracaoFuncionamentoValida(valor.configuracaoFuncionamento)) return false;
   if ('reanimacao' in valor && valor.reanimacao !== null && !reanimacaoValida(valor.reanimacao)) return false;
   if ('condicoes' in valor && !listaCondicoesValida(valor.condicoes)) return false;
+  if ('registrosMesa' in valor && !listaDecisoesMesaValida(valor.registrosMesa)) return false;
   if ('estadoTurnoCombate' in valor) {
     if (!(estadoTurnoCombateValido(valor.estadoTurnoCombate) || estadoTurnoCombateCompostoLegadoReconhecido(valor.estadoTurnoCombate))
       || !Number.isSafeInteger(valor.saAtual)
