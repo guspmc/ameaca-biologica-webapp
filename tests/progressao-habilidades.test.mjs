@@ -4,6 +4,7 @@ import { readFile } from 'node:fs/promises';
 import ts from 'typescript';
 
 const habilidades = await readFile(new URL('../src/habilidades.ts', import.meta.url), 'utf8');
+const fichaLocal = await readFile(new URL('../src/FichaLocal.tsx', import.meta.url), 'utf8');
 const pericias = await readFile(new URL('../src/pericias.ts', import.meta.url), 'utf8');
 const progressao = (await readFile(new URL('../src/progressaoHabilidades.ts', import.meta.url), 'utf8'))
   .replace(/^import .*;\r?\n/gm, '');
@@ -265,4 +266,13 @@ test('aplicação de Ponto de Perícia respeita níveis 4 e 8, Classe, Origem e 
   assert.throws(() => aplicarGanhoPericiaProgressao('Agente', 5, 'Luta', base), /não concede/);
   assert.throws(() => aplicarGanhoPericiaProgressao('Agente', 4, 'Medicina', base), /Perícias da Classe/);
   assert.throws(() => aplicarGanhoPericiaProgressao('Agente', 4, 'Luta', { Luta: 1 }, 'Luta'), /abaixo do grau Mestre/);
+});
+
+
+test('Ficha ativa lista todas as Habilidades adquiridas com nível, grau e descrição', () => {
+  assert.match(fichaLocal, /HABILIDADES_PROGRESSAO/);
+  assert.match(fichaLocal, /descricaoEfeitoHabilidade/);
+  assert.match(fichaLocal, /habilidadesExibicao\\.map/);
+  assert.match(fichaLocal, /nivelAquisicao/);
+  assert.match(fichaLocal, /grauRotulo/);
 });
