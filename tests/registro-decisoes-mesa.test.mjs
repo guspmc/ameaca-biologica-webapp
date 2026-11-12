@@ -48,6 +48,7 @@ test('gerador de IDs funciona sem randomUUID', () => {
 
 test('a interface salva após confirmação e não aplica efeitos automaticamente', async () => {
   const ui = await readFile(new URL('../src/RegistroDecisoesMesaLocal.tsx', import.meta.url), 'utf8');
+  assert.match(ui, /dados\.registrosMesa === undefined \? \[\] : dados\.registrosMesa/);
   assert.match(ui, /window\.confirm/);
   assert.match(ui, /aoSalvar\(\{ registrosMesa: atualizados \}\)/);
   assert.match(ui, /não altera PV, BI, Condições, Reanimação/);
