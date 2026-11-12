@@ -362,3 +362,15 @@ Nenhum desses pontos deve ser resolvido por inferência durante a implementaçã
 - **Segurança mecânica:** não conectar efeitos a snapshot de consulta somente leitura nem simular uso/consumo/equipamento sem transação verificável.
 - **Testes/build/CI:** não executados nesta sessão; validação humana da lista de Habilidades em níveis variados e telas mobile/desktop pendente.
 - **Próximo:** auditoria das regras de ataques e reações existentes (Aparar, Esquivar, Finalizar e Ataque de Oportunidade), sem ultrapassar a dependência do Inventário ativo.
+
+
+## Ataques, Reações e Finalização — 12/11/2026
+
+**Checkpoint:** `docs/checkpoint-auditoria-ataques-reacoes-finalizacao-2026-11-12.md`.
+
+- **Conferidos estaticamente:** janela de Reação, 20 natural, Aparar, Esquivar, Contra-Ataque, Ataque de Oportunidade, Finalizar, Finalização Dupla, Ajudar, Desengajar e Usar Objeto. Não foi identificada divergência geral nas regras/custos revisados.
+- **Lembretes adicionados em `PainelAcoesLocal.tsx`:** Brecha Tática, Finalização à Distância e Luta Livre. Testes estruturais adicionados em `tests/ataque-oportunidade-ficha.test.mjs`.
+- **Pendência relevante:** Finalizar genérico sempre registra 3 SA; ainda não trata a exceção de Luta Livre quando o alvo é derrotado pela Manobra. A interface agora alerta para não usar esse botão nesse caso. Fluxo específico condicionado ao resultado permanece pendente.
+- **Dependência de Inventário:** Aparar segue bloqueado até existir estado verificável de arma empunhada/elegibilidade/Durabilidade. Esquiva e efeitos condicionais permanecem sob confirmação; deslocamentos/usos por turno não são totalmente persistidos.
+- **Testes/build/CI:** não executados nesta sessão; validação humana pendente nos três modos de funcionamento.
+- **Restrições:** nenhuma alteração em fórmula, economia, contratos persistidos, schema, LAN, Supabase, CSS global, navegação, merge ou publicação.
