@@ -322,3 +322,12 @@ Nenhum desses pontos deve ser resolvido por inferência durante a implementaçã
 - **Amedrontado:** calculadora apresenta lembrete contextual; percepção da fonte e aplicabilidade do Teste continuam sob confirmação do jogador/Mesa, sem Desvantagem automática.
 - **Condições do alvo:** Vantagem contra alvos Caídos, Cegos ou Atordoados não é inferida pela Ficha do jogador.
 - **Cobertura:** `tests/condicoes-calculadora.test.mjs` ampliado. Testes/build não executados nesta sessão; validação humana pendente.
+
+
+## Transformações e condições sensoriais — 12/11/2026
+
+- **Cego/Surdo:** calculadora apresenta lembretes para confirmar Testes que dependam exclusivamente de visão/audição; a Ficha não presume essa dependência nem aplica falha automática contextual.
+- **Infectado Especial/Cabeça Carmesim:** descrições do catálogo foram completadas conforme Arquivo do Jogador v1.0, pp. 90–91. A UI identifica o registro como informativo e explicita que os efeitos da transformação não são aplicados automaticamente.
+- **Lacuna:** fluxo mecânico completo das transformações não implementado; depende de integração própria com progressão, Dados de Vida, Habilidades, armas, ataques, BI, PV, inconsciência e morte. Não considerar transformação funcional apenas por constar no catálogo.
+- **Checkpoint:** `docs/checkpoint-auditoria-transformacoes-condicoes-2026-11-12.md`.
+- **Testes:** cobertura estrutural adicionada; não executada nesta sessão. Validação humana pendente.
