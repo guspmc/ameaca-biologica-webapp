@@ -2,7 +2,7 @@
 
 **Atualizado em:** 12/11/2026  
 **Branch de trabalho:** `feat/offline-first-ficha`  
-**HEAD observado no início desta atualização:** `bc211a1d1f9d880fa7806dd7b358e5f115659eea`  
+**HEAD observado na atualização anterior:** `bc211a1d1f9d880fa7806dd7b358e5f115659eea`  
 **Repositório:** `guspmc/ameaca-biologica-webapp`
 
 Este documento é a referência operacional para retomar o trabalho em novas conversas. Ele registra o escopo acordado, a ordem das atividades, as restrições e o ponto de continuidade. Não substitui as regras oficiais nem os checkpoints técnicos específicos.
@@ -282,3 +282,16 @@ A revisão final identificou que a calculadora de Ataques só aparece no modo Au
 ### Próxima frente de auditoria
 
 Prosseguir pelo catálogo de Condições e sua aplicação na calculadora: confrontar cada Condição e restrição com o cânone, verificando se Desvantagem, Defesa, proibição de ações, Vantagem contra alvos e lembretes por turno estão representados sem efeitos indevidos. Registrar discrepâncias comprovadas e corrigir pontualmente.
+
+
+## Auditoria das Condições da Ficha — 12/11/2026
+
+- **Escopo:** confronto do catálogo, calculadora, painel de ações, condições derivadas e integração com a Ficha contra o Arquivo do Jogador v1.0, pp. 81–83.
+- **Achados corrigidos:** Imobilizado agora impõe Desvantagem em Reflexos (incluindo Esquiva); Desacordado derivado de PV 0/Colapso Viral é propagado aos lembretes; o Painel de Ações exibe restrições de atuação sem bloquear controles; limites de Movimento de Agarrado, Imobilizado, Caído e Intoxicado são lembrados no painel; Amedrontado gera lembrete contextual sem aplicação automática.
+- **Limites preservados:** nenhuma inferência de Condições dos alvos; Vantagem contra alvo Caído/Cego/Atordoado permanece dependente da Mesa; sem movimentação automática, bloqueio de ações, rolagem ou aplicação de Dano.
+- **Arquivos:** `src/condicoesCalculadora.ts`, `src/PainelAcoesLocal.tsx`, `src/CalculadoraTesteLocal.tsx`, `src/FichaLocal.tsx` e `tests/condicoes-calculadora.test.mjs`.
+- **Checkpoint:** `docs/checkpoint-auditoria-condicoes-ficha-2026-11-12.md` — commit `d1ff43949f9b6c321a5ee29368b5df1cabaf8289`.
+- **HEAD do código/documentação após este ciclo:** `d1ff43949f9b6c321a5ee29368b5df1cabaf8289` (a atualização desta linha de continuidade ainda será commitada).
+- **Testes/build:** não executados nesta sessão. A auditoria continua por inspeção e correções pontuais; não solicitar repetição genérica de comandos como pré-requisito.
+- **Validação humana:** pendente.
+- **Próxima frente:** concluir a revisão estática das Condições restantes e verificar consistência entre os efeitos descritos no catálogo e os lembretes de consulta; depois consolidar a bateria humana da Ficha. Inventário ativo segue bloqueado até validação humana e aprovação expressa.
