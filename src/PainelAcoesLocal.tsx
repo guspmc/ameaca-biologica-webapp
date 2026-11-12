@@ -13,7 +13,7 @@ import { registrarCombateDuasArmas, registrarDisparada, registrarFuga, registrar
 import { avaliarAtaqueOportunidade, registrarAtaqueOportunidade, prepararContraAtaque, consultarRetaliacao, avaliarNaoVaiEscapar, registrarNaoVaiEscapar, avaliarJanelaReacao, registrarReacaoDefensiva, resolverTesteDefensivo, avaliarNaMinhaMira, registrarNaMinhaMira, avaliarRespostaMercenario, registrarRespostaMercenario, type JanelaReacao } from './reacoesCombate';
 import { sortearDados, validarResultadosFisicos } from './rolagemDados';
 import type { ModoDados } from './funcionamentoFicha';
-import { condicoesQueImpoemDesvantagem } from './condicoesCalculadora';
+import { condicoesQueImpoemDesvantagem, restricoesDeAtaquePorCondicoes } from './condicoesCalculadora';
 import type { CondicaoId } from './condicoesFicha';
 import { listarFontesUsosDescansoCompleto, registrarUsoDescansoCompleto, usosDescansoCompletoValido } from './usosDescansoCompleto';
 
@@ -174,6 +174,7 @@ export default function PainelAcoesLocal({ dados, saAtual, aoSalvar, origemDados
 
   const economia = estado.economia;
   const janela = saNaJanelaEsforco(economia);
+  const restricoesCondicao = restricoesDeAtaquePorCondicoes(condicoesAtivas);
   const usosDescanso = dados.usosDescansoCompleto ?? {};
   const fontesUsosDescanso = listarFontesUsosDescansoCompleto(origem, habilidadesAtivas);
   const usoMercenarioValido = usosDescansoCompletoValido(usosDescanso);
@@ -186,6 +187,7 @@ export default function PainelAcoesLocal({ dados, saAtual, aoSalvar, origemDados
   });
   return <details className="ficha-local-editor painel-acoes-local">
     <summary>Economia de Ações · {saNaJanelaEsforco(economia)}/3 SA · {economia.turnoEmAndamento ? 'Meu turno ativo' : 'Meu turno encerrado'}</summary>
+    {restricoesCondicao.length > 0 && <div className="ficha-local-aviso" role="status"><strong>Condições que restringem sua atuação</strong>{restricoesCondicao.map(item => <p key={item.condicao}>{item.motivo}</p>)}<small>Este aviso não bloqueia os controles nem resolve exceções; confira a condição, sua duração e a situação com a Mesa.</small></div>}
     {!inicial.valido
       ? <p className="offline-erro" role="alert">O registro salvo da economia de ações está inválido. Ele foi preservado e o painel foi bloqueado para evitar sobrescrever dados.</p>
       : <>
