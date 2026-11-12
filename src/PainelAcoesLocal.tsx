@@ -445,7 +445,7 @@ export default function PainelAcoesLocal({ dados, saAtual, aoSalvar, origemDados
           <div className="ficha-local-grade">
             <div><small>DISPARADA</small><strong>{estado.manobras.disparadaUsada ? 'Utilizada' : 'Disponível'}</strong></div>
             <div><small>FUGA</small><strong>{estado.manobras.fugaUsada ? 'Utilizada' : 'Não utilizada'}</strong></div>
-            <div><small>MIRAR</small><strong>{estado.manobras.mirarPreparado ? 'Preparado para o próximo Ataque' : 'Não preparado'}</strong></div>
+            <div><small>MIRAR</small><strong>{estado.manobras.mirarPreparado ? 'Preparado para o próximo Ataque' : 'Não preparado'}</strong>{estado.manobras.mirarPreparado && <p>Próximo Ataque: +2 no Teste; escolha uma região específica. Não aumenta Dano nem remove Desvantagem.</p>}</div>
             <div><small>DUAS ARMAS</small><strong>{estado.manobras.combateDuasArmasUsado ? 'Utilizado' : 'Não utilizado'}</strong></div>
             <div><small>MOVIMENTOS ADICIONAIS</small><strong>{estado.movimentosAdicionaisConcedidos}</strong><p>Concedidos por Disparada/Fuga; o deslocamento é realizado pela Mesa.</p></div>
             <div><small>ATAQUE ADICIONAL</small><strong>{estado.ataqueAdicionalAutorizado ? 'Autorizado' : 'Não autorizado'}</strong><p>O painel registra a autorização, sem executar o Ataque.</p></div>
@@ -456,7 +456,7 @@ export default function PainelAcoesLocal({ dados, saAtual, aoSalvar, origemDados
             <button type="button" disabled={salvando || !economia.turnoEmAndamento || !estado.manobras.disparadaUsada || estado.manobras.fugaUsada || economia.saAtual < 1 || janela >= 3} onClick={() => void aplicar(atual => aplicarManobraCombate(atual, registrarFuga).estado)}>Fuga · 1 SA</button>
             <button type="button" disabled={salvando || !economia.turnoEmAndamento || economia.normaisUsados.acao} onClick={() => void aplicar(atual => aplicarManobraCombate(atual, registrarAtaque).estado)}>{estado.manobras.mirarPreparado ? "Registrar Ataque · consome Mirar" : "Registrar Ataque · Ação"}</button>
           </div>
-          <p className="ficha-local-legenda">Estes controles registram custos e marcadores. Disparada/Fuga não movem a personagem. Declare Mirar antes do Ataque; a calculadora aplica +2 e exige que você informe a região escolhida. Depois de resolver o Ataque, registre-o aqui: isso consome a Ação e, se preparado, Mirar.</p>
+          <p className="ficha-local-legenda">Estes controles registram custos e marcadores. Disparada/Fuga não movem a personagem. Declare Mirar antes do Ataque. No modo Automático, a calculadora aplica +2 e exige que você informe a região escolhida; em Misto/Manual, aplique +2 manualmente e escolha a região com a Mesa. Mirar não aumenta Dano nem remove Desvantagem. Depois de resolver o Ataque, registre-o aqui: isso consome a Ação e, se preparado, Mirar.</p>
 
           <div className="ficha-local-editor">
             <strong>Combate com Duas Armas · 1 vez por turno</strong>
