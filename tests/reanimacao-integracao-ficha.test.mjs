@@ -96,14 +96,17 @@ test('Reanimação respeita dados físicos, virtuais e mistos sem presumir resul
   assert.match(painel, /Dados físicos registrados/);
 });
 
-test('transformações ativas a 0 PV bloqueiam a Reanimação comum e exibem o desfecho canônico', () => {
+test('Transformações a 0 PV exibem o cânone como referência e permitem registrar a decisão da Mesa', () => {
   assert.match(ficha, /transformacaoAtiva=\{condicoesRegistradasIds\.includes\('infectado-especial'\)/);
-  assert.match(painel, /transformacaoBloqueiaReanimacao = transformacaoAtiva !== null && recursos\.pvAtual <= 0/);
+  assert.match(painel, /transformacaoPVZero = transformacaoAtiva !== null && recursos\.pvAtual <= 0/);
   assert.match(painel, /1 hora inerte antes da transformação em Cabeça Carmesim/);
-  assert.match(painel, /determina a morte da personagem/);
-  assert.match(painel, /não será iniciada/);
-  assert.match(painel, /prioridade entre os dois estados não é automatizada/);
-  assert.match(painel, /reanimacaoEmConflito/);
+  assert.match(painel, /cânone prevê morte da personagem/);
+  assert.match(painel, /Este texto é referência, não decisão automática/);
+  assert.match(painel, /não mata, transforma nem bloqueia registros decididos pela Mesa/);
+  assert.match(painel, /Registrar Reanimação por 0 PV conforme decisão da Mesa/);
+  assert.match(painel, /Confirma que a Mesa decidiu registrar este fluxo de Reanimação/);
+  assert.doesNotMatch(painel, /reanimacaoEmConflito/);
+  assert.doesNotMatch(painel, /estado === 'aguardando_proximo_turno' && !transformacao/);
 });
 
 test('0 PV inicia automaticamente o estado de Reanimação, aguardando o próximo turno', () => {
