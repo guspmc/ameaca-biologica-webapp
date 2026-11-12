@@ -107,8 +107,7 @@ export default function ReanimacaoFichaLocal({ dados, recursos, origem, pvMaximo
       await persistir(resultado.reanimacao, recursosPatch);
       const avisos: string[] = [];
       if (resultado.falhaCritica) avisos.push('1 natural: Falha Crítica no Teste de Reanimação. Como não é um Ataque, não ativa Exposto automaticamente.');
-      if (resultado.morteParaRegistroDoMestre) avisos.push('Três falhas: morte sinalizada para registro do Mestre. Nenhuma consequência adicional foi executada.');
-      else if (resultado.transformacaoPendente) avisos.push('Três falhas: retorno como Zumbi Especial pendente para o próximo turno.');
+      if (resultado.morteParaRegistroDoMestre || resultado.transformacaoPendente) avisos.push('Três falhas: resultado mecânico registrado — decisão da Mesa pendente. Consulte o desfecho previsto no cânone e registre a decisão da Mesa no histórico. Nenhuma consequência narrativa foi executada.');
       else if (resultado.pvAoDespertar !== null) avisos.push(`Três sucessos: personagem desperta com ${resultado.pvAoDespertar} PV.`);
       else if (resultado.reanimacao.estado === 'desacordada_ate_reducao_bi') avisos.push('Três sucessos: permanece Desacordada até a BI ficar abaixo do máximo.');
       const faces = Array.isArray(resultados) ? resultados.join(' e ') : String(resultados);
@@ -173,8 +172,8 @@ export default function ReanimacaoFichaLocal({ dados, recursos, origem, pvMaximo
         aguardando_proximo_turno: 'Aguardando o próximo turno',
         em_andamento: 'Testes em andamento',
         desacordada_ate_reducao_bi: 'Desacordada até BI abaixo do máximo',
-        morte_a_registrar: 'Morte sinalizada para registro do Mestre',
-        transformacao_no_proximo_turno: 'Retorno como Zumbi Especial pendente para o próximo turno',
+        morte_a_registrar: 'Três falhas — decisão da Mesa pendente',
+        transformacao_no_proximo_turno: 'Três falhas — decisão da Mesa pendente',
         concluida: 'Concluída',
       } as Record<string, string>)[reanimacao.estado]}</strong></p>
       <p>Sucessos: {reanimacao.sucessos}/3 · Falhas: {reanimacao.falhas}/3 · Tentativas: {reanimacao.tentativas}/5</p>
@@ -203,8 +202,7 @@ export default function ReanimacaoFichaLocal({ dados, recursos, origem, pvMaximo
           <button type="button" className="acao" disabled={ocupado || bloqueado || !resultadoValido} onClick={() => void registrarTeste()}>{rolagemVirtualAtiva ? 'Rolar e registrar Teste' : 'Registrar resultado do Teste'} <span>→</span></button>
         </>}
       {reanimacao.estado === 'desacordada_ate_reducao_bi' && <button type="button" className="acao" disabled={ocupado || bloqueado || recursos.biAtual >= biMaximo} onClick={() => void encerrarColapso()}>Confirmar BI abaixo do máximo e encerrar <span>→</span></button>}
-      {reanimacao.estado === 'morte_a_registrar' && <p>A regra sinaliza morte após três falhas. O registro e as consequências de campanha permanecem sob responsabilidade do Mestre.</p>}
-      {reanimacao.estado === 'transformacao_no_proximo_turno' && <p>A regra determina o retorno como Zumbi Especial no próximo turno. A ficha não altera o controle da personagem nem aplica a transformação automaticamente.</p>}
+      {(reanimacao.estado === 'morte_a_registrar' || reanimacao.estado === 'transformacao_no_proximo_turno') && <p>Resultado mecânico registrado — decisão da Mesa pendente. O cânone prevê um desfecho específico para esta causa de Reanimação, mas a Ficha não declara morte, não transforma a personagem e não aplica consequências narrativas. Consulte a regra e registre a decisão tomada pela Mesa no Registro de Decisões da Mesa.</p>}
     </>}
     {erro && <p className="offline-erro" role="alert">{erro}</p>}
     {mensagem && <p className="offline-status" role="status">{mensagem}</p>}
