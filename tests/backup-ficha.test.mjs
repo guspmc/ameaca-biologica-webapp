@@ -157,10 +157,36 @@ test('backup preserva o Registro de Decisões da Mesa e recusa evento malformado
     responsavel: 'Mestre',
     ocorridoEm: '2026-11-12T15:00:00.000Z',
     registradoEm: '2026-11-12T15:05:00.000Z',
+    reanimacaoId: 'reanimacao-1',
+  }, {
+    id: 'evento-2',
+    tipo: 'retificacao',
+    descricao: 'Retifica a decisão anterior, que foi registrada incorretamente.',
+    responsavel: 'Mestre',
+    ocorridoEm: '2026-11-12T16:00:00.000Z',
+    registradoEm: '2026-11-12T16:05:00.000Z',
+    retificaRegistroId: 'evento-1',
   }];
+  original.dados.reanimacao = {
+    id: 'reanimacao-1', causa: 'pv_zero', estado: 'morte_a_registrar',
+    sucessos: 0, falhas: 3, tentativas: 3, curaAcumulada: 0, vantagemProximoTeste: false,
+  };
   const restaurado = lerArquivoBackup(serializarBackup(criarBackup([original])));
   assert.deepEqual(restaurado.personagens[0].dados.registrosMesa, original.dados.registrosMesa);
+  assert.deepEqual(restaurado.personagens[0].dados.reanimacao, original.dados.reanimacao);
   const invalido = ficha();
   invalido.dados.registrosMesa = [{ ...original.dados.registrosMesa[0], descricao: '' }];
   assert.throws(() => criarBackup([invalido]), /fichas inválidas/);
+});
+
+
+test('backup rejeita retificação sem referência válida ao registro anterior', () => {
+  const original = ficha();
+  original.dados.registrosMesa = [{
+    id: 'retificacao-sem-alvo', tipo: 'retificacao',
+    descricao: 'Tentativa de corrigir um registro.', responsavel: 'Mestre',
+    ocorridoEm: '2026-11-12T16:00:00.000Z', registradoEm: '2026-11-12T16:05:00.000Z',
+    retificaRegistroId: 'nao-existe',
+  }];
+  assert.throws(() => criarBackup([original]), /fichas inválidas/);
 });
