@@ -80,6 +80,10 @@ export function restricoesDeAtaquePorCondicoes(
     condicao: 'desorientado',
     motivo: 'Desorientado: não pode usar Atacar.',
   });
+  if (ativas.has('desacordado')) restricoes.push({
+    condicao: 'desacordado',
+    motivo: 'Desacordado: não pode realizar Ações nem Reações e não percebe conscientemente o ambiente.',
+  });
   if (ativas.has('atordoado')) restricoes.push({
     condicao: 'atordoado',
     motivo: 'Atordoado: não pode realizar Ações, Reações ou Movimento.',
