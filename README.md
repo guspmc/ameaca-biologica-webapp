@@ -2,6 +2,20 @@
 
 WebApp gratuito e de código aberto para **Ameaça Biológica**, RPG de horror e sobrevivência, com fichas digitais, gerenciamento de campanhas, Mesas online e sincronização.
 
+## Diretriz vigente de desenvolvimento — 12/11/2026
+
+O foco ativo está na **auditoria, correção e consolidação do Laboratório e da Ficha Offline** na branch `feat/offline-first-ficha`. A documentação histórica abaixo registra etapas anteriores e não deve ser interpretada como descrição automática do estado atual.
+
+A linha de trabalho, as restrições, a ordem dos testes e o ponto de continuidade estão em [docs/linha-de-trabalho-e-continuidade-2026-11-12.md](docs/linha-de-trabalho-e-continuidade-2026-11-12.md). Esse documento orienta a retomada em novas conversas.
+
+**Ordem posterior, após a conclusão e validação da etapa atual:**
+1. Inventário Offline;
+2. Inventário LAN;
+3. Painel do Mestre;
+4. Versão Linux.
+
+Não alterar a identidade visual aprovada, não refatorar o servidor LAN funcional, não tocar em `main`, Supabase/banco remoto, GitHub Pages ou publicação durante a etapa atual. Não confundir funcionalidade planejada/documentada com funcionalidade implementada, testada ou homologada.
+
 ## Estado atual
 
 **Alfa 0.4 (primeiro módulo):** mantém a Alfa 0.3 e adiciona criação de rascunhos de personagem por jogadores aprovados, distribuição inicial de Atributos (FOR/AGI/VIG/AST), cálculo da base de PV/SA/BI/Defesa da Classe e sincronização dos recursos atuais PV, SA e BI. A Ficha do Jogador tem quatro seções e navegação móvel conforme o protótipo congelado v0.2.1, mas Origem, treinamento, habilidades, ataques e inventário ainda estão explicitamente pendentes. O Mestre tem acesso somente de consulta. **Não confundir este módulo com a ficha completa pronta para campanha.** Os protótipos aprovados da **Ficha do Jogador v0.2.1** e do **Painel do Mestre v0.2** continuam referências visuais separadas.
