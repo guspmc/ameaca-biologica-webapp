@@ -213,7 +213,7 @@ export default function ReanimacaoFichaLocal({ dados, recursos, origem, pvMaximo
         {!registrosMesaValidos
           ? <><strong>Histórico da Mesa inválido — vínculo não verificável.</strong><p>Os dados originais foram preservados. A Ficha não consegue confirmar se a decisão foi registrada; revise o histórico antes de continuar.</p></>
           : decisoesVinculadas.length > 0
-            ? <><strong>Decisão da Mesa registrada.</strong><p>Há {decisoesVinculadas.length} registro(s) vinculado(s) a esta Reanimação:</p><ul>{decisoesVinculadas.map(item => <li key={item.id}>{item.tipo}: {item.descricao}</li>)}</ul><p>A Ficha mantém o resultado mecânico e não executa consequências narrativas.</p></>
+            ? <><strong>Decisão da Mesa registrada.</strong><p>Há {decisoesVinculadas.length} registro(s) vinculado(s) a esta Reanimação:</p><ul>{decisoesVinculadas.map(item => <li key={item.id}>{item.tipo}: {item.descricao}{item.retificaRegistroId && <small> Retifica o registro {item.retificaRegistroId}.</small>}</li>)}</ul><p>A Ficha mantém o resultado mecânico e não executa consequências narrativas.</p></>
             : <><strong>Resultado mecânico registrado — decisão da Mesa pendente.</strong><p>O cânone prevê um desfecho específico para esta causa de Reanimação, mas a Ficha não declara morte, não transforma a personagem e não aplica consequências narrativas. Registre a decisão no Registro de Decisões da Mesa e vincule-a a esta Reanimação.</p></>}
         {!reanimacao.id && <button type="button" disabled={ocupado || bloqueado} onClick={() => void persistir({ ...reanimacao, id: gerarIdReanimacao() })}>Preparar vínculo para esta Reanimação</button>}
       </section>}
