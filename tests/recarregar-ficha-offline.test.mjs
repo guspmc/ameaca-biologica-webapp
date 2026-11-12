@@ -14,6 +14,7 @@ const editores = await Promise.all([
 test('recarregar ficha descarta o estado interno dos editores junto com as pendências externas', () => {
   assert.match(app, /const \[revisaoMontagemFicha, setRevisaoMontagemFicha\] = useState\(0\)/);
   assert.match(app, /if \(!atualizada\) \{/);
+  assert.match(app, /await filaGravacao\.current\.aguardar\(\);[\s\S]*?const atualizada = await obterPersonagem\(atual\.id\)/);
   assert.match(app, /setRevisaoMontagemFicha\(revisao => revisao \+ 1\)/);
   assert.match(app, /key=\{\x60\$\{selecionado\.id\}:\$\{revisaoMontagemFicha\}\x60\}/);
   assert.match(app, /camposPendentesRef\.current\.clear\(\);[\s\S]*?secoesNaoSalvasRef\.current\.clear\(\);[\s\S]*?setRevisaoMontagemFicha/);
