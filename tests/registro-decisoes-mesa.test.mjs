@@ -37,6 +37,7 @@ test('recusa tipos, textos, datas, chaves extras e IDs duplicados', () => {
   assert.throws(() => api.adicionarDecisaoMesa([base], base), /Identificador/);
   assert.equal(api.listaDecisoesMesaValida([{ ...base, tipo: 'retificacao', retificaRegistroId: 'inexistente' }]), false);
   assert.equal(api.listaDecisoesMesaValida([{ ...base, tipo: 'retificacao', retificaRegistroId: base.id }]), false);
+  assert.throws(() => api.adicionarDecisaoMesa([base], { ...base, id: 'evento-2', tipo: 'retificacao', retificaRegistroId: 'inexistente' }), /referência da Retificação/);
 });
 
 test('limita o histórico a 30 registros e protege contra lista inválida', () => {
