@@ -175,8 +175,11 @@ test('rascunhos de personagem persistem e ficam isolados por conta e Mesa', asyn
     body: JSON.stringify({ name: registroAtualizado.name, data: { ...registroAtualizado.data, registrosMesa: [{ id: 'evento-ruim', tipo: 'morte', descricao: '', responsavel: 'Mestre', ocorridoEm: 'ontem', registradoEm: '2026-11-12T15:05:00.000Z' }] }, expectedRevision: registroAtualizado.revision }),
   });
   assert.equal(decisaoInvalida.status, 422);
-  assert.equal(registroIntegro.personagem.revision, registroAtualizado.revision);
-  assert.deepEqual(registroIntegro.personagem.data, { ...dados, origem: 'Policial', identidade: { ...dados.identidade, historia: 'Sobreviveu ao incidente.' }, registrosMesa: registroAtualizado.data.registrosMesa });
+  const aposDecisaoInvalida = await fetch(url + '/api/personagens/' + personagem.id, { headers: jogador.headers });
+  assert.equal(aposDecisaoInvalida.status, 200);
+  const preservadaAposErro = (await aposDecisaoInvalida.json()).personagem;
+  assert.equal(preservadaAposErro.revision, registroAtualizado.revision);
+  assert.deepEqual(preservadaAposErro.data, { ...dados, origem: 'Policial', identidade: { ...dados.identidade, historia: 'Sobreviveu ao incidente.' }, registrosMesa: registroAtualizado.data.registrosMesa });
   const listaMestre = await fetch(url + '/api/mesas/' + mesa.id + '/personagens', { headers: mestre.headers });
   assert.equal(listaMestre.status, 404);
 
