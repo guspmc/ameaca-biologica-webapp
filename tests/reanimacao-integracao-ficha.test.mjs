@@ -88,6 +88,16 @@ test('Reanimação respeita dados físicos, virtuais e mistos sem presumir resul
   assert.match(painel, /Dados físicos registrados/);
 });
 
+test('transformações ativas a 0 PV bloqueiam a Reanimação comum e exibem o desfecho canônico', () => {
+  assert.match(ficha, /transformacaoAtiva=\{condicoesRegistradasIds\.includes\('infectado-especial'\)/);
+  assert.match(painel, /transformacaoBloqueiaReanimacao = transformacaoAtiva !== null && recursos\.pvAtual <= 0/);
+  assert.match(painel, /1 hora inerte antes da transformação em Cabeça Carmesim/);
+  assert.match(painel, /determina a morte da personagem/);
+  assert.match(painel, /não será iniciada/);
+  assert.match(painel, /prioridade entre os dois estados não é automatizada/);
+  assert.match(painel, /reanimacaoPV0EmConflito/);
+});
+
 test('0 PV inicia automaticamente o estado de Reanimação, aguardando o próximo turno', () => {
   assert.match(painel, /pvZeroAutoTentado/);
   assert.match(painel, /void iniciar\('pv_zero'\)/);
