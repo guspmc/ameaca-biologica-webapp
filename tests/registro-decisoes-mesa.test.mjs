@@ -31,12 +31,14 @@ test('recusa tipos, textos, datas, chaves extras e IDs duplicados', () => {
   assert.equal(api.registroDecisaoMesaValido({ ...base, responsavel: '' }), false);
   assert.equal(api.registroDecisaoMesaValido({ ...base, ocorridoEm: 'ontem' }), false);
   assert.equal(api.registroDecisaoMesaValido({ ...base, extra: true }), false);
-  assert.equal(api.registroDecisaoMesaValido({ ...base, tipo: 'retificacao' }), false);
+  assert.equal(api.registroDecisaoMesaValido({ ...base, tipo: 'retificacao' }), true); // legado sem vínculo estruturado
   assert.equal(api.registroDecisaoMesaValido({ ...base, tipo: 'retificacao', retificaRegistroId: 'evento-1' }), true);
   assert.equal(api.listaDecisoesMesaValida([base, base]), false);
   assert.throws(() => api.adicionarDecisaoMesa([base], base), /Identificador/);
+  assert.equal(api.listaDecisoesMesaValida([{ ...base, tipo: 'retificacao' }]), true); // histórico anterior à evolução
   assert.equal(api.listaDecisoesMesaValida([{ ...base, tipo: 'retificacao', retificaRegistroId: 'inexistente' }]), false);
   assert.equal(api.listaDecisoesMesaValida([{ ...base, tipo: 'retificacao', retificaRegistroId: base.id }]), false);
+  assert.throws(() => api.adicionarDecisaoMesa([base], { ...base, id: 'evento-2', tipo: 'retificacao' }), /precisa identificar/);
   assert.throws(() => api.adicionarDecisaoMesa([base], { ...base, id: 'evento-2', tipo: 'retificacao', retificaRegistroId: 'inexistente' }), /referência da Retificação/);
 });
 
