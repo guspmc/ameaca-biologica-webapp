@@ -168,6 +168,8 @@ export default function FichaOfflineApp() {
     if (!atual) return;
     if (!window.confirm('As alterações ainda não salvas nesta aba serão descartadas. Reabrir a ficha com os dados mais recentes gravados por outra aba?')) return;
     try {
+      // Aguarda outros editores que já enfileiraram gravações antes de ler a versão vigente.
+      await filaGravacao.current.aguardar();
       const atualizada = await obterPersonagem(atual.id);
       if (!atualizada) {
         setErro('Esta ficha não existe mais neste dispositivo. Volte à lista e atualize os registros.');
