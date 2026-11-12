@@ -148,4 +148,5 @@ test('decisão vinculada substitui o aviso de pendência sem executar efeitos na
   assert.match(painel, /Preparar vínculo para esta Reanimação/);
   assert.match(painel, /gerarIdReanimacao/);
   assert.match(painel, /não executa consequências narrativas/);
+  assert.match(painel, /item\.retificaRegistroId && <small> Retifica o registro/);
 });
