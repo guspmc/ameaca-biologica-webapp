@@ -325,7 +325,7 @@ Prosseguir pelo catálogo de Condições e sua aplicação na calculadora: confr
 - A orientação inicial que bloqueava os controles de Reanimação durante Transformações foi substituída por registro explícito de decisão da Mesa.
 - Com Transformação ativa e PV 0, a Ficha não inicia automaticamente Reanimação comum; apresenta o cânone como referência e permite registrar, após confirmação, o fluxo que a Mesa determinar. Se BI Máxima também estiver presente, oferece escolha manual entre os fluxos sem definir prioridade.
 - Registros de Reanimação preexistentes não são bloqueados pela Transformação.
-- A Ficha não declara morte nem executa transformação. Os estados de morte/transformação da Reanimação permanecem sinalizações para registro do Mestre.
+- A Ficha não declara morte nem executa transformação. Após três falhas, a interface apresenta o resultado mecânico registrado e deixa a decisão da Mesa pendente; a linguagem não trata morte ou transformação como desfecho já aplicado. Os identificadores internos persistidos foram mantidos por compatibilidade.
 - Lacuna: ainda não existe histórico estruturado específico para decisões da Mesa sobre morte da Cabeça Carmesim ou transformação após a hora inerte do Infectado Especial. Auditar contratos de persistência/backup antes de propor esse registro.
 - Descanso Completo continua bloqueado enquanto as Condições correspondentes aos períodos sem benefício estiverem ativas; a Mesa pode encerrar a Condição manualmente quando decidir que o período terminou. Sem cronômetro.
 - Testes estruturais atualizados, não executados nesta sessão. Sem validação humana.
@@ -343,3 +343,14 @@ Prosseguir pelo catálogo de Condições e sua aplicação na calculadora: confr
 - Permissões: LAN continua permitindo escrita somente à conta Jogador proprietária da ficha. O nome do responsável é autodeclarado; não autentica o Mestre nem concede a ele editor da ficha. O Jogador pode registrar a decisão comunicada pela Mesa. Não houve ampliação de permissões.
 - Testes estruturais e teste HTTP LAN foram adicionados/atualizados; não executados nesta sessão. Validação humana pendente.
 - Não foi alterado CSS, layout geral, navegação, IndexedDB versionamento, SQLite schema, inventário, publicação ou `main`.
+
+## Atualização de ciclo — desfechos de Reanimação sob decisão da Mesa (12/11/2026)
+
+- **Branch:** `feat/offline-first-ficha`.
+- **Código:** `src/ReanimacaoFichaLocal.tsx`; apresentação dos estados após três falhas alterada para “Três falhas — decisão da Mesa pendente”. A mensagem pós-teste informa que o resultado mecânico foi registrado, que nenhuma consequência narrativa foi executada e orienta consultar o cânone e registrar a decisão no histórico da Mesa.
+- **Compatibilidade:** os identificadores internos persistidos `morte_a_registrar` e `transformacao_no_proximo_turno` foram preservados. Não houve migração nem alteração do formato de Reanimação.
+- **Teste:** `tests/reanimacao-integracao-ficha.test.mjs` recebeu verificação estrutural da linguagem e da orientação para o Registro de Decisões da Mesa.
+- **Checkpoint:** `docs/checkpoint-desfechos-reanimacao-decisao-mesa-2026-11-12.md`.
+- **Matriz:** linha de Reanimação atualizada em `docs/matriz-auditoria-funcional-ficha.md`.
+- **Validação:** testes automatizados e build não executados nesta etapa; validação humana pendente. A existência do teste não comprova aprovação.
+- **Restrições preservadas:** sem mudança de regras, PV/BI, Condições, contratos de dados, CSS/layout, LAN, banco, Supabase, Inventário, `main`, merge, deploy ou publicação.
