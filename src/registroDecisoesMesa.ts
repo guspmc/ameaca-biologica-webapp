@@ -71,7 +71,9 @@ export function adicionarDecisaoMesa(
   }
   if (atuais.length >= 30) throw new Error('Limite de 30 registros atingido. Exporte um backup antes de continuar.');
   if (atuais.some(item => item.id === novo.id)) throw new Error('Identificador de decisão já utilizado.');
-  return [...atuais, { ...novo }];
+  const atualizados = [...atuais, { ...novo }];
+  if (!listaDecisoesMesaValida(atualizados)) throw new Error('A referência da Retificação precisa apontar para um registro anterior existente.');
+  return atualizados;
 }
 
 /** IDs compatíveis com navegadores/WebViews sem randomUUID funcional. */
