@@ -79,3 +79,11 @@ Após revisão do requisito do produto, a correção inicial que bloqueava os co
 **Princípio de produto confirmado:** a Ficha calcula, apresenta referências mecânicas e registra resultados/decisões; Jogador realiza os testes e Mestre decide os desfechos que lhe cabem. A interface não mata nem transforma personagens automaticamente.
 
 O bloqueio de Descanso Completo durante períodos explicitamente sem seus benefícios permanece como proteção mecânica enquanto a Condição estiver ativa; o encerramento da Condição continua manual e sob responsabilidade da Mesa. Não existe cronômetro.
+
+
+### Inspeção de persistência para o futuro Registro de Decisões da Mesa
+
+- `PersonagemLocal.dados` é um objeto extensível; `validarPersonagemLocal` verifica segurança JSON e campos conhecidos, sem allowlist fechada de todas as chaves.
+- `salvarPatchPersonagem` mescla patches por chave em transação IndexedDB e recusa sobrescrita concorrente na mesma chave.
+- Exportação/importação de backup clona e valida os dados completos da personagem; campos JSON seguros desconhecidos são preservados.
+- Portanto, um futuro campo estruturado (por exemplo, `registrosMesa`) aparentemente não exige aumento da versão do IndexedDB, mas ainda exige contrato próprio de validação, limites de tamanho, testes de concorrência, recarga e ida/volta do backup. Não foi implementado nesta etapa.
