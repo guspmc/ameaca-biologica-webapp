@@ -112,3 +112,11 @@ test('catálogo descreve integralmente as transformações e identifica seus efe
   assert.match(ui, /Registro informativo de transformação/);
   assert.match(ui, /não aplica automaticamente recuperação de Dados de Vida/);
 });
+
+
+test('Cabeça Carmesim com BI zero sinaliza reversão, hora Desacordada e limite de Descanso', async () => {
+  const ui = await readFile(new URL('../src/CondicoesFichaLocal.tsx', import.meta.url), 'utf8');
+  assert.match(ui, /item\.condicao === 'cabeca-carmesim' && biAtual === 0/);
+  assert.match(ui, /BI reduzida a 0: o cânone determina a reversão da transformação e 1 hora Desacordada/);
+  assert.match(ui, /só então encerre a Condição/);
+});
