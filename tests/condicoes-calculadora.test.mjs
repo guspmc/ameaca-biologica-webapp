@@ -67,7 +67,9 @@ test('Ficha alimenta os cálculos com Condições ativas e cancela Vantagem/Desv
   assert.match(calc, /condicoesQueImpoemDesvantagem\(condicoesAtivas/);
   assert.match(calc, /const existeDesvantagem = vantagem === 'desvantagem' \\|\\| desvantagemBI \\|\\| desvantagensCondicao.length > 0 \\|\\| desvantagemDesarmado/);
   assert.match(calc, /const vantagemEfetiva: VantagemTeste = existeVantagem && existeDesvantagem \? 'normal'/);
-  assert.match(ficha, /condicoesAtivasIds = listaCondicoesValida\(dados\.condicoes\)/);
+  assert.match(ficha, /condicoesRegistradasIds = listaCondicoesValida\(dados\.condicoes\)/);
+  assert.match(ficha, /desacordadoPorRecursos = recursosAtuais\.pvAtual <= 0 \|\| faseBi\.estado === 'colapso'/);
+  assert.match(ficha, /condicoesAtivasIds: CondicaoId\[\]/);
   assert.match(ficha, /condicoesAtivas=\{condicoesAtivasIds\}/);
   assert.match(ficha, /calcularDefesaComCondicoes\(defesa, numero\(atributos\.agilidade\), condicoesAtivasIds\)/);
   assert.match(ficha, /DEFESA ATUAL/);
