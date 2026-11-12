@@ -4,6 +4,8 @@
 **Branch:** `feat/offline-first-ficha`  
 **HEAD verificado neste ciclo:** `abd44d1c64be5d0168ec80e4a7cd9482fde5fae9` (checkpoint atualizado após revisão documental adicional).
 
+> **Nota de continuidade — 12/11/2026:** este checkpoint permanece como registro histórico das implementações da Ficha, mas sua seção “Próximo ciclo” e a ordem de início do Inventário foram superadas pela linha de trabalho aprovada em [docs/linha-de-trabalho-e-continuidade-2026-11-12.md](linha-de-trabalho-e-continuidade-2026-11-12.md). A auditoria do Laboratório/Hub, PWA, importação/exportação e a bateria humana progressiva devem ser concluídas antes de iniciar Inventário Offline. O HEAD citado acima não é o HEAD atual; reconfirmar a branch ao retomar.
+
 ## Objetivo deste checkpoint
 
 Consolidar o estado real para continuidade em novos chats e registrar que a Ficha do Jogador está funcionalmente completa fora do módulo Inventário. A próxima etapa funcional é Inventário ativo; os testes humanos integrados começam depois dele.
