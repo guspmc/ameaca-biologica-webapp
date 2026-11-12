@@ -131,12 +131,14 @@ test('rascunhos de personagem persistem e ficam isolados por conta e Mesa', asyn
   const atualizar = await fetch(url + '/api/personagens/' + personagem.id, {
     method: 'PUT',
     headers: { ...jogador.headers, 'content-type': 'application/json' },
-    body: JSON.stringify({ name: 'Claire Redfield', data: { ...dados, origem: 'Policial', identidade: { ...dados.identidade, historia: 'Sobreviveu ao incidente.' } }, expectedRevision: personagem.revision }),
+    body: JSON.stringify({ name: 'Claire Redfield', data: { ...dados, origem: 'Policial', identidade: { ...dados.identidade, historia: 'Sobreviveu ao incidente.' }, registrosMesa: [{ id: 'evento-1', tipo: 'morte', descricao: 'O Mestre decidiu registrar a morte após avaliar a situação.', responsavel: 'Mestre', ocorridoEm: '2026-11-12T15:00:00.000Z', registradoEm: '2026-11-12T15:05:00.000Z' }] }, expectedRevision: personagem.revision }),
   });
   assert.equal(atualizar.status, 200);
   const registroAtualizado = (await atualizar.json()).personagem;
   assert.equal(registroAtualizado.name, 'Claire Redfield');
   assert.equal(registroAtualizado.revision, personagem.revision + 1);
+  assert.equal(registroAtualizado.data.registrosMesa.length, 1);
+  assert.equal(registroAtualizado.data.registrosMesa[0].responsavel, 'Mestre');
 
   const consultarOutro = await fetch(url + '/api/personagens/' + personagem.id, { headers: terceiro.headers });
   assert.equal(consultarOutro.status, 404);
@@ -167,8 +169,14 @@ test('rascunhos de personagem persistem e ficam isolados por conta e Mesa', asyn
   assert.equal(confirmarIntegridade.status, 200);
   const registroIntegro = await confirmarIntegridade.json();
   assert.equal(registroIntegro.personagem.name, 'Claire Redfield');
+  const decisaoInvalida = await fetch(url + '/api/personagens/' + personagem.id, {
+    method: 'PUT',
+    headers: { ...jogador.headers, 'content-type': 'application/json' },
+    body: JSON.stringify({ name: registroAtualizado.name, data: { ...registroAtualizado.data, registrosMesa: [{ id: 'evento-ruim', tipo: 'morte', descricao: '', responsavel: 'Mestre', ocorridoEm: 'ontem', registradoEm: '2026-11-12T15:05:00.000Z' }] }, expectedRevision: registroAtualizado.revision }),
+  });
+  assert.equal(decisaoInvalida.status, 422);
   assert.equal(registroIntegro.personagem.revision, registroAtualizado.revision);
-  assert.deepEqual(registroIntegro.personagem.data, { ...dados, origem: 'Policial', identidade: { ...dados.identidade, historia: 'Sobreviveu ao incidente.' } });
+  assert.deepEqual(registroIntegro.personagem.data, { ...dados, origem: 'Policial', identidade: { ...dados.identidade, historia: 'Sobreviveu ao incidente.' }, registrosMesa: registroAtualizado.data.registrosMesa });
   const listaMestre = await fetch(url + '/api/mesas/' + mesa.id + '/personagens', { headers: mestre.headers });
   assert.equal(listaMestre.status, 404);
 
