@@ -152,3 +152,17 @@ A ordem é deliberada. Não antecipar módulos posteriores nem misturar suas dep
 6. Fazer correções pequenas apenas quando houver defeito demonstrado.
 
 **Regra de continuidade:** não recomeçar a análise do zero, não repetir tarefas já aprovadas e não confundir funcionalidade planejada/documentada com funcionalidade implementada ou testada.
+
+
+## Atualização de ciclo — 12/11/2026 (após auditoria de Condições/Descanso/Combate)
+
+- Checkpoint mais recente: `docs/checkpoint-auditoria-condicoes-descanso-combate-2026-11-12.md`.
+- HEAD documental atual: `ca7473129b156e2b45fce7a90dd2ffacf924bbb4`.
+- Inspeção estática adicional: Condições, Descanso Parcial/Completo, compatibilidade neutra/histórica de Progressão e estado/economia de turno.
+- Nenhum defeito concreto identificado nesses fluxos na leitura desta rodada; nenhuma alteração de código.
+- Condições derivadas, histórico, limites de automação e ausência de contador Offline permanecem conforme escopo.
+- Descanso Parcial/Completo valida recursos e local, respeita modos de dados e confirma somente após salvamento; Descanso Completo renova usos limitados e pode confirmar Progressão elegível na mesma gravação.
+- Progressão nova usa autorização neutra do grupo; contratos legados com método são aceitos para compatibilidade. Edição de Progressão na LAN continua incompleta.
+- Estado de turno/Economia/Reações têm helpers e testes existentes; integração de interface permanece parcial (Aparar bloqueado por ausência de estado confiável de equipamento). Não transformar a Ficha em motor de turnos.
+- Testes locais/CI e teste humano não foram executados/confirmados nesta rodada.
+- Próximo foco: auditoria normativa e de integração da interface de Combate/Manobras/Reações, seguida de persistência/recuperação do estado de turno. Inventário ativo continua bloqueado.
