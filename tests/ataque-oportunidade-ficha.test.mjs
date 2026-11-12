@@ -23,3 +23,19 @@ test('compra Reação adicional somente quando a Reação normal já foi usada',
   assert.match(painel, /economia\.normaisUsados\.reacao \? 'Sua Reação normal já foi usada/);
   assert.match(painel, /economia\.normaisUsados\.reacao && \(economia\.saAtual < 1 \|\| janela >= 3\)/);
 });
+
+
+test('Brecha Tática amplia os gatilhos e explicita interrupção e Vantagem', () => {
+  assert.match(painel, /brecha-tatica/);
+  assert.match(painel, /ações vulneráveis durante Movimento\/Ação/);
+  assert.match(painel, /Se o Ataque causar Dano, interrompe a ação provocadora/);
+  assert.match(painel, /seus Ataques de Oportunidade têm Vantagem/);
+});
+
+test('Finalização à Distância e Luta Livre exibem seus requisitos sem automatizar efeitos', () => {
+  assert.match(painel, /finalizacao-a-distancia/);
+  assert.match(painel, /no máximo, até Alcance Médio/);
+  assert.match(painel, /luta-livre/);
+  assert.match(painel, /até 12 m em linha reta/);
+  assert.match(painel, /máximo 10d8/);
+});
