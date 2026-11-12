@@ -273,3 +273,15 @@ Nenhum desses pontos deve ser resolvido por inferência durante a implementaçã
 - **Área:** o bônus não é aplicado às modalidades de Área sem Teste de Ataque.
 - **Cobertura:** verificações estruturais foram adicionadas a `tests/ataques-calculadora.test.mjs`; os testes existentes de `tests/manobras-operacionais.test.mjs` cobrem o helper de Ataque sem Mirar. **Nenhum teste/build foi executado nesta sessão.**
 - **Validação humana:** pendente, incluindo persistência, ciclo Mirar → Ataque, consumo do marcador, região, modos de dados e manutenção de Desvantagem.
+
+
+## Integração de Desengajar e Usar um Objeto — 12/11/2026
+
+**Base consultada:** Arquivo do Jogador v1.0, p. 76–79; checkpoint: docs/checkpoint-desengajar-usar-objeto-2026-11-12.md.
+
+- **Desengajar — IMPLEMENTADO NO CÓDIGO:** controle específico no Painel de Ações; consome Movimento e informa deslocamento protegido de 1,5 m. A Ficha não executa movimento nem decide posições/Ataques de Oportunidade.
+- **Usar um Objeto — IMPLEMENTADO NO CÓDIGO:** controle específico consome Ação somente depois de a Interação Gratuita com Objeto ter sido registrada. O helper de domínio agora também valida esse pré-requisito, evitando chamada inválida fora da UI.
+- **Efeitos de item:** não são resolvidos; uso, consumo, cargas, munição e efeitos continuam fora desta integração, sem antecipar o Inventário ativo.
+- **Cobertura:** teste de domínio existente para Desengajar; teste atualizado para exigir Interação Gratuita antes de Usar um Objeto. Testes e build não executados nesta sessão.
+- **Validação humana:** pendente, incluindo persistência, falha de salvamento, turno encerrado e disponibilidade de Ação/Movimento.
+- **Restrições:** sem CSS/redesign, LAN, servidor, Supabase, banco, merge, deploy ou publicação. Inventário ativo permanece bloqueado.
