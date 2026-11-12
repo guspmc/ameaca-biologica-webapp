@@ -454,9 +454,9 @@ export default function PainelAcoesLocal({ dados, saAtual, aoSalvar, origemDados
             <button type="button" disabled={salvando || !economia.turnoEmAndamento || estado.manobras.mirarPreparado || economia.saAtual < 1 || janela >= 3} onClick={() => void aplicar(atual => aplicarManobraCombate(atual, registrarMirar).estado)}>Mirar · 1 SA</button>
             <button type="button" disabled={salvando || !economia.turnoEmAndamento || estado.manobras.disparadaUsada || economia.normaisUsados.acao} onClick={() => void aplicar(atual => aplicarManobraCombate(atual, registrarDisparada).estado)}>Disparada</button>
             <button type="button" disabled={salvando || !economia.turnoEmAndamento || !estado.manobras.disparadaUsada || estado.manobras.fugaUsada || economia.saAtual < 1 || janela >= 3} onClick={() => void aplicar(atual => aplicarManobraCombate(atual, registrarFuga).estado)}>Fuga · 1 SA</button>
-            <button type="button" disabled={salvando || !economia.turnoEmAndamento || !estado.manobras.mirarPreparado || economia.normaisUsados.acao} onClick={() => void aplicar(atual => aplicarManobraCombate(atual, registrarAtaque).estado)}>Registrar Ataque (consome Mirar)</button>
+            <button type="button" disabled={salvando || !economia.turnoEmAndamento || economia.normaisUsados.acao} onClick={() => void aplicar(atual => aplicarManobraCombate(atual, registrarAtaque).estado)}>{estado.manobras.mirarPreparado ? "Registrar Ataque · consome Mirar" : "Registrar Ataque · Ação"}</button>
           </div>
-          <p className="ficha-local-legenda">Estes controles registram custos e marcadores. Disparada/Fuga não movem a personagem; Mirar não rola o Ataque nem aplica o bônus. O registro de Ataque consome a preparação de Mirar, mas a resolução continua manual.</p>
+          <p className="ficha-local-legenda">Estes controles registram custos e marcadores. Disparada/Fuga não movem a personagem. Declare Mirar antes do Ataque; a calculadora aplica +2 e exige que você informe a região escolhida. Depois de resolver o Ataque, registre-o aqui: isso consome a Ação e, se preparado, Mirar.</p>
 
           <div className="ficha-local-editor">
             <strong>Combate com Duas Armas · 1 vez por turno</strong>
