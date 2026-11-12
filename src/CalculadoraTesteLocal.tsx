@@ -137,6 +137,7 @@ export default function CalculadoraTesteLocal({ atributos, treinada, distribuica
     setDado1('');
     setDado2('');
     setErroRolagem('');
+    setCriticoDano(false);
   }, [vantagemEfetiva]);
   const formula = tipo === 'ataque-corpo' ? 'Ataque Corpo a Corpo: 1d20 + Luta.'
     : tipo === 'ataque-distancia' ? 'Ataque à distância: 1d20 + Pontaria.'
@@ -192,6 +193,9 @@ export default function CalculadoraTesteLocal({ atributos, treinada, distribuica
   const limiteCritico = perfilCorpo?.criticoNatural ?? (criticoTexto ? (/19\s*[–-]\s*20/.test(criticoTexto) ? 19 : 20) : null);
   const multiplicadorCritico = perfilCorpo?.multiplicadorCritico ?? (criticoTexto ? Number(criticoTexto.match(/x\s*(\d+)/i)?.[1] ?? 1) : null);
   const resultadoAtaqueCritico = escopo === 'ataques' && calculado.resultado?.dadoEscolhido === 20;
+  const permiteConfirmacaoCritico19 = escopo === 'ataques' && limiteCritico === 19
+    && calculado.resultado?.dadoEscolhido === 19 && calculado.resultado.total !== null;
+  const criticoDanoAplicado = resultadoAtaqueCritico || (permiteConfirmacaoCritico19 && criticoDano);
   const bearLauncherSelecionado = perfilFogo?.id === 'bear-commander' && modoBearCommander === 'lancador';
   const procedimentoGM79 = (perfilFogo?.id === 'gm-79' || bearLauncherSelecionado) ? consultarProcedimentoGM79(cartuchoGM79, modoGM79) : null;
   const ataqueEmAreaGM79 = procedimentoGM79?.danoEmArea ?? false;
@@ -216,6 +220,10 @@ export default function CalculadoraTesteLocal({ atributos, treinada, distribuica
     : formulaDanoBase;
   const multiplicadorCriticoDano = bearLauncherSelecionado ? 4 : multiplicadorCritico;
   const atributoDano = tipo === 'ataque-corpo' ? atributos.forca : atributos.agilidade;
+  useEffect(() => {
+    setCriticoDano(false);
+  }, [dadosConfirmados?.dado1, dadosConfirmados?.dado2, calculado.resultado?.total, perfilSelecionado?.id, valorTeste, modificador]);
+
   const calculoDano = useMemo(() => {
     if (!formulaDanoConvencional || !resultadoDadosDano.trim() || !perfilSelecionado || multiplicadorCriticoDano === null) return null;
     const valor = Number(resultadoDadosDano);
@@ -228,9 +236,9 @@ export default function CalculadoraTesteLocal({ atributos, treinada, distribuica
         dano: bearLauncherSelecionado ? '4d6' : perfilFogo!.dano!, multiplicadorCritico: multiplicadorCriticoDano, criticoNatural: limiteCritico === 19 ? 19 as const : 20 as const,
         atributoDano: 'agilidade' as const, propriedades: perfilFogo!.propriedades, referencia: perfilFogo!.referencia,
       };
-      return { resultado: calcularDanoArma({ dadosRolados: valor, valorAtributo: atributoDano, critico: criticoDano && !ataqueEmArea, perfil: perfilCalculo, armaOperarioEscolhida, dadosAdicionais: adicionais }) };
+      return { resultado: calcularDanoArma({ dadosRolados: valor, valorAtributo: atributoDano, critico: criticoDanoAplicado && !ataqueEmArea, perfil: perfilCalculo, armaOperarioEscolhida, dadosAdicionais: adicionais }) };
     } catch (problema) { return { erro: problema instanceof Error ? problema.message : 'Não foi possível calcular o Dano.' }; }
-  }, [formulaDanoConvencional, resultadoDadosDano, resultadoDadosAdicionais, perfilSelecionado, multiplicadorCriticoDano, perfilCorpo, perfilFogo, limiteCritico, atributoDano, criticoDano, armaOperarioEscolhida, ataqueEmArea, bearLauncherSelecionado]);
+  }, [formulaDanoConvencional, resultadoDadosDano, resultadoDadosAdicionais, perfilSelecionado, multiplicadorCriticoDano, perfilCorpo, perfilFogo, limiteCritico, atributoDano, criticoDanoAplicado, armaOperarioEscolhida, ataqueEmArea, bearLauncherSelecionado]);
 
   function registrarRolagem() {
     try {
@@ -245,8 +253,7 @@ export default function CalculadoraTesteLocal({ atributos, treinada, distribuica
       const resultado = ehAtaque
         ? calcularRolagemAtaqueManual({ valorBase: valorTeste, modificador: Number(modificador || 0), dado1: resultados[0], dado2: resultados[1] ?? null, vantagem: vantagemEfetiva })
         : calcularTesteManual({ valorBase: valorTeste, modificador: Number(modificador || 0), dt: Number(dt), dado1: resultados[0], dado2: resultados[1] ?? null, vantagem: vantagemEfetiva, naturalDe2a9Como10: codeVeronicaAtiva });
-      const ataqueFoiCritico = ehAtaque && resultado.dadoEscolhido === 20;
-      if (ehAtaque) setCriticoDano(ataqueFoiCritico);
+      if (ehAtaque) setCriticoDano(false);
       if (ehAtaque && resultado.estado === 'falha-critica' && aoFalharCriticoAtaque) {
         void aoFalharCriticoAtaque().then(salvo => setMensagemCondicao(salvo ? 'Falha Crítica: Exposto ativado automaticamente e salvo na Ficha.' : 'Falha Crítica: não foi possível confirmar o salvamento de Exposto. Confira as Condições da Ficha.'));
       }
@@ -369,7 +376,8 @@ export default function CalculadoraTesteLocal({ atributos, treinada, distribuica
         <small>Use este campo somente depois de rolar dados adicionais previstos por uma Peça, Habilidade ou modo de disparo válido, incluindo os +2 dados do Disparo Cadenciado. Na Motosserra, informe aqui a soma dos dados extras gerados por cada resultado 6, incluindo os encadeamentos. A calculadora não presume que você possui Peças ou Habilidades.</small>
         <p>Atributo aplicado: {tipo === 'ataque-corpo' ? 'FOR' : 'AGI'} (+{atributoDano}).</p>
         {armaOperarioEscolhida && <p>Operário: o Dano recebe FOR adicional; esse bônus não é multiplicado no Crítico.</p>}
-        {!ataqueEmArea && <label className="ficha-local-opcao"><input type="checkbox" checked={criticoDano} onChange={evento => setCriticoDano(evento.target.checked)} /> Aplicar Acerto Crítico (×{multiplicadorCriticoDano})</label>}
+        {resultadoAtaqueCritico && <p className="ficha-local-legenda">20 natural: Acerto Crítico automático (×{multiplicadorCriticoDano}).</p>}
+        {permiteConfirmacaoCritico19 && <label className="ficha-local-opcao"><input type="checkbox" checked={criticoDano} onChange={evento => setCriticoDano(evento.target.checked)} /> A Mesa confirmou que o total do 19 natural alcançou a Defesa: aplicar Acerto Crítico (×{multiplicadorCriticoDano})</label>}
         {ataqueEmArea && <small>Disparo em Área: sem Acerto Crítico. Na Rajada, aplique metade do Dano em sucesso no Reflexos DT 12 e Dano integral em falha; nos cartuchos GM 79, siga o procedimento do cartucho.</small>}
         {calculoDano && ('erro' in calculoDano ? <p className="offline-erro" role="alert">{calculoDano.erro}</p> : <div className="offline-status ficha-local-resultado" role="status"><p>Dados: {calculoDano.resultado.dados} × {calculoDano.resultado.multiplicador} · {tipo === 'ataque-corpo' ? 'FOR' : 'AGI'}: {calculoDano.resultado.atributoMultiplicado}{calculoDano.resultado.bonusOperarioNaoMultiplicado ? ` + ${calculoDano.resultado.bonusOperarioNaoMultiplicado} FOR não multiplicado` : ''}</p><strong>Dano calculado: {calculoDano.resultado.total}</strong></div>)}
       </div>}
@@ -445,10 +453,10 @@ export default function CalculadoraTesteLocal({ atributos, treinada, distribuica
     </label>
     {!impossivel && metodo === 'fisico' && <div className="ficha-local-grade">
       <label>Resultado físico do d20
-        <input type="number" min="1" max="20" step="1" value={dado1} onChange={evento => { setDado1(evento.target.value); setDadosConfirmados(null); }} placeholder="1–20" />
+        <input type="number" min="1" max="20" step="1" value={dado1} onChange={evento => { setDado1(evento.target.value); setDadosConfirmados(null); setCriticoDano(false); }} placeholder="1–20" />
       </label>
       {vantagemEfetiva !== 'normal' && <label>Segundo d20
-        <input type="number" min="1" max="20" step="1" value={dado2} onChange={evento => { setDado2(evento.target.value); setDadosConfirmados(null); }} placeholder="1–20" />
+        <input type="number" min="1" max="20" step="1" value={dado2} onChange={evento => { setDado2(evento.target.value); setDadosConfirmados(null); setCriticoDano(false); }} placeholder="1–20" />
       </label>}
     </div>}
     {!impossivel && !ataqueEmArea && !disparoUnicoIndisponivel && <button type="button" className="botao-claro" onClick={registrarRolagem}>{metodo === 'virtual' ? (escopo === 'ataques' ? 'Rolar Ataque' : 'Rolar Teste') : (escopo === 'ataques' ? 'Confirmar dados do Ataque' : 'Confirmar dados físicos')}</button>}
