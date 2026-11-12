@@ -60,3 +60,22 @@ Correção localizada:
 - Descanso Parcial não foi bloqueado por esta correção: a regra citada exclui expressamente os benefícios de Descanso Completo, mas não define aqui uma proibição adicional de Descanso Parcial. Não ampliar a restrição por inferência.
 
 Testes estruturais adicionais foram incluídos em `tests/reanimacao-integracao-ficha.test.mjs` e `tests/condicoes-ficha.test.mjs`; não foram executados nesta sessão. A ausência de cronômetro significa que o encerramento prematuro da Condição ainda depende de decisão do usuário/Mesa; a interface apenas orienta e bloqueia o Descanso Completo enquanto a Condição continua ativa.
+
+
+## Retificação de princípio funcional — a Ficha registra, a Mesa decide
+
+Após revisão do requisito do produto, a correção inicial que bloqueava os controles de Reanimação durante Transformações foi considerada excessivamente restritiva e substituída.
+
+**Comportamento atual no código:**
+- Transformação ativa + PV 0 não inicia automaticamente uma Reanimação comum, pois existe um desfecho especial a ser considerado.
+- A interface mostra o texto canônico como referência, sem declarar morte ou executar transformação.
+- A Mesa pode escolher expressamente registrar Reanimação por 0 PV; a ação pede confirmação e grava o fluxo escolhido.
+- Se PV 0 e BI Máxima ocorrerem simultaneamente durante Transformação, a Ficha não escolhe entre os fluxos: oferece registro manual de Reanimação por 0 PV ou por Colapso, conforme decisão da Mesa.
+- Registros de Reanimação já existentes continuam acessíveis; Transformação não bloqueia seus controles nem apaga o histórico.
+- Fora dessa situação conflitante, os fluxos mecânicos de Reanimação/Colapso seguem as regras já implementadas. Resultados que sinalizam morte ou transformação permanecem como estados a registrar, sem executar consequências narrativas.
+
+**Limite de registro identificado:** ainda não há um registro estruturado próprio para a decisão da Mesa sobre morte da Cabeça Carmesim ou transformação após a hora inerte do Infectado Especial. As Condições podem ser encerradas/registradas e contêm observações na criação, mas isso não equivale a um histórico de desfechos com ator, horário e justificativa. Não criar esse modelo sem auditar primeiro os contratos de persistência, backup e recuperação.
+
+**Princípio de produto confirmado:** a Ficha calcula, apresenta referências mecânicas e registra resultados/decisões; Jogador realiza os testes e Mestre decide os desfechos que lhe cabem. A interface não mata nem transforma personagens automaticamente.
+
+O bloqueio de Descanso Completo durante períodos explicitamente sem seus benefícios permanece como proteção mecânica enquanto a Condição estiver ativa; o encerramento da Condição continua manual e sob responsabilidade da Mesa. Não existe cronômetro.
