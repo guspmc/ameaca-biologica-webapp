@@ -166,6 +166,7 @@ test('backup preserva o Registro de Decisões da Mesa e recusa evento malformado
     ocorridoEm: '2026-11-12T16:00:00.000Z',
     registradoEm: '2026-11-12T16:05:00.000Z',
     retificaRegistroId: 'evento-1',
+    reanimacaoId: 'reanimacao-1',
   }];
   original.dados.reanimacao = {
     id: 'reanimacao-1', causa: 'pv_zero', estado: 'morte_a_registrar',
