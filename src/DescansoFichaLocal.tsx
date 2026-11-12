@@ -14,12 +14,13 @@ type Props = {
   modoDados: ModoDados;
   modo: ModoFuncionamento;
   bloqueado: boolean;
+  bloquearDescansoCompleto?: boolean;
   origemDados?: 'local' | 'servidor';
   aoSalvar: (patch: Record<string, unknown>) => Promise<boolean>;
   aoPrepararPatchCompleto?: () => Record<string, unknown>;
 };
 
-export default function DescansoFichaLocal({ dados, classe, pvMaximo, saMaximo, nivel, modoDados, modo, bloqueado, origemDados = 'local', aoSalvar, aoPrepararPatchCompleto }: Props) {
+export default function DescansoFichaLocal({ dados, classe, pvMaximo, saMaximo, nivel, modoDados, modo, bloqueado, bloquearDescansoCompleto = false, origemDados = 'local', aoSalvar, aoPrepararPatchCompleto }: Props) {
   const [local, setLocal] = useState<LocalDescanso | ''>('');
   const [metodo, setMetodo] = useState<'fisico' | 'virtual'>(modo === 'automatico' && modoDados === 'virtuais' ? 'virtual' : 'fisico');
   useEffect(() => { setMetodo(modo === 'automatico' && modoDados === 'virtuais' ? 'virtual' : 'fisico'); }, [modo, modoDados]);
@@ -36,7 +37,7 @@ export default function DescansoFichaLocal({ dados, classe, pvMaximo, saMaximo, 
     return resultado.trim() !== '' && Number.isSafeInteger(face) && face >= 1 && face <= (dadoVida ?? 0);
   }));
   const parcialDisponivel = !bloqueado && nivelValido && dadoVida !== null && resultadosValidos && localPermiteDescanso('parcial', local);
-  const completoDisponivel = !bloqueado && dadoVida !== null && localPermiteDescanso('completo', local);
+  const completoDisponivel = !bloqueado && !bloquearDescansoCompleto && dadoVida !== null && localPermiteDescanso('completo', local);
   async function concluir(tipo: 'parcial' | 'completo') {
     if (ocupado) return;
     try {
@@ -59,6 +60,7 @@ export default function DescansoFichaLocal({ dados, classe, pvMaximo, saMaximo, 
     <summary>Descanso Parcial e Completo</summary>
     <p>Informe o local ficcional e conclua a modalidade escolhida. Não há cronômetro real nem validação de localização pelo aplicativo.</p>
     {bloqueado && <p role="status">Salve ou descarte as alterações pendentes da ficha antes de concluir um Descanso.</p>}
+    {bloquearDescansoCompleto && <p className="ficha-local-aviso" role="alert">Período de Transformação: o Arquivo do Jogador determina que esta hora não concede benefícios de Descanso Completo. A conclusão está bloqueada enquanto a condição correspondente permanecer ativa. A Ficha não mede o tempo; encerre a Condição somente após confirmar a duração com a Mesa.</p>}
     <label>Local do Descanso
       <select value={local} disabled={ocupado} onChange={e => { setLocal(e.target.value as LocalDescanso | ''); setMensagem(''); setErro(''); }}>
         <option value="">Selecione o local</option>
