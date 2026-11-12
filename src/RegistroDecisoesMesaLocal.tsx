@@ -81,7 +81,7 @@ export default function RegistroDecisoesMesaLocal({ dados, aoSalvar, origemDados
       <ol>{[...itens].reverse().map(item => <li key={item.id}>
         <strong>{TIPOS_DECISAO_MESA[item.tipo]}</strong> · {new Date(item.ocorridoEm).toLocaleString('pt-BR')}
         <p>{item.descricao}</p>
-        <small>Responsável informado: {item.responsavel} · Registrado em {new Date(item.registradoEm).toLocaleString('pt-BR')}</small>
+        <small>Responsável informado: {item.responsavel} · Carimbo do dispositivo: {new Date(item.registradoEm).toLocaleString('pt-BR')}</small>
       </li>)}</ol>
       <p className="ficha-local-legenda">Os registros não são editados nem apagados nesta versão. Para corrigir uma informação, acrescente uma Retificação que identifique o registro anterior e descreva a correção.</p>
     </>}
