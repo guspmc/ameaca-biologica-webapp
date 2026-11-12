@@ -47,9 +47,22 @@ test('Ataque consome Ação e consome a preparação de Mirar', () => {
   assert.equal(ataque.manobras.mirarPreparado, false);
 });
 
-test('Ajudar e Usar um Objeto consomem Ação sem resolver a tarefa', () => {
+test('Ajudar consome Ação sem resolver a tarefa', () => {
   assert.equal(registrarAjudar(economiaAcoesInicial(2), estadoManobrasTurnoInicial()).economia.normaisUsados.acao, true);
-  assert.equal(registrarUsarObjeto(economiaAcoesInicial(2), estadoManobrasTurnoInicial()).economia.normaisUsados.acao, true);
+});
+
+test('Usar um Objeto exige Interação Gratuita já usada e então consome Ação', () => {
+  const economiaInicial = economiaAcoesInicial(2);
+  assert.throws(
+    () => registrarUsarObjeto(economiaInicial, estadoManobrasTurnoInicial()),
+    /Interação Gratuita com Objeto já tenha sido utilizada/,
+  );
+  const comInteracao = consumirRecursoNormal === undefined
+    ? economiaInicial
+    : { ...economiaInicial, interacaoGratuitaUsada: true };
+  const resultado = registrarUsarObjeto(comInteracao, estadoManobrasTurnoInicial());
+  assert.equal(resultado.economia.normaisUsados.acao, true);
+  assert.equal(resultado.economia.interacaoGratuitaUsada, true);
 });
 
 test('Combate com Duas Armas exige Ação Atacar prévia, turno ativo e elegibilidade', () => {
