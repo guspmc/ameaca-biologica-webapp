@@ -94,6 +94,8 @@ test('Calculadora de Ataques apresenta restrições sem desabilitar ou resolver 
   assert.match(calc, /Este aviso não bloqueia a rolagem/);
   assert.match(calc, /Amedrontado: confirme se a personagem ainda percebe a fonte do medo/);
   assert.match(calc, /selecione Desvantagem manualmente/);
+  assert.match(calc, /Cego: além da Desvantagem nos Ataques/);
+  assert.match(calc, /Surdo: falha automaticamente em Testes/);
   const painel = await readFile(new URL('../src/PainelAcoesLocal.tsx', import.meta.url), 'utf8');
   assert.match(painel, /restricoesDeAtaquePorCondicoes\(condicoesAtivas\)/);
   assert.match(painel, /Condições que restringem sua atuação/);
