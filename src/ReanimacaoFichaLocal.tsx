@@ -8,9 +8,11 @@ import {
   iniciarTurnoReanimacao,
   reanimacaoValida,
   resolverTesteReanimacao,
+  gerarIdReanimacao,
   type Reanimacao,
 } from './reanimacaoFicha';
 import type { RecursosAtuais } from './recursosFicha';
+import { listaDecisoesMesaValida } from './registroDecisoesMesa';
 import type { ModoDados, ModoFuncionamento } from './funcionamentoFicha';
 
 type Props = {
@@ -59,6 +61,11 @@ export default function ReanimacaoFichaLocal({ dados, recursos, origem, pvMaximo
     && (vantagem ? segundoDado.trim() !== '' && dadoValido(segundo) : segundoDado.trim() === ''));
   const estadoAtivo = reanimacao?.estado === 'em_andamento';
   const estadoPV0 = reanimacao?.causa === 'pv_zero' && ['aguardando_proximo_turno', 'em_andamento'].includes(reanimacao.estado);
+  const desfechoAguardandoMesa = !!reanimacao && ['morte_a_registrar', 'transformacao_no_proximo_turno'].includes(reanimacao.estado);
+  const registrosMesaValidos = dados.registrosMesa === undefined || listaDecisoesMesaValida(dados.registrosMesa);
+  const decisoesVinculadas = desfechoAguardandoMesa && reanimacao?.id && registrosMesaValidos && Array.isArray(dados.registrosMesa)
+    ? dados.registrosMesa.filter((item): item is { id: string; descricao: string; tipo: string; reanimacaoId: string } => !!item && typeof item === 'object' && (item as Record<string, unknown>).reanimacaoId === reanimacao.id)
+    : [];
 
   async function persistir(proxima: Reanimacao, recursosPatch: Partial<RecursosAtuais> = {}) {
     if (ocupado || bloqueado || registroReanimacaoInvalido) return;
@@ -202,7 +209,13 @@ export default function ReanimacaoFichaLocal({ dados, recursos, origem, pvMaximo
           <button type="button" className="acao" disabled={ocupado || bloqueado || !resultadoValido} onClick={() => void registrarTeste()}>{rolagemVirtualAtiva ? 'Rolar e registrar Teste' : 'Registrar resultado do Teste'} <span>→</span></button>
         </>}
       {reanimacao.estado === 'desacordada_ate_reducao_bi' && <button type="button" className="acao" disabled={ocupado || bloqueado || recursos.biAtual >= biMaximo} onClick={() => void encerrarColapso()}>Confirmar BI abaixo do máximo e encerrar <span>→</span></button>}
-      {(reanimacao.estado === 'morte_a_registrar' || reanimacao.estado === 'transformacao_no_proximo_turno') && <p>Resultado mecânico registrado — decisão da Mesa pendente. O cânone prevê um desfecho específico para esta causa de Reanimação, mas a Ficha não declara morte, não transforma a personagem e não aplica consequências narrativas. Consulte a regra e registre a decisão tomada pela Mesa no Registro de Decisões da Mesa.</p>}
+      {desfechoAguardandoMesa && <section className="ficha-local-aviso" aria-live="polite">
+        {decisoesVinculadas.length > 0
+          ? <><strong>Decisão da Mesa registrada.</strong><p>Há {decisoesVinculadas.length} registro(s) vinculado(s) a esta Reanimação:</p><ul>{decisoesVinculadas.map(item => <li key={item.id}>{item.tipo}: {item.descricao}</li>)}</ul><p>A Ficha mantém o resultado mecânico e não executa consequências narrativas.</p></>
+          : <><strong>Resultado mecânico registrado — decisão da Mesa pendente.</strong><p>O cânone prevê um desfecho específico para esta causa de Reanimação, mas a Ficha não declara morte, não transforma a personagem e não aplica consequências narrativas. Registre a decisão no Registro de Decisões da Mesa e vincule-a a esta Reanimação.</p></>}
+        {!reanimacao.id && <button type="button" disabled={ocupado || bloqueado} onClick={() => void persistir({ ...reanimacao, id: gerarIdReanimacao() })}>Preparar vínculo para esta Reanimação</button>}
+        {!registrosMesaValidos && <p>O histórico da Mesa está inválido; a Ficha não consegue verificar vínculos. Os dados originais foram preservados.</p>}
+      </section>}
     </>}
     {erro && <p className="offline-erro" role="alert">{erro}</p>}
     {mensagem && <p className="offline-status" role="status">{mensagem}</p>}
