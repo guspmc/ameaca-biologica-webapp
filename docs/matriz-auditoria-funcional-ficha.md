@@ -336,3 +336,17 @@ Nenhum desses pontos deve ser resolvido por inferência durante a implementaçã
 - **Lacuna:** fluxo mecânico completo das transformações não implementado; depende de integração própria com progressão, Dados de Vida, Habilidades, armas, ataques, BI, PV, inconsciência e morte. Não considerar transformação funcional apenas por constar no catálogo.
 - **Checkpoint:** `docs/checkpoint-auditoria-transformacoes-condicoes-2026-11-12.md`.
 - **Testes:** cobertura estrutural adicionada; não executada nesta sessão. Validação humana pendente.
+
+
+## Auditoria de Habilidades e PV por Nível — 12/11/2026
+
+**Checkpoint:** `docs/checkpoint-auditoria-habilidades-e-pv-por-nivel-2026-11-12.md`.
+
+- **Catálogo e progressão — CONFERIDOS ESTATICAMENTE:** 30 Habilidades, três Classes, nove Ramos, graus e níveis conforme Arquivo do Jogador v1.0, pp. 27–38. Pré-requisitos, compatibilidade e histórico persistido são validados. Planejamento de criação permanece separado da aplicação dos ganhos.
+- **Integrações operacionais existentes:** Não Vai Escapar, Na Minha Mira, Contra-Ataque Instintivo e Retaliação possuem controles/registro contextual no Painel de Ações. CODE VERONICA, Curiosa, Tentativa e Erro, Parrudo, Casca-Grossa e Reflexos de Sobrevivente possuem efeitos ligados a cálculos, registros de uso ou resumo.
+- **Lembretes/integrações parciais:** Anatomia de Combate, Quanto Mais Melhor, Armeiro, Armeira Autodidata, Armamento Especial, Controle de Fogo, Ambidestria e Parede Humana dependem de confirmação, modificadores manuais ou contexto da Mesa em parte de seus efeitos. Rolamento e Esquiva gratuita de Reflexos de Sobrevivente não possuem controle persistente completo.
+- **Integração específica ainda não localizada:** Finalização à Distância, Luta Livre, Brecha Tática, Briga de Gente Grande e SOCADOR DE PEDRAS. Seus efeitos constam do catálogo, mas não devem ser contabilizados como fluxo operacional executado.
+- **Dependência do Inventário ativo:** Herbalista, Farmácia de Campo, Primeiros Socorros, VOCÊ APAROU UM MÍSSIL!? e os efeitos dependentes de arma empunhada/Peças/munição/Durabilidade ainda aguardam integração. Aparar permanece bloqueado deliberadamente até existir estado confiável de equipamento.
+- **Defeito corrigido no código:** `FichaLocal.tsx` agora repassa `nivelAtual` para `calcularDerivadosCriacao()`; antes, a omissão do parâmetro mantinha PV Máximos calculados como Nível 1 após a progressão. Teste estrutural de regressão adicionado a `tests/derivados-criacao.test.mjs`. A fórmula canônica não foi alterada.
+- **Testes/build/CI:** não executados nesta sessão; o HEAD consultado não retornou status de CI. Validação humana pendente, especialmente PV por Nível com e sem Parrudo e revisão dos lembretes nos três modos.
+- **Restrições:** sem alteração de cânone, esquema, LAN, Supabase, redesign, merge, publicação ou deploy.
