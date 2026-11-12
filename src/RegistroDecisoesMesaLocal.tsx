@@ -19,7 +19,7 @@ function dataHoraLocal(valor = new Date()): string {
 }
 
 export default function RegistroDecisoesMesaLocal({ dados, aoSalvar, origemDados = 'local' }: Props) {
-  const registros = dados.registrosMesa ?? [];
+  const registros = dados.registrosMesa === undefined ? [] : dados.registrosMesa;
   const valido = listaDecisoesMesaValida(registros);
   const itens = valido ? registros : [];
   const [tipo, setTipo] = useState<TipoDecisaoMesa>('outro');
