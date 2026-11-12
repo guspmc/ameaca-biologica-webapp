@@ -38,6 +38,10 @@ test('recusa tipos, textos, datas, chaves extras e IDs duplicados', () => {
   assert.equal(api.listaDecisoesMesaValida([{ ...base, tipo: 'retificacao' }]), true); // histórico anterior à evolução
   assert.equal(api.listaDecisoesMesaValida([{ ...base, tipo: 'retificacao', retificaRegistroId: 'inexistente' }]), false);
   assert.equal(api.listaDecisoesMesaValida([{ ...base, tipo: 'retificacao', retificaRegistroId: base.id }]), false);
+  assert.equal(api.listaDecisoesMesaValida([
+    { ...base, id: 'retificacao-futura', tipo: 'retificacao', retificaRegistroId: 'evento-futuro' },
+    { ...base, id: 'evento-futuro' },
+  ]), false);
   assert.throws(() => api.adicionarDecisaoMesa([base], { ...base, id: 'evento-2', tipo: 'retificacao' }), /precisa identificar/);
   assert.throws(() => api.adicionarDecisaoMesa([base], { ...base, id: 'evento-2', tipo: 'retificacao', retificaRegistroId: 'inexistente' }), /referência da Retificação/);
 });
