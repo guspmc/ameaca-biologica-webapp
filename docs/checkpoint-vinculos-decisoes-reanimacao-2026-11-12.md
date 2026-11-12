@@ -18,6 +18,7 @@ Fechar duas lacunas do Registro de Decisões da Mesa: identificar explicitamente
 - Reanimações antigas sem ID continuam válidas. Quando chegam a um desfecho pendente, a interface oferece uma ação explícita para preparar o vínculo, salvando apenas o identificador e preservando os demais dados.
 - O Registro de Decisões permite associar um evento à instância de Reanimação pendente.
 - O painel de Reanimação passa a distinguir “decisão da Mesa pendente” de “decisão da Mesa registrada” e lista os eventos vinculados.
+- Quando um evento vinculado é uma Retificação, o painel também identifica o ID do registro corrigido, sem ocultar o evento original.
 - A Ficha continua sem declarar morte, transformar personagem ou executar consequências narrativas.
 
 ## Compatibilidade e persistência
