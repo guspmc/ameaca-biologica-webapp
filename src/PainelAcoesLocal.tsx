@@ -9,7 +9,7 @@ import {
   aplicarManobraCombate, aplicarReacaoCombate, aplicarReacaoDefensivaCombate, carregarEstadoTurnoCombate, encerrarTurnoCombate,
   iniciarTurnoCombate, registrarResolucaoAtaqueAdicional, registrarFinalizacaoDupla, type EstadoTurnoCombate,
 } from './estadoTurnoCombate';
-import { registrarCombateDuasArmas, registrarDisparada, registrarFuga, registrarMirar, registrarAtaque, registrarFinalizar, registrarAjudar } from './manobrasOperacionais';
+import { registrarCombateDuasArmas, registrarDisparada, registrarFuga, registrarMirar, registrarAtaque, registrarFinalizar, registrarAjudar, registrarDesengajar, registrarUsarObjeto } from './manobrasOperacionais';
 import { avaliarAtaqueOportunidade, registrarAtaqueOportunidade, prepararContraAtaque, consultarRetaliacao, avaliarNaoVaiEscapar, registrarNaoVaiEscapar, avaliarJanelaReacao, registrarReacaoDefensiva, resolverTesteDefensivo, avaliarNaMinhaMira, registrarNaMinhaMira, avaliarRespostaMercenario, registrarRespostaMercenario, type JanelaReacao } from './reacoesCombate';
 import { sortearDados, validarResultadosFisicos } from './rolagemDados';
 import type { ModoDados } from './funcionamentoFicha';
@@ -424,6 +424,15 @@ export default function PainelAcoesLocal({ dados, saAtual, aoSalvar, origemDados
             <button type="button" disabled={salvando || !economia.turnoEmAndamento || economia.saAtual < 3 || janela > 0} onClick={() => void aplicar(atual => comEconomia(atual, economiaAtual => gastarSAEmManobra(economiaAtual, 3)))}>Registrar Manobra · 3 SA</button>
           </div>
           <p className="ficha-local-legenda">Use o registro de Manobra somente após uma regra autorizar o gasto. Contra-Ataque, por exemplo, exige defesa bem-sucedida e 1 SA + Reação. O painel não faz rolagens nem presume gatilhos.</p>
+
+          <h4>Desengajar e Usar um Objeto</h4>
+          <div className="recursos-controles">
+            <button type="button" disabled={salvando || !economia.turnoEmAndamento || economia.normaisUsados.movimento}
+              onClick={() => void aplicar(atual => aplicarManobraCombate(atual, registrarDesengajar).estado, 'Desengajar registrado: Movimento consumido. Desloque-se até 1,5 m sem provocar Ataque de Oportunidade por esse deslocamento.')}>Desengajar · Movimento</button>
+            <button type="button" disabled={salvando || !economia.turnoEmAndamento || !economia.interacaoGratuitaUsada || economia.normaisUsados.acao}
+              onClick={() => void aplicar(atual => aplicarManobraCombate(atual, registrarUsarObjeto).estado, 'Usar um Objeto registrado: Ação consumida para uma interação adicional com objeto.')}>Usar um Objeto · Ação</button>
+          </div>
+          <p className="ficha-local-legenda">Desengajar consome o Movimento e permite deslocamento de 1,5 m sem provocar Ataque de Oportunidade por esse deslocamento; a movimentação continua manual. Usar um Objeto consome Ação somente depois que a Interação Gratuita com Objeto já tiver sido utilizada. Regras específicas de item ou Habilidade podem determinar custo diferente.</p>
 
           <h4>Finalizar e Finalização Dupla</h4>
           <div className="recursos-controles">
