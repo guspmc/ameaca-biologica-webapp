@@ -146,3 +146,21 @@ test('backup preserva Progressão persistente e recusa estado malformado', () =>
   const invalido = { ...original, dados: { ...original.dados, progressao: { ...progressao, campoExtra: true } } };
   assert.throws(() => criarBackup([invalido]), /fichas inválidas/);
 });
+
+
+test('backup preserva o Registro de Decisões da Mesa e recusa evento malformado', () => {
+  const original = ficha();
+  original.dados.registrosMesa = [{
+    id: 'evento-1',
+    tipo: 'transformacao',
+    descricao: 'O Mestre confirmou a transformação após avaliar a situação.',
+    responsavel: 'Mestre',
+    ocorridoEm: '2026-11-12T15:00:00.000Z',
+    registradoEm: '2026-11-12T15:05:00.000Z',
+  }];
+  const restaurado = lerArquivoBackup(serializarBackup(criarBackup([original])));
+  assert.deepEqual(restaurado.personagens[0].dados.registrosMesa, original.dados.registrosMesa);
+  const invalido = ficha();
+  invalido.dados.registrosMesa = [{ ...original.dados.registrosMesa[0], descricao: '' }];
+  assert.throws(() => criarBackup([invalido]), /fichas inválidas/);
+});
