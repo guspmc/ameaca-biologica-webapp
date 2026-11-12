@@ -354,3 +354,26 @@ Prosseguir pelo catálogo de Condições e sua aplicação na calculadora: confr
 - **Matriz:** linha de Reanimação atualizada em `docs/matriz-auditoria-funcional-ficha.md`.
 - **Validação:** testes automatizados e build não executados nesta etapa; validação humana pendente. A existência do teste não comprova aprovação.
 - **Restrições preservadas:** sem mudança de regras, PV/BI, Condições, contratos de dados, CSS/layout, LAN, banco, Supabase, Inventário, `main`, merge, deploy ou publicação.
+
+
+## Atualização de ciclo — vínculos estruturados entre decisões da Mesa, retificações e Reanimação (12/11/2026)
+
+- **Branch:** `feat/offline-first-ficha`; alterações realizadas somente nesta branch.
+- **Retificações:** novas Retificações exigem `retificaRegistroId`, selecionado na interface. A validação exige que o alvo exista e apareça antes da retificação na ordem append-only. Não depende da ordem dos relógios locais.
+- **Compatibilidade:** registros antigos do tipo Retificação sem referência estruturada continuam válidos como legado; não recebem vínculo inventado e não são reescritos. A função de inserção exige referência em novas Retificações.
+- **Reanimação:** novas instâncias recebem `id` estável, preservado nos próximos estados. Instâncias legadas sem ID continuam válidas; em desfecho pendente, a interface oferece ação explícita para gravar um ID sem alterar contadores ou recursos.
+- **Decisões:** eventos podem armazenar `reanimacaoId`. O painel de Registro permite vincular decisão à instância pendente. Retificações de evento vinculado herdam o vínculo. O painel de Reanimação exibe “Decisão da Mesa registrada” e os eventos relacionados; sem vínculo, mantém “decisão pendente”.
+- **Limites:** vínculo é exclusivamente referencial. Não declara morte, não transforma personagem, não aplica consequências, nem altera PV, BI ou Condições. Responsável continua autodeclarado; permissões não foram ampliadas.
+- **Persistência:** sem migração IndexedDB/SQLite ou versão nova de backup. A validação de personagem e o endpoint LAN já chamam o validador comum do Registro, que agora reconhece os campos opcionais. Backup mantém os dados e rejeita retificação com referência inválida.
+- **Arquivos:** `src/registroDecisoesMesa.ts`, `src/RegistroDecisoesMesaLocal.tsx`, `src/reanimacaoFicha.ts`, `src/ReanimacaoFichaLocal.tsx`; testes `registro-decisoes-mesa.test.mjs`, `reanimacao-ficha.test.mjs`, `reanimacao-integracao-ficha.test.mjs`, `backup-ficha.test.mjs`.
+- **Checkpoint:** `docs/checkpoint-vinculos-decisoes-reanimacao-2026-11-12.md`; matriz funcional atualizada.
+- **Testes/build:** cobertura escrita/atualizada, mas testes automatizados e build não executados nesta etapa. Nenhum resultado foi presumido. Validação humana pendente.
+- **Restrições:** sem alteração de cânone, mecânicas, CSS/layout geral, navegação, permissões, banco, Supabase, Inventário ativo, `main`, merge, deploy ou publicação.
+
+### Validação humana deste incremento
+
+1. Levar uma Reanimação a três falhas e conferir que o resultado mecânico permanece intacto.
+2. Registrar uma decisão vinculada àquela instância e verificar a mudança de apresentação sem efeitos mecânicos.
+3. Retificar o evento e conferir preservação do original, vínculo propagado e exibição de ambos.
+4. Atualizar a página e exportar/restaurar backup, conferindo os IDs e referências.
+5. Abrir histórico antigo com Retificação sem vínculo, confirmar compatibilidade e criar uma nova Retificação vinculada.
