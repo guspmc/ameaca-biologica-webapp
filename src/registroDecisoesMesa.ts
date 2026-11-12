@@ -17,6 +17,10 @@ export type RegistroDecisaoMesa = {
   responsavel: string;
   ocorridoEm: string;
   registradoEm: string;
+  /** ID do registro corrigido; obrigatório quando tipo=retificacao. */
+  retificaRegistroId?: string;
+  /** ID da instância de Reanimação cujo desfecho foi decidido pela Mesa. */
+  reanimacaoId?: string;
 };
 
 function objetoSimples(valor: unknown): valor is Record<string, unknown> {
@@ -32,12 +36,19 @@ function dataValida(valor: unknown): valor is string {
 export function registroDecisaoMesaValido(valor: unknown): valor is RegistroDecisaoMesa {
   if (!objetoSimples(valor)) return false;
   const chaves = Object.keys(valor).sort().join('|');
-  return chaves === 'descricao|id|ocorridoEm|registradoEm|responsavel|tipo'
+  const chavesObrigatorias = 'descricao|id|ocorridoEm|registradoEm|responsavel|tipo';
+  const chavesPermitidas = new Set([...chavesObrigatorias.split('|'), 'retificaRegistroId', 'reanimacaoId']);
+  if (Object.keys(valor).some(chave => !chavesPermitidas.has(chave))) return false;
+  if (['descricao', 'id', 'ocorridoEm', 'registradoEm', 'responsavel', 'tipo'].some(chave => !(chave in valor))) return false;
+  return chaves.split('|').length >= 6
     && typeof valor.id === 'string' && valor.id.trim().length > 0 && valor.id.length <= 100
     && typeof valor.tipo === 'string' && Object.prototype.hasOwnProperty.call(TIPOS_DECISAO_MESA, valor.tipo)
     && typeof valor.descricao === 'string' && valor.descricao.trim().length > 0 && valor.descricao.length <= 500
     && typeof valor.responsavel === 'string' && valor.responsavel.trim().length > 0 && valor.responsavel.length <= 80
-    && dataValida(valor.ocorridoEm) && dataValida(valor.registradoEm);
+    && dataValida(valor.ocorridoEm) && dataValida(valor.registradoEm)
+    && (valor.retificaRegistroId === undefined || (typeof valor.retificaRegistroId === 'string' && valor.retificaRegistroId.trim().length > 0 && valor.retificaRegistroId.length <= 100))
+    && (valor.reanimacaoId === undefined || (typeof valor.reanimacaoId === 'string' && valor.reanimacaoId.trim().length > 0 && valor.reanimacaoId.length <= 100))
+    && (valor.tipo === 'retificacao' ? typeof valor.retificaRegistroId === 'string' : valor.retificaRegistroId === undefined);
 }
 
 export function listaDecisoesMesaValida(valor: unknown): valor is RegistroDecisaoMesa[] {
@@ -47,7 +58,8 @@ export function listaDecisoesMesaValida(valor: unknown): valor is RegistroDecisa
     if (!registroDecisaoMesaValido(item) || ids.has(item.id)) return false;
     ids.add(item.id);
   }
-  return true;
+  return valor.every(item => item.tipo !== 'retificacao' || (item.retificaRegistroId !== item.id && ids.has(item.retificaRegistroId!)))
+    && valor.every(item => item.tipo !== 'retificacao' || valor.some(alvo => alvo.id === item.retificaRegistroId && alvo.registradoEm <= item.registradoEm));
 }
 
 export function adicionarDecisaoMesa(
