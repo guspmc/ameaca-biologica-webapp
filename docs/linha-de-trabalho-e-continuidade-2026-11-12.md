@@ -224,3 +224,28 @@ A revisão final identificou que a calculadora de Ataques só aparece no modo Au
 - Calculadora — identificação da região no resultado automático: `8726592dd1251f12c4db71323cb9e3d2c90e28dd`.
 - Teste estrutural — lembrete nos modos manuais e região no resultado: `087315742622a8e4e744fbe47091a7df2cb648e0`.
 - Este complemento de rastreabilidade não altera o HEAD de código/testes registrado acima.
+
+
+## Atualização de ciclo — 12/11/2026 (integração de Desengajar e Usar um Objeto)
+
+- **Branch:** feat/offline-first-ficha; nenhuma branch nova criada.
+- **Base de código/testes:** sequência de commits após o HEAD anterior 087315742622a8e4e744fbe47091a7df2cb648e0; comparação GitHub confirma 8 commits à frente e nenhuma divergência atrás. HEAD de código/testes consultado: c8118631ee9e6699a97b8dfdedbf96e42d60e029.
+- **Código alterado:** src/manobrasOperacionais.ts e src/PainelAcoesLocal.tsx.
+- **Teste alterado:** tests/manobras-operacionais.test.mjs.
+- **Desengajar:** controle específico integrado; consome Movimento e registra a instrução de deslocamento protegido de 1,5 m. Não move personagem nem verifica posições.
+- **Usar um Objeto:** controle integrado; só fica disponível após a Interação Gratuita e consome Ação. O helper também valida o pré-requisito, não dependendo exclusivamente da interface.
+- **Cânone:** Arquivo do Jogador v1.0, p. 76–79. Nenhuma regra alterada; uso e efeitos concretos de itens permanecem fora desta integração.
+- **Testes:** cobertura de domínio atualizada. Testes automatizados e build não foram executados nesta sessão.
+- **CI:** consulta de status do commit c8118631ee9e6699a97b8dfdedbf96e42d60e029 retornou lista vazia; não há evidência de aprovação ou execução bem-sucedida.
+- **Validação humana:** pendente. Inclui persistência, falha de salvamento, disponibilidade de recursos e confirmação de que nenhum efeito de item/movimento é aplicado automaticamente.
+- **Checkpoint:** docs/checkpoint-desengajar-usar-objeto-2026-11-12.md — commit c42532f45bf1e828d99e8e4a50bc6b0b94db1a9c.
+- **Matriz:** docs/matriz-auditoria-funcional-ficha.md — commit eb9d44c6a812869ff3c63a7f5cd8ee9850e560cd.
+- **Commit desta atualização de continuidade:** pendente de confirmação após gravação.
+- **Restrições preservadas:** sem redesign/CSS, LAN/servidor, Supabase, banco, main, merge, deploy ou publicação. Inventário ativo segue bloqueado.
+
+### Próxima ação
+
+1. Inspecionar Adiar Ação, Agarrar, Empurrar/Derrubar e Esconder-se contra o Arquivo do Jogador e os helpers existentes.
+2. Determinar para cada uma se cabe controle contextual de confirmação ou se depende de recursos ainda não existentes (por exemplo, resolução de Testes/posicionamento).
+3. Atualizar matriz/checkpoint; não inventar rolagens ou efeitos e não transformar a Ficha em motor de turnos.
+4. Solicitar/acompanhar execução real de pnpm test e pnpm build e preparar a bateria humana consolidada. Não avançar para Inventário ativo antes da validação humana da Ficha Offline.
