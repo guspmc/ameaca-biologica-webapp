@@ -58,10 +58,9 @@ export function listaDecisoesMesaValida(valor: unknown): valor is RegistroDecisa
     if (!registroDecisaoMesaValido(item) || ids.has(item.id)) return false;
     ids.add(item.id);
   }
-  return valor.every(item => item.tipo !== 'retificacao' || item.retificaRegistroId === undefined
-    || (item.retificaRegistroId !== item.id && ids.has(item.retificaRegistroId)))
-    && valor.every(item => item.tipo !== 'retificacao' || item.retificaRegistroId === undefined
-      || valor.some(alvo => alvo.id === item.retificaRegistroId && alvo.registradoEm <= item.registradoEm));
+  return valor.every((item, indice) => item.tipo !== 'retificacao' || item.retificaRegistroId === undefined
+    || (item.retificaRegistroId !== item.id && ids.has(item.retificaRegistroId)
+      && valor.findIndex(alvo => alvo.id === item.retificaRegistroId) < indice));
 }
 
 export function adicionarDecisaoMesa(
