@@ -35,7 +35,7 @@ test('recusa tipos, textos, datas, chaves extras e IDs duplicados', () => {
   assert.throws(() => api.adicionarDecisaoMesa([base], base), /Identificador/);
 });
 
-test('limita o histórico a 100 registros e protege contra lista inválida', () => {
+test('limita o histórico a 30 registros e protege contra lista inválida', () => {
   const lista = Array.from({ length: 30 }, (_, i) => ({ ...base, id: 'evento-' + i }));
   assert.equal(api.listaDecisoesMesaValida(lista), true);
   assert.throws(() => api.adicionarDecisaoMesa(lista, { ...base, id: 'novo' }), /Limite de 30/);
