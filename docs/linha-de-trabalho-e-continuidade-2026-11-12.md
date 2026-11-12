@@ -166,3 +166,22 @@ A ordem é deliberada. Não antecipar módulos posteriores nem misturar suas dep
 - Estado de turno/Economia/Reações têm helpers e testes existentes; integração de interface permanece parcial (Aparar bloqueado por ausência de estado confiável de equipamento). Não transformar a Ficha em motor de turnos.
 - Testes locais/CI e teste humano não foram executados/confirmados nesta rodada.
 - Próximo foco: auditoria normativa e de integração da interface de Combate/Manobras/Reações, seguida de persistência/recuperação do estado de turno. Inventário ativo continua bloqueado.
+
+
+## Atualização de ciclo — 12/11/2026 (integração de Manobras e Reações)
+
+- **HEAD de código consultado no início do ciclo:** `bc211a1d1f9d880fa7806dd7b358e5f115659eea`.
+- **Checkpoint:** `docs/checkpoint-auditoria-integracao-manobras-reacoes-2026-11-12.md`.
+- **Matriz:** seção “Auditoria de integração das Manobras e Reações — 12/11/2026” em `docs/matriz-auditoria-funcional-ficha.md`.
+- **Achados:** Economia de Ações e estado composto apresentam coerência estática nos limites inspecionados; persistência/recuperação real permanece pendente de teste humano.
+- **Defeito de integração identificado:** Combate com Duas Armas exige marcador de Ataque inicial que a interface só registra pelo controle condicionado a Mirar. O uso genérico da Ação não satisfaz essa pré-condição.
+- **Integração incompleta:** Mirar registra custo/preparação, mas o +2 no Teste de Ataque e a escolha de região específica não chegam à calculadora.
+- **Lacunas de UI:** Desengajar e Usar Objeto têm helpers sem controles próprios; Adiar Ação, Agarrar, Empurrar/Derrubar e Esconder-se não possuem controles operacionais específicos no painel consultado. O catálogo de consulta não conta como integração.
+- **Reações:** os fluxos consultados permanecem condicionados a confirmações contextuais; Aparar continua bloqueado até existir estado confiável de equipamento e Durabilidade.
+- **Código:** nenhum arquivo de código alterado. Nenhum teste local, CI ou humano executado por esta sessão.
+- **Restrições:** sem mudança visual, sem refatoração LAN, sem Supabase, sem alteração de banco, sem `main`, merge, deploy ou publicação; nenhuma branch criada; Inventário ativo continua bloqueado.
+- **Commits documentais deste ciclo:** checkpoint `36cfdc448ec7c35a153dcfa14128bb46959d443b`; matriz `f00a80512bd8e87132e56ac0936e4898be2b5f0f`.
+- **HEAD após as atualizações documentais:** `f00a80512bd8e87132e56ac0936e4898be2b5f0f`.
+
+### Próxima ação
+Corrigir em alteração mínima a integração do Ataque normal e Combate com Duas Armas, e integrar Mirar ao Teste de Ataque sem remover Desvantagem. Antes de editar, inspecionar os testes de calculadora/combate e os contratos de salvamento relevantes. Em seguida decidir o nível de integração operacional das Manobras universais restantes. Atualizar checkpoint e continuidade novamente ao final do próximo ciclo.
