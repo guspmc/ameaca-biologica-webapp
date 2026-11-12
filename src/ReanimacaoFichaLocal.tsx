@@ -160,11 +160,11 @@ export default function ReanimacaoFichaLocal({ dados, recursos, origem, pvMaximo
     {registroReanimacaoInvalido && <p className="offline-erro" role="alert">O registro de Reanimação está inválido. Os dados originais foram preservados; nenhuma Reanimação será iniciada ou alterada automaticamente. Faça backup e revise o registro antes de continuar.</p>}
     {!reanimacao && <>
       {podeIniciarPV && <button type="button" className="acao" disabled={ocupado || bloqueado} onClick={() => void iniciar('pv_zero')}>Registrar estado de Reanimação por 0 PV <span>→</span></button>}
-      {podeIniciarColapso && <button type="button" className="acao" disabled={ocupado || bloqueado} onClick={() => void iniciar('colapso_bi')}>Registrar Reanimação por Colapso Viral <span>→</span></button>
+      {podeIniciarColapso && <button type="button" className="acao" disabled={ocupado || bloqueado} onClick={() => void iniciar('colapso_bi')}>Registrar Reanimação por Colapso Viral <span>→</span></button>}
       {transformacaoPVZero && <>
         <button type="button" className="acao" disabled={ocupado || bloqueado} onClick={() => void iniciar('pv_zero', true)}>Registrar Reanimação por 0 PV conforme decisão da Mesa <span>→</span></button>
         {biMaximo > 0 && recursos.biAtual >= biMaximo && <button type="button" className="acao" disabled={ocupado || bloqueado} onClick={() => void iniciar('colapso_bi', true)}>Registrar Reanimação por Colapso conforme decisão da Mesa <span>→</span></button>}
-      </>}}
+      </>}
 
     </>}
     {reanimacao && <>
