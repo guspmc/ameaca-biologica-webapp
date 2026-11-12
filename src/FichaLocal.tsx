@@ -296,7 +296,7 @@ export default function FichaLocal({ nome, mesa, contextoId, dados, aoFechar, ao
   const derivados = dadosClasse && atributosCalculaveis && origemCalculavel
     ? calcularDerivadosCriacao({
         classe, origem, habilidadeBasica: habilidade?.id ?? '',
-        atributos: atributosDaFicha,
+        atributos: atributosDaFicha, nivel: nivelAtual,
       })
     : null;
   const pv = derivados?.pvMaximo ?? 0;
