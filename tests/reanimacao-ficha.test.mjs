@@ -120,3 +120,16 @@ test('estado de Reanimação recusa campos extras e protótipos personalizados',
   const prototipo = Object.assign(Object.create({ admin: true }), r);
   assert.equal(api.reanimacaoValida(prototipo), false);
 });
+
+
+test('instância de Reanimação recebe ID estável e mantém compatibilidade com registros legados', () => {
+  const nova = api.iniciarReanimacao('pv_zero');
+  assert.equal(typeof nova.id, 'string');
+  assert.ok(nova.id.length > 0);
+  const avancada = api.iniciarTurnoReanimacao(nova);
+  assert.equal(avancada.id, nova.id);
+  const legada = { ...nova };
+  delete legada.id;
+  assert.equal(api.reanimacaoValida(legada), true);
+  assert.equal(api.reanimacaoValida({ ...nova, id: '' }), false);
+});
