@@ -38,6 +38,7 @@ type Props = {
   aoFalharCriticoAtaque?: () => Promise<boolean>;
   penalidadeMorteNivel1?: boolean;
   bonusAtaqueBI?: number;
+  danoCorpoACorpoAdicionalBI?: string | null;
   desvantagemBI?: boolean;
   condicoesAtivas?: CondicaoId[];
   habilidadesAtivas?: string[];
@@ -46,7 +47,7 @@ type Props = {
   mirarPreparado?: boolean;
 };
 
-export default function CalculadoraTesteLocal({ atributos, treinada, distribuicao, periciaOrigemExtra = '', periciaTentativaErroTreinada = '', temTentativaEErro = false, modoDados, origem = '', saDisponivel = 0, aoFalharCriticoAtaque, penalidadeMorteNivel1 = false, bonusAtaqueBI = 0, desvantagemBI = false, condicoesAtivas = [], habilidadesAtivas = [], escopo = 'testes', armaOperario = '', academicoDisponivel = false, criminosoDisponivel = false, mirarPreparado = false }: Props) {
+export default function CalculadoraTesteLocal({ atributos, treinada, distribuicao, periciaOrigemExtra = '', periciaTentativaErroTreinada = '', temTentativaEErro = false, modoDados, origem = '', saDisponivel = 0, aoFalharCriticoAtaque, penalidadeMorteNivel1 = false, bonusAtaqueBI = 0, danoCorpoACorpoAdicionalBI = null, desvantagemBI = false, condicoesAtivas = [], habilidadesAtivas = [], escopo = 'testes', armaOperario = '', academicoDisponivel = false, criminosoDisponivel = false, mirarPreparado = false }: Props) {
   const [tipo, setTipo] = useState<'pericia' | 'atributo' | 'ataque-corpo' | 'ataque-distancia'>(escopo === 'ataques' ? 'ataque-corpo' : 'pericia');
   const [pericia, setPericia] = useState('Percepção');
   const [armaId, setArmaId] = useState(() => escopo === 'ataques' && origem === 'Operário' ? listarPerfisArma().find(perfil => perfil.nome === armaOperario)?.id ?? '' : '');
@@ -385,6 +386,7 @@ export default function CalculadoraTesteLocal({ atributos, treinada, distribuica
           <input type="number" min="0" step="1" value={resultadoDadosAdicionais} onChange={evento => setResultadoDadosAdicionais(evento.target.value)} placeholder="Ex.: +1d4 de Peça ou Habilidade" />
         </label>
         <small>Use este campo somente depois de rolar dados adicionais previstos por uma Peça, Habilidade ou modo de disparo válido, incluindo os +2 dados do Disparo Cadenciado. Na Motosserra, informe aqui a soma dos dados extras gerados por cada resultado 6, incluindo os encadeamentos. A calculadora não presume que você possui Peças ou Habilidades.</small>
+        {tipo === 'ataque-corpo' && danoCorpoACorpoAdicionalBI && <p className="ficha-local-aviso" role="status">4ª Fase da Bio-Infecção: role {danoCorpoACorpoAdicionalBI} adicional de Dano Corpo a Corpo e informe a soma no campo de Dados adicionais. Este bônus não se aplica a Ataques à distância e não é rolado automaticamente.</p>}
         <p>Atributo aplicado: {tipo === 'ataque-corpo' ? 'FOR' : 'AGI'} (+{atributoDano}).</p>
         {armaOperarioEscolhida && <p>Operário: o Dano recebe FOR adicional; esse bônus não é multiplicado no Crítico.</p>}
         {resultadoAtaqueCritico && <p className="ficha-local-legenda">20 natural: Acerto Crítico automático (×{multiplicadorCriticoDano}).</p>}
