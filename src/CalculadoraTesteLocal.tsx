@@ -104,6 +104,7 @@ export default function CalculadoraTesteLocal({ atributos, treinada, distribuica
   const bonusTentativa = temTentativaEErro && testeDePericia ? bonusTentativaErro(periciaEfetiva, treinada || null, distribuicao, periciaOrigemExtra || null, periciaTentativaErroTreinada || null) : 0;
   const modificadorAtaqueBI = tipo === 'ataque-corpo' || tipo === 'ataque-distancia' ? bonusAtaqueBI : 0;
   const restricoesAtaque = escopo === 'ataques' ? restricoesDeAtaquePorCondicoes(condicoesAtivas) : [];
+  const amedrontadoAtivo = condicoesAtivas.includes('amedrontado');
   const desvantagensCondicao = condicoesQueImpoemDesvantagem(condicoesAtivas, {
     escopo,
     tipoTeste: testeDePericia ? 'pericia' : 'atributo',
@@ -280,6 +281,7 @@ export default function CalculadoraTesteLocal({ atributos, treinada, distribuica
     {penalidadeMorteNivel1 && <p className="ficha-local-aviso" role="status">Penalidade por Morte no Nível 1: −2 aplicada a este Teste de Atributo, Perícia ou Ataque até recuperar o Nível 2.</p>}
     {desvantagemBI && <p className="ficha-local-aviso" role="status">5ª Fase da BI: Desvantagem aplicada a este Teste. Uma Vantagem e uma Desvantagem se anulam normalmente.</p>}
     {desvantagensCondicao.length > 0 && <p className="ficha-local-aviso" role="status">Desvantagem por Condição ativa: {desvantagensCondicao.map(id => CATALOGO_CONDICOES[id].nome).join(', ')}. Uma Vantagem e uma Desvantagem se anulam normalmente; fontes iguais não acrescentam dados adicionais.</p>}
+    {amedrontadoAtivo && <p className="ficha-local-aviso" role="status">Amedrontado: confirme se a personagem ainda percebe a fonte do medo e se este Teste é aplicável à fonte. Quando aplicável, selecione Desvantagem manualmente; a personagem também não pode se aproximar voluntariamente da fonte.</p>}
     {modificadorAtaqueBI !== 0 && <p className="ficha-local-legenda">Bônus de Ataque pela Bio-Infecção: +{modificadorAtaqueBI}.</p>}
     <p>{modoDados === 'fisicos' ? 'Modo Físicos: informe o resultado obtido nos dados.' : modoDados === 'virtuais' ? 'Modo Virtuais: o aplicativo gera os dados somente quando você solicitar.' : 'Modo Mistos: escolha o método para este Teste.'} Cada rolagem exige comando explícito. O resultado é apenas informativo e não altera dados da personagem.</p>
     {modoDados === 'mistos' && <label>Método desta rolagem
