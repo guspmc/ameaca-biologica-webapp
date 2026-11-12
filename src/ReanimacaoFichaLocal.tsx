@@ -47,7 +47,7 @@ export default function ReanimacaoFichaLocal({ dados, recursos, origem, pvMaximo
 
   const reanimacaoAnteriorConcluida = reanimacao?.estado === 'concluida';
   const transformacaoBloqueiaReanimacao = transformacaoAtiva !== null && recursos.pvAtual <= 0;
-  const reanimacaoPV0EmConflito = transformacaoBloqueiaReanimacao && reanimacao?.causa === 'pv_zero' && reanimacao.estado !== 'concluida';
+  const reanimacaoEmConflito = transformacaoBloqueiaReanimacao && reanimacao !== null && reanimacao.estado !== 'concluida';
   const podeIniciarPV = !registroReanimacaoInvalido && !transformacaoBloqueiaReanimacao && recursos.pvAtual === 0 && (reanimacao === null || reanimacaoAnteriorConcluida);
   const podeIniciarColapso = !registroReanimacaoInvalido && !transformacaoBloqueiaReanimacao && biMaximo > 0 && recursos.biAtual >= biMaximo && (reanimacao === null || reanimacaoAnteriorConcluida);
   const vantagem = !!reanimacao && (reanimacao.vantagemProximoTeste || (reanimacao.causa === 'colapso_bi' && origem === 'Cobaia'));
@@ -151,7 +151,7 @@ export default function ReanimacaoFichaLocal({ dados, recursos, origem, pvMaximo
     <summary>Reanimação e estados críticos</summary>
     <p>Ao atingir a BI Máxima, o Colapso Viral e a Reanimação específica são iniciados automaticamente; a Ficha não avança turnos nem decide a narrativa de morte ou transformação.</p>
     {transformacaoBloqueiaReanimacao && <p className="ficha-local-aviso" role="alert">{transformacaoAtiva === 'infectado-especial' ? 'Infectado Especial a 0 PV: o cânone determina 1 hora inerte antes da transformação em Cabeça Carmesim, salvo impedimento específico. A Reanimação comum por 0 PV não será iniciada; controle o período e a transformação com a Mesa.' : transformacaoAtiva === 'cabeca-carmesim' ? 'Cabeça Carmesim a 0 PV antes da reversão: o cânone determina a morte da personagem. A Ficha não inicia Reanimação nem registra a morte automaticamente; confirme e registre com a Mesa.' : 'Há mais de uma transformação ativa com 0 PV. A Ficha bloqueou a Reanimação automática porque não pode determinar qual desfecho narrativo prevalece; resolva com a Mesa.'} Se a BI também estiver na faixa de Colapso, a prioridade entre os dois estados não é automatizada.</p>}
-    {reanimacaoPV0EmConflito && <p className="offline-erro" role="alert">Existe um registro anterior de Reanimação por 0 PV incompatível com a transformação ativa. Os dados foram preservados, mas seus controles estão bloqueados para evitar aplicar o fluxo errado. Revise o histórico com a Mesa; não apague o registro automaticamente.</p>}
+    {reanimacaoEmConflito && <p className="offline-erro" role="alert">Existe um registro anterior de Reanimação incompatível com a transformação ativa. Os dados foram preservados, mas seus controles estão bloqueados para evitar aplicar o fluxo errado. Revise o histórico com a Mesa; não apague o registro automaticamente.</p>}
     {modo === 'automatico' && modoDados === 'mistos' && <label>Método deste Teste<select value={metodo} onChange={e => { setMetodo(e.target.value as 'fisico' | 'virtual'); setPrimeiroDado(''); setSegundoDado(''); }}><option value="fisico">Dados físicos</option><option value="virtual">Dados virtuais</option></select></label>}
     {modo === 'automatico' && modoDados !== 'mistos' && <p>Método: {modoDados === 'fisicos' ? 'Dados físicos' : 'Dados virtuais'}.</p>}
     {modo !== 'automatico' && <p>Modo {modo === 'misto' ? 'Misto' : 'Manual'}: roladores integrados ocultos. Informe abaixo o resultado obtido fora da Ficha.</p>}
