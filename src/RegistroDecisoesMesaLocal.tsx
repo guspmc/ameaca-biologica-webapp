@@ -61,20 +61,20 @@ export default function RegistroDecisoesMesaLocal({ dados, aoSalvar, origemDados
     <h4>Novo registro</h4>
     <div className="ficha-local-editor">
       <label>Tipo de acontecimento
-        <select value={tipo} disabled={!valido || salvando || itens.length >= 100} onChange={evento => setTipo(evento.target.value as TipoDecisaoMesa)}>
+        <select value={tipo} disabled={!valido || salvando || itens.length >= 30} onChange={evento => setTipo(evento.target.value as TipoDecisaoMesa)}>
           {Object.entries(TIPOS_DECISAO_MESA).map(([id, nome]) => <option key={id} value={id}>{nome}</option>)}
         </select>
       </label>
       <label>Descrição da decisão ou do resultado
-        <textarea value={descricao} maxLength={500} rows={4} disabled={!valido || salvando || itens.length >= 100} onChange={evento => setDescricao(evento.target.value)} placeholder="Descreva o que a Mesa decidiu ou o que aconteceu." />
+        <textarea value={descricao} maxLength={500} rows={4} disabled={!valido || salvando || itens.length >= 30} onChange={evento => setDescricao(evento.target.value)} placeholder="Descreva o que a Mesa decidiu ou o que aconteceu." />
       </label>
       <label>Responsável pela decisão
-        <input value={responsavel} maxLength={80} disabled={!valido || salvando || itens.length >= 100} onChange={evento => setResponsavel(evento.target.value)} placeholder="Nome ou apelido informado pela Mesa" />
+        <input value={responsavel} maxLength={80} disabled={!valido || salvando || itens.length >= 30} onChange={evento => setResponsavel(evento.target.value)} placeholder="Nome ou apelido informado pela Mesa" />
       </label>
       <label>Quando aconteceu
-        <input type="datetime-local" value={ocorridoEm} disabled={!valido || salvando || itens.length >= 100} onChange={evento => setOcorridoEm(evento.target.value)} />
+        <input type="datetime-local" value={ocorridoEm} disabled={!valido || salvando || itens.length >= 30} onChange={evento => setOcorridoEm(evento.target.value)} />
       </label>
-      <button type="button" disabled={!valido || salvando || itens.length >= 100 || !descricao.trim() || !responsavel.trim() || !ocorridoEm} onClick={() => void registrar()}>{salvando ? 'Salvando…' : 'Registrar decisão'}</button>
+      <button type="button" disabled={!valido || salvando || itens.length >= 30 || !descricao.trim() || !responsavel.trim() || !ocorridoEm} onClick={() => void registrar()}>{salvando ? 'Salvando…' : 'Registrar decisão'}</button>
     </div>
     {itens.length > 0 && <>
       <h4>Histórico</h4>
@@ -85,7 +85,7 @@ export default function RegistroDecisoesMesaLocal({ dados, aoSalvar, origemDados
       </li>)}</ol>
       <p className="ficha-local-legenda">Os registros não são editados nem apagados nesta versão. Para corrigir uma informação, acrescente uma Retificação que identifique o registro anterior e descreva a correção.</p>
     </>}
-    {itens.length >= 100 && <p className="ficha-local-aviso">Limite de 30 registros atingido. Exporte um backup antes de qualquer ampliação do histórico.</p>}
+    {itens.length >= 30 && <p className="ficha-local-aviso">Limite de 30 registros atingido. Exporte um backup antes de qualquer ampliação do histórico.</p>}
     {mensagem && <p role="status">{mensagem}</p>}
   </details>;
 }
