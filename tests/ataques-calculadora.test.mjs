@@ -265,3 +265,20 @@ test('Origem Lutador e Casca-Grossa aplicam categorias de Dano em ataques univer
   assert.match(progressao, /origem === 'Lutador'/);
   assert.match(progressao, /perfilId === 'universal-ataque-desarmado'/);
 });
+
+
+test('multiplicador de Crítico só pode ser aplicado por 20 natural ou 19 natural com margem ampliada confirmado pela Mesa', () => {
+  assert.match(ui, /const resultadoAtaqueCritico = escopo === 'ataques' && calculado\.resultado\?\.dadoEscolhido === 20/);
+  assert.match(ui, /const permiteConfirmacaoCritico19 = escopo === 'ataques' && limiteCritico === 19/);
+  assert.match(ui, /calculado\.resultado\?\.dadoEscolhido === 19 && calculado\.resultado\.total !== null/);
+  assert.match(ui, /criticoDanoAplicado = resultadoAtaqueCritico \|\| \(permiteConfirmacaoCritico19 && criticoDano\)/);
+  assert.match(ui, /A Mesa confirmou que o total do 19 natural alcançou a Defesa/);
+  assert.doesNotMatch(ui, /Aplicar Acerto Crítico \(×\{multiplicadorCriticoDano\}\)/);
+});
+
+test('alterar os dados ou o total da rolagem invalida a confirmação manual de Crítico', () => {
+  assert.match(ui, /setDado1\(evento\.target\.value\); setDadosConfirmados\(null\); setCriticoDano\(false\)/);
+  assert.match(ui, /setDado2\(evento\.target\.value\); setDadosConfirmados\(null\); setCriticoDano\(false\)/);
+  assert.match(ui, /calculado\.resultado\?\.total, perfilSelecionado\?\.id, valorTeste, modificador/);
+  assert.match(ui, /critico: criticoDanoAplicado && !ataqueEmArea/);
+});
