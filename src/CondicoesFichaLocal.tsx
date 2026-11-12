@@ -19,7 +19,9 @@ const ICONE_CONDICAO: Record<CondicaoId, string> = {
 };
 
 export default function CondicoesFichaLocal({ dados, pvAtual, pvMaximo, biAtual, biMaximo, aoSalvar, origemDados = 'local' }: Props) {
-  const itens = listaCondicoesValida(dados.condicoes) ? dados.condicoes : [];
+  const condicoesRegistradas = dados.condicoes ?? [];
+  const registroValido = listaCondicoesValida(condicoesRegistradas);
+  const itens = registroValido ? condicoesRegistradas : [];
   const ativas = condicoesAtivas(itens);
   const vulneravel = pvMaximo > 0 ? vulneravelPorPV(pvAtual, pvMaximo) : null;
   const colapsoViral = biMaximo > 0 && biAtual >= biMaximo;
@@ -33,7 +35,7 @@ export default function CondicoesFichaLocal({ dados, pvAtual, pvMaximo, biAtual,
   const [mensagem, setMensagem] = useState('');
 
   async function ativar() {
-    if (!fonte.trim() || salvando) return;
+    if (!registroValido || !fonte.trim() || salvando) return;
     if (!window.confirm('Confirmar o registro de ' + CATALOGO_CONDICOES[condicao].nome + ' como Condição ativa?')) return;
     setSalvando(true); setMensagem('');
     try {
@@ -68,6 +70,7 @@ export default function CondicoesFichaLocal({ dados, pvAtual, pvMaximo, biAtual,
     <div className="ficha-local-grade">
       <div><small>VULNERÁVEL</small><strong>{vulneravel === null ? 'Não calculável' : vulneravel ? 'Sim' : 'Não'}</strong><p>Derivada dos PV Atuais iguais ou inferiores a 1/5 dos PV Máximos; não é cadastrada manualmente.</p></div>
     </div>
+    {!registroValido && <p className="offline-erro" role="alert">O histórico de Condições está inválido. Os dados originais foram preservados; o painel está bloqueado para impedir sobrescrita. Faça backup e revise o registro antes de voltar a editar.</p>}
     <h4>Condições ativas</h4>
     {ativasVisiveis.length === 0 && !colapsoViral && !desacordado ? <p>Nenhuma Condição ativa.</p> : <ul>
       {desacordado && <li><strong>{ICONE_CONDICAO.desacordado} Desacordado</strong> · Fonte: {pvAtual <= 0 ? 'PV Atuais em 0' : 'Colapso Viral'}<p>{CATALOGO_CONDICOES.desacordado.efeito}</p><small>Condição derivada automaticamente; termina quando a fonte de Desacordado for resolvida. Não pode ser encerrada manualmente.</small></li>}
@@ -96,7 +99,7 @@ export default function CondicoesFichaLocal({ dados, pvAtual, pvMaximo, biAtual,
       <label>Observação (opcional)
         <input value={observacao} maxLength={500} onChange={evento => setObservacao(evento.target.value)} />
       </label>
-      <button type="button" disabled={salvando || !fonte.trim()} onClick={() => void ativar()}>{salvando ? 'Salvando…' : 'Ativar Condição'}</button>
+      <button type="button" disabled={salvando || !registroValido || !fonte.trim()} onClick={() => void ativar()}>{salvando ? 'Salvando…' : 'Ativar Condição'}</button>
     </div>
     {itens.some(item => !ativas.some(ativa => ativa.id === item.id)) && <>
       <h4>Histórico</h4>
