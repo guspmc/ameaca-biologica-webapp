@@ -38,3 +38,5 @@ Projetar a evolução do estado de turno para registrar compromissos futuros de 
 4. Ação e Movimento do próximo turno ficam indisponíveis, mas Ação Bônus e Interação Gratuita permanecem.
 5. O teto de 3 SA é aplicado considerando o restante da janela, inclusive gastos anteriores fora do turno.
 6. O compromisso não é perdido ao encerrar/iniciar turnos nem duplicado por recarga do estado.
+
+> **Atualização de continuidade — 12/11/2026:** a conclusão “PENDENTE / NÃO IMPLEMENTADO” e os próximos passos deste documento são históricos e foram superados por `docs/checkpoint-implementacao-finalizacao-2026-11-11.md`. Na branch atual foram localizados `registrarFinalizar()`, `registrarFinalizacaoDupla()`, o marcador persistente `proximoTurnoComprometido`, a aplicação no próximo turno, os controles em `PainelAcoesLocal.tsx` e testes em `tests/manobras-operacionais.test.mjs` e `tests/estado-turno-combate.test.mjs`. A implementação está **presente no código**; execução de testes e validação humana não foram realizadas nesta auditoria. Consulte o checkpoint de implementação para os detalhes e limites.
