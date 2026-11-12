@@ -58,7 +58,7 @@ test('1 natural em Reanimação é Falha Crítica, mas não ativa Exposto por n�
 });
 
 test('resumo da BI informa corretamente que Colapso Viral inicia Reanimação automaticamente', () => {
-  assert.match(ficha, /Ao confirmar BI igual ou superior ao máximo, o módulo Reanimação registra automaticamente o Colapso Viral/);
+  assert.match(ficha, /Ao confirmar BI igual ou superior ao máximo, o módulo Reanimação registra o Colapso Viral automaticamente/);
   assert.doesNotMatch(ficha, /nem inicia Reanimação/);
 });
 
