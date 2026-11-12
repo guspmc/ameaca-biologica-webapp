@@ -295,3 +295,13 @@ Prosseguir pelo catálogo de Condições e sua aplicação na calculadora: confr
 - **Testes/build:** não executados nesta sessão. A auditoria continua por inspeção e correções pontuais; não solicitar repetição genérica de comandos como pré-requisito.
 - **Validação humana:** pendente.
 - **Próxima frente:** concluir a revisão estática das Condições restantes e verificar consistência entre os efeitos descritos no catálogo e os lembretes de consulta; depois consolidar a bateria humana da Ficha. Inventário ativo segue bloqueado até validação humana e aprovação expressa.
+
+
+## Auditoria de transformações e condições sensoriais — 12/11/2026
+
+- **Fonte canônica:** Arquivo do Jogador v1.0, pp. 81–83 e 90–91.
+- **Correções descritivas:** catálogo Infectado Especial/Cabeça Carmesim completado; UI deixa claro que registrar essas transformações não aplica seus efeitos mecânicos. Lembretes contextuais de Cego/Surdo adicionados à calculadora, sem inferir dependência sensorial.
+- **Lacuna identificada:** fluxo mecânico completo de transformação ainda não existe. Exige módulo próprio e integração com progressão, Dados de Vida, Habilidades, armas, ataques, BI, PV, inconsciência e morte. Não implementar parcialmente como Condição comum.
+- **Checkpoint:** `docs/checkpoint-auditoria-transformacoes-condicoes-2026-11-12.md`.
+- **Testes estruturais:** ampliados; não executados nesta sessão. Validação humana pendente.
+- **Próxima frente:** revisar se as Condições remanescentes e as consequências de Bio-Infecção estão corretamente delimitadas entre estado derivado, registro manual e fluxo mecânico; depois fechar a matriz de lacunas da Ficha antes de propor qualquer módulo novo.
