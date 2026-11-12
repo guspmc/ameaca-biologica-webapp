@@ -291,7 +291,7 @@ Prosseguir pelo catálogo de Condições e sua aplicação na calculadora: confr
 - **Limites preservados:** nenhuma inferência de Condições dos alvos; Vantagem contra alvo Caído/Cego/Atordoado permanece dependente da Mesa; sem movimentação automática, bloqueio de ações, rolagem ou aplicação de Dano.
 - **Arquivos:** `src/condicoesCalculadora.ts`, `src/PainelAcoesLocal.tsx`, `src/CalculadoraTesteLocal.tsx`, `src/FichaLocal.tsx` e `tests/condicoes-calculadora.test.mjs`.
 - **Checkpoint:** `docs/checkpoint-auditoria-condicoes-ficha-2026-11-12.md` — commit `d1ff43949f9b6c321a5ee29368b5df1cabaf8289`.
-- **HEAD do código/documentação após este ciclo:** `f9e99ddc418a8fa02cb854a88adc3ff09b8f1bbd`.
+- **HEAD da implementação funcional após as correções de código e antes das atualizações documentais:** `d1ff43949f9b6c321a5ee29368b5df1cabaf8289`.
 - **Testes/build:** não executados nesta sessão. A auditoria continua por inspeção e correções pontuais; não solicitar repetição genérica de comandos como pré-requisito.
 - **Validação humana:** pendente.
 - **Próxima frente:** concluir a revisão estática das Condições restantes e verificar consistência entre os efeitos descritos no catálogo e os lembretes de consulta; depois consolidar a bateria humana da Ficha. Inventário ativo segue bloqueado até validação humana e aprovação expressa.
