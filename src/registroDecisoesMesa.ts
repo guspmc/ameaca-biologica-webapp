@@ -35,13 +35,13 @@ export function registroDecisaoMesaValido(valor: unknown): valor is RegistroDeci
   return chaves === 'descricao|id|ocorridoEm|registradoEm|responsavel|tipo'
     && typeof valor.id === 'string' && valor.id.trim().length > 0 && valor.id.length <= 100
     && typeof valor.tipo === 'string' && Object.prototype.hasOwnProperty.call(TIPOS_DECISAO_MESA, valor.tipo)
-    && typeof valor.descricao === 'string' && valor.descricao.trim().length > 0 && valor.descricao.length <= 1200
-    && typeof valor.responsavel === 'string' && valor.responsavel.trim().length > 0 && valor.responsavel.length <= 120
+    && typeof valor.descricao === 'string' && valor.descricao.trim().length > 0 && valor.descricao.length <= 500
+    && typeof valor.responsavel === 'string' && valor.responsavel.trim().length > 0 && valor.responsavel.length <= 80
     && dataValida(valor.ocorridoEm) && dataValida(valor.registradoEm);
 }
 
 export function listaDecisoesMesaValida(valor: unknown): valor is RegistroDecisaoMesa[] {
-  if (!Array.isArray(valor) || valor.length > 100) return false;
+  if (!Array.isArray(valor) || valor.length > 30) return false;
   const ids = new Set<string>();
   for (const item of valor) {
     if (!registroDecisaoMesaValido(item) || ids.has(item.id)) return false;
@@ -57,7 +57,7 @@ export function adicionarDecisaoMesa(
   if (!listaDecisoesMesaValida(atuais) || !registroDecisaoMesaValido(novo)) {
     throw new Error('Registro de decisões da Mesa inválido.');
   }
-  if (atuais.length >= 100) throw new Error('Limite de 100 registros atingido. Exporte um backup antes de continuar.');
+  if (atuais.length >= 30) throw new Error('Limite de 30 registros atingido. Exporte um backup antes de continuar.');
   if (atuais.some(item => item.id === novo.id)) throw new Error('Identificador de decisão já utilizado.');
   return [...atuais, { ...novo }];
 }
