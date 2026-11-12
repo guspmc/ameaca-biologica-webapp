@@ -318,3 +318,14 @@ Prosseguir pelo catálogo de Condições e sua aplicação na calculadora: confr
 - Próxima ação: auditar a reversão a BI 0 e a hora Desacordada, especialmente a interação com Descanso Completo e encerramento manual da Condição, antes de decidir qualquer novo estado persistente.
 
 - Incremento posterior: Descanso Completo agora fica bloqueado enquanto Infectado Especial estiver ativo a 0 PV ou Cabeça Carmesim permanecer ativa com BI 0 (hora de reversão/inconsciência). A UI orienta só encerrar a Condição após a Mesa confirmar o fim da hora. Não há cronômetro; Descanso Parcial não foi bloqueado porque a regra consultada não o proíbe expressamente. Testes estruturais adicionados, não executados.
+
+
+## Retificação — Transformações e Reanimação: a Ficha registra, a Mesa decide (12/11/2026)
+
+- A orientação inicial que bloqueava os controles de Reanimação durante Transformações foi substituída por registro explícito de decisão da Mesa.
+- Com Transformação ativa e PV 0, a Ficha não inicia automaticamente Reanimação comum; apresenta o cânone como referência e permite registrar, após confirmação, o fluxo que a Mesa determinar. Se BI Máxima também estiver presente, oferece escolha manual entre os fluxos sem definir prioridade.
+- Registros de Reanimação preexistentes não são bloqueados pela Transformação.
+- A Ficha não declara morte nem executa transformação. Os estados de morte/transformação da Reanimação permanecem sinalizações para registro do Mestre.
+- Lacuna: ainda não existe histórico estruturado específico para decisões da Mesa sobre morte da Cabeça Carmesim ou transformação após a hora inerte do Infectado Especial. Auditar contratos de persistência/backup antes de propor esse registro.
+- Descanso Completo continua bloqueado enquanto as Condições correspondentes aos períodos sem benefício estiverem ativas; a Mesa pode encerrar a Condição manualmente quando decidir que o período terminou. Sem cronômetro.
+- Testes estruturais atualizados, não executados nesta sessão. Sem validação humana.
