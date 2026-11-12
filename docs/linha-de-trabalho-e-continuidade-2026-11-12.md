@@ -205,3 +205,15 @@ Corrigir em alteração mínima a integração do Ataque normal e Combate com Du
 
 ### Próxima ação
 Verificar se o workflow/CI foi acionado para o HEAD e obter resultado real de testes/build. Depois executar a bateria humana dirigida: Ataque sem Mirar → Duas Armas; Mirar → região → Ataque +2 → consumo; preservação de Desvantagem; nenhum bônus em Dano/Área; reabertura da Ficha e persistência. Somente após isso seguir para Desengajar e Usar Objeto. Atualizar checkpoint e continuidade ao fim do próximo ciclo.
+
+
+### Complemento do mesmo ciclo — cobertura de Mirar em Misto/Manual
+
+A revisão final identificou que a calculadora de Ataques só aparece no modo Automático. Para não deixar os modos Misto/Manual sem o lembrete do bônus, o painel agora exibe +2 no Teste e a exigência de escolher região enquanto Mirar estiver preparado; nesses modos, a rolagem continua manual e o jogador aplica o bônus ao resultado externo. No modo Automático, a calculadora exige a região e a identifica no resultado.
+
+- **HEAD de código/testes após todos os ajustes deste ciclo:** `087315742622a8e4e744fbe47091a7df2cb648e0`.
+- **Checkpoint atualizado:** commit `14628b7ea934d6e961379b700461a0136b841d43`.
+- **Matriz atualizada:** commit `94af03ab5c8c28b06d6606cd38b97d671002ef36`.
+- **Teste estrutural adicional:** lembrete em Misto/Manual e identificação da região no resultado automático.
+- **Validação continua não executada:** sem testes automatizados, build ou teste humano nesta sessão. A consulta de status/checks não retornou verificações associadas; isso não comprova sucesso.
+- **Próxima ação inalterada:** verificar workflow real e executar testes/build; depois bateria humana dirigida antes de seguir para Desengajar e Usar Objeto.
