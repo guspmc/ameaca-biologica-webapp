@@ -249,3 +249,18 @@ A revisão final identificou que a calculadora de Ataques só aparece no modo Au
 2. Determinar para cada uma se cabe controle contextual de confirmação ou se depende de recursos ainda não existentes (por exemplo, resolução de Testes/posicionamento).
 3. Atualizar matriz/checkpoint; não inventar rolagens ou efeitos e não transformar a Ficha em motor de turnos.
 4. Solicitar/acompanhar execução real de pnpm test e pnpm build e preparar a bateria humana consolidada. Não avançar para Inventário ativo antes da validação humana da Ficha Offline.
+
+
+## Complemento de auditoria — Manobras Universais restantes (12/11/2026)
+
+- **Base de código/testes:** c8118631ee9e6699a97b8dfdedbf96e42d60e029.
+- **Auditoria:** catálogo src/manobrasUniversais.ts, testes tests/manobras-universais.test.mjs, helpers src/manobrasOperacionais.ts, painel src/PainelAcoesLocal.tsx e Arquivo do Jogador v1.0, p. 77–78.
+- **Adiar Ação:** mantida como consulta/manual porque altera ordem de Iniciativa/rodada, não gerida pela Ficha do Jogador.
+- **Agarrar e Empurrar/Derrubar:** sem integração operacional por enquanto. “Substitui um Ataque” não será convertido silenciosamente em consumo de Ação ou marcador de Ataque elegível a Duas Armas. Testes e efeitos continuam sob resolução da Mesa.
+- **Esconder-se:** sem integração operacional por enquanto; custo Ação é claro, mas requisitos ambientais e Percepção Passiva/ativa dependem do contexto da Mesa. Não declarar ocultação automaticamente.
+- **Código:** nenhum arquivo alterado neste complemento.
+- **Checkpoint:** docs/checkpoint-auditoria-manobras-restantes-2026-11-12.md — commit 4c33720f8a1bb3693835005ae3b6ca88ce8ec5e4.
+- **Matriz:** docs/matriz-auditoria-funcional-ficha.md — commit a559c052aa4694afe31d76c4447ec3e61c888ef9.
+- **Validação:** nenhum teste automatizado, build ou teste humano executado nesta sessão. A consulta de status checks não retornou entradas; não representa aprovação.
+- **Próxima etapa:** consolidar a bateria humana da Ficha Offline e obter resultados reais de pnpm test/pnpm build. Inventário ativo continua bloqueado até validação humana e aprovação expressa.
+
