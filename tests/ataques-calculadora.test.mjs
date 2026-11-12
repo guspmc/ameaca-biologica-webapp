@@ -5,6 +5,7 @@ import { readFile } from 'node:fs/promises';
 const ui = await readFile(new URL('../src/CalculadoraTesteLocal.tsx', import.meta.url), 'utf8');
 const pericias = await readFile(new URL('../src/pericias.ts', import.meta.url), 'utf8');
 const ficha = await readFile(new URL('../src/FichaLocal.tsx', import.meta.url), 'utf8');
+const painel = await readFile(new URL('../src/PainelAcoesLocal.tsx', import.meta.url), 'utf8');
 
 test('calculadora oferece Ataque Corpo a Corpo com Luta e Ataque à distância com Pontaria', () => {
   assert.match(ui, /ataque-corpo/);
@@ -281,4 +282,27 @@ test('alterar os dados ou o total da rolagem invalida a confirmação manual de 
   assert.match(ui, /setDado2\(evento\.target\.value\); setDadosConfirmados\(null\); setCriticoDano\(false\)/);
   assert.match(ui, /calculado\.resultado\?\.total, perfilSelecionado\?\.id, valorTeste, modificador/);
   assert.match(ui, /critico: criticoDanoAplicado && !ataqueEmArea/);
+});
+
+
+test('Mirar aplica +2 somente no Teste de Ataque e preserva Desvantagem', () => {
+  assert.match(ui, /mirarPreparado\?: boolean/);
+  assert.match(ui, /const bonusMirar = escopo === 'ataques' && mirarPreparado && !ataqueEmArea \? 2 : 0/);
+  assert.match(ui, /const valorTeste = valorTesteBase \+ bonusMirar/);
+  assert.match(ui, /existeDesvantagem = vantagem === 'desvantagem' \|\| desvantagemBI \|\| desvantagensCondicao\.length > 0 \|\| desvantagemDesarmado/);
+  assert.match(ui, /Mirar ativo: \+2 no Teste de Ataque/);
+  assert.match(ui, /não aumenta Dano, não remove Desvantagem e não torna possível um Ataque impossível/);
+});
+
+test('Mirar exige informar a região específica antes de confirmar a rolagem', () => {
+  assert.match(ui, /Região específica escolhida no alvo/);
+  assert.match(ui, /(!mirarPreparado \|\| Boolean\(regiaoMirada\.trim\(\)\))/);
+});
+
+test('Ataque normal pode ser registrado sem Mirar e libera o requisito de Duas Armas', () => {
+  assert.match(painel, /!economia\.turnoEmAndamento \|\| economia\.normaisUsados\.acao/);
+  assert.match(painel, /Registrar Ataque · consome Mirar/);
+  assert.match(painel, /Registrar Ataque · Ação/);
+  assert.match(painel, /registrarAtaque\)\.estado/);
+  assert.match(ficha, /mirarPreparado=\{estadoTurnoCombateAtual\.valido && estadoTurnoCombateAtual\.estado\.manobras\.mirarPreparado\}/);
 });
