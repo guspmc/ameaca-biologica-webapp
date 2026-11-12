@@ -296,3 +296,15 @@ Nenhum desses pontos deve ser resolvido por inferência durante a implementaçã
 - **Esconder-se:** catálogo documentado, integração operacional pendente. Embora o custo Ação esteja claro, os requisitos ambientais e a escolha entre Percepção Passiva/ativa dependem da situação e da Mesa; não declarar ocultação automaticamente.
 - **Não houve alteração de código.** Testes, build e validação humana não foram executados nesta sessão.
 - **Limites:** sem motor de turnos, gestão de posições/alvos, aplicação de Condições em terceiros ou redesign. Inventário ativo segue bloqueado.
+
+
+## Bio-Infecção — lembrete do Dano da 4ª Fase — 12/11/2026
+
+**Checkpoint:** docs/checkpoint-dano-biofase4-2026-11-12.md.  
+**Fonte:** Arquivo do Jogador v1.0, p. 90.
+
+- A auditoria confirmou que as faixas e os bônus de Ataque da BI já eram calculados e repassados à calculadora.
+- **Lacuna encontrada:** o +1d4 de Dano Corpo a Corpo da 4ª Fase aparecia no resumo da Ficha, mas não era repassado à calculadora nem lembrado no campo de Dados adicionais.
+- **Correção implementada:** a Ficha agora repassa o dado adicional à calculadora, que exibe lembrete somente em Ataques Corpo a Corpo na 4ª Fase. O jogador rola o dado conforme seu modo de dados e informa a soma manualmente; nenhum Dano é aplicado automaticamente.
+- Ataques à distância não recebem o +1d4. A 5ª Fase continua sem os benefícios anteriores.
+- Teste estrutural atualizado; não executado nesta sessão. Build e validação humana pendentes.
