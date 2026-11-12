@@ -5,6 +5,8 @@ import { PERICIAS_CLASSE, ATRIBUTO_PERICIA, valorBasePericia, valorPassivoPerici
 import { ORIGENS } from './origens';
 import { capacidadeInventario, caracteristicos, equipamentoInicial as itensDoKit, opcoesEquipamento, espacosOcupados } from './equipamento';
 import { HABILIDADES_BASICAS } from './habilidades';
+import { HABILIDADES_PROGRESSAO } from './progressaoHabilidades';
+import { descricaoEfeitoHabilidade } from './efeitosHabilidades';
 import { ARMAS_OPERARIO } from './armaOperario';
 import type { AtributosIniciais } from './atributosCriacao';
 import { planejarInventarioCriacao } from './inventarioCriacao';
@@ -278,6 +280,23 @@ export default function FichaLocal({ nome, mesa, contextoId, dados, aoFechar, ao
       })
     : [];
   const habilidadesAtivasIds = [...new Set([...(habilidade ? [habilidade.id] : []), ...habilidadesProgressaoIds])];
+  const habilidadesExibicao = habilidadesAtivasIds.flatMap(id => {
+    const item = HABILIDADES_PROGRESSAO.find(h => h.id === id);
+    if (!item) return [];
+    const aquisicao = Array.isArray(ficha.habilidadesAdquiridas)
+      ? ficha.habilidadesAdquiridas.find(escolha => escolha && typeof escolha === 'object'
+        && !Array.isArray(escolha) && (escolha as Record<string, unknown>).habilidadeId === id)
+      : null;
+    const nivelAquisicao = aquisicao && Number.isSafeInteger((aquisicao as Record<string, unknown>).nivel)
+      ? (aquisicao as Record<string, unknown>).nivel as number
+      : id === habilidade?.id ? 1 : null;
+    return [{
+      ...item,
+      nivelAquisicao,
+      descricao: descricaoEfeitoHabilidade(id),
+      grauRotulo: ({ basica: 'Básica', avancada: 'Avançada', superior: 'Superior', avassaladora: 'Avassaladora' } as Record<string, string>)[item.grau],
+    }];
+  });
   const proficienciasAdicionais = [
     ...(habilidadesProgressaoIds.includes('arsenal-improvavel') ? ['Magnums'] : []),
     ...(habilidadesProgressaoIds.includes('armamento-especial') ? ['Magnums', 'Armas Especiais'] : []),
@@ -578,7 +597,12 @@ export default function FichaLocal({ nome, mesa, contextoId, dados, aoFechar, ao
 
           <h3 className="ficha-local-subtitulo">Habilidade e equipamento</h3>
           <div className="ficha-local-grade">
-            <div><small>HABILIDADE BÁSICA</small><strong>{habilidade?.nome ?? 'Não selecionada'}</strong><p>{habilidade ? habilidade.efeito : 'Nenhuma Habilidade Básica foi selecionada.'}</p></div>
+            {habilidadesExibicao.map(item => <div key={item.id}>
+              <small>HABILIDADE DE CLASSE · {item.nivelAquisicao === null ? 'NÍVEL NÃO IDENTIFICADO' : 'NÍVEL ' + item.nivelAquisicao} · {item.grauRotulo.toUpperCase()}</small>
+              <strong>{item.nome}</strong>
+              <p>{item.descricao || 'Descrição indisponível no catálogo.'}</p>
+            </div>)}
+            {!habilidadesExibicao.length && <div><small>HABILIDADES DE CLASSE</small><strong>Nenhuma Habilidade registrada</strong><p>As Habilidades adquiridas aparecerão aqui após a escolha e o registro na Progressão.</p></div>}
             <div><small>ARMAMENTO</small><strong>Não equipado</strong><p>{kit ? 'Conjunto inicial selecionado: ' + kit.nome + '. A escolha faz parte do planejamento do inventário e não significa que uma arma esteja equipada.' : 'Selecione um conjunto inicial na seção Inventário. A seleção não equipa automaticamente uma arma.'}</p></div>
           </div>
 
