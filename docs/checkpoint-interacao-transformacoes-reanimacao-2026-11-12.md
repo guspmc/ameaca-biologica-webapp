@@ -47,3 +47,16 @@ Esses efeitos continuam informativos/manuais, conforme a etapa anterior da audit
 ## Próxima etapa
 
 Auditar a reversão da Cabeça Carmesim quando BI chega a 0 e o período subsequente de 1 hora Desacordada, incluindo a possibilidade de a interface permitir Descanso Completo ou encerrar a Condição antes do fim do período. Não implementar cronômetro ou novo estado persistente sem delimitar primeiro o modelo e suas implicações para Descanso, Condições e recuperação após recarga.
+
+
+## Incremento adicional — períodos sem benefício de Descanso Completo
+
+A auditoria da reversão identificou outro risco: embora a Ficha não execute a reversão quando a BI chega a 0, o painel de Descanso permitia concluir um Descanso Completo durante os períodos de uma hora que o cânone expressamente exclui.
+
+Correção localizada:
+- Infectado Especial ativo a 0 PV: bloqueia Descanso Completo durante o período inerte de 1 hora.
+- Cabeça Carmesim ativa com BI 0: exibe o gatilho de reversão e a hora Desacordada; bloqueia Descanso Completo enquanto a Condição permanecer ativa.
+- A Condição da Cabeça Carmesim informa que só deve ser encerrada após a Mesa confirmar o fim da hora. Não há cronômetro, avanço automático ou registro de horário de início.
+- Descanso Parcial não foi bloqueado por esta correção: a regra citada exclui expressamente os benefícios de Descanso Completo, mas não define aqui uma proibição adicional de Descanso Parcial. Não ampliar a restrição por inferência.
+
+Testes estruturais adicionais foram incluídos em `tests/reanimacao-integracao-ficha.test.mjs` e `tests/condicoes-ficha.test.mjs`; não foram executados nesta sessão. A ausência de cronômetro significa que o encerramento prematuro da Condição ainda depende de decisão do usuário/Mesa; a interface apenas orienta e bloqueia o Descanso Completo enquanto a Condição continua ativa.
