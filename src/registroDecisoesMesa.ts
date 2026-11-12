@@ -48,7 +48,7 @@ export function registroDecisaoMesaValido(valor: unknown): valor is RegistroDeci
     && dataValida(valor.ocorridoEm) && dataValida(valor.registradoEm)
     && (valor.retificaRegistroId === undefined || (typeof valor.retificaRegistroId === 'string' && valor.retificaRegistroId.trim().length > 0 && valor.retificaRegistroId.length <= 100))
     && (valor.reanimacaoId === undefined || (typeof valor.reanimacaoId === 'string' && valor.reanimacaoId.trim().length > 0 && valor.reanimacaoId.length <= 100))
-    && (valor.tipo === 'retificacao' ? typeof valor.retificaRegistroId === 'string' : valor.retificaRegistroId === undefined);
+    && (valor.tipo === 'retificacao' ? (valor.retificaRegistroId === undefined || typeof valor.retificaRegistroId === 'string') : valor.retificaRegistroId === undefined);
 }
 
 export function listaDecisoesMesaValida(valor: unknown): valor is RegistroDecisaoMesa[] {
@@ -58,8 +58,10 @@ export function listaDecisoesMesaValida(valor: unknown): valor is RegistroDecisa
     if (!registroDecisaoMesaValido(item) || ids.has(item.id)) return false;
     ids.add(item.id);
   }
-  return valor.every(item => item.tipo !== 'retificacao' || (item.retificaRegistroId !== item.id && ids.has(item.retificaRegistroId!)))
-    && valor.every(item => item.tipo !== 'retificacao' || valor.some(alvo => alvo.id === item.retificaRegistroId && alvo.registradoEm <= item.registradoEm));
+  return valor.every(item => item.tipo !== 'retificacao' || item.retificaRegistroId === undefined
+    || (item.retificaRegistroId !== item.id && ids.has(item.retificaRegistroId)))
+    && valor.every(item => item.tipo !== 'retificacao' || item.retificaRegistroId === undefined
+      || valor.some(alvo => alvo.id === item.retificaRegistroId && alvo.registradoEm <= item.registradoEm));
 }
 
 export function adicionarDecisaoMesa(
@@ -71,6 +73,7 @@ export function adicionarDecisaoMesa(
   }
   if (atuais.length >= 30) throw new Error('Limite de 30 registros atingido. Exporte um backup antes de continuar.');
   if (atuais.some(item => item.id === novo.id)) throw new Error('Identificador de decisão já utilizado.');
+  if (novo.tipo === 'retificacao' && !novo.retificaRegistroId) throw new Error('Uma nova Retificação precisa identificar o registro anterior.');
   const atualizados = [...atuais, { ...novo }];
   if (!listaDecisoesMesaValida(atualizados)) throw new Error('A referência da Retificação precisa apontar para um registro anterior existente.');
   return atualizados;
