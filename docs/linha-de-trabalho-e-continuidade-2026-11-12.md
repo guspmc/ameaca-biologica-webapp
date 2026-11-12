@@ -264,3 +264,21 @@ A revisão final identificou que a calculadora de Ataques só aparece no modo Au
 - **Validação:** nenhum teste automatizado, build ou teste humano executado nesta sessão. A consulta de status checks não retornou entradas; não representa aprovação.
 - **Próxima etapa:** consolidar a bateria humana da Ficha Offline e obter resultados reais de pnpm test/pnpm build. Inventário ativo continua bloqueado até validação humana e aprovação expressa.
 
+
+
+## Ciclo de auditoria da Bio-Infecção — 12/11/2026
+
+- **Escopo:** confronto das regras de PV/BI e condições com src/recursosFicha.ts, src/bioInfeccao.ts, src/condicoesFicha.ts, src/condicoesCalculadora.ts, src/RecursosFichaLocal.tsx, src/FichaLocal.tsx, src/CalculadoraTesteLocal.tsx e testes relacionados.
+- **Fonte canônica:** Arquivo do Jogador v1.0, pp. 81–83 (PV Temporários/Condições), p. 90 (Bio-Infecção/Fases/Colapso), pp. 96–97 (Descanso).
+- **Revisão estática:** cálculo dos quintos da BI, efeitos acumulados nas fases 2–4, perda dos benefícios na fase 5, Colapso ao atingir/ultrapassar máximo, PV Temporários absorvendo Dano e não acumulando, Vulnerável derivada por 1/5 dos PV e limites de descanso foram conferidos e não motivaram alteração neste ciclo.
+- **Achado concreto:** o +1d4 de Dano Corpo a Corpo da 4ª Fase era exibido no resumo, mas não chegava como lembrete à calculadora de Dano. O bônus de +3 no Teste de Ataque já era repassado.
+- **Correção:** src/FichaLocal.tsx agora repassa o dado adicional à src/CalculadoraTesteLocal.tsx; a calculadora lembra o jogador de rolar +1d4 somente em Ataques Corpo a Corpo e somar no campo de Dados adicionais. Sem rolagem ou aplicação automática.
+- **Teste:** tests/ataques-calculadora.test.mjs recebeu teste estrutural; não executado nesta sessão.
+- **Checkpoint:** docs/checkpoint-dano-biofase4-2026-11-12.md — commit bad30a2464095884c914a5941fe133d5759ebcd9.
+- **Matriz:** docs/matriz-auditoria-funcional-ficha.md — commit 6df23363e137452a84d1b39a2b37bc319508baee.
+- **Testes/build:** não executados nesta sessão. Não transformar isso em nova tarefa para o Gus sem necessidade; a auditoria prossegue por inspeção do código e correções pontuais.
+- **Restrições:** sem redesign, LAN, Supabase, banco, main, merge, deploy ou publicação. Inventário ativo continua bloqueado.
+
+### Próxima frente de auditoria
+
+Prosseguir pelo catálogo de Condições e sua aplicação na calculadora: confrontar cada Condição e restrição com o cânone, verificando se Desvantagem, Defesa, proibição de ações, Vantagem contra alvos e lembretes por turno estão representados sem efeitos indevidos. Registrar discrepâncias comprovadas e corrigir pontualmente.
