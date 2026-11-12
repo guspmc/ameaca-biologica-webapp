@@ -6,6 +6,7 @@ import {
   TIPOS_DECISAO_MESA,
   type TipoDecisaoMesa,
 } from './registroDecisoesMesa';
+import { reanimacaoValida } from './reanimacaoFicha';
 
 type Props = {
   dados: Record<string, unknown>;
@@ -22,15 +23,21 @@ export default function RegistroDecisoesMesaLocal({ dados, aoSalvar, origemDados
   const registros = dados.registrosMesa === undefined ? [] : dados.registrosMesa;
   const valido = listaDecisoesMesaValida(registros);
   const itens = valido ? registros : [];
+  const reanimacaoAtual = reanimacaoValida(dados.reanimacao) && typeof dados.reanimacao.id === 'string'
+    && ['morte_a_registrar', 'transformacao_no_proximo_turno'].includes(dados.reanimacao.estado)
+    ? dados.reanimacao : null;
   const [tipo, setTipo] = useState<TipoDecisaoMesa>('outro');
   const [descricao, setDescricao] = useState('');
   const [responsavel, setResponsavel] = useState('');
+  const [retificaRegistroId, setRetificaRegistroId] = useState('');
+  const [reanimacaoVinculada, setReanimacaoVinculada] = useState('');
   const [ocorridoEm, setOcorridoEm] = useState(dataHoraLocal);
   const [salvando, setSalvando] = useState(false);
   const [mensagem, setMensagem] = useState('');
 
   async function registrar() {
-    if (!valido || salvando || !descricao.trim() || !responsavel.trim() || !ocorridoEm) return;
+    if (!valido || salvando || !descricao.trim() || !responsavel.trim() || !ocorridoEm
+      || (tipo === 'retificacao' && !retificaRegistroId)) return;
     if (!window.confirm('Confirmar o registro desta decisão da Mesa? A Ficha armazenará o relato, sem executar efeitos no personagem.')) return;
     setSalvando(true); setMensagem('');
     try {
@@ -43,11 +50,15 @@ export default function RegistroDecisoesMesaLocal({ dados, aoSalvar, origemDados
         responsavel: responsavel.trim(),
         ocorridoEm: ocorrido.toISOString(),
         registradoEm: new Date().toISOString(),
+        ...(tipo === 'retificacao' ? { retificaRegistroId } : {}),
+        ...(reanimacaoAtual && reanimacaoVinculada === reanimacaoAtual.id ? { reanimacaoId: reanimacaoAtual.id } : {}),
       });
       if (!await aoSalvar({ registrosMesa: atualizados })) {
         throw new Error('O armazenamento não confirmou o registro da decisão.');
       }
       setDescricao('');
+      setRetificaRegistroId('');
+      setReanimacaoVinculada('');
       setMensagem(origemDados === 'servidor' ? 'Decisão registrada e confirmada pelo servidor.' : 'Decisão registrada neste dispositivo.');
     } catch (erro) {
       setMensagem(erro instanceof Error ? erro.message : 'Não foi possível registrar a decisão.');
@@ -65,6 +76,18 @@ export default function RegistroDecisoesMesaLocal({ dados, aoSalvar, origemDados
           {Object.entries(TIPOS_DECISAO_MESA).map(([id, nome]) => <option key={id} value={id}>{nome}</option>)}
         </select>
       </label>
+      {tipo === 'retificacao' && <label>Registro anterior que será retificado
+        <select value={retificaRegistroId} disabled={!valido || salvando || itens.length >= 30} onChange={evento => setRetificaRegistroId(evento.target.value)}>
+          <option value="">Selecione o registro original</option>
+          {itens.map(item => <option key={item.id} value={item.id}>{TIPOS_DECISAO_MESA[item.tipo]} · {new Date(item.ocorridoEm).toLocaleString('pt-BR')} · {item.descricao.slice(0, 70)}</option>)}
+        </select>
+      </label>}
+      {reanimacaoAtual && tipo !== 'retificacao' && tipo !== 'reversao' && <label>Vincular ao desfecho de Reanimação pendente (opcional)
+        <select value={reanimacaoVinculada} disabled={!valido || salvando || itens.length >= 30} onChange={evento => setReanimacaoVinculada(evento.target.value)}>
+          <option value="">Não vincular</option>
+          <option value={reanimacaoAtual.id}>Reanimação {reanimacaoAtual.causa === 'pv_zero' ? 'por 0 PV' : 'por Colapso Viral'} · {reanimacaoAtual.falhas} falhas</option>
+        </select>
+      </label>}
       <label>Descrição da decisão ou do resultado
         <textarea value={descricao} maxLength={500} rows={4} disabled={!valido || salvando || itens.length >= 30} onChange={evento => setDescricao(evento.target.value)} placeholder="Descreva o que a Mesa decidiu ou o que aconteceu." />
       </label>
@@ -74,16 +97,18 @@ export default function RegistroDecisoesMesaLocal({ dados, aoSalvar, origemDados
       <label>Quando aconteceu
         <input type="datetime-local" value={ocorridoEm} disabled={!valido || salvando || itens.length >= 30} onChange={evento => setOcorridoEm(evento.target.value)} />
       </label>
-      <button type="button" disabled={!valido || salvando || itens.length >= 30 || !descricao.trim() || !responsavel.trim() || !ocorridoEm} onClick={() => void registrar()}>{salvando ? 'Salvando…' : 'Registrar decisão'}</button>
+      <button type="button" disabled={!valido || salvando || itens.length >= 30 || !descricao.trim() || !responsavel.trim() || !ocorridoEm || (tipo === 'retificacao' && !retificaRegistroId)} onClick={() => void registrar()}>{salvando ? 'Salvando…' : 'Registrar decisão'}</button>
     </div>
     {itens.length > 0 && <>
       <h4>Histórico</h4>
       <ol>{[...itens].reverse().map(item => <li key={item.id}>
         <strong>{TIPOS_DECISAO_MESA[item.tipo]}</strong> · {new Date(item.ocorridoEm).toLocaleString('pt-BR')}
         <p>{item.descricao}</p>
+        {item.retificaRegistroId && <small>Retifica o registro {item.retificaRegistroId}.</small>}
+        {item.reanimacaoId && <small>Vinculado à Reanimação {item.reanimacaoId}.</small>}
         <small>Responsável informado: {item.responsavel} · Carimbo do dispositivo: {new Date(item.registradoEm).toLocaleString('pt-BR')}</small>
       </li>)}</ol>
-      <p className="ficha-local-legenda">Os registros não são editados nem apagados nesta versão. Para corrigir uma informação, acrescente uma Retificação que identifique o registro anterior e descreva a correção.</p>
+      <p className="ficha-local-legenda">Os registros não são editados nem apagados nesta versão. Para corrigir uma informação, acrescente uma Retificação, selecione o registro anterior e descreva a correção. Uma decisão sobre Reanimação pode ser vinculada à instância pendente correspondente.</p>
     </>}
     {itens.length >= 30 && <p className="ficha-local-aviso">Limite de 30 registros atingido. Exporte um backup antes de qualquer ampliação do histórico.</p>}
     {mensagem && <p role="status">{mensagem}</p>}
