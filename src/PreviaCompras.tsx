@@ -6,6 +6,7 @@ type Props = {
   plano?: Record<string, number>;
   revisao?: number;
   autoSalvar?: boolean;
+  bloqueado?: boolean;
   aoAlterarPlano?: (plano: Record<string, number>) => void;
   aoAlterarPrevia?: (pendente: boolean) => void;
   // Compatibilidade com a tela online antiga, que confirma o plano diretamente no servidor.
@@ -15,7 +16,7 @@ type Props = {
 };
 
 export default function PreviaCompras({
-  capacidade, plano, revisao, autoSalvar = false, aoAlterarPlano, aoAlterarPrevia,
+  capacidade, plano, revisao, autoSalvar = false, bloqueado = false, aoAlterarPlano, aoAlterarPrevia,
   planoSalvo, revisaoSalva, aoSalvar,
 }: Props) {
   const [busca, setBusca] = useState('');
@@ -91,9 +92,9 @@ export default function PreviaCompras({
       return <div className="compra-linha" key={item.id}>
         <strong>{item.nome}</strong><small>{item.preco} Moeda(s) por {item.unidades} unidade(s) · {item.referencia}{item.id === 'municao-9mm' ? ' · até 30 por Espaço' : ''}</small>
         <div>
-          <button type="button" className="botao-claro" disabled={salvando || !quantidade} aria-label={'Retirar ' + item.nome + ' da prévia'} onClick={() => mudar(item.id, Math.max(0, quantidade - 1))}>−</button>
+          <button type="button" className="botao-claro" disabled={bloqueado || salvando || !quantidade} aria-label={'Retirar ' + item.nome + ' da prévia'} onClick={() => mudar(item.id, Math.max(0, quantidade - 1))}>−</button>
           <span>{quantidade} compra(s){quantidade ? ' · ' + (quantidade * item.unidades) + ' unidade(s)' : ''}</span>
-          <button type="button" className="botao-claro" disabled={salvando || !!motivo} aria-label={'Adicionar ' + item.nome + ' à prévia'} onClick={() => mudar(item.id, quantidade + 1)}>+</button>
+          <button type="button" className="botao-claro" disabled={bloqueado || salvando || !!motivo} aria-label={'Adicionar ' + item.nome + ' à prévia'} onClick={() => mudar(item.id, quantidade + 1)}>+</button>
         </div>
         {motivo && <small>{motivo}</small>}
       </div>;
@@ -103,6 +104,6 @@ export default function PreviaCompras({
     {!autoSalvar && alterada && <button type="button" className="botao-claro" disabled={salvando} onClick={() => void aplicarAoRascunho()}>{salvando ? 'Salvando plano…' : aoSalvar ? 'Salvar Plano de Compras' : 'Aplicar ao rascunho'}</button>}
     {erro && <p className="offline-erro" role="alert">{erro}</p>}
     {aviso && <p className="offline-status" role="status">{aviso}</p>}
-    <button type="button" className="botao-claro" disabled={salvando || !Object.keys(planoAtual).length} onClick={limpar}>Limpar prévia de compras</button>
+    <button type="button" className="botao-claro" disabled={bloqueado || salvando || !Object.keys(planoAtual).length} onClick={limpar}>Limpar prévia de compras</button>
   </details>;
 }
