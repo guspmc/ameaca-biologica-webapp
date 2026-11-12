@@ -81,3 +81,15 @@ Os testes cobrem orçamento, escolhas de Origem, Amnésico, progressão de grau,
 6. Ao concluir a auditoria, consolidar a bateria humana progressiva. Não iniciar Inventário ativo antes da validação humana da Ficha Offline e aprovação expressa.
 
 **Restrições preservadas:** sem alteração visual; sem mudança no servidor LAN; sem Supabase/banco remoto; sem branch nova, merge, deploy ou publicação; sem limpeza especulativa.
+
+
+## 5. Complemento — Habilidade Tentativa e Erro rastreada até a calculadora
+
+A pendência indicada na seção 3 foi investigada nesta mesma sequência:
+
+- `src/FichaLocal.tsx` passa `periciaTentativaErroTreinada` e `temTentativaEErro` à `CalculadoraTesteLocal`; também usa a Perícia adicional no cálculo do grau, valor-base e passivo exibidos.
+- `src/pericias.ts` define `bonusTentativaErro()`: concede +1 somente quando o grau efetivo da Perícia é 0 (Não Treinada).
+- `src/CalculadoraTesteLocal.tsx` soma esse bônus ao valor-base do Teste de Perícia, mas não ao Teste puro de Atributo; apresenta o bônus como circunstancial e informa que a permissão de usos normalmente restritos a Treinamento depende de requisito adicional expresso.
+- A Perícia adicional escolhida é tratada como Treinada pelo cálculo de grau, e portanto não recebe o +1 de Perícia Não Treinada.
+
+**Conclusão estática:** o caminho identificado aplica o +1 no escopo esperado e evita aplicá-lo a Teste puro de Atributo ou Perícia já Treinada. Isso não substitui conferir todas as restrições específicas de cada aplicação que exige Treinamento, nem teste de interface/rolagem em navegador. A pendência de rastreamento geral desta Habilidade fica **resolvida por inspeção estática**, com validação automatizada/CI e humana ainda não comprovadas nesta sessão.
