@@ -306,3 +306,10 @@ test('Ataque normal pode ser registrado sem Mirar e libera o requisito de Duas A
   assert.match(painel, /registrarAtaque\)\.estado/);
   assert.match(ficha, /mirarPreparado=\{estadoTurnoCombateAtual\.valido && estadoTurnoCombateAtual\.estado\.manobras\.mirarPreparado\}/);
 });
+
+
+test('Mirar informa o bônus também nos modos Misto/Manual e identifica região no resultado automático', () => {
+  assert.match(painel, /em Misto\/Manual, aplique \+2 manualmente/);
+  assert.match(painel, /Próximo Ataque: \+2 no Teste; escolha uma região específica/);
+  assert.match(ui, /Mirar aplicado: \+2 no Teste · Região escolhida:/);
+});
