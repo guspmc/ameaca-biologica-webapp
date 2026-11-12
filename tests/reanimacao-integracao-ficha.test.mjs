@@ -95,7 +95,7 @@ test('transformações ativas a 0 PV bloqueiam a Reanimação comum e exibem o d
   assert.match(painel, /determina a morte da personagem/);
   assert.match(painel, /não será iniciada/);
   assert.match(painel, /prioridade entre os dois estados não é automatizada/);
-  assert.match(painel, /reanimacaoPV0EmConflito/);
+  assert.match(painel, /reanimacaoEmConflito/);
 });
 
 test('0 PV inicia automaticamente o estado de Reanimação, aguardando o próximo turno', () => {
