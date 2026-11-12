@@ -21,7 +21,7 @@ test('painel inicia Colapso Viral automaticamente sem presumir rolagens ou avan�
   assert.match(painel, /resultadoValido/);
   assert.match(painel, /informe dois resultados físicos de d20/);
   assert.match(painel, /sortearDados\(2, 20\)/);
-  assert.match(painel, /Colapso Viral e a Reanimação específica são iniciados automaticamente/);
+  assert.match(painel, /Colapso Viral e a Reanimação específica são registrados automaticamente/);
   assert.match(painel, /void iniciar\('colapso_bi'\)/);
   assert.match(painel, /não avança turnos/);
 });
@@ -104,6 +104,9 @@ test('Transformações a 0 PV exibem o cânone como referência e permitem regis
   assert.match(painel, /Este texto é referência, não decisão automática/);
   assert.match(painel, /não mata, transforma nem bloqueia registros decididos pela Mesa/);
   assert.match(painel, /Registrar Reanimação por 0 PV conforme decisão da Mesa/);
+  assert.match(painel, /Registrar Reanimação por Colapso conforme decisão da Mesa/);
+  assert.match(painel, /A Ficha apenas registrará a decisão/);
+  assert.doesNotMatch(painel, /controles estão bloqueados para evitar aplicar o fluxo errado/);
   assert.match(painel, /Confirma que a Mesa decidiu registrar este fluxo de Reanimação/);
   assert.doesNotMatch(painel, /reanimacaoEmConflito/);
   assert.doesNotMatch(painel, /estado === 'aguardando_proximo_turno' && !transformacao/);
