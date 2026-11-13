@@ -48,3 +48,11 @@ test('Luta Livre oferece registro próprio para a exceção de custo sem SA', ()
   assert.match(painel, /alvo derrotado pela Manobra; custo de 0 SA/);
   assert.doesNotMatch(painel, /botão genérico.*sempre registra 3 SA/);
 });
+
+
+test('SOCADOR DE PEDRAS libera Aparar com punhos indestrutíveis sem depender do Inventário', () => {
+  assert.match(painel, /janelaDefensiva\.podeAparar && habilidadesAtivas\.includes\('socador-de-pedras'\)/);
+  assert.match(painel, /registrarReacaoDefensiva\(\{ economia: economiaAtual, manobra: 'aparar', janela: janelaDefensiva \}\)/);
+  assert.match(painel, /punhos Indestrutíveis, sem perda de Durabilidade/);
+  assert.match(painel, /Contra-Atacar desarmado sem largar uma arma de duas mãos/);
+});
