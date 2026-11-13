@@ -388,3 +388,20 @@ Nenhum desses pontos deve ser resolvido por inferência durante a implementaçã
 - Testes identificados: `ataques-calculadora.test.mjs`, `catalogo-armas.test.mjs`, `catalogo-armas-fogo.test.mjs`. Não foram executados nesta sessão; status checks e workflow runs não foram encontrados para o HEAD auditado.
 - **PENDENTE:** operações persistentes de Inventário ativo para munição, recarga, equipamento, Peças, Coronha, bateria e combustível; validação humana nos três modos de funcionamento.
 - Nenhuma alteração de código foi necessária neste incremento.
+
+
+## Auditoria do Inventário — criação, ativação e consulta — 12/11/2026
+
+**Checkpoint:** `docs/checkpoint-auditoria-inventario-criacao-consulta-2026-11-12.md`.  
+**Fonte:** Arquivo do Jogador v1.0, pp. 48, 50–52 e 65–70.
+
+- **Criação — IMPLEMENTADO:** capacidade 4 + FOR, Mochileiro, kits A/B/C, Característicos, compras parciais, saldo e capacidade validados no planejamento.
+- **Ativação — IMPLEMENTADO NO SERVIDOR LAN:** servidor reconstitui conferência, materializa exemplares com IDs únicos e grava snapshot na transação de ativação, com revisão esperada, autorização e recibo idempotente.
+- **Consulta — IMPLEMENTADO COMO SOMENTE LEITURA:** parser valida estrutura/estados/IDs/posições; painel permite consultar, buscar, filtrar e abrir detalhes sem mutar itens. Excesso de capacidade é preservado e informado.
+- **Organização — DOMÍNIO/QA IMPLEMENTADOS, FICHA ATIVA PENDENTE:** prévia em cópia, validação de colisões e recibo existem; não há conexão com o Inventário ativo ou endpoint LAN dedicado.
+- **Compras:** catálogo de criação explicitamente parcial; não representa todos os itens/munições do livro.
+- **Ambiguidade pendente:** evolução Pochete → Bolsa atualmente retorna a Pochete como item comum de 1 Espaço; o trecho canônico consultado apenas determina que os benefícios não acumulam e que vale o maior. Não decidir sem confirmação.
+- **Operações ativas pendentes:** equipar/sacar/guardar, uso/consumo, recarga, munições, Peças, Coronha, Kendo, bateria/combustível, transferência e Baú.
+- **Testes identificados:** inventario-criacao, inventario-ativo, inventario-consulta-local, organizacao-inventario, inventario-expansao e inventario-persistencia. Não executados nesta sessão; os testes PGlite/Supabase são proposta isolada, não implementação SQLite.
+- **Testes/build/CI e validação humana:** pendentes.
+- Nenhuma alteração de código foi necessária.
