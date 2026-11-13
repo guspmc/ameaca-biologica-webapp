@@ -329,3 +329,11 @@ test('SOCADOR DE PEDRAS substitui o Dano base desarmado antes de Casca-Grossa', 
   assert.match(ui, /progressão por Casca-Grossa é aplicada depois/);
   assert.match(ui, /criaturas adjacentes ao alvo principal sofrem 1d10/);
 });
+
+
+test('Briga de Gente Grande lembra compatibilidade anatômica e Vantagem contra criatura maior', () => {
+  assert.match(ui, /brigaDeGenteGrandeAtiva = escopo === 'ataques' && tipo === 'ataque-corpo'/);
+  assert.match(ui, /Manobras de GOLPE SUJO também funcionam contra criaturas maiores/);
+  assert.match(ui, /Vantagem em Derrubar ou Cabeçada contra criatura maior/);
+  assert.match(ui, /não concede Vantagem automaticamente nem executa a Manobra/);
+});
