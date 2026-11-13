@@ -440,3 +440,13 @@ A ordem sugerida para o próximo incremento é fechar os contratos de **equipar/
 - LAN deve usar rota dedicada e recibo idempotente; Offline deve persistir no IndexedDB e indicar estado local distinto de confirmação de servidor. Não foi presumida sincronização automática.
 - Pendências antes do código: modelagem de mãos, custo fora de turno, resultados de PV/BI conforme modo da Mesa e persistência de iluminação.
 - Sem alteração de código; testes/build/CI/humano pendentes.
+
+
+## Incremento — Finalização de Luta Livre com custo condicionado — 13/11/2026
+
+- **Fonte canônica:** Arquivo do Jogador v1.0, p. 29. Contra alvo Atordoado, Luta Livre permite Finalizar; se o alvo for derrotado pela Manobra, não há custo de SA. Caso contrário, aplica-se o custo normal de 3 SA da Finalização (p. 79).
+- **Domínio — IMPLEMENTADO:** `registrarFinalizarLutaLivre()` valida turno e confirmação booleana do desfecho; cobra 3 SA quando o alvo não foi derrotado e preserva o saldo quando a Mesa confirma derrota pela Manobra.
+- **Ficha — IMPLEMENTADO:** para personagens com Luta Livre, o botão genérico foi substituído por fluxo específico com confirmação de Atordoado e confirmação posterior do desfecho pela Mesa. O registro não rola Ataque, calcula Dano nem decide morte/derrota. O bônus de Dano e deslocamento continuam sob resolução manual conforme o cânone.
+- **Cobertura adicionada:** `tests/manobras-operacionais.test.mjs` verifica custo normal, exceção de custo zero, turno encerrado e entrada inválida; `tests/ataque-oportunidade-ficha.test.mjs` verifica o controle contextual da interface.
+- **PENDENTE:** executar testes automatizados e build; validação humana em navegador nos modos Automático, Misto e Manual, com e sem a Habilidade.
+- **Restrições:** sem alteração do cânone, motor de combate, dados de terceiros, Inventário, LAN, Supabase, schema, navegação, publicação ou `main`.
