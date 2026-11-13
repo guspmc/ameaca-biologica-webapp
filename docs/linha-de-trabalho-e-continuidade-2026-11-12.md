@@ -377,3 +377,48 @@ Prosseguir pelo catálogo de Condições e sua aplicação na calculadora: confr
 3. Retificar o evento e conferir preservação do original, vínculo propagado e exibição de ambos.
 4. Atualizar a página e exportar/restaurar backup, conferindo os IDs e referências.
 5. Abrir histórico antigo com Retificação sem vínculo, confirmar compatibilidade e criar uma nova Retificação vinculada.
+
+
+## Retificação de continuidade — 13/11/2026
+
+Esta retificação prevalece sobre instruções anteriores deste documento que contrariem os pontos abaixo. O conteúdo histórico foi preservado para rastreabilidade.
+
+### 1. Validação LAN encerrada
+
+- **A validação humana do fluxo LAN já foi realizada e aprovada por Gus.**
+- Não solicitar repetição de testes LAN, QR Code, conexão entre dispositivos, sessão ou criação/ingresso em Mesa como pré-requisito da etapa atual.
+- Não misturar a validação LAN aprovada com a bateria pendente da Ficha Offline.
+- O servidor LAN permanece preservado como funcionalidade aprovada. Só reabrir essa frente diante de defeito concreto novo ou de uma alteração que efetivamente a afete.
+
+### 2. Scripts existentes — não reconstruir inicialização manualmente
+
+O repositório já contém inicializadores para os ambientes:
+- `scripts/windows/Menu_Testes.bat`: menu rápido para abrir Ficha Offline, Mesa LAN, ambos ou verificar o ambiente.
+- `scripts/windows/Iniciar_Ficha_Offline.bat`: prepara dependências, valida TypeScript, gera a prévia de teste, inicia o servidor local e abre o navegador.
+- `scripts/windows/Iniciar_Mesa_LAN.bat`: inicializa API SQLite e interface LAN.
+- `scripts/windows/Preparar_Dependencias.bat` e `Verificar_Ambiente.bat`: apoio à preparação e verificação.
+
+A bateria atual da Ficha deve usar o inicializador existente compatível com o ambiente do responsável. Não orientar instalação/configuração manual de dependências ou comandos avulsos quando o script do projeto já cobre esse fluxo. Não presumir sistema operacional: confirmar o ambiente apenas se isso for necessário para escolher o inicializador correto.
+
+### 3. Escopo da bateria humana ainda pendente
+
+A única bateria humana que permanece como bloqueio imediato é a **Ficha Offline local**, conforme `docs/roteiro-humano-ficha-offline-local.md`.
+
+- Testar somente a Ficha Offline e seus dados locais: criação, ficha contínua, salvamento, recarga, conflito entre abas, backup/restauração, exclusão e funcionamento sem internet/PWA conforme o roteiro.
+- Não incluir inicialização, criação de Mesa, conexão LAN, QR Code, segundo dispositivo ou testes de sessão LAN.
+- T13, T14 e T15 são simulações anteriores já aprovadas; não solicitar repetição sem mudança concreta que justifique regressão.
+- O resultado da bateria Offline deve ser registrado por caso como aprovado, falhou ou não executado. Não declarar homologação antes do retorno de Gus.
+
+### 4. Ordem aprovada dos módulos posteriores
+
+A decisão registrada em `docs/decisao-ordem-modulos-pos-ficha-2026-11-13.md` substitui a ordem anterior da Etapa C:
+
+1. Inventário Offline completo, integrado à Ficha e com operações e persistência de ponta a ponta.
+2. Painel do Mestre completo, com Mesa, Encontros, Arquivos e resumo operacional integrados.
+3. Inventário LAN completo, com autorização, persistência transacional, concorrência e recibos idempotentes.
+
+A validação humana da Ficha Offline continua sendo pré-requisito para iniciar o Inventário Offline. Cada módulo deve ser concluído funcionalmente antes de começar o seguinte; documentação, contratos ou telas isoladas não contam como entrega.
+
+### 5. Registro da correção de processo
+
+A orientação anterior para executar testes LAN novamente e preparar manualmente o ambiente foi incorreta. A partir desta retificação, considerar a aprovação LAN como fato estabelecido e usar os scripts já existentes. Nenhuma alteração de código, servidor, banco, Supabase, publicação ou permissões é autorizada por esta retificação.
