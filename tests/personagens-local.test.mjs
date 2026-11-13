@@ -614,3 +614,32 @@ test('servidor LAN permite editar apenas contador de Missões e protege método,
   const final = (await preservado.json()).personagem;
   assert.equal(final.revision, salvo.revision);
 });
+
+
+test('servidor LAN rejeita estados inválidos de Reanimação, Condições e usos de Descanso antes de gravar', async t => {
+  const { app, url } = await criarServidor(t);
+  const mestre = await criarConta(url, 'mestre-validacao-ficha@example.test');
+  const jogador = await criarConta(url, 'jogador-validacao-ficha@example.test');
+  const mesa = await criarMesaComJogador(url, app, mestre, jogador, 'Mesa de Validação da Ficha');
+  const personagem = await criarRascunhoValido(url, jogador, mesa.id, 'Claire');
+
+  const casos = [
+    { campo: 'reanimacao', valor: { causa: 'desconhecida', estado: 'ativa' } },
+    { campo: 'condicoes', valor: [{ id: '', condicao: 'inventada', fonte: '', estado: 'ativa' }] },
+    { campo: 'usosDescansoCompleto', valor: { 'chave-inexistente': true } },
+    { campo: 'pvAtual', valor: -1 },
+    { campo: 'biAtual', valor: 1.5 },
+  ];
+  let revisao = personagem.revision;
+  for (const caso of casos) {
+    const resposta = await fetch(url + '/api/personagens/' + personagem.id, {
+      method: 'PUT', headers: { ...jogador.headers, 'content-type': 'application/json' },
+      body: JSON.stringify({ name: personagem.name, data: { ...personagem.data, [caso.campo]: caso.valor }, expectedRevision: revisao }),
+    });
+    assert.equal(resposta.status, 422, caso.campo);
+    const atual = await fetch(url + '/api/personagens/' + personagem.id, { headers: jogador.headers });
+    const ficha = (await atual.json()).personagem;
+    assert.equal(ficha.revision, revisao, 'a rejeição não deve avançar a revisão');
+    assert.equal(Object.hasOwn(ficha.data, caso.campo), false, 'o dado inválido não deve ser persistido');
+  }
+});
