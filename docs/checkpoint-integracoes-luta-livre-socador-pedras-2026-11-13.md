@@ -48,3 +48,11 @@ Retomar a matriz e auditar outras Habilidades/efeitos não dependentes do Invent
 - O Painel também informa que, após Aparar/Esquivar bem-sucedido, o Contra-Ataque pode ser desarmado sem largar uma arma de duas mãos.
 - O usuário confirma o sucesso da defesa com a Mesa; o app não resolve Aparar, não executa Contra-Ataque e não aplica Dano.
 - Teste estrutural adicionado em `tests/ataque-oportunidade-ficha.test.mjs`.
+
+
+## 2B. Briga de Gente Grande
+
+- A calculadora de Ataques Corpo a Corpo agora apresenta lembrete contextual da extensão de GOLPE SUJO a criaturas maiores de anatomia compatível/humanoide e da Vantagem em Derrubar ou Cabeçada.
+- O lembrete não aplica Vantagem automaticamente nem executa a Manobra; tamanho, anatomia e resolução permanecem confirmados com a Mesa.
+- GOLPE SUJO e Casca-Grossa já tinham lembretes contextuais, verificados durante esta auditoria.
+- Cobertura estrutural adicionada em `tests/ataques-calculadora.test.mjs`.
