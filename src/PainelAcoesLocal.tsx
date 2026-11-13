@@ -9,7 +9,7 @@ import {
   aplicarManobraCombate, aplicarReacaoCombate, aplicarReacaoDefensivaCombate, carregarEstadoTurnoCombate, encerrarTurnoCombate,
   iniciarTurnoCombate, registrarResolucaoAtaqueAdicional, registrarFinalizacaoDupla, type EstadoTurnoCombate,
 } from './estadoTurnoCombate';
-import { registrarCombateDuasArmas, registrarDisparada, registrarFuga, registrarMirar, registrarAtaque, registrarFinalizar, registrarAjudar, registrarDesengajar, registrarUsarObjeto } from './manobrasOperacionais';
+import { registrarCombateDuasArmas, registrarDisparada, registrarFuga, registrarMirar, registrarAtaque, registrarFinalizar, registrarFinalizarLutaLivre, registrarAjudar, registrarDesengajar, registrarUsarObjeto } from './manobrasOperacionais';
 import { avaliarAtaqueOportunidade, registrarAtaqueOportunidade, prepararContraAtaque, consultarRetaliacao, avaliarNaoVaiEscapar, registrarNaoVaiEscapar, avaliarJanelaReacao, registrarReacaoDefensiva, resolverTesteDefensivo, avaliarNaMinhaMira, registrarNaMinhaMira, avaliarRespostaMercenario, registrarRespostaMercenario, type JanelaReacao } from './reacoesCombate';
 import { sortearDados, validarResultadosFisicos } from './rolagemDados';
 import type { ModoDados } from './funcionamentoFicha';
@@ -59,6 +59,8 @@ export default function PainelAcoesLocal({ dados, saAtual, aoSalvar, origemDados
   const [erro, setErro] = useState('');
   const [confirmacao, setConfirmacao] = useState('');
   const [confirmouDuasArmas, setConfirmouDuasArmas] = useState(false);
+  const [alvoAtordoadoLutaLivre, setAlvoAtordoadoLutaLivre] = useState(false);
+  const [alvoDerrotadoLutaLivre, setAlvoDerrotadoLutaLivre] = useState(false);
   const [confirmouAjudarElegivel, setConfirmouAjudarElegivel] = useState(false);
   const [confirmouTreinamentoAjudar, setConfirmouTreinamentoAjudar] = useState(false);
   const [confirmouAliadoFinalizou, setConfirmouAliadoFinalizou] = useState(false);
@@ -121,6 +123,10 @@ export default function PainelAcoesLocal({ dados, saAtual, aoSalvar, origemDados
       if ((!estado.economia.turnoEmAndamento && proximo.economia.turnoEmAndamento)
         || (!estado.manobras.combateDuasArmasUsado && proximo.manobras.combateDuasArmasUsado)) {
         setConfirmouDuasArmas(false);
+      }
+      if (mensagemConfirmada?.startsWith('Luta Livre registrada')) {
+        setAlvoAtordoadoLutaLivre(false);
+        setAlvoDerrotadoLutaLivre(false);
       }
       if (mensagemConfirmada?.startsWith('Ajudar')) {
         setConfirmouAjudarElegivel(false);
@@ -445,12 +451,18 @@ export default function PainelAcoesLocal({ dados, saAtual, aoSalvar, origemDados
           <p className="ficha-local-legenda">Desengajar consome o Movimento e permite deslocamento de 1,5 m sem provocar Ataque de Oportunidade por esse deslocamento; a movimentação continua manual. Usar um Objeto consome Ação somente depois que a Interação Gratuita com Objeto já tiver sido utilizada. Regras específicas de item ou Habilidade podem determinar custo diferente.</p>
 
           <h4>Finalizar e Finalização Dupla</h4>
-          <div className="recursos-controles">
+          {habilidadesAtivas.includes('luta-livre') ? <div className="ficha-local-editor">
+            <p>Finalização de Luta Livre exige alvo Atordoado. Confirme a condição e, após resolver a Manobra com a Mesa, informe se o alvo foi derrotado por ela. O custo é 0 SA somente nesse último caso; caso contrário, são 3 SA.</p>
+            <label><input type="checkbox" checked={alvoAtordoadoLutaLivre} disabled={salvando} onChange={evento => setAlvoAtordoadoLutaLivre(evento.target.checked)} /> A Mesa confirmou que o alvo está Atordoado.</label>
+            <label><input type="checkbox" checked={alvoDerrotadoLutaLivre} disabled={salvando || !alvoAtordoadoLutaLivre} onChange={evento => setAlvoDerrotadoLutaLivre(evento.target.checked)} /> A Mesa confirmou que o alvo foi derrotado pela Manobra.</label>
+            <button type="button" disabled={salvando || !economia.turnoEmAndamento || !alvoAtordoadoLutaLivre || (!alvoDerrotadoLutaLivre && (economia.saAtual < 3 || janela + 3 > 3))}
+              onClick={() => void aplicar(atual => aplicarManobraCombate(atual, (recursos, manobras) => registrarFinalizarLutaLivre(recursos, manobras, alvoDerrotadoLutaLivre)).estado, 'Luta Livre registrada: ' + (alvoDerrotadoLutaLivre ? 'alvo derrotado pela Manobra; custo de 0 SA.' : 'alvo não derrotado pela Manobra; custo de 3 SA.'))}>Registrar Finalização · {alvoDerrotadoLutaLivre ? '0' : '3'} SA</button>
+          </div> : <div className="recursos-controles">
             <button type="button" disabled={salvando || !economia.turnoEmAndamento || economia.saAtual < 3 || janela + 3 > 3} onClick={() => void aplicar(atual => aplicarManobraCombate(atual, registrarFinalizar).estado)}>Registrar Finalizar · 3 SA</button>
-          </div>
+          </div>}
           <p className="ficha-local-legenda">Finalizar não consome Ação nem Movimento normais. O Ataque contra a Defesa e o deslocamento de até seu Movimento exclusivamente para alcançar o alvo fazem parte da Manobra e continuam sendo resolvidos manualmente. Em acerto, registre a Fortitude do alvo contra DT igual ao resultado do Ataque; a Ficha não rola pelo alvo nem aplica Dano.</p>
           {habilidadesAtivas.includes('finalizacao-a-distancia') && <p className="ficha-local-aviso" role="status">FINALIZAÇÃO À DISTÂNCIA: pode executar Finalizar com arma de fogo contra alvo dentro do alcance da arma e, no máximo, até Alcance Médio. O custo normal de SA permanece. Se o alvo não puder sofrer Morte Instantânea, aplique normalmente Dano e Fortitude; ele fica Atordoado até o fim do próximo turno. A Habilidade não amplia o alcance da arma nem remove penalidades.</p>}
-          {habilidadesAtivas.includes('luta-livre') && <p className="ficha-local-aviso" role="status">LUTA LIVRE: contra alvo Atordoado, pode executar Finalizar e mover-se até 12 m em linha reta até ele sem provocar Ataques de Oportunidade. Se o alvo não estiver Vulnerável, acrescente +1d8 de Dano por Nível de Agente (máximo 10d8). Se o alvo for derrotado pela Manobra, não há custo de SA. ATENÇÃO: o botão genérico “Registrar Finalizar · 3 SA” ainda não reconhece essa exceção e sempre registra 3 SA; não o utilize quando a Finalização de Luta Livre derrotar o alvo. Se o alvo não for derrotado, use o registro normal de 3 SA. Confirme Atordoado, Vulnerável e o resultado com a Mesa; a Ficha não decide o desfecho.</p>}
+          {habilidadesAtivas.includes('luta-livre') && <p className="ficha-local-aviso" role="status">LUTA LIVRE: contra alvo Atordoado, pode executar Finalizar e mover-se até 12 m em linha reta até ele sem provocar Ataques de Oportunidade. Se o alvo não estiver Vulnerável, acrescente +1d8 de Dano por Nível de Agente (máximo 10d8). O controle acima registra 0 SA somente após a confirmação de que a Manobra derrotou o alvo; caso contrário, registra 3 SA. A Ficha não realiza o Ataque, calcula o Dano adicional nem decide o desfecho.</p>}
           <div className="ficha-local-editor">
             <strong>Finalização Dupla · Reação + 3 SA</strong>
             <p>Confirme as três condições da regra antes de registrar: um aliado Finalizou, o alvo sobreviveu e esta personagem ainda não agiu na rodada. A confirmação é contextual e não é inferida pela Ficha.</p>
