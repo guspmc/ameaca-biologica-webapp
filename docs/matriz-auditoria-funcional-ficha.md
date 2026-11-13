@@ -468,3 +468,10 @@ A ordem sugerida para o próximo incremento é fechar os contratos de **equipar/
 ### Validação comum
 - Alterações feitas somente na branch `feat/offline-first-ficha`; sem alteração de cânone, schema, LAN, Supabase, Inventário, `main`, merge ou publicação.
 - Testes automatizados e build **não executados** nesta etapa. Validação humana continua pendente nos modos Automático, Misto e Manual.
+
+
+### SOCADOR DE PEDRAS — Aparar e Contra-Ataque desarmado
+- **Cânone:** Arquivo do Jogador v1.0, p. 38. Os punhos são Indestrutíveis para Aparar Ataques Corpo a Corpo aparáveis; após defesa bem-sucedida, pode Contra-Atacar desarmado sem largar arma de duas mãos.
+- **IMPLEMENTADO:** `src/PainelAcoesLocal.tsx` oferece a declaração de Aparar com punhos quando a janela de Reação permite e a Habilidade está ativa. Esse caminho não depende de arma equipada nem de Durabilidade e usa a transição persistente de Reação já existente. O painel também lembra a possibilidade de Contra-Ataque desarmado sem largar arma de duas mãos.
+- **Limites preservados:** o usuário ainda confirma a resolução com a Mesa; a Ficha não calcula a defesa por Aparar, não executa o Contra-Ataque e não aplica Dano. A janela continua exigindo Ataque Corpo a Corpo aparável.
+- **Cobertura adicionada:** `tests/ataque-oportunidade-ficha.test.mjs` verifica o caminho específico e o lembrete de Contra-Ataque.
