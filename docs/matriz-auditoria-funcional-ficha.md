@@ -475,3 +475,10 @@ A ordem sugerida para o próximo incremento é fechar os contratos de **equipar/
 - **IMPLEMENTADO:** `src/PainelAcoesLocal.tsx` oferece a declaração de Aparar com punhos quando a janela de Reação permite e a Habilidade está ativa. Esse caminho não depende de arma equipada nem de Durabilidade e usa a transição persistente de Reação já existente. O painel também lembra a possibilidade de Contra-Ataque desarmado sem largar arma de duas mãos.
 - **Limites preservados:** o usuário ainda confirma a resolução com a Mesa; a Ficha não calcula a defesa por Aparar, não executa o Contra-Ataque e não aplica Dano. A janela continua exigindo Ataque Corpo a Corpo aparável.
 - **Cobertura adicionada:** `tests/ataque-oportunidade-ficha.test.mjs` verifica o caminho específico e o lembrete de Contra-Ataque.
+
+
+### Briga de Gente Grande — lembrete contextual de Manobras
+- **Cânone:** Arquivo do Jogador v1.0, p. 37. Manobras de GOLPE SUJO funcionam contra criaturas maiores quando a anatomia física for compatível/humanoide; Derrubar ou Cabeçada contra criatura maior recebem Vantagem.
+- **IMPLEMENTADO:** `src/CalculadoraTesteLocal.tsx` mostra lembrete contextual em Ataques Corpo a Corpo quando a Habilidade está ativa. O texto pede confirmação de tamanho/anatomia e não aplica Vantagem nem executa a Manobra automaticamente.
+- **Verificação correlata:** GOLPE SUJO e Casca-Grossa já possuíam lembretes contextuais na calculadora; não foi necessária nova regra nem automação para essas duas integrações.
+- **Cobertura adicionada:** `tests/ataques-calculadora.test.mjs` verifica o lembrete e seus limites.
