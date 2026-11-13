@@ -405,3 +405,25 @@ Nenhum desses pontos deve ser resolvido por inferência durante a implementaçã
 - **Testes identificados:** inventario-criacao, inventario-ativo, inventario-consulta-local, organizacao-inventario, inventario-expansao e inventario-persistencia. Não executados nesta sessão; os testes PGlite/Supabase são proposta isolada, não implementação SQLite.
 - **Testes/build/CI e validação humana:** pendentes.
 - Nenhuma alteração de código foi necessária.
+
+
+## Auditoria das operações do Inventário ativo — 12/11/2026
+
+**Checkpoint:** `docs/checkpoint-auditoria-operacoes-inventario-ativo-2026-11-12.md`.  
+**Fontes:** Arquivo do Jogador v1.0, pp. 48–49 e 62–70; código da branch `feat/offline-first-ficha`.
+
+- **Equipar/sacar/guardar — PENDENTE:** o snapshot reconhece estados de arma/colete/lanterna, mas a Ficha ativa apenas apresenta itens iniciais guardados/não equipados. Não há operação persistente conectada. Sacar/guardar arma usa Interação Gratuita com Objeto; guardar uma e sacar outra são duas interações. Lanterna tem custos próprios por ato (sacar/equipar/ligar/desligar), que não devem ser reduzidos a um único toggle.
+- **Uso/consumo — PENDENTE:** não há fluxo persistente de uso/consumo por exemplar. Os custos e efeitos variam por item; o Inventário deve registrar a decisão/consumo, sem aplicar automaticamente efeitos narrativos ou resultados que cabem ao Jogador/Mestre.
+- **Munição/recarga — PENDENTE:** o modelo de consulta armazena munição carregada por arma e reserva abstrata separada, mas não há operação de recarga. A regra geral devolve à reserva a munição restante ao recarregar antes de esvaziar e preenche a arma a partir dela; o custo de recarga é definido por arma. Disparo Cadenciado/Rajada também consomem quantidades específicas. Spark Shot usa bateria/cargas, exigindo estado próprio.
+- **Durabilidade/manutenção — PENDENTE:** o estado de consulta reconhece Durabilidade, mas não há transição operacional. A regra geral perde Durabilidade ao Aparar, não por ataque/uso comum; manutenção de 30 minutos em Sala de Descanso ou com Kit de Ferramentas restaura o máximo, conforme as condições da regra.
+- **Peças — PENDENTE:** o snapshot reconhece peça instalada em exemplar, mas não há instalação/remoção/troca persistente. A regra exige compatibilidade e espaço de peça; uma peça não beneficia duas armas simultaneamente; instalação, remoção ou troca normalmente leva 30 minutos e exige bancada apropriada, sem Teste. Kit de Ferramentas substitui bancada somente quando regra permitir.
+- **Colete Kendo/placas — PENDENTE:** o tipo de colete admite contador de placas, mas não foi identificada operação para adquirir/instalar/remover placas nem para atualizar o estado equipado. A defesa/RD dependem do número de placas e do estado de equipamento.
+- **Transferência/Baú — PENDENTE:** não foi identificada operação persistente nem endpoint dedicado. Não presumir regras de propriedade, capacidade compartilhada ou autorização sem conferir a seção/cânone aplicável e o Planejamento aprovado.
+- **Persistência/autorização LAN — BLOQUEIO DE INTEGRAÇÃO:** a ativação grava `inventario_json` em transação, mas a serialização de personagem não devolve esse campo; a Ficha ativa declara que o gerenciamento contínuo ainda não está integrado. As rotas inspecionadas não incluem leitura/operação dedicada do Inventário ativo. O PUT genérico protege os campos de criação/equipamento inicial, portanto não é caminho apropriado para mutar o snapshot inteiro.
+- **Sem alteração de código:** esta etapa foi auditoria estática. Não foram executados testes, build, CI ou validação humana. Não houve mudança de schema, API, UI, Offline/LAN, branch, merge ou publicação.
+
+### Diretriz técnica para a próxima etapa
+
+Antes de implementar uma operação, definir contrato dedicado por ação (não PATCH genérico do snapshot), com validação de sessão e vínculo atual à Mesa, autoria/permissão, personagem ativa, revisão esperada, ID da operação, exemplar e requisitos canônicos. Persistência transacional e recibo idempotente devem impedir duplicação após timeout. A resposta deve devolver snapshot validado e revisão nova; conflitos exigem consulta/reconciliação, nunca sobrescrita silenciosa.
+
+A ordem sugerida para o próximo incremento é fechar os contratos de **equipar/sacar/guardar** e **consumir item**, porque são dependências diretas de Defesa, Aparar e habilidades; recarga/munição e peças devem vir em incrementos separados por sua variedade de regras e tipos de arma.
