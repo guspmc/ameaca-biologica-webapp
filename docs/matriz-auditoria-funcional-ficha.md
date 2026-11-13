@@ -450,3 +450,21 @@ A ordem sugerida para o próximo incremento é fechar os contratos de **equipar/
 - **Cobertura adicionada:** `tests/manobras-operacionais.test.mjs` verifica custo normal, exceção de custo zero, turno encerrado e entrada inválida; `tests/ataque-oportunidade-ficha.test.mjs` verifica o controle contextual da interface.
 - **PENDENTE:** executar testes automatizados e build; validação humana em navegador nos modos Automático, Misto e Manual, com e sem a Habilidade.
 - **Restrições:** sem alteração do cânone, motor de combate, dados de terceiros, Inventário, LAN, Supabase, schema, navegação, publicação ou `main`.
+
+
+## Incremento — Integrações operacionais não dependentes do Inventário — 13/11/2026
+
+### Luta Livre — Finalização com custo condicionado
+- **Cânone:** Arquivo do Jogador v1.0, p. 29; custo geral de Finalizar, p. 79.
+- **IMPLEMENTADO:** `registrarFinalizarLutaLivre()` diferencia 3 SA (alvo não derrotado) de 0 SA (alvo derrotado pela Manobra). A Ficha exige confirmação de Atordoado e confirmação do desfecho pela Mesa. O fluxo específico substitui o botão genérico para quem possui a Habilidade.
+- **Cobertura adicionada:** testes de domínio e verificação estrutural da interface em `tests/manobras-operacionais.test.mjs` e `tests/ataque-oportunidade-ficha.test.mjs`.
+
+### SOCADOR DE PEDRAS — Dano base do Ataque Desarmado
+- **Cânone:** Arquivo do Jogador v1.0, p. 38.
+- **IMPLEMENTADO:** quando a Habilidade está ativa e o perfil selecionado é Ataque Desarmado, a fórmula base passa a 3d10. A progressão de categoria existente (incluindo Casca-Grossa) é aplicada posteriormente, conforme o texto “antes de aumentos de categoria”.
+- **Lembrete contextual:** a calculadora informa o 1d10 da onda de choque às criaturas adjacentes e o uso opcional do resultado do Ataque como DT de Fortitude para Derrubar. Esses efeitos não são aplicados automaticamente a terceiros.
+- **Cobertura adicionada:** verificação estrutural em `tests/ataques-calculadora.test.mjs`.
+
+### Validação comum
+- Alterações feitas somente na branch `feat/offline-first-ficha`; sem alteração de cânone, schema, LAN, Supabase, Inventário, `main`, merge ou publicação.
+- Testes automatizados e build **não executados** nesta etapa. Validação humana continua pendente nos modos Automático, Misto e Manual.
