@@ -49,6 +49,23 @@ export function registrarFinalizar(
   };
 }
 
+/** Luta Livre: dispensa 3 SA apenas após confirmação de que a Manobra derrotou o alvo. */
+export function registrarFinalizarLutaLivre(
+  economia: EstadoEconomiaAcoes,
+  manobras: EstadoManobrasTurno,
+  alvoDerrotadoPelaManobra: boolean,
+): ResultadoManobraOperacional {
+  validarEstadoManobras(manobras);
+  if (!economia.turnoEmAndamento) throw new Error('Finalizar só pode ser registrado durante o próprio turno.');
+  if (typeof alvoDerrotadoPelaManobra !== 'boolean') throw new Error('Confirmação do desfecho da Luta Livre inválida.');
+  return {
+    economia: alvoDerrotadoPelaManobra ? { ...economia } : gastarSAEmManobra(economia, 3),
+    manobras: { ...manobras },
+    movimentosAdicionais: 0,
+    ataqueAdicionalAutorizado: false,
+  };
+}
+
 /** Desengajar consome o Movimento normal e concede deslocamento protegido de 1,5 m. */
 export function registrarDesengajar(economia: EstadoEconomiaAcoes, manobras: EstadoManobrasTurno): ResultadoManobraOperacional {
   validarEstadoManobras(manobras);
