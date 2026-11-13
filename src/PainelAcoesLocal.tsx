@@ -82,6 +82,7 @@ export default function PainelAcoesLocal({ dados, saAtual, aoSalvar, origemDados
   const [janelaDefensiva, setJanelaDefensiva] = useState<JanelaReacao | null>(null);
   const [erroJanelaDefensiva, setErroJanelaDefensiva] = useState('');
   const [reacaoDefensivaDeclarada, setReacaoDefensivaDeclarada] = useState(false);
+  const [apararComPunhosDeclarado, setApararComPunhosDeclarado] = useState(false);
   const [metodoDefensivo, setMetodoDefensivo] = useState<'fisico' | 'virtual'>(modoDados === 'virtuais' ? 'virtual' : 'fisico');
   const [dadoDefensivo1, setDadoDefensivo1] = useState('');
   const [dadoDefensivo2, setDadoDefensivo2] = useState('');
@@ -161,6 +162,7 @@ export default function PainelAcoesLocal({ dados, saAtual, aoSalvar, origemDados
         setMiraUsoDisponivel(false); setMiraAlvoPercebido(false); setMiraAlcanceMedio(false);
         setMiraNovaCondicao(false); setMiraArmaCarregada(false); setMiraArmaElegivel(false);
       }
+      if (mensagemConfirmada?.startsWith('Aparar com punhos declarado')) setApararComPunhosDeclarado(true);
       if (mensagemConfirmada?.startsWith('Esquiva declarada')) {
         setReacaoDefensivaDeclarada(true);
         setConfirmouDefesaBemSucedida(false);
@@ -244,7 +246,14 @@ export default function PainelAcoesLocal({ dados, saAtual, aoSalvar, origemDados
             {janelaDefensiva && <>
               <p className="ficha-local-legenda" role="status">{janelaDefensiva.motivo}</p>
               {janelaDefensiva.fechadaPor20Natural && <p>20 natural: não é possível declarar Reação defensiva normal.</p>}
-              {janelaDefensiva.podeAparar && <p>Aparar seria permitido pelo gatilho, mas o registro está bloqueado até existir estado confiável de equipamento empunhado e Durabilidade. A Ficha não presume uma arma equipada.</p>}
+              {janelaDefensiva.podeAparar && !habilidadesAtivas.includes('socador-de-pedras') && <p>Aparar seria permitido pelo gatilho, mas o registro está bloqueado até existir estado confiável de equipamento empunhado e Durabilidade. A Ficha não presume uma arma equipada.</p>}
+              {janelaDefensiva.podeAparar && habilidadesAtivas.includes('socador-de-pedras') && !apararComPunhosDeclarado && <>
+                <p>SOCADOR DE PEDRAS: seus punhos são Indestrutíveis para Aparar Ataques Corpo a Corpo aparáveis. Esta opção não depende de arma equipada nem reduz Durabilidade. Confirme a janela com a Mesa.</p>
+                <p className="ficha-local-legenda">{economia.normaisUsados.reacao ? 'A Reação normal já foi usada: será comprada outra por 1 SA.' : 'Será consumida sua Reação normal, sem custo de SA.'}</p>
+                <button type="button" disabled={salvando || (economia.normaisUsados.reacao && (economia.saAtual < 1 || janela >= 3))}
+                  onClick={() => void aplicar(atual => aplicarReacaoDefensivaCombate(atual, economiaAtual => registrarReacaoDefensiva({ economia: economiaAtual, manobra: 'aparar', janela: janelaDefensiva })).estado, economia.normaisUsados.reacao ? 'Aparar com punhos declarado: Reação adicional comprada por 1 SA; punhos Indestrutíveis, sem perda de Durabilidade.' : 'Aparar com punhos declarado: Reação normal consumida; punhos Indestrutíveis, sem perda de Durabilidade.')}>Declarar Aparar com os punhos · Reação</button>
+              </>}
+              {apararComPunhosDeclarado && <p className="ficha-local-legenda" role="status">Aparar com os punhos foi registrado. Confirme com a Mesa se a defesa foi bem-sucedida antes de registrar um Contra-Ataque. A Ficha não calcula a defesa nem aplica Dano.</p>}
               {janelaDefensiva.podeEsquivar && !reacaoDefensivaDeclarada && <>
                 <p>Esquiva autorizada pelo gatilho confirmado. Declare a Reação antes de resolver o Teste defensivo.</p>
                 <p className="ficha-local-legenda">{economia.normaisUsados.reacao ? 'A Reação normal já foi usada: esta declaração comprará outra por 1 SA.' : 'Esta declaração consumirá sua Reação normal, sem custo de SA.'}</p>
@@ -291,6 +300,7 @@ export default function PainelAcoesLocal({ dados, saAtual, aoSalvar, origemDados
           <h4>Contra-Ataque</h4>
           <div className="ficha-local-editor">
             <p>Depois de Aparar ou Esquivar com sucesso, você pode gastar 1 SA e usar uma Reação para fazer um Ataque normal contra a Defesa do agressor. Por padrão, responde apenas a Ataques Corpo a Corpo; Habilidades podem criar exceções. O painel registra custos e condições confirmadas, mas não executa o Ataque.</p>
+            {habilidadesAtivas.includes('socador-de-pedras') && <p className="ficha-local-legenda">SOCADOR DE PEDRAS: após Aparar ou Esquivar com sucesso, pode Contra-Atacar desarmado sem largar uma arma de duas mãos. Faça o Ataque manualmente e confirme a resolução com a Mesa.</p>}
             <label><input type="checkbox" checked={confirmouDefesaBemSucedida} disabled={salvando} onChange={evento => setConfirmouDefesaBemSucedida(evento.target.checked)} /> Confirmo que Aparar ou Esquivar foi bem-sucedido.</label>
             <label><input type="checkbox" checked={confirmouAtaqueCorpoACorpo} disabled={salvando} onChange={evento => setConfirmouAtaqueCorpoACorpo(evento.target.checked)} /> O Ataque que originou a defesa foi Corpo a Corpo.</label>
             {economia.normaisUsados.reacao && habilidadesAtivas.includes('contra-ataque-instintivo') && <p className="ficha-local-legenda">{estado.reacaoDefensivaRegistrada ? 'A Ficha registrou que a Reação foi usada na defesa; Contra-Ataque Instintivo pode reutilizar essa mesma Reação.' : 'A Reação normal já foi consumida por outro gatilho nesta janela; Contra-Ataque Instintivo não pode reutilizá-la para esta defesa.'}</p>}
