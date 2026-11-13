@@ -133,6 +133,7 @@ export default function CalculadoraTesteLocal({ atributos, treinada, distribuica
   const armeiroAtivo = escopo === 'ataques' && habilidadesAtivas.includes('armeiro');
   const armeiraAutodidataAtiva = escopo === 'ataques' && habilidadesAtivas.includes('armeira-autodidata');
   const cascaGrossaAtiva = escopo === 'ataques' && habilidadesAtivas.includes('casca-grossa');
+  const socadorDePedrasAtivo = escopo === 'ataques' && tipo === 'ataque-corpo' && perfilCorpo?.id === 'universal-ataque-desarmado' && habilidadesAtivas.includes('socador-de-pedras');
   const armamentoEspecialAtivo = escopo === 'ataques' && habilidadesAtivas.includes('armamento-especial');
   const controleDeFogoAtivo = escopo === 'ataques' && habilidadesAtivas.includes('controle-de-fogo');
   const anatomiaDeCombateAtiva = escopo === 'ataques' && habilidadesAtivas.includes('anatomia-de-combate');
@@ -226,7 +227,7 @@ export default function CalculadoraTesteLocal({ atributos, treinada, distribuica
   const procedimentoArmaEspecial = perfilFogo ? consultarProcedimentoArmaEspecial(perfilFogo.id) : null;
   useEffect(() => { if (ataqueEmArea) { setCriticoDano(false); setDadosConfirmados(null); setDado1(''); setDado2(''); setErroRolagem(''); } }, [ataqueEmArea]);
   const formulaDanoEspecial = perfilFogo ? consultarFormulaDanoEspecial(perfilFogo.id, varianteDanoEspecial) : null;
-  const formulaDanoBase = bearLauncherSelecionado ? '4d6' : formulaDanoEspecial ?? (perfilSelecionado?.dano && possuiFormulaDanoConvencional(perfilSelecionado.dano) ? perfilSelecionado.dano : null);
+  const formulaDanoBase = socadorDePedrasAtivo ? '3d10' : bearLauncherSelecionado ? '4d6' : formulaDanoEspecial ?? (perfilSelecionado?.dano && possuiFormulaDanoConvencional(perfilSelecionado.dano) ? perfilSelecionado.dano : null);
   const categoriasDanoUniversal = escopo === 'ataques' && perfilCorpo
     ? categoriasAtaqueUniversal(origem, cascaGrossaAtiva, perfilCorpo.id)
     : 0;
@@ -392,6 +393,7 @@ export default function CalculadoraTesteLocal({ atributos, treinada, distribuica
           <input type="number" min="0" step="1" value={resultadoDadosAdicionais} onChange={evento => setResultadoDadosAdicionais(evento.target.value)} placeholder="Ex.: +1d4 de Peça ou Habilidade" />
         </label>
         <small>Use este campo somente depois de rolar dados adicionais previstos por uma Peça, Habilidade ou modo de disparo válido, incluindo os +2 dados do Disparo Cadenciado. Na Motosserra, informe aqui a soma dos dados extras gerados por cada resultado 6, incluindo os encadeamentos. A calculadora não presume que você possui Peças ou Habilidades.</small>
+        {socadorDePedrasAtivo && <p className="ficha-local-aviso" role="status">SOCADOR DE PEDRAS: o Dano base do Ataque Desarmado é 3d10 antes de aumentos de categoria; a progressão por Casca-Grossa é aplicada depois. Ao acertar, o resultado do Ataque pode ser usado como DT de Fortitude para Derrubar. As demais criaturas adjacentes ao alvo principal sofrem 1d10 da onda de choque; role e resolva esse Dano separadamente com a Mesa. A calculadora não aplica efeitos em terceiros.</p>}
         {tipo === 'ataque-corpo' && danoCorpoACorpoAdicionalBI && <p className="ficha-local-aviso" role="status">4ª Fase da Bio-Infecção: role {danoCorpoACorpoAdicionalBI} adicional de Dano Corpo a Corpo e informe a soma no campo de Dados adicionais. Este bônus não se aplica a Ataques à distância e não é rolado automaticamente.</p>}
         <p>Atributo aplicado: {tipo === 'ataque-corpo' ? 'FOR' : 'AGI'} (+{atributoDano}).</p>
         {armaOperarioEscolhida && <p>Operário: o Dano recebe FOR adicional; esse bônus não é multiplicado no Crítico.</p>}
