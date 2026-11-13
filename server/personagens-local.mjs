@@ -6,6 +6,11 @@ import { estadoEconomiaAcoesValido } from '../src/economiaAcoes.ts';
 import { estadoTurnoCombateValido, estadoTurnoCombateCompostoLegadoReconhecido } from '../src/estadoTurnoCombate.ts';
 import { estadoProgressaoPersistenteValido } from '../src/progressaoPersistente.ts';
 import { listaDecisoesMesaValida } from '../src/registroDecisoesMesa.ts';
+import { reanimacaoValida } from '../src/reanimacaoFicha.ts';
+import { listaCondicoesValida } from '../src/condicoesFicha.ts';
+import { usosDescansoCompletoValido } from '../src/usosDescansoCompleto.ts';
+import { beneficioAmnesicoValido, beneficioMilitarValido } from '../src/beneficiosOrigensContextuais.ts';
+import { configuracaoFuncionamentoValida } from '../src/funcionamentoFicha.ts';
 
 function responder(res, status, body) {
   res.writeHead(status, {
@@ -302,6 +307,38 @@ export async function tratarRotaPersonagensLocal(req, res, url, db, notificarCon
         if (Object.prototype.hasOwnProperty.call(corpo.data, 'registrosMesa') && !listaDecisoesMesaValida(corpo.data.registrosMesa)) {
           responder(res, 422, { error: 'O histórico de decisões da Mesa é inválido.' });
           return true;
+        }
+        if (Object.prototype.hasOwnProperty.call(corpo.data, 'reanimacao')
+          && corpo.data.reanimacao !== null && !reanimacaoValida(corpo.data.reanimacao)) {
+          responder(res, 422, { error: 'O estado de Reanimação é inválido.' });
+          return true;
+        }
+        if (Object.prototype.hasOwnProperty.call(corpo.data, 'condicoes') && !listaCondicoesValida(corpo.data.condicoes)) {
+          responder(res, 422, { error: 'O histórico de Condições é inválido.' });
+          return true;
+        }
+        if (Object.prototype.hasOwnProperty.call(corpo.data, 'usosDescansoCompleto') && !usosDescansoCompletoValido(corpo.data.usosDescansoCompleto)) {
+          responder(res, 422, { error: 'O registro de usos por Descanso Completo é inválido.' });
+          return true;
+        }
+        if (Object.prototype.hasOwnProperty.call(corpo.data, 'beneficioAmnesico') && !beneficioAmnesicoValido(corpo.data.beneficioAmnesico)) {
+          responder(res, 422, { error: 'O registro do benefício Amnésico é inválido.' });
+          return true;
+        }
+        if (Object.prototype.hasOwnProperty.call(corpo.data, 'beneficioMilitar') && !beneficioMilitarValido(corpo.data.beneficioMilitar)) {
+          responder(res, 422, { error: 'O registro do benefício Militar é inválido.' });
+          return true;
+        }
+        if (Object.prototype.hasOwnProperty.call(corpo.data, 'configuracaoFuncionamento') && !configuracaoFuncionamentoValida(corpo.data.configuracaoFuncionamento)) {
+          responder(res, 422, { error: 'A configuração de funcionamento da Ficha é inválida.' });
+          return true;
+        }
+        for (const campo of ['pvAtual', 'pvTemporarios', 'saAtual', 'biAtual']) {
+          if (Object.prototype.hasOwnProperty.call(corpo.data, campo)
+            && (!Number.isSafeInteger(corpo.data[campo]) || corpo.data[campo] < 0)) {
+            responder(res, 422, { error: `O campo ${campo} precisa ser um inteiro não negativo.` });
+            return true;
+          }
         }
         if (Object.prototype.hasOwnProperty.call(corpo.data, 'estadoTurnoCombate')) {
           const turno = corpo.data.estadoTurnoCombate;
