@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {
   estadoManobrasTurnoInicial, registrarDesengajar, registrarDisparada,
   registrarFuga, registrarMirar, registrarAtaque, registrarAjudar,
-  registrarUsarObjeto, registrarCombateDuasArmas, registrarFinalizar,
+  registrarUsarObjeto, registrarCombateDuasArmas, registrarFinalizar, registrarFinalizarLutaLivre,
 } from '../src/manobrasOperacionais.ts';
 import { economiaAcoesInicial, consumirRecursoNormal } from '../src/economiaAcoes.ts';
 
@@ -96,4 +96,17 @@ test('Finalizar custa 3 SA sem consumir Ação nem Movimento normais', () => {
   assert.equal(resultado.movimentosAdicionais, 0);
   assert.throws(() => registrarFinalizar({ ...economia, saAtual: 2, saGastaNaJanela: 1 }, estadoManobrasTurnoInicial()), /limite de 3 SA/);
   assert.throws(() => registrarFinalizar({ ...economia, turnoEmAndamento: false }, estadoManobrasTurnoInicial()), /próprio turno/);
+});
+
+
+test('Luta Livre dispensa 3 SA somente quando o alvo é derrotado pela Manobra', () => {
+  const economia = economiaAcoesInicial(5);
+  const normal = registrarFinalizarLutaLivre(economia, estadoManobrasTurnoInicial(), false);
+  assert.equal(normal.economia.saAtual, 2);
+  assert.equal(normal.economia.saGastaNaJanela, 3);
+  const semCusto = registrarFinalizarLutaLivre(economia, estadoManobrasTurnoInicial(), true);
+  assert.equal(semCusto.economia.saAtual, 5);
+  assert.equal(semCusto.economia.saGastaNaJanela, 0);
+  assert.throws(() => registrarFinalizarLutaLivre({ ...economia, turnoEmAndamento: false }, estadoManobrasTurnoInicial(), true), /próprio turno/);
+  assert.throws(() => registrarFinalizarLutaLivre(economia, estadoManobrasTurnoInicial(), 'sim'), /Confirmação/);
 });
