@@ -441,3 +441,7 @@ Matriz: `docs/matriz-auditoria-funcional-ficha.md`.
 
 ### Complemento — SOCADOR DE PEDRAS (13/11/2026)
 A auditoria da Habilidade foi aprofundada no cânone da p. 38. Além do Dano base 3d10 e dos lembretes de onda de choque/Derrubar, foi identificado que o Inventário não pode bloquear Aparar com os punhos Indestrutíveis. O Painel agora oferece declaração de Aparar com os punhos na janela válida e lembra o Contra-Ataque desarmado sem largar arma de duas mãos. A confirmação de sucesso continua com a Mesa; nenhum Ataque ou Dano é automatizado. Cobertura estrutural adicionada. Testes/build ainda não executados.
+
+
+### Complemento — Briga de Gente Grande e lembretes de Manobras (13/11/2026)
+A auditoria confirmou que GOLPE SUJO e Casca-Grossa já possuíam lembretes contextuais na calculadora. Foi acrescentado lembrete de Briga de Gente Grande em Ataques Corpo a Corpo: compatibilidade anatômica/humanoide para criaturas maiores e Vantagem em Derrubar/Cabeçada contra criatura maior. A Ficha não aplica Vantagem automaticamente nem executa Manobras. Teste estrutural adicionado; testes/build ainda não executados.
