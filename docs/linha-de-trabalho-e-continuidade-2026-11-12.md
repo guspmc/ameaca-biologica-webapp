@@ -455,3 +455,11 @@ A auditoria confirmou que GOLPE SUJO e Casca-Grossa já possuíam lembretes cont
 - **Conclusão da auditoria:** não basta remover a tela somente leitura nem liberar o PUT genérico. É necessário fluxo LAN dedicado, com revisão esperada, validação da transição em relação ao estado anterior, gravação atômica de `progressao`, `pedidoProgressao`, `nivel` e benefícios de ficha, e autorização atual da conta/personagem/Mesa. O registro de Morte precisa preservar o caráter de autodeclaração não confirmada pelo Mestre.
 - **Próximo incremento proposto:** implementar a operação dedicada e o cliente correspondente, integrar `ProgressaoFichaLocal` sem alterar o comportamento Offline e adicionar testes de servidor para cada transição permitida, revisão conflitante, estado inválido, repetição/duplicidade e isolamento de conta. Não usar o PUT genérico como atalho.
 - **Sem alteração de código nesta descoberta:** não houve alteração do cânone, Inventário, LAN já aprovada em seus fluxos existentes, `main`, publicação ou banco fora do servidor local de desenvolvimento.
+
+
+## Validação de integridade dos estados da Ficha no servidor LAN — 13/11/2026
+
+- **IMPLEMENTADO:** `server/personagens-local.mjs` agora valida no salvamento genérico os estados de Reanimação, Condições, usos por Descanso Completo, benefícios Amnésico/Militar, configuração de funcionamento e inteiros não negativos de PV, PV Temporários, SA e BI.
+- **Motivo:** esses dados já tinham validadores de domínio usados pela persistência/backup Offline, mas o endpoint LAN não aplicava todos eles antes de gravar. A UI não substitui validação do servidor.
+- **Cobertura adicionada:** `tests/personagens-local.test.mjs` envia estados inválidos e verifica HTTP 422, revisão inalterada e ausência de persistência do campo inválido.
+- **Limite:** testes automatizados e build não foram executados; não declarar a validação executada. O teste humano LAN aprovado não foi repetido. A mudança afeta o código LAN e fica sujeita à cobertura automatizada e à verificação posterior se houver regressão concreta.
