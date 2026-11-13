@@ -445,3 +445,13 @@ A auditoria da Habilidade foi aprofundada no cânone da p. 38. Além do Dano bas
 
 ### Complemento — Briga de Gente Grande e lembretes de Manobras (13/11/2026)
 A auditoria confirmou que GOLPE SUJO e Casca-Grossa já possuíam lembretes contextuais na calculadora. Foi acrescentado lembrete de Briga de Gente Grande em Ataques Corpo a Corpo: compatibilidade anatômica/humanoide para criaturas maiores e Vantagem em Derrubar/Cabeçada contra criatura maior. A Ficha não aplica Vantagem automaticamente nem executa Manobras. Teste estrutural adicionado; testes/build ainda não executados.
+
+
+## Lacuna prioritária — Progressão da Ficha indisponível na LAN — 13/11/2026
+
+- **PENDENTE / BLOQUEIA FECHAMENTO OFFLINE/ONLINE:** `src/ProgressaoFichaLocal.tsx` retorna uma tela somente de leitura sempre que `origemDados === 'servidor'`. Isso bloqueia inicialização da Progressão, autorização de avanço pelo grupo, registro de Marco, contador de Missões, solicitação/cancelamento de avanço, confirmação de Descanso, escolha/aplicação de benefícios e registro de Morte.
+- **Servidor atual:** `server/personagens-local.mjs` protege o salvamento genérico. Quando Progressão existe, só permite alterar `missoesCompletadas`; criação/remoção do estado, mudanças de Nível, método, Marcos e histórico de Morte são bloqueados e exigem fluxo próprio. `tests/personagens-local.test.mjs` comprova essa proteção.
+- **Contrato de domínio já existente:** `src/progressaoPersistente.ts` contém validações e transições para estado inicial, autorização neutra, contador, Marco, pedido de avanço, confirmação após Descanso e registro de Morte. `src/progressaoCampanha.ts` aplica benefícios e perda de Nível com base no histórico.
+- **Conclusão da auditoria:** não basta remover a tela somente leitura nem liberar o PUT genérico. É necessário fluxo LAN dedicado, com revisão esperada, validação da transição em relação ao estado anterior, gravação atômica de `progressao`, `pedidoProgressao`, `nivel` e benefícios de ficha, e autorização atual da conta/personagem/Mesa. O registro de Morte precisa preservar o caráter de autodeclaração não confirmada pelo Mestre.
+- **Próximo incremento proposto:** implementar a operação dedicada e o cliente correspondente, integrar `ProgressaoFichaLocal` sem alterar o comportamento Offline e adicionar testes de servidor para cada transição permitida, revisão conflitante, estado inválido, repetição/duplicidade e isolamento de conta. Não usar o PUT genérico como atalho.
+- **Sem alteração de código nesta descoberta:** não houve alteração do cânone, Inventário, LAN já aprovada em seus fluxos existentes, `main`, publicação ou banco fora do servidor local de desenvolvimento.
