@@ -422,3 +422,18 @@ A validação humana da Ficha Offline continua sendo pré-requisito para iniciar
 ### 5. Registro da correção de processo
 
 A orientação anterior para executar testes LAN novamente e preparar manualmente o ambiente foi incorreta. A partir desta retificação, considerar a aprovação LAN como fato estabelecido e usar os scripts já existentes. Nenhuma alteração de código, servidor, banco, Supabase, publicação ou permissões é autorizada por esta retificação.
+
+
+## Continuidade de implementação — correções de Habilidades não dependentes do Inventário (13/11/2026)
+
+A auditoria da Ficha foi retomada antes da bateria humana. Foram concluídos dois incrementos de código na branch `feat/offline-first-ficha`:
+
+1. **Luta Livre:** o registro de Finalização agora possui fluxo próprio. Exige confirmação de alvo Atordoado e confirmação da Mesa sobre o resultado. Cobra 3 SA se o alvo não for derrotado pela Manobra e 0 SA quando a Mesa confirma que foi derrotado. O botão genérico de 3 SA deixa de ser usado por personagens com a Habilidade. Testes de domínio e de integração estrutural foram adicionados.
+2. **SOCADOR DE PEDRAS:** o perfil Ataque Desarmado passa a usar 3d10 como Dano base quando a Habilidade está ativa; a progressão de categoria existente é aplicada depois. A calculadora também lembra a onda de choque de 1d10 às criaturas adjacentes e a opção de usar o resultado do Ataque como DT de Fortitude para Derrubar, sem aplicar efeitos a terceiros.
+
+Arquivos de código: `src/manobrasOperacionais.ts`, `src/PainelAcoesLocal.tsx`, `src/CalculadoraTesteLocal.tsx`.
+Testes adicionados/atualizados: `tests/manobras-operacionais.test.mjs`, `tests/ataque-oportunidade-ficha.test.mjs`, `tests/ataques-calculadora.test.mjs`.
+Checkpoint: `docs/checkpoint-integracoes-luta-livre-socador-pedras-2026-11-13.md`.
+Matriz: `docs/matriz-auditoria-funcional-ficha.md`.
+
+**Validação:** testes automatizados e build ainda não foram executados; nenhuma homologação humana foi declarada. O Inventário permanece fora do escopo desta etapa. A próxima auditoria deve continuar nas Habilidades e integrações não dependentes do Inventário, depois fechar persistência/funcionamento Offline da Ficha e consolidar a bateria humana. A ordem posterior de módulos permanece inalterada.
