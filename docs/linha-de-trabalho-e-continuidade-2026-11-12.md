@@ -437,3 +437,7 @@ Checkpoint: `docs/checkpoint-integracoes-luta-livre-socador-pedras-2026-11-13.md
 Matriz: `docs/matriz-auditoria-funcional-ficha.md`.
 
 **Validação:** testes automatizados e build ainda não foram executados; nenhuma homologação humana foi declarada. O Inventário permanece fora do escopo desta etapa. A próxima auditoria deve continuar nas Habilidades e integrações não dependentes do Inventário, depois fechar persistência/funcionamento Offline da Ficha e consolidar a bateria humana. A ordem posterior de módulos permanece inalterada.
+
+
+### Complemento — SOCADOR DE PEDRAS (13/11/2026)
+A auditoria da Habilidade foi aprofundada no cânone da p. 38. Além do Dano base 3d10 e dos lembretes de onda de choque/Derrubar, foi identificado que o Inventário não pode bloquear Aparar com os punhos Indestrutíveis. O Painel agora oferece declaração de Aparar com os punhos na janela válida e lembra o Contra-Ataque desarmado sem largar arma de duas mãos. A confirmação de sucesso continua com a Mesa; nenhum Ataque ou Dano é automatizado. Cobertura estrutural adicionada. Testes/build ainda não executados.
