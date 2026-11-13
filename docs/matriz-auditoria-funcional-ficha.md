@@ -69,7 +69,7 @@
 - `PainelInventarioLocal.tsx` está identificado como “SOMENTE LEITURA”; permite consultar, buscar e filtrar exemplares.
 - A fixture `tests/ui/inventario.tsx` declara expressamente que é simulação isolada, com dados fictícios em memória, sem login/banco/campanha e sem ações de uso, equipamento, transferência ou Baú.
 - As rotas identificadas em `server/personagens-local.mjs` cobrem lista, ficha, conferência e ativação. A ativação materializa `inventario_json`; não foi identificada nesse roteador uma rota de gerenciamento do Inventário ativo.
-- A própria Ficha declara que controle de munição/recarga, propriedades operacionais das armas e Iniciativa da Mesa permanecem pendentes.
+- A Ficha ativa ainda não controla munição/recarga, equipamento, Peças ou consumo persistente. Entretanto, a calculadora já oferece perfis consultivos, lembretes de propriedades, modos de disparo e procedimentos de armas especiais; isso não equivale a integração operacional com o Inventário. Iniciativa da Mesa permanece pendente.
 
 ### Conclusão provisória
 
@@ -374,3 +374,17 @@ Nenhum desses pontos deve ser resolvido por inferência durante a implementaçã
 - **Dependência de Inventário:** Aparar segue bloqueado até existir estado verificável de arma empunhada/elegibilidade/Durabilidade. Esquiva e efeitos condicionais permanecem sob confirmação; deslocamentos/usos por turno não são totalmente persistidos.
 - **Testes/build/CI:** não executados nesta sessão; validação humana pendente nos três modos de funcionamento.
 - **Restrições:** nenhuma alteração em fórmula, economia, contratos persistidos, schema, LAN, Supabase, CSS global, navegação, merge ou publicação.
+
+
+## Auditoria de Dano e propriedades especiais das armas — 12/11/2026
+
+**Checkpoint:** `docs/checkpoint-auditoria-dano-propriedades-armas-2026-11-12.md`  
+**Fonte:** Arquivo do Jogador v1.0, pp. 48–61 e 81.
+
+- Revisão estática dos 15 perfis corpo a corpo e 34 perfis de armas de fogo/especiais; não foi identificada divergência de valores canônicos nos perfis conferidos.
+- A calculadora aplica FOR a Ataques Corpo a Corpo e AGI a Ataques à distância, recebe somas de dados já rolados e respeita multiplicadores críticos, margem ampliada e exceção da Origem Operário.
+- Há lembretes/consulta para Disparo Cadenciado, Rajada, Perfuração, Matilda com Coronha, Bear Commander, GM 79, Besta, Lança-Chamas, Redemption, RPG-7, Spark Shot e Motosserra.
+- Armeiro e Armeira Autodidata exibem os benefícios por Peça Extra, mas exigem confirmação e entrada manual; a seleção de perfil não presume arma equipada, munição ou Peças.
+- Testes identificados: `ataques-calculadora.test.mjs`, `catalogo-armas.test.mjs`, `catalogo-armas-fogo.test.mjs`. Não foram executados nesta sessão; status checks e workflow runs não foram encontrados para o HEAD auditado.
+- **PENDENTE:** operações persistentes de Inventário ativo para munição, recarga, equipamento, Peças, Coronha, bateria e combustível; validação humana nos três modos de funcionamento.
+- Nenhuma alteração de código foi necessária neste incremento.
