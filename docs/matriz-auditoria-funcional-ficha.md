@@ -427,3 +427,16 @@ Nenhum desses pontos deve ser resolvido por inferência durante a implementaçã
 Antes de implementar uma operação, definir contrato dedicado por ação (não PATCH genérico do snapshot), com validação de sessão e vínculo atual à Mesa, autoria/permissão, personagem ativa, revisão esperada, ID da operação, exemplar e requisitos canônicos. Persistência transacional e recibo idempotente devem impedir duplicação após timeout. A resposta deve devolver snapshot validado e revisão nova; conflitos exigem consulta/reconciliação, nunca sobrescrita silenciosa.
 
 A ordem sugerida para o próximo incremento é fechar os contratos de **equipar/sacar/guardar** e **consumir item**, porque são dependências diretas de Defesa, Aparar e habilidades; recarga/munição e peças devem vir em incrementos separados por sua variedade de regras e tipos de arma.
+
+
+## Contratos propostos — equipamento e uso/consumo do Inventário — 12/11/2026
+
+**Checkpoint:** `docs/contratos-operacoes-equipamento-consumo-inventario-2026-11-12.md`.
+
+- Definidos contratos lógicos separados para equipamento e uso/consumo, com operação identificada, duas revisões esperadas, exemplar, confirmação, validação canônica e recibo.
+- Equipamento distingue sacar/guardar arma, equipar/guardar colete e lanterna, e ligar/desligar iluminação. A modelagem atual `equipada:boolean` não representa mãos nem estado de iluminação.
+- Economia da Interação Gratuita precisa ser salva atomicamente com o Inventário quando aplicável; hoje o painel de ações salva economia separadamente do snapshot.
+- Uso e consumo são separados por procedimento e gatilho: uso declarado, aplicação confirmada, primeiro contato efetivo ou arremesso declarado. A Ficha não rola, aplica dano, cura ou decide acerto/efeitos.
+- LAN deve usar rota dedicada e recibo idempotente; Offline deve persistir no IndexedDB e indicar estado local distinto de confirmação de servidor. Não foi presumida sincronização automática.
+- Pendências antes do código: modelagem de mãos, custo fora de turno, resultados de PV/BI conforme modo da Mesa e persistência de iluminação.
+- Sem alteração de código; testes/build/CI/humano pendentes.
