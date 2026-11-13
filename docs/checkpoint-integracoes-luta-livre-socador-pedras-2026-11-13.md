@@ -40,3 +40,11 @@
 ## 4. Próxima continuidade
 
 Retomar a matriz e auditar outras Habilidades/efeitos não dependentes do Inventário, verificando cada uma no domínio, calculadora e Painel de Ações. Depois fechar integração Offline da Ficha e preparar a bateria humana consolidada.
+
+
+## 2A. Integração defensiva de SOCADOR DE PEDRAS
+
+- O Painel de Ações agora permite declarar Aparar com os punhos quando a janela de Reação permite e a Habilidade está ativa. A declaração usa a Reação persistente existente e não depende de arma equipada ou Durabilidade, pois os punhos são Indestrutíveis para esse fim.
+- O Painel também informa que, após Aparar/Esquivar bem-sucedido, o Contra-Ataque pode ser desarmado sem largar uma arma de duas mãos.
+- O usuário confirma o sucesso da defesa com a Mesa; o app não resolve Aparar, não executa Contra-Ataque e não aplica Dano.
+- Teste estrutural adicionado em `tests/ataque-oportunidade-ficha.test.mjs`.
