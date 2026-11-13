@@ -321,3 +321,11 @@ test('4ª Fase da BI lembra o +1d4 no Dano Corpo a Corpo sem rolagem automática
   assert.match(ui, /role \{danoCorpoACorpoAdicionalBI\} adicional de Dano Corpo a Corpo/);
   assert.match(ui, /não se aplica a Ataques à distância e não é rolado automaticamente/);
 });
+
+
+test('SOCADOR DE PEDRAS substitui o Dano base desarmado antes de Casca-Grossa', () => {
+  assert.match(ui, /socadorDePedrasAtivo = escopo === 'ataques' && tipo === 'ataque-corpo'/);
+  assert.match(ui, /const formulaDanoBase = socadorDePedrasAtivo \? '3d10'/);
+  assert.match(ui, /progressão por Casca-Grossa é aplicada depois/);
+  assert.match(ui, /criaturas adjacentes ao alvo principal sofrem 1d10/);
+});
