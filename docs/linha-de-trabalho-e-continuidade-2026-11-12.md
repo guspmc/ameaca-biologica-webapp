@@ -463,3 +463,50 @@ A auditoria confirmou que GOLPE SUJO e Casca-Grossa já possuíam lembretes cont
 - **Motivo:** esses dados já tinham validadores de domínio usados pela persistência/backup Offline, mas o endpoint LAN não aplicava todos eles antes de gravar. A UI não substitui validação do servidor.
 - **Cobertura adicionada:** `tests/personagens-local.test.mjs` envia estados inválidos e verifica HTTP 422, revisão inalterada e ausência de persistência do campo inválido.
 - **Limite:** testes automatizados e build não foram executados; não declarar a validação executada. O teste humano LAN aprovado não foi repetido. A mudança afeta o código LAN e fica sujeita à cobertura automatizada e à verificação posterior se houver regressão concreta.
+
+
+---
+
+## Retificação de continuidade — instruções v2.1 e auditoria Offline (14/11/2026)
+
+As instruções do projeto **AMEAÇA BIOLÓGICA RPG — versão 2.1, de 14/11/2026**, e o Documento Mestre de Planejamento v3.0 fornecido por Gus nesta retomada prevalecem sobre a ordem, o escopo e as decisões antigas registradas acima. Os trechos históricos permanecem preservados como histórico, mas não devem orientar o próximo passo quando divergirem das instruções v2.1.
+
+### Ordem vigente
+
+1. Fase 0 — Preparação Offline.
+2. Fase 1 — Ficha Offline.
+3. Fase 2 — testes humanos da Ficha, usando exclusivamente \`docs/roteiro-humano-ficha-offline-local.md\`.
+4. Fase 3 — Inventário Offline.
+5. Fase 4 — Painel do Mestre Offline PWA.
+6. Fase 5 — Laboratório Node.js/SQLite.
+7. Fase 6 — Integração LAN.
+8. Fase 7 — empacotamento e plataformas.
+9. Fase 8 — homologação integrada.
+10. Fase 9 — temas e personalização, somente depois da homologação.
+
+Inventário ativo, Painel do Mestre e Laboratório não devem ser iniciados antes dos critérios das fases anteriores.
+
+### Restrições e validações confirmadas por Gus
+
+- O fluxo LAN/Hub e os scripts de inicialização já foram testados por Gus em Windows 11/Edge e em celular via QR Code/Samsung Browser. Essa validação humana está aprovada e não deve ser repetida sem regressão concreta introduzida por uma alteração.
+- Os scripts existentes devem ser preservados: \`Menu_Testes.bat\`, \`Iniciar_Ficha_Offline.bat\`, \`Iniciar_Mesa_LAN.bat\`, \`Preparar_Dependencias.bat\` e \`Verificar_Ambiente.bat\`.
+- O próximo roteiro humano pendente é somente a Ficha Offline local; não misturar testes LAN/QR/sessão.
+- Não pedir a Gus para clonar repositório, executar Git, instalar ferramentas ou rodar comandos locais. O desenvolvimento continua diretamente pelo GitHub; intervenção humana somente para decisões ou testes reais de navegador/dispositivo.
+- Não alterar branches, não tocar em \`main\`, não fazer merge, deploy ou publicação sem autorização expressa.
+- Preservar o limite de 10 jogadores e 10 personagens ativos por Mesa, o isolamento entre Mesas e as permissões existentes.
+
+### Auditoria de isolamento Offline/Supabase — 14/11/2026
+
+- Branch de trabalho: \`feat/offline-first-ficha\`.
+- HEAD após os commits deste ciclo: \`1e16d2e02e78f4dfb1de6c76fe02127c06be9155\`.
+- \`src/main.tsx\` importa diretamente \`FichaOfflineApp\` e \`ConexaoServidorLocal\`; sem \`?servidor=local\`, abre a Ficha Offline; com o parâmetro, abre a Mesa LAN.
+- A inspeção estática dos módulos percorridos não encontrou import do SDK Supabase no caminho de entrada Offline/LAN.
+- O legado Supabase continua nos arquivos \`App.tsx\`, \`Convites.tsx\`, \`Participantes.tsx\` e \`FichasJogador.tsx\`, fora do grafo de entrada atual.
+- \`@supabase/supabase-js\` ainda está no \`package.json\` e no \`pnpm-lock.yaml\`; \`tsconfig.json\` inclui todo \`src\`, portanto o pacote ainda é necessário para compilar os arquivos legados. Não remover a dependência sem decisão e alteração delimitada que preserve a compilação.
+- Criado \`tests/entradas-offline-sem-supabase.test.mjs\` para proteger o grafo de imports ativo. **Implementado, ainda não executado.**
+- Status CI do commit \`3e77717b9f415e9ac075e71560bbd6b5368d95d6\` estava vazio na consulta; testes e build não foram confirmados nesta sessão.
+- Checkpoint: \`docs/checkpoint-isolamento-offline-supabase-2026-11-14.md\`.
+
+### Próxima ação
+
+Consultar o status de CI do HEAD atual e, quando houver evidência, registrar o resultado do novo teste e do build. Depois continuar a Fase 0 verificando inicialização e persistência IndexedDB da Ficha. Não refazer a validação LAN aprovada e não avançar de fase sem checkpoint.
