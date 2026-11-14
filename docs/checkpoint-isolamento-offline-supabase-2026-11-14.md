@@ -131,3 +131,28 @@ Foi ampliado o teste \`tests/service-worker-shell.test.mjs\` para garantir que o
 - **Execução:** PENDENTE; o teste não foi executado nesta sessão.
 - **Build/CI:** sem evidência de execução/aprovação.
 - **Validação humana LAN:** não repetida; nenhuma alteração foi feita no servidor ou nos scripts LAN.
+
+
+## 11. Atualização documental de alinhamento — 14/11/2026
+
+Foram atualizados quatro documentos/metadados, sem alterar código funcional:
+
+- `README.md`: a abertura agora descreve a arquitetura offline vigente, ordem das fases e procedimento para iniciar apenas a Ficha Offline. O conteúdo anterior de Alfa/Supabase foi mantido no arquivo sob seção explicitamente histórica e não vigente; o contrato Local > LAN antigo também foi renomeado como histórico.
+- `index.html`: descrição meta corrigida para a Ficha do Jogador offline.
+- `public/manifest.webmanifest`: descrição corrigida para a Ficha Offline.
+- `docs/roteiro-humano-ficha-offline-local.md`: orienta exclusivamente a opção 1 do menu; a opção 3 não deve ser usada nesta bateria. Numeração da preparação corrigida.
+
+**HEAD documental após as alterações:** `9ac570378e0d3db746129cfd16af29bbc26da642`.
+
+| Item | Estado |
+|---|---|
+| Alinhamento do README | IMPLEMENTADO |
+| Metadados offline | IMPLEMENTADO |
+| Roteiro restrito à Ficha Offline | IMPLEMENTADO |
+| Testes automatizados destas alterações | PENDENTE |
+| Build atual | PENDENTE |
+| Validação humana da Ficha Offline | PENDENTE |
+
+Os commits documentais dispararam novos workflows; consultar seus resultados antes de declarar testes/build aprovados. Não houve alteração de `main`, branch, arquitetura, código funcional, identidade visual ou validação LAN.
+
+**Próxima ação:** consultar CI do HEAD atual e continuar a Fase 0 com evidências; não avançar para fases posteriores.
