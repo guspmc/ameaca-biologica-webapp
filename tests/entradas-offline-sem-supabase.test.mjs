@@ -22,7 +22,8 @@ async function resolverImportacao(origem, especificador) {
   const extensao = extname(base);
   if (extensao) {
     if (!['.ts', '.tsx', '.js', '.jsx', '.mjs'].includes(extensao)) return null;
-    return await existe(base) ? base : null;
+    if (await existe(base)) return base;
+    throw new Error('Import relativo não encontrado: ' + especificador + ' em ' + origem);
   }
   for (const ext of ['.ts', '.tsx', '.js', '.jsx', '.mjs']) {
     if (await existe(base + ext)) return base + ext;
@@ -31,7 +32,7 @@ async function resolverImportacao(origem, especificador) {
     const indice = resolve(base, 'index' + ext);
     if (await existe(indice)) return indice;
   }
-  return null;
+  throw new Error('Import relativo não resolvido: ' + especificador + ' em ' + origem);
 }
 
 function importsEstaticos(codigo) {
@@ -49,8 +50,6 @@ test('as entradas Offline e LAN não carregam módulos Supabase no grafo ativo',
   const visitados = new Set();
   const pendentes = entradas.map(nome => resolve(raiz, nome));
   const dependenciasSupabase = [];
-  const arquivosNaoResolvidos = [];
-
   while (pendentes.length) {
     const arquivo = pendentes.pop();
     if (visitados.has(arquivo)) continue;
@@ -64,11 +63,9 @@ test('as entradas Offline e LAN não carregam módulos Supabase no grafo ativo',
     for (const especificador of importsEstaticos(codigo)) {
       const dependencia = await resolverImportacao(arquivo, especificador);
       if (dependencia) pendentes.push(dependencia);
-      else if (especificador.startsWith('.')) arquivosNaoResolvidos.push({ arquivo, especificador });
     }
   }
 
-  assert.deepEqual(arquivosNaoResolvidos, [], 'Todos os imports relativos do caminho ativo devem ser resolvidos.');
   assert.deepEqual(
     dependenciasSupabase,
     [],
