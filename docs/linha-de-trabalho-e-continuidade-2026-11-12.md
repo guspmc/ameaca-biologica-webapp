@@ -498,14 +498,14 @@ Inventário ativo, Painel do Mestre e Laboratório não devem ser iniciados ante
 ### Auditoria de isolamento Offline/Supabase — 14/11/2026
 
 - Branch de trabalho: `feat/offline-first-ficha`.
-- HEAD documental atual: `d1c83966fa40e31fd5113f6d6fad7591a0ae6751`; HEAD de código/teste após o novo teste: `3e77717b9f415e9ac075e71560bbd6b5368d95d6`. Os commits seguintes deste ciclo foram apenas documentais.
+- HEAD documental atual: `dbbd0522135d5008eeb51c235152846453ac1ad6`; HEAD de código/teste do teste de isolamento: `6eccc983f5e1f8a15e10d0ef4492677850f4c06a`. Os commits seguintes deste ciclo foram apenas documentais.
 - `src/main.tsx` importa diretamente `FichaOfflineApp` e `ConexaoServidorLocal`; sem `?servidor=local`, abre a Ficha Offline; com o parâmetro, abre a Mesa LAN.
 - A inspeção estática dos módulos percorridos não encontrou import do SDK Supabase no caminho de entrada Offline/LAN.
 - O legado Supabase continua nos arquivos `App.tsx`, `Convites.tsx`, `Participantes.tsx` e `FichasJogador.tsx`, fora do grafo de entrada atual.
 - `@supabase/supabase-js` ainda está no `package.json` e no `pnpm-lock.yaml`; `tsconfig.json` inclui todo `src`, portanto o pacote ainda é necessário para compilar os arquivos legados. Não remover a dependência sem decisão e alteração delimitada que preserve a compilação.
 - Criado `tests/entradas-offline-sem-supabase.test.mjs` para proteger o grafo de imports ativo. **Implementado, ainda não executado.**
-- Status CI do commit `3e77717b9f415e9ac075e71560bbd6b5368d95d6` estava vazio na consulta; testes e build não foram confirmados nesta sessão.
-- Checkpoint: `docs/checkpoint-isolamento-offline-supabase-2026-11-14.md` (atualizado no commit `d1c83966fa40e31fd5113f6d6fad7591a0ae6751`).
+- Status CI do commit de código/teste `6eccc983f5e1f8a15e10d0ef4492677850f4c06a` retornou lista vazia na consulta; testes e build não foram confirmados nesta sessão.
+- Checkpoint: `docs/checkpoint-isolamento-offline-supabase-2026-11-14.md` (atualizado no commit `dbbd0522135d5008eeb51c235152846453ac1ad6`).
 - Auditoria estática adicional confirmou IndexedDB v3, gravações aguardando `transaction.oncomplete`, rejeição de abortamentos/conflitos, testes dedicados de persistência/migração/backup e testes do Service Worker para fallback offline e não interceptação de API. Nada disso foi executado nesta sessão.
 - O script `Iniciar_Ficha_Offline.bat` foi inspecionado: configura PWA de teste, valida TypeScript, gera build e inicia `vite preview`; não foi executado nesta sessão.
 - `index.html` e manifesto ainda contêm metadados históricos que mencionam Mesas online; registrado como inconsistência textual, sem chamada online comprovada no caminho ativo.
