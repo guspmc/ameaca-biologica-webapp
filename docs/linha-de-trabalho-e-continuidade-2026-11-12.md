@@ -514,3 +514,19 @@ Inventário ativo, Painel do Mestre e Laboratório não devem ser iniciados ante
 ### Próxima ação
 
 Consultar o status de CI do HEAD atual e, quando houver evidência, registrar o resultado do novo teste e do build. Depois continuar a Fase 0 verificando inicialização e persistência IndexedDB da Ficha. Não refazer a validação LAN aprovada e não avançar de fase sem checkpoint.
+
+
+## Atualização documental — README, metadados e roteiro humano (14/11/2026)
+
+- **Branch:** `feat/offline-first-ficha`.
+- **HEAD após o ciclo:** `9ac570378e0d3db746129cfd16af29bbc26da642`.
+- **Objetivo:** alinhar a documentação de entrada à arquitetura offline aprovada e evitar que o roteiro humano misture Ficha Offline com Mesa LAN.
+- **Arquivos alterados:** `README.md`, `index.html`, `public/manifest.webmanifest`, `docs/roteiro-humano-ficha-offline-local.md`.
+- **README:** atualizada a apresentação vigente, a ordem de fases e a instrução para iniciar somente a Ficha Offline. O conteúdo antigo de Alfa/Supabase foi preservado no próprio arquivo sob aviso explícito de histórico, não vigente. O antigo título do contrato Local > LAN foi marcado como histórico.
+- **Metadados:** corrigidas somente as descrições textuais de HTML e manifesto; identidade visual, título e navegação não foram alterados.
+- **Roteiro humano:** opção 3 removida da orientação; a bateria manda escolher somente opção 1. Numeração sequencial corrigida na preparação.
+- **Código funcional:** nenhum arquivo de produção ou regra de negócio alterado.
+- **Testes/build:** não executados nesta sessão. Os workflows disparados pelos commits documentais estão pendentes no GitHub Actions; não declarar aprovação.
+- **Validação humana:** não realizada. O roteiro permanece preparado e a execução humana depende de checkpoint técnico aprovado.
+- **Riscos/limites:** README preserva instruções antigas para rastreabilidade, mas ficam explicitamente marcadas como históricas. Revisar links internos e a coerência de todo o arquivo em ciclo documental futuro se necessário.
+- **Próxima ação:** obter resultados de CI do HEAD atual; tratar falhas antes de qualquer avanço. Continuar a Fase 0, sem iniciar Inventário, Painel ou Laboratório.
