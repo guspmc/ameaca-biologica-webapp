@@ -120,3 +120,14 @@ O \`index.html\` e a descrição do manifesto ainda contêm texto histórico que
 
 
 - **Ajuste do teste antes da execução:** a resolução foi corrigida para ignorar assets estáticos sem extensão de código e falhar explicitamente apenas quando um import relativo de código não puder ser resolvido. HEAD atualizado do teste: `6eccc983f5e1f8a15e10d0ef4492677850f4c06a`. Continua sem execução confirmada.
+
+
+## 10. Proteção adicional do Service Worker para rotas LAN — 14/11/2026
+
+Foi ampliado o teste \`tests/service-worker-shell.test.mjs\` para garantir que o Service Worker não intercepte requisições GET às rotas locais \`/api/mesas\` e \`/ws\`, nem POST à API LAN. Os casos existentes para endpoint legado \`/rest/v1\`, domínio externo e método de escrita em asset foram preservados.
+
+- **Código de produção alterado:** não.
+- **Teste alterado:** sim, apenas cobertura adicional de rotas LAN.
+- **Execução:** PENDENTE; o teste não foi executado nesta sessão.
+- **Build/CI:** sem evidência de execução/aprovação.
+- **Validação humana LAN:** não repetida; nenhuma alteração foi feita no servidor ou nos scripts LAN.
