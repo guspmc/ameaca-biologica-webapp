@@ -6,7 +6,7 @@ Aplicação de apoio ao RPG **Ameaça Biológica**, em desenvolvimento com prior
 
 O desenvolvimento ativo está na branch `feat/offline-first-ficha`, concentrado exclusivamente nas Fases 0 e 1 da Ficha Offline PWA. O produto final deverá operar sem internet, nuvem ou serviços externos: Ficha e Painel como PWAs locais; Laboratório com Node.js e SQLite na rede LAN. A integração entre dispositivos será tratada somente na fase própria, sem presumir sincronização automática.
 
-A ordem obrigatória, decisões de arquitetura, limites de escopo e critérios de validação estão nas [instruções do projeto](docs/linha-de-trabalho-e-continuidade-2026-11-12.md) e no [Documento Mestre de Planejamento v3.0](docs/Documento-Mestre-de-Planejamento-v3.0.md), quando disponível nesse caminho. O checkpoint técnico mais recente deve ser consultado antes de qualquer alteração.
+A ordem obrigatória, decisões de arquitetura, limites de escopo e critérios de validação estão nas [instruções do projeto](docs/linha-de-trabalho-e-continuidade-2026-11-12.md). O checkpoint técnico mais recente deve ser consultado antes de qualquer alteração.
 
 ### Ordem de desenvolvimento
 
