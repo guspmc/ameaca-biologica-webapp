@@ -1,20 +1,41 @@
 # Ameaça Biológica RPG — WebApp
 
-WebApp gratuito e de código aberto para **Ameaça Biológica**, RPG de horror e sobrevivência, com fichas digitais, gerenciamento de campanhas, Mesas online e sincronização.
+Aplicação de apoio ao RPG **Ameaça Biológica**, em desenvolvimento com prioridade para funcionamento local e offline.
 
-## Diretriz vigente de desenvolvimento — 12/11/2026
+## Estado vigente — 14/11/2026
 
-O foco ativo está na **auditoria, correção e consolidação do Laboratório e da Ficha Offline** na branch `feat/offline-first-ficha`. A documentação histórica abaixo registra etapas anteriores e não deve ser interpretada como descrição automática do estado atual.
+O desenvolvimento ativo está na branch `feat/offline-first-ficha`, concentrado exclusivamente nas Fases 0 e 1 da Ficha Offline PWA. O produto final deverá operar sem internet, nuvem ou serviços externos: Ficha e Painel como PWAs locais; Laboratório com Node.js e SQLite na rede LAN. A integração entre dispositivos será tratada somente na fase própria, sem presumir sincronização automática.
 
-A linha de trabalho, as restrições, a ordem dos testes e o ponto de continuidade estão em [docs/linha-de-trabalho-e-continuidade-2026-11-12.md](docs/linha-de-trabalho-e-continuidade-2026-11-12.md). Esse documento orienta a retomada em novas conversas.
+A ordem obrigatória, decisões de arquitetura, limites de escopo e critérios de validação estão nas [instruções do projeto](docs/linha-de-trabalho-e-continuidade-2026-11-12.md) e no [Documento Mestre de Planejamento v3.0](docs/Documento-Mestre-de-Planejamento-v3.0.md), quando disponível nesse caminho. O checkpoint técnico mais recente deve ser consultado antes de qualquer alteração.
 
-**Ordem posterior, após a conclusão e validação da etapa atual:**
-1. Inventário Offline;
-2. Inventário LAN;
-3. Painel do Mestre;
-4. Versão Linux.
+### Ordem de desenvolvimento
 
-Não alterar a identidade visual aprovada, não refatorar o servidor LAN funcional, não tocar em `main`, Supabase/banco remoto, GitHub Pages ou publicação durante a etapa atual. Não confundir funcionalidade planejada/documentada com funcionalidade implementada, testada ou homologada.
+1. Fase 0 — Preparação Offline.
+2. Fase 1 — Ficha Offline.
+3. Fase 2 — testes humanos da Ficha.
+4. Fase 3 — Inventário Offline.
+5. Fase 4 — Painel do Mestre Offline.
+6. Fase 5 — Laboratório Node.js/SQLite.
+7. Fase 6 — Integração LAN.
+8. Fase 7 — empacotamento e plataformas.
+9. Fase 8 — homologação integrada.
+10. Fase 9 — temas e personalização.
+
+Não iniciar fases posteriores antes dos critérios e checkpoint da fase anterior. Não alterar `main`, trocar branch, fazer merge, publicar ou implantar sem autorização expressa. Não remover dependências legadas sem mapear seu impacto na compilação. Os protótipos visuais v02 permanecem congelados.
+
+### Execução local
+
+Os scripts operacionais existentes estão em `scripts/windows/`. Para testar somente a Ficha Offline, use `scripts/windows/Menu_Testes.bat` e escolha **1 — Iniciar Ficha Offline**. O roteiro humano correspondente é `docs/roteiro-humano-ficha-offline-local.md`; sua execução depende da confirmação do checkpoint técnico. A validação humana LAN já aprovada não deve ser repetida sem regressão concreta.
+
+### Estado e evidências
+
+Não considere uma funcionalidade concluída apenas por estar planejada ou implementada. Diferencie testes existentes de testes executados, build atual de build anterior e validação automatizada de validação humana. Consulte os checkpoints e o registro de continuidade antes de retomar o trabalho.
+
+---
+
+## Arquivo histórico — etapa Supabase/Alfa (não seguir como instrução vigente)
+
+O conteúdo abaixo foi preservado para consulta histórica. Suas instruções de Supabase, PostgreSQL remoto, GitHub Pages, Alfa, migrações, sincronização e sequência antiga de módulos estão superadas para o desenvolvimento atual. Não configure serviços externos nem execute os procedimentos abaixo como parte da Ficha Offline.
 
 ## Estado atual
 
@@ -132,7 +153,7 @@ O primeiro protótipo técnico separado usa Node.js, SQLite e WebSocket para val
 Consulte o [guia de execução e teste do servidor local](docs/servidor-local-prototipo.md). O protótipo ainda precisa passar pela validação automatizada e pelo teste manual em dois dispositivos antes de avançarmos para autenticação local.
 
 
-## Contrato atual de persistência Local > LAN
+## Contrato histórico de persistência Local > LAN (não vigente)
 
 A decisão confirmada para a Ficha do Jogador é que a versão local válida é a fonte de verdade: com LAN disponível, salvar no dispositivo e no servidor; sem LAN, salvar localmente; ao reconectar, enviar automaticamente a última versão válida da Ficha para o servidor. A exportação de backup é opcional. Baú e transferências compartilhadas continuam restritos à LAN.
 
