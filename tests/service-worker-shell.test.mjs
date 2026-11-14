@@ -43,7 +43,10 @@ test('Service Worker não intercepta API, outros domínios ou métodos de escrit
   const { eventos } = ambiente();
   for (const request of [
     { method: 'GET', url: 'https://app.test/ameaca-biologica-webapp/rest/v1/personagens', mode: 'cors' },
+    { method: 'GET', url: 'https://app.test/ameaca-biologica-webapp/api/mesas', mode: 'cors' },
+    { method: 'GET', url: 'https://app.test/ameaca-biologica-webapp/ws', mode: 'cors' },
     { method: 'GET', url: 'https://api.test/rest/v1/personagens', mode: 'cors' },
+    { method: 'POST', url: 'https://app.test/ameaca-biologica-webapp/api/mesas', mode: 'cors' },
     { method: 'POST', url: 'https://app.test/ameaca-biologica-webapp/assets/app.js', mode: 'cors' },
   ]) {
     let interceptou = false;
