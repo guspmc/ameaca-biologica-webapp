@@ -4,7 +4,7 @@
 **Frente:** Ficha Offline PWA  
 **Fase:** 0 — Preparação Offline  
 **Branch:** `feat/offline-first-ficha`  
-**HEAD após este ciclo:** `3e77717b9f415e9ac075e71560bbd6b5368d95d6`  
+**HEAD de código/teste após este ciclo:** `6eccc983f5e1f8a15e10d0ef4492677850f4c06a`  
 **Escopo:** inspeção estática do ponto de entrada e das dependências do caminho ativo; criação de teste de regressão do grafo de imports.  
 **Limites:** sem alteração de `main`, servidor LAN, banco, scripts de inicialização, identidade visual, deploy ou publicação.
 
@@ -37,7 +37,7 @@ A presença da dependência no manifesto significa que ela ainda é instalada no
 
 Arquivo: `tests/entradas-offline-sem-supabase.test.mjs`.
 
-O teste percorre imports relativos estáticos a partir de `src/main.tsx`, verifica resolução dos módulos locais e falha se encontrar referências ao SDK Supabase ou à URL de projeto Supabase no grafo alcançável.
+O teste percorre imports relativos estáticos a partir de `src/main.tsx`, verifica resolução dos módulos de código locais (ignorando assets como CSS) e falha se encontrar referências ao SDK Supabase ou à URL de projeto Supabase no grafo alcançável. Imports de código relativos não resolvidos geram erro.
 
 - **Estado:** IMPLEMENTADO.
 - **Execução:** PENDENTE.
@@ -118,3 +118,5 @@ Nenhum arquivo de produto, manifesto, Service Worker, configuração, lockfile o
 
 O \`index.html\` e a descrição do manifesto ainda contêm texto histórico que menciona “Mesas online”. Isso não demonstra chamada de serviço online no caminho ativo, mas é uma inconsistência de metadados a revisar em ciclo próprio, sem alteração visual.
 
+
+- **Ajuste do teste antes da execução:** a resolução foi corrigida para ignorar assets estáticos sem extensão de código e falhar explicitamente apenas quando um import relativo de código não puder ser resolvido. HEAD atualizado do teste: `6eccc983f5e1f8a15e10d0ef4492677850f4c06a`. Continua sem execução confirmada.
