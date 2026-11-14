@@ -80,3 +80,41 @@ Nenhum arquivo de produto, manifesto, Service Worker, configuração, lockfile o
 3. Prosseguir na Fase 0 com a auditoria da inicialização e persistência IndexedDB, sem alterar o fluxo LAN aprovado.
 4. Não avançar para a bateria humana da Fase 2 antes de cumprir os critérios técnicos da Fase 1.
 5. Não iniciar Inventário ativo, Painel do Mestre ou Laboratório nesta etapa.
+
+
+## 9. Auditoria estática da inicialização, persistência e PWA — 14/11/2026
+
+### Inicialização
+
+- \`src/main.tsx\` registra \`public/sw.js\` em produção e na prévia de teste quando \`VITE_PWA_TESTE=true\`; não registra no servidor de desenvolvimento.
+- \`scripts/windows/Iniciar_Ficha_Offline.bat\` define \`VITE_PWA_TESTE=true\`, executa TypeScript e build em modo teste, inicia \`vite preview\` na porta 4176 e abre o endereço local. O script foi inspecionado, não executado por esta sessão.
+- O roteiro humano espera \`http://127.0.0.1:4176/ameaca-biologica-webapp/\` e orienta verificar IndexedDB e controle do Service Worker.
+- \`public/manifest.webmanifest\` declara \`start_url: "./"\`, \`scope: "./"\` e \`display: "standalone"\`.
+
+### Persistência IndexedDB
+
+- \`src/persistenciaFicha.ts\` declara IndexedDB como fonte de verdade local, banco \`ameaca-biologica-ficha\`, versão 3, store \`personagens\` e store separada \`vinculosLan\`.
+- A abertura trata ausência de IndexedDB, falha de abertura, bloqueio por outra aba e \`versionchange\`; em mudança de versão, fecha a conexão e permite reabertura.
+- As gravações aguardam \`transaction.oncomplete\`; abortamento/erro rejeitam a operação. A interface só apresenta “Salvo neste dispositivo” depois de \`salvarPatchPersonagem\` resolver.
+- Patches leem a ficha vigente dentro da mesma transação \`readwrite\`, verificam geração, nome e valores-base das chaves editadas, e abortam conflitos na mesma seção.
+- Substituição de backup limpa e grava o conjunto na mesma transação, atribuindo novas gerações; lotes de cópias também são transacionais.
+- Testes existentes identificados: \`persistencia-gravacao.test.mjs\`, \`persistencia-operacoes.test.mjs\`, \`persistencia-migracao.test.mjs\`, \`persistencia-patch.test.mjs\`, além de testes de backup.
+
+### Service Worker
+
+- \`public/sw.js\` guarda o shell e assets estáticos; não intercepta métodos de escrita, API ou domínios externos e não armazena dados de personagem.
+- \`tests/service-worker-shell.test.mjs\` cobre não interceptação de API/domínios/métodos de escrita, fallback de navegação offline pelo shell em cache e atualização do cache versionado.
+- Esses testes usam ambiente simulado; não substituem a verificação em navegador real.
+
+### Estado da evidência
+
+- **IMPLEMENTADO:** inicialização da Ficha Offline, persistência IndexedDB v3, backup transacional, Service Worker e manifesto.
+- **TESTES AUTOMATIZADOS EXISTENTES:** há testes específicos de persistência, migração, conflito, backup e Service Worker.
+- **EXECUÇÃO AUTOMATIZADA NESTA SESSÃO:** nenhuma. A consulta de status do HEAD \`958234d32e0ff434ebe7f15f1c06d70f7a112930\` retornou lista vazia.
+- **BUILD:** não executado/confirmado.
+- **VALIDAÇÃO HUMANA OFFLINE:** pendente. A validação humana LAN previamente aprovada permanece fechada e não deve ser repetida.
+
+### Observação documental
+
+O \`index.html\` e a descrição do manifesto ainda contêm texto histórico que menciona “Mesas online”. Isso não demonstra chamada de serviço online no caminho ativo, mas é uma inconsistência de metadados a revisar em ciclo próprio, sem alteração visual.
+
