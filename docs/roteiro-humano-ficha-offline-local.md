@@ -7,7 +7,7 @@
 ## 1. Preparar o ambiente
 
 1. Atualize a branch `feat/offline-first-ficha` para o commit indicado no checkpoint aprovado.
-2. No Windows, execute `scripts\\windows\\Menu_Testes.bat` com duplo clique. Escolha **1 — Iniciar Ficha Offline** para testar somente a ficha, ou **3 — Iniciar os dois ambientes** se também quiser abrir a Mesa LAN em paralelo. O menu abre janelas separadas; mantenha a janela da Ficha aberta durante o teste.
+2. No Windows, execute `scripts\\windows\\Menu_Testes.bat` com duplo clique. Escolha **1 — Iniciar Ficha Offline**. Não escolha a opção 3: esta bateria valida somente a Ficha Offline e não deve iniciar a Mesa LAN. Mantenha a janela da Ficha aberta durante o teste.
 3. O endereço esperado é `http://127.0.0.1:4176/ameaca-biologica-webapp/`. A janela do terminal deve permanecer aberta durante o teste; encerre com Ctrl+C.
 4. Se preferir preparar manualmente, no PowerShell, na pasta do projeto, confira `node --version` (Node 22.12 ou superior) e execute:
 
@@ -20,9 +20,9 @@ Remove-Item Env:VITE_PWA_TESTE
 pnpm.cmd exec vite preview --host 127.0.0.1 --port 4176 --strictPort
 ```
 
-3. Abra `http://127.0.0.1:4176/ameaca-biologica-webapp/`.
-4. Confirme que o topo identifica **Ficha do Jogador · Modo offline**, sem conta e sem servidor. Não configure `.env`, Supabase ou credenciais.
-5. Abra DevTools → Application. O banco `ameaca-biologica-ficha` deve aparecer em IndexedDB; o Service Worker deve controlar o escopo da aplicação depois do primeiro carregamento.
+5. Abra `http://127.0.0.1:4176/ameaca-biologica-webapp/`.
+6. Confirme que o topo identifica **Ficha do Jogador · Modo offline**, sem conta e sem servidor. Não configure `.env`, Supabase ou credenciais.
+7. Abra DevTools → Application. O banco `ameaca-biologica-ficha` deve aparecer em IndexedDB; o Service Worker deve controlar o escopo da aplicação depois do primeiro carregamento.
 
 Se a aplicação não abrir, registre a mensagem e pare; não tente corrigir o ambiente durante a rodada.
 
