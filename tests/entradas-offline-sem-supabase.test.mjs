@@ -36,9 +36,9 @@ async function resolverImportacao(origem, especificador) {
 
 function importsEstaticos(codigo) {
   const encontrados = new Set();
-  const padraoComFrom = /\\b(?:import|export)\\s+(?:type\\s+)?[\\s\\S]*?\\s+from\\s+['"]([^'"]+)['"]/g;
-  const padraoLateral = /\\bimport\\s+['"]([^'"]+)['"]/g;
-  const padraoDinamico = /\\bimport\\s*\\(\\s*['"]([^'"]+)['"]\\s*\\)/g;
+  const padraoComFrom = /\b(?:import|export)\s+(?:type\s+)?[\s\S]*?\s+from\s+['"]([^'"]+)['"]/g;
+  const padraoLateral = /\bimport\s+['"]([^'"]+)['"]/g;
+  const padraoDinamico = /\bimport\s*\(\s*['"]([^'"]+)['"]\s*\)/g;
   for (const padrao of [padraoComFrom, padraoLateral, padraoDinamico]) {
     for (const resultado of codigo.matchAll(padrao)) encontrados.add(resultado[1]);
   }
@@ -57,7 +57,7 @@ test('as entradas Offline e LAN não carregam módulos Supabase no grafo ativo',
     visitados.add(arquivo);
 
     const codigo = await readFile(arquivo, 'utf8');
-    if (/@supabase\\/supabase-js|supabase\\.co/i.test(codigo)) {
+    if (/@supabase\/supabase-js|supabase\.co/i.test(codigo)) {
       dependenciasSupabase.push(arquivo);
     }
 
