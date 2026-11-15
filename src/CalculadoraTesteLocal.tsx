@@ -319,7 +319,7 @@ export default function CalculadoraTesteLocal({ atributos, treinada, distribuica
         <option value="virtual">Dados virtuais</option>
       </select>
     </label>}
-    {(tipo === 'ataque-corpo' || tipo === 'ataque-distancia') && !ataqueEmArea && <p>20 natural: Acerto Crítico automático e fecha as Reações defensivas normais. 1 natural: Falha Crítica; Exposto é ativado automaticamente somente no modo Automático. A Ficha apresenta a rolagem e o total, sem comparar com a Defesa ou decidir acerto/erro. {limiteCritico === 19 ? 'Este perfil tem margem 19–20: em 19 natural, confira na mesa se o total alcança a Defesa antes de aplicar o Crítico.' : ''} O cálculo de Dano permanece manual.</p>}
+    {(tipo === 'ataque-corpo' || tipo === 'ataque-distancia') && !ataqueEmArea && <p>20 natural: Acerto Crítico automático e fecha as Reações defensivas normais. 1 natural: Falha Crítica; Exposto é ativado automaticamente somente no modo Automático. A Ficha apresenta a rolagem e o total, sem comparar com a Defesa ou decidir acerto/erro. {limiteCritico === 19 ? 'Este perfil tem margem 19–20: em 19 natural, confira na mesa se o total alcança a Defesa antes de aplicar o Crítico.' : ''} A Ficha não decide o resultado do Ataque nem aplica Dano aos PV; use a calculadora abaixo após a confirmação da Mesa.</p>}
 
     <label>{escopo === 'ataques' ? 'Tipo de Ataque' : 'Tipo de Teste'}
       <select value={tipo} onChange={evento => mudarTipo(evento.target.value as 'pericia' | 'atributo' | 'ataque-corpo' | 'ataque-distancia')}>
