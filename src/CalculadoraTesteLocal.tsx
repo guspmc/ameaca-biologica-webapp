@@ -238,7 +238,7 @@ export default function CalculadoraTesteLocal({ atributos, treinada, distribuica
     ? aumentarCategoriaDano(formulaDanoBase, categoriasDanoUniversal)
     : formulaDanoBase;
   const formulaCadenciado = cadenciadoSelecionado && formulaDanoConvencional
-    ? `2d${formulaDanoConvencional.match(/d(\\d+)$/i)?.[1] ?? ''}` : null;
+    ? `2d${formulaDanoConvencional.match(/d(\d+)$/i)?.[1] ?? ''}` : null;
   const formulaDanoRolagem = [formulaDanoConvencional, formulaCadenciado, tipo === 'ataque-corpo' ? danoCorpoACorpoAdicionalBI : null]
     .filter((item): item is string => Boolean(item)).join('+');
   const multiplicadorCriticoDano = bearLauncherSelecionado ? 4 : multiplicadorCritico;

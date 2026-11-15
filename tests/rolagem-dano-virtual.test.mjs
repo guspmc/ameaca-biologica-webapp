@@ -11,10 +11,10 @@ test('rola fórmulas convencionais com mais de um grupo de dados', () => {
 });
 
 test('Motosserra gera um dado extra por cada 6 e permite encadeamento', () => {
-  const valores = [5, 0, 5, 1, 5, 2];
+  const valores = [5, 0, 5, 5, 5];
   const resultado = rolarFormulaDanoVirtual('2d6', true, () => valores.shift() ?? 0);
-  assert.deepEqual(resultado.resultados, [6, 1, 6, 2, 6]);
-  assert.equal(resultado.total, 21);
+  assert.deepEqual(resultado.resultados, [6, 1, 6, 6, 6]);
+  assert.equal(resultado.total, 25);
   assert.equal(resultado.dadosExtrasEncadeados, 3);
 });
 

@@ -9,12 +9,12 @@ export type ResultadoRolagemDano = {
 const FACES_DANO: FacesDado[] = [4, 6, 8, 10, 12];
 
 function analisarFormula(formula: string): Array<{ quantidade: number; faces: FacesDado }> {
-  const partes = formula.toLowerCase().replace(/\\s+/g, '').split('+');
+  const partes = formula.toLowerCase().replace(/\s+/g, '').split('+');
   if (!partes.length || partes.some(parte => !parte)) {
     throw new Error('A fórmula de Dano está vazia ou malformada.');
   }
   return partes.map(parte => {
-    const match = /^(\\d+)d(4|6|8|10|12)$/.exec(parte);
+    const match = /^(\d+)d(4|6|8|10|12)$/.exec(parte);
     if (!match) throw new Error(`Fórmula de Dano não reconhecida: ${parte}.`);
     const quantidade = Number(match[1]);
     const faces = Number(match[2]) as FacesDado;
