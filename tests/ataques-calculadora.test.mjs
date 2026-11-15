@@ -320,7 +320,7 @@ test('4ª Fase da BI lembra o +1d4 no Dano Corpo a Corpo sem rolagem automática
   assert.match(ui, /danoCorpoACorpoAdicionalBI\?: string \| null/);
   assert.match(ui, /tipo === 'ataque-corpo' && danoCorpoACorpoAdicionalBI/);
   assert.match(ui, /role \{danoCorpoACorpoAdicionalBI\} adicional de Dano Corpo a Corpo/);
-  assert.match(ui, /não se aplica a Ataques à distância e não é rolado automaticamente/);
+  assert.match(ui, /não se aplica a Ataques à distância/);
 });
 
 
@@ -341,14 +341,14 @@ test('Briga de Gente Grande lembra compatibilidade anatômica e Vantagem contra 
 
 
 test('Dano virtual só é oferecido dentro da calculadora Automática e respeita o método de dados', () => {
-  assert.match(ficha, /configuracaoFuncionamento\\.modo === 'automatico' && <CalculadoraTesteLocal escopo="ataques"/);
+  assert.ok(ficha.includes("configuracaoFuncionamento.modo === 'automatico' && <CalculadoraTesteLocal escopo=\"ataques\""));
   assert.match(ui, /metodo === 'virtual' && <button type="button" className="botao-claro" onClick={rolarDanoVirtual}>Rolar Dano/);
   assert.match(ui, /metodo === 'fisico' && <label>Soma dos Dados de Dano/);
   assert.match(ui, /modoDados === 'mistos' && <label>Método desta rolagem/);
 });
 
 test('rolagem virtual de Dano inclui Cadenciado e o dado adicional da 4ª Fase da BI', () => {
-  assert.match(ui, /const formulaDanoRolagem = \\[formulaDanoConvencional, formulaCadenciado, tipo === 'ataque-corpo' \? danoCorpoACorpoAdicionalBI : null\\]/);
+  assert.ok(ui.includes("const formulaDanoRolagem = [formulaDanoConvencional, formulaCadenciado, tipo === 'ataque-corpo' ? danoCorpoACorpoAdicionalBI : null]"));
   assert.match(ui, /rolarFormulaDanoVirtual\(formulaDanoRolagem, perfilCorpo\?\.id === 'motosserra'\)/);
 });
 
