@@ -241,6 +241,11 @@ export default function CalculadoraTesteLocal({ atributos, treinada, distribuica
     ? `2d${formulaDanoConvencional.match(/d(\d+)$/i)?.[1] ?? ''}` : null;
   const formulaDanoRolagem = [formulaDanoConvencional, formulaCadenciado, tipo === 'ataque-corpo' ? danoCorpoACorpoAdicionalBI : null]
     .filter((item): item is string => Boolean(item)).join('+');
+  useEffect(() => {
+    setResultadoDadosDano('');
+    setResultadoDadosAdicionais('');
+    setDetalheRolagemDano('');
+  }, [formulaDanoRolagem, metodo]);
   const multiplicadorCriticoDano = bearLauncherSelecionado ? 4 : multiplicadorCritico;
   const atributoDano = tipo === 'ataque-corpo' ? atributos.forca : atributos.agilidade;
   useEffect(() => {
