@@ -547,3 +547,24 @@ Consultar o status de CI do HEAD atual e, quando houver evidência, registrar o 
 
 ### Próxima ação
 Verificar os resultados dos workflows no HEAD criado. Resolver falhas comprovadas e, se tudo passar, continuar a Fase 0 com a auditoria de inicialização/persistência Offline. Não avançar para Inventário nem para fases posteriores.
+
+
+## Atualização de ciclo — auditoria da entrada e persistência Offline — 15/11/2026
+
+- **Branch:** `feat/offline-first-ficha`.
+- **HEAD auditado:** `d77ad7164c8f4b89ccdda5d24c87cbc568c8fae1`.
+- **Checkpoint:** `docs/checkpoint-auditoria-entrada-persistencia-offline-2026-11-15.md`.
+- **Entrada:** `src/main.tsx` mantém a Ficha Offline como padrão e exige `?servidor=local` para a entrada LAN.
+- **Persistência:** inspeção de `src/persistenciaFicha.ts` e `src/validacaoPersonagemLocal.ts` confirmou IndexedDB v3, migrações v1→v3/v2→v3, gravações aguardando transação, patches com comparação por chave e geração e rejeição de conflitos.
+- **Service Worker:** `public/sw.js` limita cache ao shell/estáticos no escopo, considera apenas GET e não intercepta APIs, outros domínios nem métodos de escrita; teste correspondente existe.
+- **Backup/vínculos:** restauração substitui o store de personagens, mas não altera `vinculosLan`; registrado como risco a avaliar no contrato de backup/restauração, sem classificar como defeito nem alterar comportamento.
+- **CI:** runs `43675716417` e `43675716423` permaneciam `queued`, sem runner atribuído (`runner_id=0`) e sem etapas iniciadas. Instalação frozen-lockfile, testes, TypeScript e build continuam sem resultado confirmado.
+- **Testes:** arquivos de teste de migração, operações, concorrência e Service Worker foram inspecionados; não foram executados nesta sessão. Testes simulados não substituem IndexedDB real.
+- **Código de produção/testes:** nenhum arquivo alterado neste incremento.
+- **Validação humana:** pendente; o roteiro `docs/roteiro-humano-ficha-offline-local.md` permanece não executado.
+- **Fase 0:** permanece em andamento. Inventário, Painel e Laboratório não foram iniciados.
+- **Limites:** sem alteração de regras, identidade visual, schema, serviço LAN, `main`, branches, merge, deploy ou publicação.
+
+### Próxima ação
+
+Acompanhar a fila da CI e obter resultado real. Se os jobs não receberem runner, registrar o bloqueio sem presumir aprovação. Em seguida, continuar a verificação dos scripts de inicialização/build de teste e preparar a validação humana somente quando houver evidência técnica suficiente.
