@@ -123,7 +123,7 @@ test('modos especiais de Spark Shot e Lança-Chamas oferecem fórmulas manuais c
 });
 
 test('Motosserra orienta informar os dados extras de explosão sem rolagem automática', () => {
-  assert.match(ui, /Motosserra, informe aqui a soma dos dados extras gerados por cada resultado 6/);
+  assert.match(ui, /inclua também os dados extras da Motosserra gerados por resultados 6/);
   assert.match(ui, /incluindo os encadeamentos/);
 });
 
