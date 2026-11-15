@@ -5,6 +5,7 @@ import { calcularTesteManual, calcularRolagemAtaqueManual, type VantagemTeste } 
 import { condicoesQueImpoemDesvantagem, restricoesDeAtaquePorCondicoes } from './condicoesCalculadora';
 import { CATALOGO_CONDICOES, type CondicaoId } from './condicoesFicha';
 import { sortearDados, validarResultadosFisicos } from './rolagemDados';
+import { rolarFormulaDanoVirtual } from './rolagemDano';
 import type { ModoDados } from './funcionamentoFicha';
 import type { AtributosIniciais } from './atributosCriacao';
 import { listarPerfisArma, consultarPerfilArma, bonusAtaqueOperario, calcularDanoArma, possuiFormulaDanoConvencional, consultarPerfilAtaqueUniversal } from './catalogoArmas';
@@ -53,6 +54,7 @@ export default function CalculadoraTesteLocal({ atributos, treinada, distribuica
   const [armaId, setArmaId] = useState(() => escopo === 'ataques' && origem === 'Operário' ? listarPerfisArma().find(perfil => perfil.nome === armaOperario)?.id ?? '' : '');
   const [resultadoDadosDano, setResultadoDadosDano] = useState('');
   const [resultadoDadosAdicionais, setResultadoDadosAdicionais] = useState('');
+  const [detalheRolagemDano, setDetalheRolagemDano] = useState('');
   const [criticoDano, setCriticoDano] = useState(false);
   const [varianteDanoEspecial, setVarianteDanoEspecial] = useState<VarianteDanoEspecial>('normal');
   const [cartuchoGM79, setCartuchoGM79] = useState<CartuchoGM79>('acido');
@@ -235,11 +237,27 @@ export default function CalculadoraTesteLocal({ atributos, treinada, distribuica
   const formulaDanoConvencional = formulaDanoBase && categoriasDanoUniversal > 0
     ? aumentarCategoriaDano(formulaDanoBase, categoriasDanoUniversal)
     : formulaDanoBase;
+  const formulaCadenciado = cadenciadoSelecionado && formulaDanoConvencional
+    ? `2d${formulaDanoConvencional.match(/d(\\d+)$/i)?.[1] ?? ''}` : null;
+  const formulaDanoRolagem = [formulaDanoConvencional, formulaCadenciado, tipo === 'ataque-corpo' ? danoCorpoACorpoAdicionalBI : null]
+    .filter((item): item is string => Boolean(item)).join('+');
   const multiplicadorCriticoDano = bearLauncherSelecionado ? 4 : multiplicadorCritico;
   const atributoDano = tipo === 'ataque-corpo' ? atributos.forca : atributos.agilidade;
   useEffect(() => {
     setCriticoDano(false);
   }, [dadosConfirmados?.dado1, dadosConfirmados?.dado2, calculado.resultado?.total, perfilSelecionado?.id, valorTeste, modificador]);
+
+  function rolarDanoVirtual() {
+    if (!formulaDanoRolagem) return;
+    try {
+      const rolagem = rolarFormulaDanoVirtual(formulaDanoRolagem, perfilCorpo?.id === 'motosserra');
+      setResultadoDadosDano(String(rolagem.total));
+      setDetalheRolagemDano(`${rolagem.resultados.join(' + ')} = ${rolagem.total}${rolagem.dadosExtrasEncadeados ? ` · ${rolagem.dadosExtrasEncadeados} dado(s) extra(s) da Motosserra` : ''}`);
+      setErroRolagem('');
+    } catch (problema) {
+      setErroRolagem(problema instanceof Error ? problema.message : 'Não foi possível rolar o Dano.');
+    }
+  }
 
   const calculoDano = useMemo(() => {
     if (!formulaDanoConvencional || !resultadoDadosDano.trim() || !perfilSelecionado || multiplicadorCriticoDano === null) return null;
@@ -318,7 +336,7 @@ export default function CalculadoraTesteLocal({ atributos, treinada, distribuica
     {golpeSujoAtivo && <p className="ficha-local-aviso" role="status">GOLPE SUJO: após causar Dano Corpo a Corpo, você pode gastar Movimento para tentar Derrubar pela Manobra normal. Pisão contra alvo Caído acrescenta 1 Dado ao Ataque Desarmado; contra alvo Menor que você, concede Vantagem e o trata como Caído para esse ataque. Se estiver Vulnerável e puder sofrer Finalização, o Pisão causa Morte Instantânea sem SA. Cabeçada é Ataque Desarmado; em acerto, o alvo faz Fortitude DT 10 + FOR e, em falha, fica Atordoado até o fim do próximo turno dele. Confirme requisitos e efeitos com a Mesa; esta calculadora não executa as Manobras nem aplica Condições.</p>}
     {(tipo === 'ataque-corpo' || tipo === 'ataque-distancia') && <div className="ficha-local-editor">
       <label>Perfil de arma para consulta (opcional)
-        <select value={armaId} onChange={evento => { setArmaId(evento.target.value); setResultadoDadosDano(''); setResultadoDadosAdicionais(''); setCriticoDano(false); setVarianteDanoEspecial('normal'); setCartuchoGM79('acido'); setModoGM79('direto'); setModoBearCommander('rifle'); setModoDisparoAutomatico('normal'); setCoronhaMatildaConfirmada(false); }}>
+        <select value={armaId} onChange={evento => { setArmaId(evento.target.value); setResultadoDadosDano(''); setResultadoDadosAdicionais(''); setDetalheRolagemDano(''); setCriticoDano(false); setVarianteDanoEspecial('normal'); setCartuchoGM79('acido'); setModoGM79('direto'); setModoBearCommander('rifle'); setModoDisparoAutomatico('normal'); setCoronhaMatildaConfirmada(false); }}>
           <option value="">Sem perfil selecionado</option>
           {perfisDisponiveis.map(perfil => <option key={perfil.id} value={perfil.id}>{perfil.nome}</option>)}
           {tipo === 'ataque-corpo' && <><option value="universal:arma-improvisada">Arma Improvisada</option><option value="universal:ataque-desarmado">Ataque Desarmado</option></>}
@@ -343,7 +361,7 @@ export default function CalculadoraTesteLocal({ atributos, treinada, distribuica
             {modosArmaFogo.rajada && <option value="rajada">Rajada · Ação Completa · 10 cartuchos</option>}
           </select>
         </label>
-        {cadenciadoSelecionado && <p className="ficha-local-legenda">Disparo Cadenciado usa Ataque normal e acrescenta +2 Dados de Dano do mesmo tipo da arma. Role esses dois dados extras e informe a soma no campo de Dados adicionais. Consumo: {modosArmaFogo?.cartuchosCadenciado} cartuchos.</p>}
+        {cadenciadoSelecionado && <p className="ficha-local-legenda">Disparo Cadenciado usa Ataque normal e acrescenta +2 Dados de Dano do mesmo tipo da arma. No método virtual, os dois dados extras entram na rolagem; no físico, some-os ao resultado informado. Consumo: {modosArmaFogo?.cartuchosCadenciado} cartuchos.</p>}
         {rajadaSelecionada && <p className="ficha-local-legenda">Cone de 4,5 m: 1 espaço na primeira fileira, 2 na segunda e 3 na terceira. Pode operar no alcance Curto mesmo quando o alcance mínimo normal é Médio.</p>}
       </div>}
       {procedimentoPerfuracao && <div className="ficha-local-aviso" role="status"><strong>Perfuração</strong><p>{procedimentoPerfuracao}</p><small>A calculadora não controla a Linha, os alvos subsequentes, a cobertura ou a redução acumulada dos dados; faça cada Teste de Ataque e ajuste o Dano manualmente.</small></div>}
@@ -386,17 +404,19 @@ export default function CalculadoraTesteLocal({ atributos, treinada, distribuica
         <small>Selecione conforme o histórico real do combate. Mover ou falhar no Teste encerra a acumulação; o próximo Ataque volta a 3d6.</small>
       </label>}
       {perfilSelecionado && formulaDanoConvencional && multiplicadorCritico !== null && <div className="ficha-local-editor">
-        <strong>Calculadora manual de Dano</strong>
-        <small>Role os dados fisicamente ou informe a soma que você já obteve. Esta etapa não rola dados nem altera PV.</small>
-        <label>Soma dos Dados de Dano ({formulaDanoConvencional})
-          <input type="number" min="0" step="1" value={resultadoDadosDano} onChange={evento => setResultadoDadosDano(evento.target.value)} placeholder="Resultado somado dos dados" />
-        </label>
+        <strong>Calculadora de Dano</strong>
+        <small>O cálculo nunca altera PV. No método físico, informe a soma obtida nos dados; no virtual, use o comando explícito para rolar a fórmula exibida.</small>
+        {metodo === 'virtual' && <button type="button" className="botao-claro" onClick={rolarDanoVirtual}>Rolar Dano · {formulaDanoRolagem}</button>}
+        {metodo === 'fisico' && <label>Soma dos Dados de Dano ({formulaDanoRolagem || formulaDanoConvencional})
+          <input type="number" min="0" step="1" value={resultadoDadosDano} onChange={evento => { setResultadoDadosDano(evento.target.value); setDetalheRolagemDano(''); }} placeholder="Resultado somado dos dados" />
+        </label>}
+        {detalheRolagemDano && <p className="ficha-local-legenda" role="status">Rolagem virtual: {detalheRolagemDano}</p>}
         <label>Soma de Dados adicionais já rolados (opcional)
           <input type="number" min="0" step="1" value={resultadoDadosAdicionais} onChange={evento => setResultadoDadosAdicionais(evento.target.value)} placeholder="Ex.: +1d4 de Peça ou Habilidade" />
         </label>
         <small>Use este campo somente depois de rolar dados adicionais previstos por uma Peça, Habilidade ou modo de disparo válido, incluindo os +2 dados do Disparo Cadenciado. Na Motosserra, informe aqui a soma dos dados extras gerados por cada resultado 6, incluindo os encadeamentos. A calculadora não presume que você possui Peças ou Habilidades.</small>
         {socadorDePedrasAtivo && <p className="ficha-local-aviso" role="status">SOCADOR DE PEDRAS: o Dano base do Ataque Desarmado é 3d10 antes de aumentos de categoria; a progressão por Casca-Grossa é aplicada depois. Ao acertar, o resultado do Ataque pode ser usado como DT de Fortitude para Derrubar. As demais criaturas adjacentes ao alvo principal sofrem 1d10 da onda de choque; role e resolva esse Dano separadamente com a Mesa. A calculadora não aplica efeitos em terceiros.</p>}
-        {tipo === 'ataque-corpo' && danoCorpoACorpoAdicionalBI && <p className="ficha-local-aviso" role="status">4ª Fase da Bio-Infecção: role {danoCorpoACorpoAdicionalBI} adicional de Dano Corpo a Corpo e informe a soma no campo de Dados adicionais. Este bônus não se aplica a Ataques à distância e não é rolado automaticamente.</p>}
+        {tipo === 'ataque-corpo' && danoCorpoACorpoAdicionalBI && <p className="ficha-local-aviso" role="status">4ª Fase da Bio-Infecção: acrescenta {danoCorpoACorpoAdicionalBI} à fórmula de Dano Corpo a Corpo. No método virtual, esses dados são incluídos na rolagem; no físico, informe a soma junto dos demais dados. Não se aplica a Ataques à distância.</p>}
         <p>Atributo aplicado: {tipo === 'ataque-corpo' ? 'FOR' : 'AGI'} (+{atributoDano}).</p>
         {armaOperarioEscolhida && <p>Operário: o Dano recebe FOR adicional; esse bônus não é multiplicado no Crítico.</p>}
         {resultadoAtaqueCritico && <p className="ficha-local-legenda">20 natural: Acerto Crítico automático (×{multiplicadorCriticoDano}).</p>}

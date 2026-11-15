@@ -6,6 +6,7 @@ const ui = await readFile(new URL('../src/CalculadoraTesteLocal.tsx', import.met
 const pericias = await readFile(new URL('../src/pericias.ts', import.meta.url), 'utf8');
 const ficha = await readFile(new URL('../src/FichaLocal.tsx', import.meta.url), 'utf8');
 const painel = await readFile(new URL('../src/PainelAcoesLocal.tsx', import.meta.url), 'utf8');
+const rolagemDano = await readFile(new URL('../src/rolagemDano.ts', import.meta.url), 'utf8');
 
 test('calculadora oferece Ataque Corpo a Corpo com Luta e Ataque à distância com Pontaria', () => {
   assert.match(ui, /ataque-corpo/);
@@ -336,4 +337,23 @@ test('Briga de Gente Grande lembra compatibilidade anatômica e Vantagem contra 
   assert.match(ui, /Manobras de GOLPE SUJO também funcionam contra criaturas maiores/);
   assert.match(ui, /Vantagem em Derrubar ou Cabeçada contra criatura maior/);
   assert.match(ui, /não concede Vantagem automaticamente nem executa a Manobra/);
+});
+
+
+test('Dano virtual só é oferecido dentro da calculadora Automática e respeita o método de dados', () => {
+  assert.match(ficha, /configuracaoFuncionamento\\.modo === 'automatico' && <CalculadoraTesteLocal escopo="ataques"/);
+  assert.match(ui, /metodo === 'virtual' && <button type="button" className="botao-claro" onClick={rolarDanoVirtual}>Rolar Dano/);
+  assert.match(ui, /metodo === 'fisico' && <label>Soma dos Dados de Dano/);
+  assert.match(ui, /modoDados === 'mistos' && <label>Método desta rolagem/);
+});
+
+test('rolagem virtual de Dano inclui Cadenciado e o dado adicional da 4ª Fase da BI', () => {
+  assert.match(ui, /const formulaDanoRolagem = \\[formulaDanoConvencional, formulaCadenciado, tipo === 'ataque-corpo' \? danoCorpoACorpoAdicionalBI : null\\]/);
+  assert.match(ui, /rolarFormulaDanoVirtual\(formulaDanoRolagem, perfilCorpo\?\.id === 'motosserra'\)/);
+});
+
+test('rolagem virtual da Motosserra encadeia resultados 6 sem limite arbitrário de regra', () => {
+  assert.match(rolagemDano, /if \(!encadearSeis \|\| resultados\[indice\] !== 6/);
+  assert.match(rolagemDano, /dadosExtrasEncadeados/);
+  assert.match(rolagemDano, /limite de segurança de 1.000 Dados/);
 });
