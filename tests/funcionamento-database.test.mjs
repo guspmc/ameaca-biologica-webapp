@@ -1,10 +1,10 @@
-import {test} from 'node:test';
+import {test,after} from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile,readdir} from 'node:fs/promises';
 import {PGlite} from '@electric-sql/pglite';
 const A='00000000-0000-4000-8000-000000000001',B='00000000-0000-4000-8000-000000000002',M='00000000-0000-4000-8000-000000000003',X='00000000-0000-4000-8000-000000000004',T='10000000-0000-4000-8000-000000000001';
 const inicial=()=>({modo:'misto',preferenciasMisto:{municao:true,inventario:true,duracaoEfeitos:true,biInfectante:null,durabilidadeAparar:null}});
-async function setup(){
+async function buildTemplate(){
  const db=new PGlite();
  await db.exec("create role anon;create role authenticated;create schema auth;create table auth.users(id uuid primary key);create function auth.uid() returns uuid language sql stable as $$select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid$$;grant usage on schema auth to anon,authenticated;grant execute on function auth.uid() to anon,authenticated;create publication supabase_realtime;");
  const dir=new URL('../supabase/migrations/',import.meta.url);
@@ -14,6 +14,17 @@ async function setup(){
  await db.query("insert into public.mesa_participantes(mesa_id,usuario_id,papel) values($1,$2,'jogador'),($1,$3,'jogador')",[T,A,B]);
  return db;
 }
+let templatePromise;
+async function setup(){
+ if(!templatePromise)templatePromise=buildTemplate();
+ return (await templatePromise).clone();
+}
+after(async()=>{
+ if(templatePromise){
+  const template=await templatePromise;
+  if(!template.closed)await template.close();
+ }
+});
 async function as(db,user,sql,args=[],role='authenticated'){
  await db.exec('begin');try{
  await db.query("select set_config('request.jwt.claim.sub',$1,true)",[user??'']);await db.exec('set local role '+role);

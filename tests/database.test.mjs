@@ -1,4 +1,4 @@
-import { test } from 'node:test';
+import { test, after } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile, readdir } from 'node:fs/promises';
 import { PGlite } from '@electric-sql/pglite';
@@ -13,7 +13,7 @@ const T = '10000000-0000-4000-8000-000000000001';
 const U = '10000000-0000-4000-8000-000000000002';
 const dir = new URL('../supabase/migrations/', import.meta.url);
 
-async function setup({ proposal = true } = {}) {
+async function buildTemplate({ proposal = true } = {}) {
   const db = new PGlite();
   await db.exec(`
     create role anon nologin;
@@ -39,6 +39,32 @@ async function setup({ proposal = true } = {}) {
     values ($1,$2,'jogador'),($1,$3,'jogador'),($4,$2,'jogador')`, [T, A, B, U]);
   return db;
 }
+
+const templates = new Map();
+async function setup(options = {}) {
+  const proposal = options.proposal ?? true;
+  const key = proposal ? 'with-privacy-migration' : 'without-privacy-migration';
+  if (!templates.has(key)) templates.set(key, buildTemplate({ proposal }));
+  return (await templates.get(key)).clone();
+}
+after(async () => {
+  for (const pending of templates.values()) {
+    const template = await pending;
+    if (!template.closed) await template.close();
+  }
+});
+
+test('fixtures PGlite: clones mantem isolamento entre bancos derivados da mesma base', async () => {
+  const a = await setup();
+  const b = await setup();
+  try {
+    await a.exec('create table public.prova_isolamento_clone(id integer primary key)');
+    assert.equal((await b.query("select to_regclass('public.prova_isolamento_clone') as tabela")).rows[0].tabela, null);
+  } finally {
+    await a.close();
+    await b.close();
+  }
+});
 
 async function as(db, user, work, role = 'authenticated') {
   await db.exec('begin');

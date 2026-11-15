@@ -568,3 +568,21 @@ Verificar os resultados dos workflows no HEAD criado. Resolver falhas comprovada
 ### Próxima ação
 
 Acompanhar a fila da CI e obter resultado real. Se os jobs não receberem runner, registrar o bloqueio sem presumir aprovação. Em seguida, continuar a verificação dos scripts de inicialização/build de teste e preparar a validação humana somente quando houver evidência técnica suficiente.
+
+
+## Atualização de continuidade — otimização das fixtures PostgreSQL/PGlite — 15/11/2026
+
+- **Branch:** `feat/offline-first-ficha`.
+- **HEAD de origem:** `958efd18f53e56ddde949a7db5e1a5f1b27dd6ca`.
+- **Checkpoint:** `docs/checkpoint-otimizacao-fixtures-pglite-2026-11-15.md`.
+- **Diagnóstico:** nas quatro suítes analisadas havia 52 testes e 50 preparações independentes de PGlite, repetindo 16 migrações SQL e fixtures.
+- **Implementação:** adotadas bases-modelo e `.clone()` para fornecer um banco independente por teste. Variantes com/sem migração de privacidade e propostas de ativação local/integrada continuam separadas.
+- **Cobertura:** nenhum teste existente foi removido; foi acrescentado um teste para demonstrar que a alteração em um clone não contamina outro.
+- **Estimativa:** preparações completas/migrações nessas suítes passam de 50 para 6 (redução estimada de 88% da repetição de migrações). O ganho no tempo total ainda precisa ser medido.
+- **Arquivos:** `tests/database.test.mjs`, `tests/funcionamento-database.test.mjs`, `tests/ativacao-local.test.mjs`, `tests/helpers/ciclo-fixture.mjs`.
+- **Validação:** implementação registrada; testes, build, TypeScript e medição de duração pendentes no GitHub Actions. Não houve execução local.
+- **Limites:** sem alteração de produção, regras, migrations, schema, UI, LAN, dependências, `main`, branches adicionais, merge, deploy ou publicação.
+
+### Próxima ação
+
+Acompanhar o CI do novo HEAD, verificar especialmente a compatibilidade de `.clone()` com PGlite 0.5.11 e comparar a duração real da etapa PostgreSQL. Corrigir somente falhas comprovadas. Fase 0 continua em andamento; não iniciar Inventário nem fases posteriores.

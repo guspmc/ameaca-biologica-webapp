@@ -1,11 +1,12 @@
 import assert from 'node:assert/strict';
+import {after} from 'node:test';
 import {readFile,readdir} from 'node:fs/promises';
 import {PGlite} from '@electric-sql/pglite';
 const A='00000000-0000-4000-8000-000000000001',B='00000000-0000-4000-8000-000000000002',M='00000000-0000-4000-8000-000000000003',X='00000000-0000-4000-8000-000000000004';
 const T='10000000-0000-4000-8000-000000000001',U='10000000-0000-4000-8000-000000000002';
 const op=n=>'20000000-0000-4000-8000-'+String(n).padStart(12,'0');
 const uid=(db,id)=>db.query("select set_config('request.jwt.claim.sub',$1,false)",[id??'']);
-async function setup({integrada=false}={}){
+async function buildTemplate({integrada=false}={}){
  const db=new PGlite();
  await db.exec("create role anon;create role authenticated;create schema auth;create table auth.users(id uuid primary key);create function auth.uid() returns uuid language sql stable as $$select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid$$;grant usage on schema auth to anon,authenticated;grant execute on function auth.uid() to anon,authenticated;create publication supabase_realtime;");
  const dir=new URL('../../supabase/migrations/',import.meta.url);
@@ -18,6 +19,19 @@ async function setup({integrada=false}={}){
  await db.query("insert into app_private.contextos_criacao_mesa(mesa_id,metodo,nivel_inicial,permite_criacao) values($1,'padrao',1,true)",[T]);
  await uid(db,A);return db;
 }
+const templates = new Map();
+async function setup(options={}){
+ const integrada=options.integrada??false;
+ const key=integrada?'integrada':'local';
+ if(!templates.has(key))templates.set(key,buildTemplate({integrada}));
+ return (await templates.get(key)).clone();
+}
+after(async()=>{
+ for(const pending of templates.values()){
+  const template=await pending;
+  if(!template.closed)await template.close();
+ }
+});
 const get=async(db,id)=>(await db.query('select * from public.personagens where id=$1',[id])).rows[0];
 const instances=async(db,id)=>(await db.query('select id,dados from app_private.inventario_instancias where personagem_id=$1 order by chave_criacao',[id])).rows;
 async function criar(db,owner=A,classe='Agente',kit='C',habilidade){

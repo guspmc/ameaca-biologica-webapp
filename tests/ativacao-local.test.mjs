@@ -1,4 +1,4 @@
-import {test} from 'node:test';
+import {test,after} from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile,readdir} from 'node:fs/promises';
 import {PGlite} from '@electric-sql/pglite';
@@ -7,7 +7,7 @@ const A='00000000-0000-4000-8000-000000000001',B='00000000-0000-4000-8000-000000
 const T='10000000-0000-4000-8000-000000000001',U='10000000-0000-4000-8000-000000000002';
 const op=n=>'20000000-0000-4000-8000-'+String(n).padStart(12,'0');
 const uid=(db,id)=>db.query("select set_config('request.jwt.claim.sub',$1,false)",[id??'']);
-async function setup(){
+async function buildTemplate(){
  const db=new PGlite();
  await db.exec("create role anon;create role authenticated;create schema auth;create table auth.users(id uuid primary key);create function auth.uid() returns uuid language sql stable as $$select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid$$;grant usage on schema auth to anon,authenticated;grant execute on function auth.uid() to anon,authenticated;create publication supabase_realtime;");
  const dir=new URL('../supabase/migrations/',import.meta.url);
@@ -19,6 +19,17 @@ async function setup(){
  await db.query("insert into app_private.contextos_criacao_mesa(mesa_id,metodo,nivel_inicial,permite_criacao) values($1,'padrao',1,true)",[T]);
  await uid(db,A);return db;
 }
+let templatePromise;
+async function setup(){
+ if(!templatePromise)templatePromise=buildTemplate();
+ return (await templatePromise).clone();
+}
+after(async()=>{
+ if(templatePromise){
+  const template=await templatePromise;
+  if(!template.closed)await template.close();
+ }
+});
 const get=async(db,id)=>(await db.query('select * from public.personagens where id=$1',[id])).rows[0];
 const instances=async(db,id)=>(await db.query('select id,dados from app_private.inventario_instancias where personagem_id=$1 order by chave_criacao',[id])).rows;
 async function criar(db,owner=A,classe='Agente',kit='C',habilidade){
