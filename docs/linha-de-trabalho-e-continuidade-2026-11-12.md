@@ -530,3 +530,20 @@ Consultar o status de CI do HEAD atual e, quando houver evidência, registrar o 
 - **Validação humana:** não realizada. O roteiro permanece preparado e a execução humana depende de checkpoint técnico aprovado.
 - **Riscos/limites:** README preserva instruções antigas para rastreabilidade, mas ficam explicitamente marcadas como históricas. Revisar links internos e a coerência de todo o arquivo em ciclo documental futuro se necessário.
 - **Próxima ação:** obter resultados de CI do HEAD atual; tratar falhas antes de qualquer avanço. Continuar a Fase 0, sem iniciar Inventário, Painel ou Laboratório.
+
+
+## Atualização de continuidade — isolamento do SDK Supabase — 15/11/2026
+
+- **Branch:** `feat/offline-first-ficha`.
+- **HEAD de origem:** `9f8cc31cbfd1030f1eacd2cde4e05fa3ee37e70a`.
+- **Checkpoint:** `docs/checkpoint-isolamento-supabase-producao-2026-11-15.md`.
+- **Decisão técnica:** preservar o legado e a verificação TypeScript; mover `@supabase/supabase-js` de dependência de produção para dependência de desenvolvimento.
+- **Motivo:** a entrada ativa Offline/LAN não importa o legado Supabase, mas a fixture isolada de Perícias ainda importa `FichasJogador`, que referencia o tipo `SupabaseClient`. A dependência de desenvolvimento mantém essa compilação sem compor as dependências de produção.
+- **Configuração:** removida regra de chunk dedicada ao Supabase e variáveis Supabase do workflow de build.
+- **Proteção:** teste existente do grafo ativo ampliado com verificação do manifesto.
+- **Legado:** `App.tsx`, `Convites.tsx`, `Participantes.tsx` e `FichasJogador.tsx` preservados.
+- **Validação:** testes, build, instalação frozen-lockfile e GitHub Actions pendentes após o commit; nenhuma validação humana declarada.
+- **Limites:** sem alteração de `main`, branch adicional, merge, deploy, publicação, schema, regras, UI ou serviço LAN.
+
+### Próxima ação
+Verificar os resultados dos workflows no HEAD criado. Resolver falhas comprovadas e, se tudo passar, continuar a Fase 0 com a auditoria de inicialização/persistência Offline. Não avançar para Inventário nem para fases posteriores.

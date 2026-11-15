@@ -15,13 +15,4 @@ export default defineConfig(({ mode }) => ({
       '/ws': { target: 'ws://127.0.0.1:4175', changeOrigin: false, ws: true },
     },
   } : undefined,
-  build: {
-    rollupOptions: {
-      output: {
-        manualChunks(id) {
-          if (id.includes('node_modules')) return id.includes('@supabase') ? 'supabase' : 'vendor';
-        },
-      },
-    },
-  },
 }));

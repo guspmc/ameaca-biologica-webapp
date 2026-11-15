@@ -74,3 +74,9 @@ test('as entradas Offline e LAN não carregam módulos Supabase no grafo ativo',
   assert.ok(visitados.has(resolve(raiz, 'FichaOfflineApp.tsx')));
   assert.ok(visitados.has(resolve(raiz, 'ConexaoServidorLocal.tsx')));
 });
+
+test('SDK Supabase permanece apenas como dependência de desenvolvimento', async () => {
+  const pacote = JSON.parse(await readFile(resolve(raiz, '../package.json'), 'utf8'));
+  assert.equal(pacote.dependencies?.['@supabase/supabase-js'], undefined);
+  assert.equal(typeof pacote.devDependencies?.['@supabase/supabase-js'], 'string');
+});
