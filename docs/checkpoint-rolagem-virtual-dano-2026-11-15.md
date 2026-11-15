@@ -48,3 +48,11 @@ Adicionar rolagem virtual explícita de Dados de Dano à calculadora já restrit
 ## Próxima ação exata
 
 Aguardar a fila do GitHub Actions para o HEAD `66294564e82183d707c9575a66963e02d18b944b`. Corrigir eventuais falhas, executar novamente as verificações pertinentes e só então preparar a próxima lacuna da Fase 1. Após aprovação técnica, preparar o roteiro de testes humanos da Fase 2, sem declarar validação antes da execução por Gus.
+
+
+## Ajuste de clareza após a implementação — 14/11/2026
+
+- **IMPLEMENTADO:** o aviso genérico de Ataque foi atualizado para não afirmar que o cálculo de Dano permanece manual, pois a calculadora agora oferece rolagem virtual explícita quando o Modo de Dados permite.
+- **PRESERVADO:** a Ficha não decide acerto/erro, não aplica Dano aos PV e não substitui a confirmação da Mesa.
+- **TESTE ADICIONADO:** a verificação estrutural da calculadora rejeita o texto antigo e evita regressão na orientação exibida.
+- **EXECUÇÃO:** teste e build ainda aguardam GitHub Actions; nenhum resultado foi presumido.

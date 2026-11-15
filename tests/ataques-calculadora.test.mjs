@@ -341,6 +341,7 @@ test('Briga de Gente Grande lembra compatibilidade anatômica e Vantagem contra 
 
 
 test('Dano virtual só é oferecido dentro da calculadora Automática e respeita o método de dados', () => {
+  assert.doesNotMatch(ui, /O cálculo de Dano permanece manual/);
   assert.ok(ficha.includes("configuracaoFuncionamento.modo === 'automatico' && <CalculadoraTesteLocal escopo=\"ataques\""));
   assert.match(ui, /metodo === 'virtual' && <button type="button" className="botao-claro" onClick={rolarDanoVirtual}>Rolar Dano/);
   assert.match(ui, /metodo === 'fisico' && <label>Soma dos Dados de Dano/);
