@@ -586,3 +586,20 @@ Acompanhar a fila da CI e obter resultado real. Se os jobs não receberem runner
 ### Próxima ação
 
 Acompanhar o CI do novo HEAD, verificar especialmente a compatibilidade de `.clone()` com PGlite 0.5.11 e comparar a duração real da etapa PostgreSQL. Corrigir somente falhas comprovadas. Fase 0 continua em andamento; não iniciar Inventário nem fases posteriores.
+
+
+## Atualização de continuidade — contrato técnico da Progressão LAN — 15/11/2026
+
+- **Branch:** `feat/offline-first-ficha`.
+- **HEAD de referência antes do ciclo:** `8a880ac323cc36e661b64dc5e73c71eba7d6193c`.
+- **Documento criado:** `docs/contrato-tecnico-progressao-lan-v1.md`.
+- **Commit do contrato:** `eb1c7494b8da55a1e959dbec6f1ca5aa274a6359`.
+- **Decisões consolidadas:** contador de Missões com correção controlada para cima/baixo; Morte como autodeclaração pendente de confirmação separada pelo Mestre; Descanso Completo em Sala de Descanso como declaração explícita do Jogador, validada e gravada pelo servidor sem alegação de verificação narrativa.
+- **Contrato:** documenta atores/permissões, envelope de operação, inicialização, autorização neutra, contador, pedido/cancelamento, Descanso, aplicação atômica de benefícios, Morte pendente e confirmação futura pelo Mestre, revisão, idempotência, isolamento, compatibilidade legada e matriz mínima de testes.
+- **Código e banco:** nenhum arquivo de produção, teste, rota, migration ou schema alterado. Nenhuma operação LAN foi implementada.
+- **CI da otimização PGlite:** permanece independente deste ciclo; não foi modificado nem declarado aprovado.
+- **Classificação:** contrato técnico DOCUMENTADO; implementação PENDENTE; testes PENDENTES; validação humana PENDENTE.
+- **Limites:** sem mudança de branch, `main`, merge, deploy ou publicação. Fase atual da Ficha permanece inalterada.
+
+### Próxima ação
+Revisar o contrato em conjunto e resolver eventuais dúvidas semânticas antes de autorizar implementação. Antes do primeiro código, inspecionar novamente o HEAD, as migrations e o padrão atual de recibos/idempotência. Não iniciar a confirmação de Morte pelo Painel antes da fase própria desse componente.
