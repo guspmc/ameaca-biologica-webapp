@@ -36,14 +36,14 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          mapfile -t test_files < <(printf '%s\\n' tests/*.test.mjs | sort)
+          mapfile -t test_files < <(printf '%s\n' tests/*.test.mjs | sort)
           batch_size=10
           total=${#test_files[@]}
           echo "Total de arquivos de teste: $total"
           for ((start=0; start<total; start+=batch_size)); do
             batch=("${test_files[@]:start:batch_size}")
             echo "::group::Grupo $((start / batch_size + 1)) — ${#batch[@]} arquivos"
-            printf 'Arquivo: %s\\n' "${batch[@]}"
+            printf 'Arquivo: %s\n' "${batch[@]}"
             timeout --signal=TERM --kill-after=10s 90s node --experimental-strip-types --experimental-sqlite --test "${batch[@]}"
             echo "::endgroup::"
           done
