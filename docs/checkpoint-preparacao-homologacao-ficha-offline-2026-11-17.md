@@ -116,3 +116,15 @@ Aguardar/consultar os workflows associados ao HEAD `03503bf`. Se falharem, corri
 ### Próxima ação exata
 Consultar workflows associados ao HEAD atualizado. Se aprovados, continuar auditoria de todos os controles que consomem Ação/Movimento/Reação/SA, mantendo um registro de cada divergência corrigida. Não reduzir o countdown técnico até que a cobertura e os critérios de CI estejam comprovados.
 
+## Checkpoint incremental — cobertura de combinações e encerramento de Condições — 17/11/2026
+
+- Branch: `feat/offline-first-ficha`.
+- Commit de testes: `16aaed95aa691750459f8946aa823034c9879963`.
+- Arquivo alterado: `tests/condicoes-calculadora.test.mjs`.
+- Novas verificações: condições simultâneas acumulam bloqueios; remover Atordoado preservando Surpreendido libera Ação/Movimento/Ataque mas mantém Reação/gasto de SA; encerrar todas libera todas as categorias.
+- Workflow de verificação da Ficha associado ao commit foi enfileirado; resultado ainda não confirmado. Não declarar cobertura aprovada antes da CI.
+- Build do checkpoint anterior `204f7d4` concluiu SUCCESS; suíte desse checkpoint ainda estava em andamento. Validação humana PENDENTE.
+
+### Próxima ação exata
+Acompanhar o workflow `44190904552` do commit `16aaed9`. Se passar, considerar a cobertura automatizada de combinações/remoção confirmada e continuar auditoria de controles restantes. Se falhar, corrigir apenas a causa demonstrada e repetir CI.
+
