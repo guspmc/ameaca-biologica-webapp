@@ -43,3 +43,10 @@ Inspecionados módulos e testes relacionados a:
 
 ## Próxima ação exata
 Inspecionar o modelo e a persistência local de personagem para localizar eventual fonte já existente de equipamento empunhado e Durabilidade, sem iniciar Inventário ativo. Depois, continuar auditoria das Condições que restringem Ataques e efeitos de Reações. Se não houver fonte confiável para Aparar, apresentar a Gus a menor alternativa segura antes de alterar o comportamento. Em qualquer defeito comprovado, implementar correção mínima, adicionar teste, executar CI e atualizar matriz/continuidade/checkpoint.
+
+
+## Decisão posterior de Gus — Aparar — 17/11/2026
+
+A implementação operacional de Aparar universal fica vinculada ao ciclo do **Inventário ativo e das armas efetivamente equipadas pelos jogadores**. Nesse momento, o fluxo deverá validar elegibilidade da arma e Durabilidade e registrar o desgaste conforme o cânone. Até lá, manter o bloqueio seguro para personagens que dependam de arma equipada; não antecipar Inventário na Fase 1 nem criar estado duplicado. O caso de Socador de Pedras com punhos Indestrutíveis permanece distinto.
+
+**Próxima ação:** continuar a auditoria de Condições e efeitos de Reações. Ao iniciar o Inventário ativo, incluir Aparar no escopo e na bateria de testes.
