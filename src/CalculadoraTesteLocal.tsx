@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { ATRIBUTO_PERICIA, bonusTentativaErro, valorBasePericia } from './pericias';
 import { bonusCondicionalOrigemTeste } from './efeitosOrigens';
 import { calcularTesteManual, calcularRolagemAtaqueManual, type VantagemTeste } from './testes';
-import { condicoesQueImpoemDesvantagem, restricoesDeAtaquePorCondicoes } from './condicoesCalculadora';
+import { avaliarBloqueiosOperacionaisPorCondicoes, condicoesQueImpoemDesvantagem, restricoesDeAtaquePorCondicoes } from './condicoesCalculadora';
 import { CATALOGO_CONDICOES, type CondicaoId } from './condicoesFicha';
 import { sortearDados, validarResultadosFisicos } from './rolagemDados';
 import { rolarFormulaDanoVirtual } from './rolagemDano';
@@ -106,6 +106,8 @@ export default function CalculadoraTesteLocal({ atributos, treinada, distribuica
   const bonusTentativa = temTentativaEErro && testeDePericia ? bonusTentativaErro(periciaEfetiva, treinada || null, distribuicao, periciaOrigemExtra || null, periciaTentativaErroTreinada || null) : 0;
   const modificadorAtaqueBI = tipo === 'ataque-corpo' || tipo === 'ataque-distancia' ? bonusAtaqueBI : 0;
   const restricoesAtaque = escopo === 'ataques' ? restricoesDeAtaquePorCondicoes(condicoesAtivas) : [];
+  const bloqueiosCondicao = avaliarBloqueiosOperacionaisPorCondicoes(condicoesAtivas);
+  const ataqueBloqueadoPorCondicao = escopo === 'ataques' && bloqueiosCondicao.ataque;
   const amedrontadoAtivo = condicoesAtivas.includes('amedrontado');
   const cegoAtivo = condicoesAtivas.includes('cego');
   const surdoAtivo = condicoesAtivas.includes('surdo');
@@ -282,6 +284,10 @@ export default function CalculadoraTesteLocal({ atributos, treinada, distribuica
   }, [formulaDanoConvencional, resultadoDadosDano, resultadoDadosAdicionais, perfilSelecionado, multiplicadorCriticoDano, perfilCorpo, perfilFogo, limiteCritico, atributoDano, criticoDanoAplicado, armaOperarioEscolhida, ataqueEmArea, bearLauncherSelecionado]);
 
   function registrarRolagem() {
+    if (ataqueBloqueadoPorCondicao) {
+      setErroRolagem('Ataque bloqueado pela Condição ativa. Encerre/remova a Condição conforme a regra antes de prosseguir.');
+      return;
+    }
     try {
       const quantidadeDados = vantagemEfetiva === 'normal' ? 1 : 2;
       const resultados = metodo === 'virtual'
@@ -328,7 +334,7 @@ export default function CalculadoraTesteLocal({ atributos, treinada, distribuica
         {escopo === 'ataques' && <><option value="ataque-corpo">Ataque Corpo a Corpo · Luta</option><option value="ataque-distancia">Ataque à distância · Pontaria</option></>}
       </select>
     </label>
-    {escopo === 'ataques' && restricoesAtaque.length > 0 && <div className="ficha-local-aviso" role="status"><strong>Condições que restringem Ataques</strong>{restricoesAtaque.map(item => <p key={item.condicao}>{item.motivo}</p>)}<small>Este aviso não bloqueia a rolagem nem altera a narrativa; confira se a Condição ainda está ativa e se existe uma exceção aplicável.</small></div>}
+    {escopo === 'ataques' && restricoesAtaque.length > 0 && <div className="ficha-local-aviso" role="status"><strong>Condições que restringem Ataques</strong>{restricoesAtaque.map(item => <p key={item.condicao}>{item.motivo}</p>)}<small>Os bloqueios mecânicos explícitos impedem confirmar ou rolar Ataques. A Ficha não presume exceções narrativas ou duração; confira a Condição ativa com a Mesa.</small></div>}
     {quantoMaisMelhorAtiva && <p className="ficha-local-aviso" role="status">QUANTO MAIS MELHOR: se você estiver na Área de Ameaça de 3 ou mais inimigos, recebe Vantagem nos Ataques. Confirme a circunstância com a Mesa e selecione Vantagem manualmente; a Ficha não conta inimigos nem presume posicionamento.</p>}
     {armeiroAtivo && <p className="ficha-local-legenda">ARMEIRO: ao atacar com arma modificada, some +1 ao Teste de Ataque por Peça Extra instalada nela. Confira a arma efetivamente empunhada e informe o bônus no modificador manual; a seleção do perfil não confirma peças instaladas.</p>}
     {armeiraAutodidataAtiva && <p className="ficha-local-legenda">ARMEIRA AUTODIDATA: Armas de Fogo modificadas causam +1d4 de Dano por Peça Extra instalada. Confira a arma e informe os dados adicionais manualmente; não se aplica a armas Corpo a Corpo. O perfil não confirma peças instaladas.</p>}
@@ -514,7 +520,7 @@ export default function CalculadoraTesteLocal({ atributos, treinada, distribuica
         <input type="number" min="1" max="20" step="1" value={dado2} onChange={evento => { setDado2(evento.target.value); setDadosConfirmados(null); setCriticoDano(false); }} placeholder="1–20" />
       </label>}
     </div>}
-    {!impossivel && !ataqueEmArea && !disparoUnicoIndisponivel && (!mirarPreparado || Boolean(regiaoMirada.trim())) && <button type="button" className="botao-claro" onClick={registrarRolagem}>{metodo === 'virtual' ? (escopo === 'ataques' ? 'Rolar Ataque' : 'Rolar Teste') : (escopo === 'ataques' ? 'Confirmar dados do Ataque' : 'Confirmar dados físicos')}</button>}
+    {!impossivel && !ataqueEmArea && !disparoUnicoIndisponivel && (!mirarPreparado || Boolean(regiaoMirada.trim())) && <button type="button" className="botao-claro" disabled={ataqueBloqueadoPorCondicao} onClick={registrarRolagem}>{metodo === 'virtual' ? (escopo === 'ataques' ? 'Rolar Ataque' : 'Rolar Teste') : (escopo === 'ataques' ? 'Confirmar dados do Ataque' : 'Confirmar dados físicos')}</button>}
     {ataqueEmArea && <p className="ficha-local-aviso" role="status">{rajadaSelecionada ? 'Rajada: não existe Teste de Ataque. Todos os alvos no cone de 4,5 m, inclusive aliados, fazem Reflexos DT 12; sucesso sofre metade do Dano da arma e falha sofre Dano integral. Ação Completa e 10 cartuchos.' : 'Disparo em Área: não existe Teste de Ataque. Use os Testes de Reflexos e a resolução de Dano descritos acima, fora desta rolagem de Ataque.'}</p>}{disparoUnicoIndisponivel && <p className="ficha-local-aviso" role="status">Este perfil não permite Disparo Único. Selecione um modo compatível antes de rolar.</p>}
     {erroRolagem && <p className="offline-erro" role="alert">{erroRolagem}</p>}
     {mensagemCondicao && <p role="status">{mensagemCondicao}</p>}
