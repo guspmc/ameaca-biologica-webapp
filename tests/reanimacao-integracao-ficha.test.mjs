@@ -115,7 +115,7 @@ test('Transformações a 0 PV exibem o cânone como referência e permitem regis
 test('três falhas registram resultado mecânico e deixam o desfecho para a Mesa', () => {
   assert.match(painel, /resultado mecânico registrado — decisão da Mesa pendente/);
   assert.match(painel, /Consulte o desfecho previsto no cânone e registre a decisão da Mesa no histórico/);
-  assert.match(painel, /A Ficha não declara morte, não transforma a personagem e não aplica consequências narrativas/);
+  assert.match(painel, /a Ficha não declara morte, não transforma a personagem e não aplica consequências narrativas/i);
   assert.match(painel, /Registro de Decisões da Mesa/);
   assert.doesNotMatch(painel, /Morte sinalizada para registro do Mestre|retorno como Zumbi Especial pendente para o próximo turno/);
 });
@@ -144,7 +144,7 @@ test('roladores de Reanimação ficam disponíveis somente no modo Automático',
 test('decisão vinculada substitui o aviso de pendência sem executar efeitos narrativos', () => {
   assert.match(painel, /decisoesVinculadas/);
   assert.match(painel, /Decisão da Mesa registrada/);
-  assert.match(painel, /Vincule-a a esta Reanimação/);
+  assert.match(painel, /vincule-a a esta Reanimação/i);
   assert.match(painel, /Preparar vínculo para esta Reanimação/);
   assert.match(painel, /gerarIdReanimacao/);
   assert.match(painel, /não executa consequências narrativas/);
