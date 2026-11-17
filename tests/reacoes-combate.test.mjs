@@ -314,7 +314,7 @@ test('helpers de Habilidades de Reação rejeitam campos ausentes ou extras', as
   assert.throws(() => contraAtaqueUsaMesmaReacao({ contraAtaqueInstintivo: true }), /Habilidades de Reação inválidas/);
   assert.throws(() => consultarRetaliacao({ habilidadeAtiva: true }), /Dados de Retaliação inválidos/);
   assert.throws(() => avaliarNaoVaiEscapar({ habilidadeAtiva: true, criaturaProvocouAtaqueDeOportunidade: true, gatilhoFoiParaVoceOuAliado: true, combateCorpoACorpo: true, extra: true }), /Gatilho de Não Vai Escapar inválido/);
-  assert.throws(() => avaliarNaMinhaMira({ habilidadeAtiva: true, usoDisponivelNaRodada: true, inimigoPercebido: true, dentroDeAlcanceMedio: true, adquiriuNovaCondicaoPenalizante: true, armaDeFogoCarregada: true, armaPermiteAtaqueOportunidade: true }), /Gatilho de Na Minha Mira inválido/);
+  assert.throws(() => avaliarNaMinhaMira({ habilidadeAtiva: true, usoDisponivelNaRodada: true, inimigoPercebido: true, dentroDeAlcanceMedio: true, adquiriuNovaCondicaoPenalizante: true, armaDeFogoCarregada: true, armaPermiteAtaqueOportunidade: true, extra: true }), /Gatilho de Na Minha Mira inválido/);
   assert.throws(() => consultarVoceAparouUmMissil({ habilidadeAtiva: true }), /Dados de VOCÊ APAROU UM MÍSSIL/);
 });
 
