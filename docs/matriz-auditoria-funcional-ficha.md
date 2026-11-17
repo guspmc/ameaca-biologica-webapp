@@ -691,3 +691,10 @@ A revisão dos controles do painel encontrou uma omissão concreta na implementa
 - **CI:** commit anterior `bbb7a6d` teve workflow de testes e build concluídos com sucesso. A correção atual foi commitada em `f5f1344`; workflows correspondentes ainda estavam em andamento no momento deste registro. O teste adicional foi commitado em `88c3475`, posterior à execução em curso; aguardar CI desse HEAD.
 - **Classificação:** omissão confirmada e corrigida no código; validação automatizada da correção PENDENTE até a CI do HEAD.
 
+### Cobertura adicional — combinações e encerramento de Condições — 17/11/2026
+
+- `tests/condicoes-calculadora.test.mjs` agora verifica a combinação simultânea de Desacordado, Atordoado, Incapacitado, Desorientado e Surpreendido, garantindo que categorias de bloqueio sejam acumuladas sem duplicação.
+- Novo teste verifica o recálculo após remover Atordoado enquanto Surpreendido permanece ativo e após encerrar todas as Condições: os bloqueios de Ação/Movimento/Ataque desaparecem, enquanto Reação/gasto de SA permanecem apenas pelo Surpreendido e depois também desaparecem.
+- Os testes são de unidade da função pura e não substituem o teste humano da interface de encerramento; a autonomia do Jogador é coberta separadamente por inspeção/teste estrutural do componente.
+- Commit dos testes: `16aaed95aa691750459f8946aa823034c9879963`. Workflow de verificação da Ficha foi enfileirado para esse commit; resultado ainda PENDENTE.
+
