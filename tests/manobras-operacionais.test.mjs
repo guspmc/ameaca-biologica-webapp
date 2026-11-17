@@ -94,7 +94,7 @@ test('Finalizar custa 3 SA sem consumir Ação nem Movimento normais', () => {
   assert.equal(resultado.economia.normaisUsados.acao, false);
   assert.equal(resultado.economia.normaisUsados.movimento, false);
   assert.equal(resultado.movimentosAdicionais, 0);
-  assert.throws(() => registrarFinalizar({ ...economia, saAtual: 2, saGastaNaJanela: 1 }, estadoManobrasTurnoInicial()), /limite de 3 SA/);
+  assert.throws(() => registrarFinalizar({ ...economia, saAtual: 5, saGastaNaJanela: 1 }, estadoManobrasTurnoInicial()), /limite de 3 SA/);
   assert.throws(() => registrarFinalizar({ ...economia, turnoEmAndamento: false }, estadoManobrasTurnoInicial()), /próprio turno/);
 });
 
