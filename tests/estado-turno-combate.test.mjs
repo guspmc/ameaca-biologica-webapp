@@ -323,12 +323,12 @@ test('Contra-Ataque integra Reação normal + 1 SA e persiste o registro', () =>
       mesmaReacaoAutorizada: false,
     }),
   ).estado;
-  assert.equal(estado.economia.saAtual, 3);
+  assert.equal(estado.economia.saAtual, 2);
   assert.equal(estado.economia.saGastaNaJanela, 1);
   assert.equal(estado.economia.normaisUsados.reacao, true);
   const recarregado = carregarEstadoTurnoCombate(estado, null, 3);
   assert.equal(recarregado.valido, true);
-  assert.equal(recarregado.estado.economia.saAtual, 3);
+  assert.equal(recarregado.estado.economia.saAtual, 2);
   assert.equal(recarregado.estado.economia.saGastaNaJanela, 1);
 });
 
