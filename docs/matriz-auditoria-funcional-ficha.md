@@ -640,3 +640,23 @@ Até essa etapa, Aparar permanece parcialmente implementado/bloqueado para perso
 - O cânone define proibições/restrições para essas Condições (Desorientado não pode Atacar; Desacordado e Incapacitado não realizam Ações/Reações; Atordoado não realiza Ações/Reações/Movimento; Surpreendido restringe Ações, Reações e SA conforme o primeiro turno/duração). A interface atualmente depende da conferência do jogador/Mesa.
 - **Não alterado:** nenhum código ou teste foi modificado neste incremento; testes foram inspecionados, não executados; nenhum build/CI foi executado. Não classificar como defeito definitivo antes de decidir se a Ficha deve apenas alertar ou também bloquear controles incompatíveis, considerando exceções e a responsabilidade da Mesa.
 - **Decisão necessária de Gus:** manter avisos informativos ou introduzir bloqueios operacionais condicionados às Condições, com tratamento explícito de duração/exceções. Não implementar bloqueio parcial improvisado.
+
+
+## Decisão aprovada — bloqueios operacionais por Condições — 17/11/2026
+
+**DECISÃO APROVADA POR GUS:** a Ficha deverá bloquear operações incompatíveis com Condições ativas, sem retirar do Jogador a autonomia para adicionar, encerrar ou remover Condições na própria Ficha. O Mestre não terá controles de edição da Ficha nem autoridade operacional sobre esse registro.
+
+O bloqueio será estritamente mecânico e limitado ao que o cânone determina. A Ficha não decidirá duração narrativa, percepção, validade de gatilhos ou exceções dependentes da Mesa. Condições derivadas de PV/BI continuarão obedecendo suas fontes de verdade e não poderão ser forçadas pelo Jogador como condições comuns.
+
+**Atenção à temporalidade:** Surpreendido impede Movimento e Ações no primeiro turno, mas impede Reações e gasto de SA enquanto durar. O modelo atual registra duração/instâncias, porém o painel de economia não controla a Iniciativa do Encontro. Portanto, não bloquear Movimento/Ações por todo o período da instância sem uma referência confiável ao primeiro turno. Esta distinção deverá ser coberta por teste e não pode ser resolvida por inferência da Ficha.
+
+**Countdown até a bateria humana da Fase 0:**
+1. Implementar bloqueios operacionais por categoria de recurso, preservando autonomia do Jogador e limites de autoridade da Ficha.
+2. Adicionar testes automatizados de permissões e combinações de Condições, incluindo início/fim do primeiro turno de Surpreendido e remoção da Condição.
+3. Prosseguir com a auditoria funcional paralela da Ficha, registrando apenas divergências comprovadas.
+4. Executar CI completa, TypeScript e build sobre o código atualizado; corrigir regressões.
+5. Atualizar roteiro, matriz, continuidade e checkpoint com evidências e instruções finais para o navegador.
+
+A contagem chega a zero somente quando os cinco itens técnicos estiverem concluídos. Em seguida, Gus executará os testes reais de navegador (inicialização, IndexedDB, recarga, concorrência entre abas, backup/restauração, Service Worker e modo offline). Build/CI não equivalem a validação humana.
+
+**Estado neste registro:** decisão aprovada; implementação ainda não realizada; testes específicos ainda não executados; validação humana PENDENTE.
