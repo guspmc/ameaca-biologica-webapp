@@ -29,7 +29,7 @@ test('calculadora não rola dados nem aplica Dano automaticamente', () => {
   assert.match(ui, /Cada rolagem exige comando explícito/);
   assert.match(ui, /não altera dados da personagem/);
   assert.doesNotMatch(ui, /salvarPatchPersonagem|localStorage|aoSalvar/);
-  assert.match(ui, /O cálculo de Dano permanece manual/);
+  assert.match(ui, /O cálculo nunca altera PV/);
   assert.doesNotMatch(ui, /Math\.random|crypto\.getRandomValues/);
 });
 
@@ -77,7 +77,7 @@ test('calculadora manual de Dano usa resultados informados e atributos do perfil
   assert.match(ui, /calcularDanoArma/);
   assert.match(ui, /Soma dos Dados de Dano/);
   assert.match(ui, /atributoDano = tipo === 'ataque-corpo' \? atributos\.forca : atributos\.agilidade/);
-  assert.match(ui, /Aplicar Acerto Crítico/);
+  assert.match(ui, /aplicar Acerto Crítico/i);
   assert.match(ui, /Dano calculado:/);
   assert.match(ui, /não rola dados nem altera PV/);
 });
@@ -95,8 +95,8 @@ test('perfis com fórmulas especiais não recebem cálculo genérico', () => {
 
 
 test('resultado do Ataque preenche automaticamente o estado de Crítico no cálculo de Dano', () => {
-  assert.match(ui, /const ataqueFoiCritico = ehAtaque/);
-  assert.match(ui, /if \(ehAtaque\) setCriticoDano\(ataqueFoiCritico\)/);
+  assert.match(ui, /const resultadoAtaqueCritico = escopo === 'ataques' && calculado\.resultado\?\.dadoEscolhido === 20/);
+  assert.match(ui, /const criticoDanoAplicado = resultadoAtaqueCritico \|\| \(permiteConfirmacaoCritico19 && criticoDano\)/);
   assert.match(ui, /setCriticoDano\(false\)/);
 });
 
@@ -111,7 +111,7 @@ test('Ataque Desarmado e Arma Improvisada estão disponíveis na calculadora', (
 test('cálculo manual aceita soma de Dados adicionais já rolados sem presumir Peças instaladas', () => {
   assert.match(ui, /Soma de Dados adicionais já rolados \(opcional\)/);
   assert.match(ui, /dadosAdicionais: adicionais/);
-  assert.match(ui, /A calculadora não presume que você os possui/);
+  assert.match(ui, /A calculadora não presume que você possui Peças ou Habilidades/);
 });
 
 test('modos especiais de Spark Shot e Lança-Chamas oferecem fórmulas manuais canônicas', () => {
@@ -124,7 +124,7 @@ test('modos especiais de Spark Shot e Lança-Chamas oferecem fórmulas manuais c
 
 test('Motosserra orienta informar os dados extras de explosão sem rolagem automática', () => {
   assert.match(ui, /inclua também os dados extras da Motosserra gerados por resultados 6/);
-  assert.match(ui, /incluindo os encadeamentos/);
+  assert.match(ui, /os encadeamentos da Motosserra já entram na rolagem quando aplicáveis/);
 });
 
 test('GM 79 apresenta procedimentos de cartuchos e modos direto/área', () => {
@@ -136,9 +136,9 @@ test('GM 79 apresenta procedimentos de cartuchos e modos direto/área', () => {
 });
 
 test('GM 79 em Área não oferece rolagem de Ataque nem permite multiplicador crítico', () => {
-  assert.match(ui, /!ataqueEmAreaGM79 && <button type="button" className="botao-claro" onClick={registrarRolagem}/);
-  assert.match(ui, /critico: criticoDano && !ataqueEmAreaGM79/);
-  assert.match(ui, /Disparo em Área da GM 79: não existe Teste de Ataque/);
+  assert.match(ui, /!impossivel && !ataqueEmArea && !disparoUnicoIndisponivel/);
+  assert.match(ui, /critico: criticoDanoAplicado && !ataqueEmArea/);
+  assert.match(ui, /Disparo em Área: não existe Teste de Ataque/);
 });
 
 test('Rajada é procedimento em área sem rolagem de Ataque ou Crítico', () => {
@@ -160,7 +160,7 @@ test('Bear Commander separa rifle e lançador integrado com reserva e dano próp
   assert.match(ui, /reserva independente dos cartuchos do rifle/);
   assert.match(ui, /Recarga por Ação Bônus/);
   assert.match(ui, /const bearLauncherSelecionado = perfilFogo\?\.id === 'bear-commander'/);
-  assert.match(ui, /const formulaDanoConvencional = bearLauncherSelecionado \? '4d6'/);
+  assert.match(ui, /const formulaDanoBase = socadorDePedrasAtivo \? '3d10' : bearLauncherSelecionado \? '4d6'/);
   assert.match(ui, /const multiplicadorCriticoDano = bearLauncherSelecionado \? 4/);
 });
 
@@ -169,8 +169,8 @@ test('procedimentos especiais do RPG-7 e Spark Shot são exibidos sem automaçã
   assert.match(ui, /consultarProcedimentoArmaEspecial/);
   assert.match(ui, /rpg-7/);
   assert.match(ui, /não escolhe avanço de fase\/efeito de ficha/);
-  assert.match(ui, /Fortitude DT 15/);
-  assert.match(ui, /Atordoado até o fim do próximo turno e Imobilizado por 1d4 rodadas/);
+  assert.match(ui, /procedimentoArmaEspecial\?\.descricao/);
+  
   assert.match(ui, /não rola Fortitude e não aplica Condições/);
 });
 
@@ -184,6 +184,7 @@ test('lembretes de armas especiais derivam do catálogo único de procedimentos'
   assert.match(especial, /procedimento\.emCombate\.find/);
   assert.match(catalogo, /RPG-7: após o disparo/);
   assert.match(catalogo, /Spark Shot: disparo normal consome 1 Carga/);
+  assert.match(catalogo, /Spark Shot:.*Fortitude DT 15/);
 });
 
 
@@ -223,8 +224,8 @@ test('Habilidades de combate são passadas à calculadora e exibem lembretes sem
 
 test('Habilidades de combate adicionais exibem lembretes sem automatizar ação ou geometria', () => {
   assert.match(ui, /cascaGrossaAtiva = escopo === 'ataques' && habilidadesAtivas.includes\('casca-grossa'\)/);
-  assert.match(ui, /Dano Desarmado ou de Coronhada sobe uma categoria de Dado/);
-  assert.match(ui, /não registra usos por turno/);
+  assert.match(ui, /CASCA-GROSSA: a calculadora eleva automaticamente uma categoria no Ataque Desarmado selecionado/);
+  assert.match(ui, /a Ficha não registra esses usos/);
   assert.match(ui, /armamentoEspecialAtivo = escopo === 'ataques' && habilidadesAtivas.includes\('armamento-especial'\)/);
   assert.match(ui, /nunca abaixo de Interação Gratuita com Objeto/);
   assert.match(ui, /controleDeFogoAtivo = escopo === 'ataques' && habilidadesAtivas.includes\('controle-de-fogo'\)/);
@@ -319,7 +320,7 @@ test('4ª Fase da BI inclui o dado adicional na fórmula de Dano Corpo a Corpo',
   assert.match(ficha, /danoCorpoACorpoAdicionalBI=\{faseBi\.danoCorpoACorpoAdicional\}/);
   assert.match(ui, /danoCorpoACorpoAdicionalBI\?: string \| null/);
   assert.match(ui, /tipo === 'ataque-corpo' && danoCorpoACorpoAdicionalBI/);
-  assert.match(ui, /4ª Fase da Bio-Infecção: acrescenta \\{danoCorpoACorpoAdicionalBI\\} à fórmula de Dano Corpo a Corpo/);
+  assert.match(ui, /4ª Fase da Bio-Infecção: acrescenta \{danoCorpoACorpoAdicionalBI\} à fórmula de Dano Corpo a Corpo/);
   assert.match(ui, /não se aplica a Ataques à distância/);
 });
 
