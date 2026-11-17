@@ -52,3 +52,17 @@ Arquivo do Jogador v1.0, p. 77–78:
 2. Solicitar execução real de pnpm test e pnpm build no ambiente habitual do projeto.
 3. Não iniciar Inventário ativo antes da validação humana da Ficha Offline e aprovação expressa.
 4. Manter as quatro manobras deste checkpoint em consulta/manual até que a ambiguidade de custo e a fronteira de responsabilidade com a Mesa sejam decididas.
+
+
+---
+
+## Atualização de estado — 17/11/2026
+
+Este checkpoint permanece preservado como registro da auditoria estática realizada em 12/11/2026. **Não deve mais ser usado isoladamente como retrato do estado atual da Ficha.**
+
+A inspeção da branch `feat/offline-first-ficha`, HEAD `08bf11decfa647223bc40377a38b40619e1336b6`, confirmou que:
+- **Ajudar, Desengajar e Usar um Objeto** passaram a ter integração operacional na Ficha e cobertura de testes. A pendência antiga dessas três ações está SUPERADA.
+- **Mirar** e **Combate com Duas Armas** também estão integrados ao fluxo atual.
+- **Adiar Ação, Agarrar, Empurrar/Derrubar e Esconder-se** continuam sem controles operacionais específicos, pelos limites descritos na auditoria original.
+
+A atualização de estado e a situação da CI estão registradas em `docs/matriz-auditoria-funcional-ficha.md`. O checkpoint original, suas conclusões e seus SHAs históricos não foram apagados nem reescritos retroativamente.
