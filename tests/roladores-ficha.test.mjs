@@ -40,7 +40,7 @@ test('Testes de Perícia e Atributo respeitam resultado natural, Vantagem e Desv
   assert.equal(critico.estado, 'critico-sucesso');
   const falhaCritica = calcularTesteManual({ valorBase: 10, dt: 10, dado1: 1 });
   assert.equal(falhaCritica.estado, 'falha-critica');
-  assert.doesNotMatch(falhaCritica.detalhe, /Exposto/);
+  assert.match(falhaCritica.detalhe, /Exposto/);
   const vantagem = calcularTesteManual({ valorBase: 4, dt: 20, dado1: 8, dado2: 17, vantagem: 'vantagem' });
   assert.equal(vantagem.dadoEscolhido, 17);
   assert.equal(vantagem.total, 21);
@@ -90,5 +90,5 @@ test('rolagem de Ataque apresenta natural e total sem comparar Defesa ou decidir
   assert.equal(critico.estado, 'critico-sucesso');
   const falha = calcularRolagemAtaqueManual({ valorBase: 7, dado1: 1 });
   assert.equal(falha.estado, 'falha-critica');
-  assert.doesNotMatch(falha.detalhe, /Exposto/);
+  assert.match(falha.detalhe, /Exposto/);
 });
