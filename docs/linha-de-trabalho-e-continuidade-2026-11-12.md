@@ -603,3 +603,45 @@ Acompanhar o CI do novo HEAD, verificar especialmente a compatibilidade de `.clo
 
 ### Próxima ação
 Revisar o contrato em conjunto e resolver eventuais dúvidas semânticas antes de autorizar implementação. Antes do primeiro código, inspecionar novamente o HEAD, as migrations e o padrão atual de recibos/idempotência. Não iniciar a confirmação de Morte pelo Painel antes da fase própria desse componente.
+
+
+---
+
+## Retomada operacional — 17/11/2026
+
+Esta seção é a referência mais recente para a retomada do trabalho. As decisões e etapas históricas anteriores permanecem preservadas, mas descrições de status e escopos antigos não devem prevalecer sobre esta atualização nem sobre o Documento Mestre de Planejamento v3.0.
+
+### Estado do repositório
+- Repositório: `guspmc/ameaca-biologica-webapp`.
+- Branch confirmada: `feat/offline-first-ficha`.
+- HEAD confirmado pela CI: `08bf11decfa647223bc40377a38b40619e1336b6`.
+- Nenhuma mudança de branch, merge, publicação ou deploy realizada nesta atualização.
+
+### Estado da CI no HEAD
+- **Build/TypeScript:** workflow `Validar compilação do WebApp`, run `44119389268`, SUCCESS.
+- **Testes offline:** workflow `Verificação da ficha offline`, run `44119389313`, FAILURE. Foram executados os 154 arquivos de teste; falharam `tests/estado-turno-combate.test.mjs` e `tests/reanimacao-registro-invalido.test.mjs`. A etapa de build deste workflow foi ignorada após a falha; o build independente passou.
+- Não declarar suíte aprovada até corrigir e repetir a CI no novo HEAD.
+- Validação humana da Ficha Offline: PENDENTE; não há confirmação de execução do roteiro humano nesta rodada.
+
+### Estado atualizado das Manobras
+- Ajudar, Desengajar e Usar um Objeto: **IMPLEMENTADO**, com controles operacionais e testes identificados.
+- Mirar e Combate com Duas Armas: **IMPLEMENTADO**, com integração ao fluxo atual.
+- Adiar Ação, Agarrar, Empurrar/Derrubar e Esconder-se: **PENDENTE de integração operacional**, mantendo consulta/manual e respeitando os limites da Ficha. Não criar motor de Iniciativa, deslocamento de alvos ou aplicação automática de Condições.
+- Os checkpoints de 12/11 que descrevem as três primeiras ações como ausentes são históricos; a matriz atualizada deve ser consultada antes de propor novo trabalho.
+
+### Fases e prioridades
+- Fase 0 — Preparação Offline: auditoria parcial favorável, mas **não encerrada**. Ainda dependem de conclusão da auditoria, verificação de inicialização/persistência e testes humanos aplicáveis.
+- Fase 1 — Ficha Offline: em auditoria/correção. Não declarar concluída; faltam fechar as falhas automatizadas, completar a auditoria funcional e executar a validação humana.
+- Fase 2 — Testes humanos: roteiro existe em `docs/roteiro-humano-ficha-offline-local.md`; execução por Gus e registro dos resultados continuam pendentes.
+- Fases posteriores permanecem bloqueadas pela ordem aprovada. Não iniciar Inventário ativo, Painel do Mestre ou Laboratório antes dos critérios das fases anteriores.
+
+### Próxima ação exata
+1. Inspecionar as duas falhas da CI no HEAD `08bf11d` contra o código atual e o cânone.
+2. Corrigir somente as expectativas ou comportamentos comprovadamente incorretos, usando a autorização vigente para código/testes/workflows.
+3. Reexecutar CI e registrar o novo HEAD e resultados na matriz.
+4. Continuar a auditoria das quatro Manobras ainda sem integração e das demais lacunas da Ficha, sem repetir trabalho já implementado.
+5. Atualizar esta linha de continuidade e a matriz ao final de cada ciclo relevante.
+
+### Regra operacional de atualização documental
+
+Quando uma funcionalidade mudar de estado, atualizar a matriz e a linha de continuidade no mesmo ciclo em que a evidência for confirmada. Checkpoints antigos são preservados como histórico; devem receber uma nota de superação quando seu status deixar de representar a branch atual. Não reimplementar item marcado como IMPLEMENTADO sem evidência de defeito ou regressão.
