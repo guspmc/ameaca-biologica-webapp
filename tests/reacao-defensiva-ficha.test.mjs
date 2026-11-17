@@ -36,6 +36,6 @@ test('A interface bloqueia alterações no gatilho depois de declarar a Reação
   for (const campo of ['resultadoAtaqueDefensivo', 'dadoNaturalDefensivo', 'ataqueCorpoACorpoDefensivo', 'ataqueAcertouDefensivo', 'ataqueAparavelDefensivo', 'gatilhoEsquivaAutorizado']) {
     assert.ok(trecho.includes(campo), 'Campo ausente: ' + campo);
   }
-  assert.ok((trecho.match(/disabled=\\{salvando \\|\\| reacaoDefensivaDeclarada\\}/g) || []).length >= 6);
-  assert.match(trecho, /disabled=\\{salvando \\|\\| reacaoDefensivaDeclarada \\|\\|/);
+  assert.ok((trecho.match(/disabled=\{salvando \|\| reacaoDefensivaDeclarada\}/g) || []).length >= 6);
+  assert.match(trecho, /disabled=\{salvando \|\| reacaoDefensivaDeclarada \|\|/);
 });
