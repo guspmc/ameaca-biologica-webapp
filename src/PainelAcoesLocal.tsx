@@ -456,7 +456,7 @@ export default function PainelAcoesLocal({ dados, saAtual, aoSalvar, origemDados
           <div className="recursos-controles">
             <button type="button" disabled={salvando || !economia.turnoEmAndamento || economia.normaisUsados.movimento || bloqueiosCondicao.movimento}
               onClick={() => void aplicar(atual => aplicarManobraCombate(atual, registrarDesengajar).estado, 'Desengajar registrado: Movimento consumido. Desloque-se até 1,5 m sem provocar Ataque de Oportunidade por esse deslocamento.')}>Desengajar · Movimento</button>
-            <button type="button" disabled={salvando || !economia.turnoEmAndamento || !economia.interacaoGratuitaUsada || economia.normaisUsados.acao}
+            <button type="button" disabled={salvando || !economia.turnoEmAndamento || !economia.interacaoGratuitaUsada || economia.normaisUsados.acao || bloqueiosCondicao.acao}
               onClick={() => void aplicar(atual => aplicarManobraCombate(atual, registrarUsarObjeto).estado, 'Usar um Objeto registrado: Ação consumida para uma interação adicional com objeto.')}>Usar um Objeto · Ação</button>
           </div>
           <p className="ficha-local-legenda">Desengajar consome o Movimento e permite deslocamento de 1,5 m sem provocar Ataque de Oportunidade por esse deslocamento; a movimentação continua manual. Usar um Objeto consome Ação somente depois que a Interação Gratuita com Objeto já tiver sido utilizada. Regras específicas de item ou Habilidade podem determinar custo diferente.</p>
