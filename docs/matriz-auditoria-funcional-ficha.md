@@ -622,3 +622,10 @@ A interface atual reconhece o gatilho, mas bloqueia o registro para personagens 
 
 ### Próxima ação exata
 Inspecionar o modelo local persistido de personagem e os dados existentes de equipamento para determinar se é possível integrar Aparar sem ativar o Inventário. Em paralelo, continuar a auditoria de condições que restringem Ataques e efeitos de Reações. Se a fonte de Durabilidade não existir, registrar a dependência e solicitar decisão antes de qualquer solução alternativa.
+
+
+### Decisão de escopo — Aparar e Inventário ativo — 17/11/2026
+
+**DECISÃO APROVADA POR GUS:** a implementação operacional de **Aparar universal** será realizada junto com o **Inventário ativo**, quando a Ficha passar a ter estado confiável dos itens e armas efetivamente equipados pelos jogadores. A integração deverá consultar a arma equipada, verificar elegibilidade e Durabilidade e aplicar o desgaste previsto pelo cânone, sem duplicar estado nem presumir equipamento.
+
+Até essa etapa, Aparar permanece parcialmente implementado/bloqueado para personagens que dependam de arma equipada. O fluxo específico de Socador de Pedras com punhos Indestrutíveis permanece distinto. **Não antecipar Inventário ativo na Fase 1 nem criar solução provisória que ignore elegibilidade ou Durabilidade.** Ao iniciar a fase de Inventário, incluir Aparar no mesmo escopo e nos respectivos testes.
