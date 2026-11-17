@@ -104,3 +104,15 @@ Implementar primeiro a função pura de avaliação de bloqueios por Condição/
 ### Próxima ação exata
 Aguardar/consultar os workflows associados ao HEAD `03503bf`. Se falharem, corrigir a regressão mais localizada e repetir CI. Se aprovarem, revisar a cobertura de cada controle que consome Ação, Movimento, Reação ou SA, concluir o registro documental e preparar o pacote de testes humanos. Não declarar validação humana nem reduzir o countdown antes das evidências.
 
+## Checkpoint incremental — correção de Usar um Objeto — 17/11/2026
+
+- Branch: `feat/offline-first-ficha`.
+- HEAD após código/teste: `88c347539e62bfe8665d88264e93cd9ff7a2d029` (antes desta atualização documental).
+- Auditoria encontrou omissão: Usar um Objeto consome Ação, mas não consultava bloqueio por Condições. Corrigido em `src/PainelAcoesLocal.tsx` (commit `f5f13447e1e3e2de4f7d9927363479115602452e`).
+- Teste de regressão acrescentado em `tests/condicoes-calculadora.test.mjs` (commit `88c347539e62bfe8665d88264e93cd9ff7a2d029`).
+- CI: testes e build do commit `bbb7a6d` concluíram SUCCESS. Workflows da correção `f5f1344` ainda estavam IN_PROGRESS; o teste adicional `88c3475` ainda não tinha execução confirmada. Não atribuir os resultados antigos ao HEAD atual.
+- Validação humana: PENDENTE.
+
+### Próxima ação exata
+Consultar workflows associados ao HEAD atualizado. Se aprovados, continuar auditoria de todos os controles que consomem Ação/Movimento/Reação/SA, mantendo um registro de cada divergência corrigida. Não reduzir o countdown técnico até que a cobertura e os critérios de CI estejam comprovados.
+
