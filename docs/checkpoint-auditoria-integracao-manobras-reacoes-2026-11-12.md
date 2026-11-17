@@ -107,3 +107,19 @@ A existência desses arquivos não comprova execução/aprovação no HEAD atual
 3. Definir/implementar o nível de integração de Desengajar, Usar Objeto, Agarrar, Empurrar/Derrubar, Esconder-se e Adiar Ação, sem automatizar deslocamento ou disputas.
 4. Continuar auditoria de exceções de Reações/Habilidades e verificar salvamento/recuperação das transições restantes.
 5. Atualizar a matriz e a linha de continuidade em cada ciclo; depois concluir a bateria humana progressiva antes de qualquer módulo futuro.
+
+
+---
+
+## Atualização de estado — 17/11/2026
+
+Este checkpoint registra corretamente a inspeção realizada em 12/11/2026, mas suas lacunas de integração não representam mais o estado atual da branch.
+
+Na branch `feat/offline-first-ficha`, HEAD de referência `08bf11decfa647223bc40377a38b40619e1336b6`:
+- **Mirar:** integração concluída no fluxo atual.
+- **Combate com Duas Armas:** integração concluída; não depende mais de Mirar para registrar o Ataque inicial.
+- **Ajudar:** possui controle operacional e teste dedicado.
+- **Desengajar e Usar um Objeto:** possuem controles operacionais, helpers e cobertura de teste.
+- **Adiar Ação, Agarrar, Empurrar/Derrubar e Esconder-se:** permanecem sem integração operacional específica, conforme os limites registrados na matriz atualizada.
+
+As seções 3.1, 3.2 e 3.3 deste documento devem ser lidas como achados históricos, não como tarefas ainda abertas. Não reabrir correções já concluídas sem evidência de regressão. Consulte `docs/matriz-auditoria-funcional-ficha.md` e `docs/linha-de-trabalho-e-continuidade-2026-11-12.md` para o estado vigente.
