@@ -43,7 +43,7 @@ export function calcularTesteManual(args: {
   const total = naturalAplicado + valorBase + modificador;
   const ajusteNatural = naturalAplicado !== escolhido ? `Natural ${escolhido} conta como 10 por CODE VERONICA. ` : '';
   if (escolhido === 20) return { estado: 'critico-sucesso', dadoEscolhido: escolhido, total, dt, detalhe: '20 natural: sucesso automático quando a tarefa é possível.' };
-  if (escolhido === 1) return { estado: 'falha-critica', dadoEscolhido: escolhido, total, dt, detalhe: '1 natural: Falha Crítica. A consequência aplicável depende do tipo de resolução e das regras específicas.' };
+  if (escolhido === 1) return { estado: 'falha-critica', dadoEscolhido: escolhido, total, dt, detalhe: '1 natural: Falha Crítica e Exposto, salvo regra específica.' };
   return total >= dt
     ? { estado: 'sucesso', dadoEscolhido: escolhido, total, dt, detalhe: `${ajusteNatural}Sucesso: o total alcançou a DT.` }
     : { estado: 'falha', dadoEscolhido: escolhido, total, dt, detalhe: `${ajusteNatural}Falha: o total não alcançou a DT.` };
@@ -79,7 +79,7 @@ export function calcularRolagemAtaqueManual(args: {
   const total = escolhido + args.valorBase + modificador;
   const estado = escolhido === 20 ? 'critico-sucesso' : escolhido === 1 ? 'falha-critica' : 'rolagem-ataque';
   const detalhe = escolhido === 20 ? '20 natural: Acerto Crítico automático. O resultado não resolve Reações nem consequências.'
-    : escolhido === 1 ? '1 natural: Falha Crítica. A Ficha não decide acerto, dano ou demais consequências.'
+    : escolhido === 1 ? '1 natural: Falha Crítica e Exposto, salvo regra específica. A Ficha não decide acerto, dano ou demais consequências.'
     : 'Rolagem registrada. Compare o total com a Defesa do alvo na mesa; a Ficha não declara acerto ou erro.';
   return { estado, dadoEscolhido: escolhido, total, dt: null, detalhe };
 }
