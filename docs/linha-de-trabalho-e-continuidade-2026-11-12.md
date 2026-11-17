@@ -727,3 +727,23 @@ Prosseguir com a auditoria das Condições que restringem Ataques e dos efeitos 
 
 ### Próxima ação ajustada
 Prosseguir após decisão de Gus sobre o nível de aplicação das restrições de Condições no painel. A Fase 0 segue aguardando teste humano de navegador; não confundir essa validação com a auditoria funcional da Fase 1.
+
+
+## Decisão aprovada — bloqueios por Condições e countdown — 17/11/2026
+
+Gus aprovou a opção de bloqueios operacionais por Condições. A implementação deve respeitar a autonomia do Jogador para adicionar, encerrar e remover Condições na própria Ficha. O Mestre não edita a Ficha e não administra esse registro.
+
+Os bloqueios serão estritamente mecânicos; duração narrativa, percepção, gatilhos e exceções dependentes da Mesa permanecem fora da decisão automática. Condições derivadas de PV/BI preservam suas fontes de verdade.
+
+Atenção especial a Surpreendido: Movimento e Ações são proibidos no primeiro turno; Reações e gasto de SA são proibidos enquanto durar. Como a Ficha não controla a Iniciativa do Encontro, não estender o bloqueio de Movimento/Ações a toda a duração da instância sem referência confiável ao primeiro turno.
+
+### Countdown técnico até os testes humanos
+1. Implementar bloqueios operacionais por categoria, preservando autonomia do Jogador e limites da Ficha.
+2. Adicionar testes automatizados para categorias, combinações, temporalidade de Surpreendido e remoção de Condições.
+3. Continuar auditoria funcional paralela e corrigir apenas divergências comprovadas.
+4. Executar CI completa, TypeScript e build no código atualizado; corrigir regressões.
+5. Atualizar roteiro, matriz, continuidade e checkpoint com evidências e instruções finais.
+
+Ao concluir os cinco itens, Gus executará a bateria humana de navegador: inicialização, IndexedDB, recarga, concorrência entre abas, backup/restauração, Service Worker e modo offline. CI/build não equivalem a validação humana.
+
+Estado: decisão aprovada; implementação e testes específicos pendentes; validação humana PENDENTE.
