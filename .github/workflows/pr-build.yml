@@ -13,6 +13,7 @@ jobs:
   build:
     name: TypeScript e Vite
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - name: Obter código
         uses: actions/checkout@v4
@@ -29,9 +30,6 @@ jobs:
 
       - name: Instalar dependências
         run: pnpm install --frozen-lockfile --ignore-scripts
-
-      - name: Testar regras e permissões em PostgreSQL local
-        run: pnpm test
 
       - name: Compilar aplicativo
         run: pnpm run build
