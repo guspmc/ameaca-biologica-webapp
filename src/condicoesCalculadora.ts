@@ -123,7 +123,7 @@ export function avaliarBloqueiosOperacionaisPorCondicoes(
 
   return {
     acao: desacordado || atordoado || incapacitado,
-    movimento: atordoado,
+    movimento: atordoado || ativas.has('agarrado') || ativas.has('imobilizado'),
     reacao: desacordado || atordoado || incapacitado || ativas.has('surpreendido'),
     gastarSA: ativas.has('surpreendido'),
     ataque: ativas.has('desorientado') || desacordado || atordoado || incapacitado,
