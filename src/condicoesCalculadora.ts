@@ -98,3 +98,35 @@ export function restricoesDeAtaquePorCondicoes(
   });
   return restricoes;
 }
+
+export type BloqueiosOperacionaisCondicao = {
+  acao: boolean;
+  movimento: boolean;
+  reacao: boolean;
+  gastarSA: boolean;
+  ataque: boolean;
+};
+
+/**
+ * Restrições operacionais explícitas das Condições.
+ * Ação Bônus e Interação Gratuita permanecem separadas de Ação.
+ * Surpreendido não bloqueia Ação/Movimento porque a Ficha não acompanha
+ * o primeiro turno da criatura; Reação e gasto de SA são bloqueados enquanto ativo.
+ */
+export function avaliarBloqueiosOperacionaisPorCondicoes(
+  condicoes: readonly CondicaoId[],
+): BloqueiosOperacionaisCondicao {
+  const ativas = new Set(condicoes);
+  const desacordado = ativas.has('desacordado');
+  const atordoado = ativas.has('atordoado');
+  const incapacitado = ativas.has('incapacitado');
+
+  return {
+    acao: desacordado || atordoado || incapacitado,
+    movimento: atordoado,
+    reacao: desacordado || atordoado || incapacitado || ativas.has('surpreendido'),
+    gastarSA: ativas.has('surpreendido'),
+    ataque: ativas.has('desorientado') || desacordado || atordoado || incapacitado,
+  };
+}
+
