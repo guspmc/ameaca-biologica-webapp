@@ -68,7 +68,7 @@ test('margem crítica usa o perfil consultado e não automatiza dano', () => {
   assert.match(ui, /limiteCritico/);
   assert.match(ui, /multiplicadorCritico/);
   assert.match(ui, /resultadoAtaqueCritico/);
-  assert.match(ui, /O cálculo de Dano permanece manual/);
+  assert.match(ui, /O cálculo nunca altera PV/);
   assert.doesNotMatch(ui, /aoSalvarRecursos|salvarPatchPersonagem/);
 });
 
@@ -79,7 +79,7 @@ test('calculadora manual de Dano usa resultados informados e atributos do perfil
   assert.match(ui, /atributoDano = tipo === 'ataque-corpo' \? atributos\.forca : atributos\.agilidade/);
   assert.match(ui, /aplicar Acerto Crítico/i);
   assert.match(ui, /Dano calculado:/);
-  assert.match(ui, /não rola dados nem altera PV/);
+  assert.match(ui, /O cálculo nunca altera PV/);
 });
 
 test('Dano do Operário preserva FOR adicional fora do multiplicador crítico', () => {
@@ -321,7 +321,7 @@ test('4ª Fase da BI inclui o dado adicional na fórmula de Dano Corpo a Corpo',
   assert.match(ui, /danoCorpoACorpoAdicionalBI\?: string \| null/);
   assert.match(ui, /tipo === 'ataque-corpo' && danoCorpoACorpoAdicionalBI/);
   assert.match(ui, /4ª Fase da Bio-Infecção: acrescenta \{danoCorpoACorpoAdicionalBI\} à fórmula de Dano Corpo a Corpo/);
-  assert.match(ui, /não se aplica a Ataques à distância/);
+  assert.match(ui, /não se aplica a Ataques à distância/i);
 });
 
 
