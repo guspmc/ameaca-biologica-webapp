@@ -11,7 +11,7 @@ test('registro de Reanimação inválido é distinguido de registro ausente', ()
 });
 
 test('registro inválido bloqueia início automático por 0 PV ou Colapso Viral', () => {
-  assert.match(ui, /!registroReanimacaoInvalido && recursos\.pvAtual === 0/);
+  assert.match(ui, /!registroReanimacaoInvalido && !transformacaoPVZero && recursos\.pvAtual === 0/);
   assert.match(ui, /!registroReanimacaoInvalido && biMaximo > 0 && recursos\.biAtual >= biMaximo/);
   assert.match(ui, /if \(ocupado \|\| bloqueado \|\| registroReanimacaoInvalido\) return/);
   assert.match(ui, /O registro de Reanimação está inválido\. Os dados originais foram preservados/);
