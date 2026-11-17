@@ -530,3 +530,36 @@ Essas quatro manobras permanecem como consulta canônica/manual, sem criar motor
 - TESTADO AUTOMATICAMENTE só pode ser atribuído ao HEAD e à execução identificados acima.
 - VALIDADO HUMANAMENTE permanece pendente até confirmação explícita de Gus.
 - Os blocos de auditoria antigos abaixo são registros históricos; quando divergirem desta atualização datada, prevalece esta atualização para o estado da branch indicada.
+
+
+## Reteste automatizado após correção das expectativas — 17/11/2026
+
+**Branch:** `feat/offline-first-ficha`  
+**HEAD testado:** `a98bdc324df32d5e23708a2c8c88f4b471fde92e`
+
+- **Build/TypeScript — TESTADO AUTOMATICAMENTE:** workflow `Validar compilação do WebApp`, run `44133790936`, job `134217691717`, SUCCESS. `pnpm run build` e `pnpm exec tsc --noEmit -p tsconfig.ui.json` concluíram sem erro.
+- **Suíte automatizada — TESTADO AUTOMATICAMENTE:** workflow `Verificação da ficha offline`, run `44133791005`, job `134217692288`, SUCCESS. Foram iniciados e concluídos os 154 arquivos `tests/*.test.mjs`; os resultados exibidos para os testes concluídos registram `# fail 0`. Não houve timeout. A etapa final também executou `pnpm build` com sucesso.
+- **Correção de teste de combate:** `tests/estado-turno-combate.test.mjs` agora recarrega o estado com saldo externo de 2 SA, coerente com os 2 SA restantes após compra de Reação adicional e Contra-Ataque. A API de carregamento sincroniza o saldo a partir do argumento externo; a fixture anterior informava 3 e esperava 2.
+- **Correção de teste de Reanimação:** `tests/reanimacao-registro-invalido.test.mjs` agora reconhece a guarda atual do componente, incluindo `!reanimacao` e `!transformacaoPVZero`. O registro inválido continua sendo preservado como motivo para manter a interface visível.
+- As duas correções foram exclusivamente em testes; não houve alteração de código de produção neste ciclo.
+- O build mantém aviso não bloqueante de chunk JavaScript acima de 500 kB e avisos de depreciação das Actions/Node no runner. Não foi feita otimização de bundle nesta etapa.
+- **Validação humana — PENDENTE:** nenhum resultado de execução por Gus foi informado. A aprovação da CI não substitui o roteiro humano.
+
+## Reauditoria das quatro Manobras sem controle operacional — 17/11/2026
+
+Cânone conferido no Arquivo do Jogador v1.0, pp. 77–78. O catálogo `src/manobrasUniversais.ts` e `tests/manobras-universais.test.mjs` já preservam a consulta textual e os custos/requisitos das quatro opções; isso não equivale a integração operacional no painel.
+
+- **Adiar Ação — PENDENTE / fora do escopo operacional atual:** desloca o turno para depois de um aliado ou depois de todos na rodada. O painel registra apenas o turno da própria personagem e declara expressamente que não controla Iniciativa/turnos do Encontro. Não criar motor de Iniciativa nesta fase.
+- **Agarrar — PENDENTE de integração:** substitui um Ataque; exige mão livre e alvo até uma categoria maior; disputa Atletismo contra Atletismo ou Reflexos do alvo, à escolha dele; escapar exige Ação e Teste contra a DT original. O catálogo documenta a regra, mas a Ficha não possui fluxo operacional que associe a substituição do Ataque, escolha do atributo defensivo do alvo e resultado original/DT com segurança.
+- **Empurrar/Derrubar — PENDENTE de integração:** usa a mesma disputa de Agarrar; em sucesso, escolha empurrar 1,5 m ou deixar Caído; não causa Dano. A dependência da disputa e a necessidade de registrar a escolha/resultado sem mover alvo nem aplicar Condição automaticamente impedem um botão simplificado seguro.
+- **Esconder-se — PENDENTE de integração:** custa Ação, exige estar fora dos sentidos do inimigo e ter onde se ocultar; Furtividade contra Percepção Passiva ou ativa conforme a situação. A consulta está no catálogo, mas ainda não existe fluxo contextual para confirmar os requisitos e registrar o tipo de Percepção/resultado sem presumir a situação ficcional.
+
+**Decisão de auditoria:** não implementar botões genéricos que apenas consumam Ação ou Ataque. Isso poderia registrar custo sem garantir os requisitos e a substituição corretos. Preservar consulta/manual até que um fluxo mínimo seguro seja definido, sem motor de turnos, movimentação de alvos ou aplicação automática de Condições.
+
+## Estado consolidado em 17/11/2026
+
+- CI automatizada de build, TypeScript e suíte de 154 arquivos: **APROVADA no HEAD a98bdc3**.
+- Fase 0: **EM ANDAMENTO**; auditoria estática favorável em partes, mas inicialização/persistência local e testes humanos aplicáveis ainda precisam de evidência.
+- Fase 1: **EM ANDAMENTO**; auditoria funcional e lacunas de integração permanecem abertas.
+- Fase 2: **PENDENTE**; aguarda execução e relato de Gus conforme `docs/roteiro-humano-ficha-offline-local.md`.
+- As quatro Manobras acima permanecem PENDENTES de integração operacional; catálogo de consulta já existe.
