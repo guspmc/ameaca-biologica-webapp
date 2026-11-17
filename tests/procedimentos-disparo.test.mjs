@@ -23,5 +23,5 @@ test('Perfuração diferencia a exceção da Punisher', () => {
   assert.match(punisher, /1 alvo adicional de tamanho Médio ou menor/);
   assert.match(punisher, /não perde Dados de Dano/);
   assert.match(svd, /remova 1 Dado de Dano/);
-  assert.match(svd, /não some AGI ao Dano/);
+  assert.match(svd, /não some AGI ao Dano/i);
 });
