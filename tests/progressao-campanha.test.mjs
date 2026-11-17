@@ -187,6 +187,6 @@ test('Morte no Nível 3 reverte o Atributo exato registrado', async () => {
 test('Morte pode cancelar pedido de Progressão pendente e botão não fica bloqueado pelo pedido', async () => {
   const fs = await import('node:fs/promises');
   const ui = await fs.readFile(new URL('../src/ProgressaoFichaLocal.tsx', import.meta.url), 'utf8');
-  assert.match(ui, /pedido de Progressão pendente será cancelado/);
+  assert.match(ui, /qualquer pedido pendente será cancelado/);
   assert.match(ui, /disabled=\{ocupado\} onClick=\{\(\) => void registrarMorte\(\)\}/);
 });
