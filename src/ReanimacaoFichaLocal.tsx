@@ -64,7 +64,7 @@ export default function ReanimacaoFichaLocal({ dados, recursos, origem, pvMaximo
   const desfechoAguardandoMesa = !!reanimacao && ['morte_a_registrar', 'transformacao_no_proximo_turno'].includes(reanimacao.estado);
   const registrosMesaValidos = dados.registrosMesa === undefined || listaDecisoesMesaValida(dados.registrosMesa);
   const decisoesVinculadas = desfechoAguardandoMesa && reanimacao?.id && registrosMesaValidos && Array.isArray(dados.registrosMesa)
-    ? dados.registrosMesa.filter((item): item is { id: string; descricao: string; tipo: string; reanimacaoId: string } => !!item && typeof item === 'object' && (item as Record<string, unknown>).reanimacaoId === reanimacao.id)
+    ? dados.registrosMesa.filter((item): item is { id: string; descricao: string; tipo: string; reanimacaoId: string; retificaRegistroId?: string } => !!item && typeof item === 'object' && (item as Record<string, unknown>).reanimacaoId === reanimacao.id)
     : [];
 
   async function persistir(proxima: Reanimacao, recursosPatch: Partial<RecursosAtuais> = {}) {
