@@ -24,5 +24,5 @@ test('A disponibilidade depende do uso persistido da Origem Acadêmico', () => {
 });
 
 test('A opção de uso é limpa quando a pessoa muda o tipo ou a Perícia do Teste', () => {
-  assert.match(calculadora, /setUsarSaberEAPoder\(false\).*\[tipo, periciaEfetiva, atributo\]/);
+  assert.match(calculadora, /setUsarSaberEAPoder\(false\).*\[tipo, periciaEfetiva, atributo, finalidadeCriminoso\]/);
 });
