@@ -82,7 +82,7 @@ test('Condições que proíbem Ações ou Atacar geram lembretes sem bloquear ro
     { condicao: 'desacordado', motivo: 'Desacordado: não pode realizar Ações nem Reações e não percebe conscientemente o ambiente.' },
     { condicao: 'atordoado', motivo: 'Atordoado: não pode realizar Ações, Reações ou Movimento.' },
     { condicao: 'incapacitado', motivo: 'Incapacitado: não pode realizar Ações nem Reações.' },
-    { condicao: 'surpreendido', motivo: 'Surpreendido: no primeiro turno, não pode se mover nem realizar Ações.' },
+    { condicao: 'surpreendido', motivo: 'Surpreendido: no primeiro turno, não pode se mover nem realizar Ações; enquanto durar, não pode usar Reações nem gastar SA.' },
   ]);
   assert.deepEqual(api.restricoesDeAtaquePorCondicoes(['caido','imobilizado','intoxicado']), []);
 });
