@@ -57,3 +57,26 @@ Objetivo operacional informado por Gus em 17/11/2026: ter uma versão jogável p
 
 ## Próxima ação exata
 Continuar a auditoria dos fluxos indispensáveis de combate/rolagem e dos estados de recursos/condições/descanso/reanimação/progressão, cruzando a implementação com o Arquivo do Jogador v1.0. Registrar apenas lacunas reais, implementar a menor correção segura quando necessária e executar CI novamente. Depois da conclusão da Fase 1, Gus executará o roteiro humano para fechar a Fase 2.
+
+
+## Atualização de checkpoint — decisão de bloqueios e countdown — 17/11/2026
+
+- Branch: `feat/offline-first-ficha`.
+- HEAD de código consultado: `244308fc30577d811fdbc00e98757a55ade7d31e` (antes desta atualização documental).
+- Decisão de Gus: implementar bloqueios operacionais por Condições, mantendo o Jogador como único responsável por adicionar/encerrar/remover Condições na própria Ficha; o Mestre não edita a Ficha.
+- Regras de bloqueio precisam respeitar categorias de recursos e temporalidade. Em especial, Surpreendido restringe Movimento/Ações no primeiro turno e Reações/gasto de SA enquanto durar. O painel não controla Iniciativa do Encontro; não inferir o primeiro turno apenas pela presença da instância.
+- Arquivos de código/teste alterados neste ciclo: nenhum.
+- Testes/build/CI executados neste ciclo: nenhum. A última CI verde permanece vinculada ao código `a98bdc3`; não atribuir essa aprovação ao HEAD atual.
+- Documentação atualizada: matriz de auditoria e registro de continuidade receberam a decisão e o countdown; este checkpoint registra o mesmo estado.
+
+### Countdown até a bateria humana
+1. Implementar bloqueios por categoria, respeitando a autonomia do Jogador e os limites da Ficha.
+2. Testar combinações, temporalidade de Surpreendido e remoção de Condições.
+3. Continuar auditoria funcional paralela e corrigir apenas divergências comprovadas.
+4. Executar CI completa, TypeScript e build após as alterações.
+5. Atualizar roteiro/matriz/continuidade/checkpoint e preparar instruções finais.
+
+Com os cinco itens técnicos concluídos, Gus executará a bateria real no navegador: inicialização, persistência IndexedDB, recarga, concorrência entre abas, backup/restauração, Service Worker e modo offline. A validação humana permanece PENDENTE.
+
+### Próxima ação exata
+Implementar primeiro a função pura de avaliação de bloqueios por Condição/categoria, depois integrar os controles da calculadora e do painel sem alterar a administração de Condições. Antes de bloquear Movimento/Ações por Surpreendido, verificar se existe sinal de primeiro turno confiável; caso contrário, bloquear apenas Reações e gasto de SA enquanto a Condição estiver ativa e manter o lembrete temporal explícito. Adicionar testes antes de executar CI.
