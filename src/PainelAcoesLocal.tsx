@@ -435,7 +435,7 @@ export default function PainelAcoesLocal({ dados, saAtual, aoSalvar, origemDados
               <label><input type="checkbox" checked={confirmouTreinamentoAjudar} disabled={salvando || !confirmouAjudarElegivel || !economia.turnoEmAndamento || economia.normaisUsados.acao} onChange={evento => setConfirmouTreinamentoAjudar(evento.target.checked)} /> Confirmo que sou Treinado ou Mestre na Perícia do Teste do aliado.</label>
               <p className="ficha-local-legenda">Servidor Público: além da Vantagem normal de Ajudar, o aliado recebe +2 no Teste de Perícia.</p>
             </>}
-            <button type="button" disabled={salvando || !economia.turnoEmAndamento || economia.normaisUsados.acao || !confirmouAjudarElegivel || (origem === 'Servidor Público' && !confirmouTreinamentoAjudar)}
+            <button type="button" disabled={salvando || !economia.turnoEmAndamento || economia.normaisUsados.acao || bloqueiosCondicao.acao || !confirmouAjudarElegivel || (origem === 'Servidor Público' && !confirmouTreinamentoAjudar)}
               onClick={() => void aplicar(atual => aplicarManobraCombate(atual, registrarAjudar).estado, origem === 'Servidor Público' ? 'Ajudar registrado: Ação consumida; aliado recebe Vantagem e +2 no Teste de Perícia, conforme as confirmações.' : 'Ajudar registrado: Ação consumida; aliado recebe Vantagem, conforme as confirmações.')}>Registrar Ajudar · Ação</button>
           </div>
 
