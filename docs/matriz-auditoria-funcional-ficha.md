@@ -660,3 +660,25 @@ O bloqueio será estritamente mecânico e limitado ao que o cânone determina. A
 A contagem chega a zero somente quando os cinco itens técnicos estiverem concluídos. Em seguida, Gus executará os testes reais de navegador (inicialização, IndexedDB, recarga, concorrência entre abas, backup/restauração, Service Worker e modo offline). Build/CI não equivalem a validação humana.
 
 **Estado neste registro:** decisão aprovada; implementação ainda não realizada; testes específicos ainda não executados; validação humana PENDENTE.
+
+## Implementação inicial — bloqueios operacionais por Condições — 17/11/2026
+
+- **IMPLEMENTADO (aguardando CI):** função pura `avaliarBloqueiosOperacionaisPorCondicoes` em `src/condicoesCalculadora.ts`, com categorias distintas para Ação, Movimento, Reação, gasto de SA e Ataque.
+- Desacordado bloqueia Ação/Reação/Ataque; Atordoado bloqueia Ação/Movimento/Reação/Ataque; Incapacitado bloqueia Ação/Reação/Ataque; Desorientado bloqueia Atacar; Agarrado e Imobilizado bloqueiam Movimento (0 m).
+- Surpreendido bloqueia Reação e gasto de SA enquanto ativo. Ação/Movimento não são bloqueados automaticamente porque o painel não possui sinal confiável do primeiro turno. O lembrete temporal permanece visível.
+- Ação Bônus e Interação Gratuita não foram equiparadas a Ação por inferência. Movimento de Caído/Intoxicado permanece disponível com seus limites/penalidades; não foi bloqueado integralmente.
+- Painel de ações, manobras e calculadora de Ataques receberam bloqueios; a administração de Condições não foi modificada.
+- **Auditoria paralela de autonomia:** `src/CondicoesFichaLocal.tsx` confirma que o próprio Jogador registra e encerra Condições por `aoSalvar`; Vulnerável, Desacordado e Colapso Viral permanecem derivados e protegidos. O componente não expõe editor do Mestre. Escopo desta verificação: componente offline da Ficha.
+- **Testes adicionados/ajustados:** `tests/condicoes-calculadora.test.mjs` cobre as categorias, Surpreendido sem inferência do primeiro turno, Movimento 0, distinção de Ação Bônus/Interação Gratuita e preservação da administração pelo Jogador.
+- **CI:** execução do workflow de testes e do build para o HEAD atual ainda em andamento no momento deste registro. Não declarar os testes aprovados antes do resultado final.
+- **Validação humana:** PENDENTE; nada foi testado no navegador por Gus neste ciclo.
+
+### Countdown atualizado
+1. Implementar bloqueios por categoria — **IMPLEMENTADO; aguarda confirmação da CI**.
+2. Testes automatizados das categorias, combinações e remoção — **IMPLEMENTADOS; execução CI em andamento**.
+3. Auditoria funcional paralela — **EM ANDAMENTO**; autonomia de edição de Condições conferida no componente da Ficha.
+4. CI completa, TypeScript e build no código atualizado — **EM ANDAMENTO**.
+5. Atualizar roteiro, matriz, continuidade e checkpoint com evidências finais — **PARCIAL**; este registro documenta o ciclo, faltam resultados finais da CI e roteiro/instruções após aprovação.
+
+A contagem permanece em 5 etapas até que cada critério esteja concluído. A bateria humana só começa depois delas.
+
