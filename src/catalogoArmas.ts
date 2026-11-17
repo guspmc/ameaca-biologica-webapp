@@ -1,4 +1,4 @@
-import { consultarProcedimentoAtaqueUniversal } from './catalogoProcedimentosAtaquesUniversais';
+import { consultarProcedimentoAtaqueUniversal } from './catalogoProcedimentosAtaquesUniversais.ts';
 
 export type PerfilArma = {
   id: string;
