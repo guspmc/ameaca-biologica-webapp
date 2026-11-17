@@ -1,4 +1,4 @@
-import { sortearDados, type FacesDado } from './rolagemDados';
+import { sortearDados, type FacesDado } from './rolagemDados.ts';
 
 export type ResultadoRolagemDano = {
   resultados: number[];
