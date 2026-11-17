@@ -355,9 +355,12 @@ export function registrarNaoVaiEscapar(args: {
     || Object.getPrototypeOf(args.avaliacao) !== Object.prototype
     || Object.keys(args.avaliacao).sort().join('|') !== ['deveTerminarAdjacente', 'deslocamentoMaximoMetros', 'disponivel', 'motivo'].sort().join('|')
     || typeof args.avaliacao.disponivel !== 'boolean'
-    || args.avaliacao.deslocamentoMaximoMetros !== 3
-    || args.avaliacao.deveTerminarAdjacente !== true
-    || typeof args.avaliacao.motivo !== 'string' || !args.avaliacao.motivo.trim()) {
+    || !Number.isSafeInteger(args.avaliacao.deslocamentoMaximoMetros)
+    || typeof args.avaliacao.deveTerminarAdjacente !== 'boolean'
+    || typeof args.avaliacao.motivo !== 'string' || !args.avaliacao.motivo.trim()
+    || (args.avaliacao.disponivel
+      ? args.avaliacao.deslocamentoMaximoMetros !== 3 || args.avaliacao.deveTerminarAdjacente !== true
+      : args.avaliacao.deslocamentoMaximoMetros !== 0 || args.avaliacao.deveTerminarAdjacente !== false)) {
     throw new Error('Dados de registro de Não Vai Escapar inválidos.');
   }
   if (!args.avaliacao.disponivel) throw new Error('Não Vai Escapar não está disponível para este gatilho.');
