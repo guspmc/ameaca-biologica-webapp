@@ -84,9 +84,9 @@ function instalarIndexedDBComBancoV1(registrosIniciais, versaoInicial = 1) {
         versaoBanco = versaoSolicitada;
         setImmediate(() => {
           requisicao.onupgradeneeded?.({ oldVersion: versaoAntiga });
-          // O sucesso só é disparado depois que o cursor da migração termina.
+          // A migração de geração existe somente ao atualizar bancos anteriores à v2.
           const aguardarCursor = () => {
-            if (cursorConcluido) requisicao.onsuccess?.();
+            if (versaoAntiga >= 2 || cursorConcluido) requisicao.onsuccess?.();
             else setImmediate(aguardarCursor);
           };
           aguardarCursor();
@@ -99,17 +99,6 @@ function instalarIndexedDBComBancoV1(registrosIniciais, versaoInicial = 1) {
   };
 
   let cursorConcluido = false;
-  const abrirCursorOriginal = store.openCursor;
-  store.openCursor = () => {
-    const pedido = abrirCursorOriginal();
-    const sucessoOriginal = () => {};
-    pedido.onsuccess = evento => {
-      if (pedido.result === null) cursorConcluido = true;
-      sucessoOriginal(evento);
-    };
-    return pedido;
-  };
-
   return { registros, stores, indiceRemotoUnico: () => indiceRemotoUnico };
 }
 
