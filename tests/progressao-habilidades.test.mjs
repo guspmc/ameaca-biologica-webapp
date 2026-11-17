@@ -272,7 +272,7 @@ test('aplicação de Ponto de Perícia respeita níveis 4 e 8, Classe, Origem e 
 test('Ficha ativa lista todas as Habilidades adquiridas com nível, grau e descrição', () => {
   assert.match(fichaLocal, /HABILIDADES_PROGRESSAO/);
   assert.match(fichaLocal, /descricaoEfeitoHabilidade/);
-  assert.match(fichaLocal, /habilidadesExibicao\\.map/);
+  assert.match(fichaLocal, /habilidadesExibicao\.map/);
   assert.match(fichaLocal, /nivelAquisicao/);
   assert.match(fichaLocal, /grauRotulo/);
 });
