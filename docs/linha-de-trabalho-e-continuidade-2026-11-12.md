@@ -747,3 +747,16 @@ Atenção especial a Surpreendido: Movimento e Ações são proibidos no primeir
 Ao concluir os cinco itens, Gus executará a bateria humana de navegador: inicialização, IndexedDB, recarga, concorrência entre abas, backup/restauração, Service Worker e modo offline. CI/build não equivalem a validação humana.
 
 Estado: decisão aprovada; implementação e testes específicos pendentes; validação humana PENDENTE.
+
+## Implementação inicial dos bloqueios por Condições — 17/11/2026
+
+A função pura de avaliação operacional foi implementada em `src/condicoesCalculadora.ts` e integrada ao `src/PainelAcoesLocal.tsx` e `src/CalculadoraTesteLocal.tsx`. As categorias Ação, Movimento, Reação, gasto de SA e Ataque são distintas. Ação Bônus e Interação Gratuita não são bloqueadas por equivalência presumida com Ação.
+
+Surpreendido bloqueia Reações e gasto de SA enquanto ativo; Ação/Movimento não são bloqueados porque a Ficha não controla a Iniciativa nem identifica o primeiro turno. Agarrado/Imobilizado/Atordoado bloqueiam Movimento; Caído e Intoxicado mantêm deslocamento com limites/penalidade.
+
+Auditoria paralela confirmou em `src/CondicoesFichaLocal.tsx` que o Jogador pode ativar e encerrar Condições na própria Ficha, com salvamento confirmado; condições derivadas de PV/BI não são editáveis manualmente. O componente não oferece controles de edição ao Mestre. Nenhuma mudança foi feita na administração de Condições.
+
+Testes de categorias, Surpreendido, Movimento 0 e autonomia do Jogador foram adicionados/ajustados em `tests/condicoes-calculadora.test.mjs`. As execuções CI de testes e build do HEAD mais recente ainda estavam em andamento no registro; não declarar aprovação até o término.
+
+Countdown: (1) implementação realizada, aguardando CI; (2) testes adicionados, aguardando CI; (3) auditoria paralela em andamento, autonomia de Condições conferida; (4) CI/build em andamento; (5) documentação e roteiro final parcialmente atualizados. Validação humana PENDENTE.
+
