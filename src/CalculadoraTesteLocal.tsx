@@ -159,6 +159,20 @@ export default function CalculadoraTesteLocal({ atributos, treinada, distribuica
   const formula = tipo === 'ataque-corpo' ? 'Ataque Corpo a Corpo: 1d20 + Luta.'
     : tipo === 'ataque-distancia' ? 'Ataque à distância: 1d20 + Pontaria.'
     : tipo === 'pericia' ? 'Perícia já inclui o Atributo.' : 'Teste puro de Atributo.';
+  const bearLauncherSelecionado = perfilFogo?.id === 'bear-commander' && modoBearCommander === 'lancador';
+  const procedimentoGM79 = (perfilFogo?.id === 'gm-79' || bearLauncherSelecionado) ? consultarProcedimentoGM79(cartuchoGM79, modoGM79) : null;
+  const ataqueEmAreaGM79 = procedimentoGM79?.danoEmArea ?? false;
+  const modosArmaFogo = perfilFogo ? consultarModosDisparoArmaFogo(perfilFogo, coronhaMatildaConfirmada) : null;
+  const modoDisparoEfetivo = modoDisparoAutomatico === 'normal' && modosArmaFogo && !modosArmaFogo.disparoUnico
+    ? (modosArmaFogo.cadenciado ? 'cadenciado' : modosArmaFogo.rajada ? 'rajada' : 'normal')
+    : modoDisparoAutomatico;
+  const rajadaSelecionada = !bearLauncherSelecionado && modoDisparoEfetivo === 'rajada' && (modosArmaFogo?.rajada ?? false);
+  const cadenciadoSelecionado = modoDisparoEfetivo === 'cadenciado' && (modosArmaFogo?.cadenciado ?? false);
+  const disparoUnicoIndisponivel = Boolean(modosArmaFogo && !modosArmaFogo.disparoUnico && !rajadaSelecionada && !cadenciadoSelecionado);
+  const ataqueEmArea = ataqueEmAreaGM79 || rajadaSelecionada;
+  const bonusMirar = escopo === 'ataques' && mirarPreparado && !ataqueEmArea ? 2 : 0;
+  const valorTeste = valorTesteBase + bonusMirar;
+
   const calculado = useMemo(() => {
     if (escopo === 'ataques') {
       try { return { resultado: calcularRolagemAtaqueManual({ valorBase: valorTeste, modificador: Number(modificador || 0), dado1: dadosConfirmados?.dado1 ?? null, dado2: dadosConfirmados?.dado2 ?? null, vantagem: vantagemEfetiva }), erro: '' }; }
@@ -213,19 +227,6 @@ export default function CalculadoraTesteLocal({ atributos, treinada, distribuica
   const permiteConfirmacaoCritico19 = escopo === 'ataques' && limiteCritico === 19
     && calculado.resultado?.dadoEscolhido === 19 && calculado.resultado.total !== null;
   const criticoDanoAplicado = resultadoAtaqueCritico || (permiteConfirmacaoCritico19 && criticoDano);
-  const bearLauncherSelecionado = perfilFogo?.id === 'bear-commander' && modoBearCommander === 'lancador';
-  const procedimentoGM79 = (perfilFogo?.id === 'gm-79' || bearLauncherSelecionado) ? consultarProcedimentoGM79(cartuchoGM79, modoGM79) : null;
-  const ataqueEmAreaGM79 = procedimentoGM79?.danoEmArea ?? false;
-  const modosArmaFogo = perfilFogo ? consultarModosDisparoArmaFogo(perfilFogo, coronhaMatildaConfirmada) : null;
-  const modoDisparoEfetivo = modoDisparoAutomatico === 'normal' && modosArmaFogo && !modosArmaFogo.disparoUnico
-    ? (modosArmaFogo.cadenciado ? 'cadenciado' : modosArmaFogo.rajada ? 'rajada' : 'normal')
-    : modoDisparoAutomatico;
-  const rajadaSelecionada = !bearLauncherSelecionado && modoDisparoEfetivo === 'rajada' && (modosArmaFogo?.rajada ?? false);
-  const cadenciadoSelecionado = modoDisparoEfetivo === 'cadenciado' && (modosArmaFogo?.cadenciado ?? false);
-  const disparoUnicoIndisponivel = Boolean(modosArmaFogo && !modosArmaFogo.disparoUnico && !rajadaSelecionada && !cadenciadoSelecionado);
-  const ataqueEmArea = ataqueEmAreaGM79 || rajadaSelecionada;
-  const bonusMirar = escopo === 'ataques' && mirarPreparado && !ataqueEmArea ? 2 : 0;
-  const valorTeste = valorTesteBase + bonusMirar;
   const procedimentoPerfuracao = modosArmaFogo?.perfuracao ?? null;
   const procedimentoArmaEspecial = perfilFogo ? consultarProcedimentoArmaEspecial(perfilFogo.id) : null;
   useEffect(() => { if (ataqueEmArea) { setCriticoDano(false); setDadosConfirmados(null); setDado1(''); setDado2(''); setErroRolagem(''); } }, [ataqueEmArea]);
