@@ -682,3 +682,12 @@ A contagem chega a zero somente quando os cinco itens técnicos estiverem conclu
 
 A contagem permanece em 5 etapas até que cada critério esteja concluído. A bateria humana só começa depois delas.
 
+### Auditoria incremental — ação Usar um Objeto — 17/11/2026
+
+A revisão dos controles do painel encontrou uma omissão concreta na implementação inicial: o botão **Usar um Objeto · Ação** respeitava turno e consumo de Ação, mas não consultava `bloqueiosCondicao.acao`. Assim, poderia registrar a Ação mesmo sob Desacordado, Atordoado ou Incapacitado.
+
+- **Correção:** `src/PainelAcoesLocal.tsx` agora inclui `bloqueiosCondicao.acao` na condição de desabilitação do botão.
+- **Regressão:** `tests/condicoes-calculadora.test.mjs` ganhou asserção específica para esse controle.
+- **CI:** commit anterior `bbb7a6d` teve workflow de testes e build concluídos com sucesso. A correção atual foi commitada em `f5f1344`; workflows correspondentes ainda estavam em andamento no momento deste registro. O teste adicional foi commitado em `88c3475`, posterior à execução em curso; aguardar CI desse HEAD.
+- **Classificação:** omissão confirmada e corrigida no código; validação automatizada da correção PENDENTE até a CI do HEAD.
+
