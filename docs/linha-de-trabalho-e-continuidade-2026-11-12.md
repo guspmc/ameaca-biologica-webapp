@@ -764,3 +764,7 @@ Countdown: (1) implementação realizada, aguardando CI; (2) testes adicionados,
 
 A revisão do Painel identificou que o botão Usar um Objeto consumia Ação, mas não verificava o bloqueio operacional por Condições. Corrigido em `src/PainelAcoesLocal.tsx` com `bloqueiosCondicao.acao`; adicionada asserção de regressão em `tests/condicoes-calculadora.test.mjs`. A correção está no commit `f5f1344`, e o teste adicional em `88c3475`. A CI do código-base `bbb7a6d` passou em testes e build; os workflows de `f5f1344` ainda estavam em execução e precisam ser confirmados para o HEAD atualizado.
 
+### Testes de combinação e encerramento de Condições — 17/11/2026
+
+Ampliada a suíte `tests/condicoes-calculadora.test.mjs` com dois casos: combinação simultânea de condições impeditivas e recálculo após remover uma condição, mantendo apenas os bloqueios ainda justificados pelas condições restantes. Ao encerrar todas, o avaliador retorna todas as categorias liberadas. Commit `16aaed95aa691750459f8946aa823034c9879963`; CI do commit ainda enfileirada no momento do registro. Esses testes unitários não substituem validação humana de interação/salvamento.
+
