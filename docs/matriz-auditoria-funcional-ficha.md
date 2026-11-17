@@ -629,3 +629,14 @@ Inspecionar o modelo local persistido de personagem e os dados existentes de equ
 **DECISÃO APROVADA POR GUS:** a implementação operacional de **Aparar universal** será realizada junto com o **Inventário ativo**, quando a Ficha passar a ter estado confiável dos itens e armas efetivamente equipados pelos jogadores. A integração deverá consultar a arma equipada, verificar elegibilidade e Durabilidade e aplicar o desgaste previsto pelo cânone, sem duplicar estado nem presumir equipamento.
 
 Até essa etapa, Aparar permanece parcialmente implementado/bloqueado para personagens que dependam de arma equipada. O fluxo específico de Socador de Pedras com punhos Indestrutíveis permanece distinto. **Não antecipar Inventário ativo na Fase 1 nem criar solução provisória que ignore elegibilidade ou Durabilidade.** Ao iniciar a fase de Inventário, incluir Aparar no mesmo escopo e nos respectivos testes.
+
+
+## Auditoria incremental — restrições de Condições no painel — 17/11/2026
+
+- Referências canônicas: Arquivo do Jogador v1.0, pp. 81–83.
+- Inspecionados `src/condicoesCalculadora.ts`, `src/condicoesFicha.ts`, `src/PainelAcoesLocal.tsx` e os testes `tests/condicoes-calculadora.test.mjs`, `tests/reacoes-combate.test.mjs` e `tests/reacao-defensiva-ficha.test.mjs`.
+- As penalidades próprias de Ataques e Testes são calculadas em contextos aplicáveis: Caído, Cego, Imobilizado, Intoxicado, Enfraquecido, Infectado Especial, Desorientado e Reflexos sob Imobilizado, conforme o tipo de rolagem. Vantagem e Desvantagem se cancelam normalmente.
+- **Ponto de decisão funcional:** Desorientado, Desacordado, Atordoado, Incapacitado e Surpreendido geram avisos no painel, mas os controles de Ações/Reações e gasto de SA continuam habilitados. Os testes existentes confirmam explicitamente que esses avisos não desabilitam nem resolvem ações.
+- O cânone define proibições/restrições para essas Condições (Desorientado não pode Atacar; Desacordado e Incapacitado não realizam Ações/Reações; Atordoado não realiza Ações/Reações/Movimento; Surpreendido restringe Ações, Reações e SA conforme o primeiro turno/duração). A interface atualmente depende da conferência do jogador/Mesa.
+- **Não alterado:** nenhum código ou teste foi modificado neste incremento; testes foram inspecionados, não executados; nenhum build/CI foi executado. Não classificar como defeito definitivo antes de decidir se a Ficha deve apenas alertar ou também bloquear controles incompatíveis, considerando exceções e a responsabilidade da Mesa.
+- **Decisão necessária de Gus:** manter avisos informativos ou introduzir bloqueios operacionais condicionados às Condições, com tratamento explícito de duração/exceções. Não implementar bloqueio parcial improvisado.
