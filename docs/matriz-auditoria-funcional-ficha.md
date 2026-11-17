@@ -1,6 +1,6 @@
 # Matriz de auditoria funcional da Ficha
 
-**Data:** 10/11/2026  
+**Data:** 17/11/2026  
 **Branch:** `feat/offline-first-ficha`  
 **Status:** auditoria documental parcial; não é certificação de completude.
 
@@ -26,7 +26,7 @@
 | Reanimação | `ReanimacaoFichaLocal.tsx` e `reanimacaoFicha.ts`; cada nova instância recebe ID estável (instâncias antigas sem ID permanecem válidas e podem receber ID por ação explícita). Após três falhas, o painel distingue decisão pendente de decisão registrada por evento vinculado. O vínculo é apenas referencial: não executa morte, transformação ou efeitos narrativos. Checkpoints: `docs/checkpoint-desfechos-reanimacao-decisao-mesa-2026-11-12.md` e `docs/checkpoint-vinculos-decisoes-reanimacao-2026-11-12.md`. | `reanimacao-ficha.test.mjs`, `reanimacao-integracao-ficha.test.mjs` (cobertura adicionada; não executada nesta sessão) | A Ficha não mata nem transforma. PV 0/BI Máxima durante Transformação continua sob decisão da Mesa. Decisão vinculada permanece no histórico e é exibida junto ao desfecho mecânico. Cronômetros e efeitos de Transformação permanecem manuais. Validação humana pendente. |
 | Registro de decisões da Mesa | `RegistroDecisoesMesaLocal.tsx` e `registroDecisoesMesa.ts`; histórico append-only. Novas Retificações exigem selecionar registro anterior por ID (`retificaRegistroId`); referências devem apontar para evento anterior na ordem do histórico. Retificações antigas sem referência estruturada continuam válidas como legado. Eventos podem receber `reanimacaoId`; o vínculo é propagado às retificações do evento e permite ao painel distinguir decisão pendente/registrada. Checkpoint: `docs/checkpoint-vinculos-decisoes-reanimacao-2026-11-12.md`. | `registro-decisoes-mesa.test.mjs`, `personagens-local.test.mjs`, `reanimacao-integracao-ficha.test.mjs`, `backup-ficha.test.mjs` (cobertura adicionada/atualizada; não executada nesta sessão) | Sem edição/exclusão e sem efeitos em PV/BI/Condições/Reanimação. Responsável autodeclarado, não autenticado; permissões LAN inalteradas. Backup preserva IDs e referências. Limite atual de 30 eventos; validação humana e testes/build pendentes. |
 | Descanso | `DescansoFichaLocal.tsx`, `descansoFicha.ts`, `usosDescansoCompleto.ts`; Descanso Completo é bloqueado durante a hora inerte do Infectado Especial a 0 PV e durante a hora Desacordada indicada por Cabeça Carmesim a BI 0, enquanto a Transformação permanecer ativa. | `descanso-ficha.test.mjs`, `usos-descanso-completo.test.mjs`, `reanimacao-integracao-ficha.test.mjs` (novo teste estrutural, ainda não executado) | Não há cronômetro; o bloqueio depende de a Condição permanecer ativa e de seu encerramento somente após confirmação da Mesa. Descanso Parcial não foi bloqueado, pois a regra consultada não estabelece essa proibição expressamente. Atualização automática de outras Condições e progressões temporais continua fora do painel. |
-| Combate — economia e manobras | `PainelAcoesLocal.tsx`, `estadoTurnoCombate.ts`, `manobrasOperacionais.ts`, `reacoesCombate.ts`. | `estado-turno-combate.test.mjs`, `economia-acoes.test.mjs`, `manobras-operacionais.test.mjs`, `manobras-universais.test.mjs`, `reacoes-combate.test.mjs`, `reacao-defensiva-ficha.test.mjs` | A Ficha registra escolhas/ações sem presumir gatilhos nem resolver efeitos por conta própria. A interface permite avaliar a janela, declarar Esquiva autorizada e solicitar o Teste de Reflexos nos três modos, respeitando Dados Físicos/Virtuais/Mistos e Desvantagem por Condições/Fase da BI. A declaração defensiva passa por transição integrada e persiste marcador de origem no estado do turno; Contra-Ataque Instintivo só reutiliza a Reação quando a Ficha registrou que ela foi consumida na defesa, sem depender de confirmação local volátil. Aparar permanece bloqueado até existir estado confiável de equipamento empunhado e Durabilidade. Iniciativa da Mesa e gestão de Encontros não fazem parte do painel atual. |
+| Combate — economia e manobras | `PainelAcoesLocal.tsx`, `estadoTurnoCombate.ts`, `manobrasOperacionais.ts`, `reacoesCombate.ts`. Ajudar, Desengajar e Usar um Objeto possuem controles operacionais; Mirar e Combate com Duas Armas estão integrados. | `ajudar-ficha.test.mjs`, `estado-turno-combate.test.mjs`, `economia-acoes.test.mjs`, `manobras-operacionais.test.mjs`, `manobras-universais.test.mjs`, `ataques-calculadora.test.mjs`, `reacoes-combate.test.mjs`, `reacao-defensiva-ficha.test.mjs` | A Ficha registra escolhas/ações sem presumir gatilhos nem resolver efeitos por conta própria. A interface permite avaliar a janela, declarar Esquiva autorizada e solicitar o Teste de Reflexos nos três modos, respeitando Dados Físicos/Virtuais/Mistos e Desvantagem por Condições/Fase da BI. A declaração defensiva passa por transição integrada e persiste marcador de origem no estado do turno; Contra-Ataque Instintivo só reutiliza a Reação quando a Ficha registrou que ela foi consumida na defesa, sem depender de confirmação local volátil. Aparar permanece bloqueado até existir estado confiável de equipamento empunhado e Durabilidade. Iniciativa da Mesa e gestão de Encontros não fazem parte do painel atual. |
 | Testes e roladores | `RoladoresBasicosLocal.tsx`, `CalculadoraTesteLocal.tsx`, `rolagemDados.ts`, `testes.ts`. | `roladores-ficha.test.mjs`, `testes.test.mjs`, `ataques-calculadora.test.mjs` | Os testes existentes verificam restrição de roladores ao modo Automático; Misto/Manual não devem ganhar calculadoras por acidente. |
 | Iniciativa | A Ficha exibe modificador derivado de AGI e permite rolagem pontual no modo Automático. | `iniciativa-ficha.test.mjs` | A própria suíte confirma que a Ficha não administra ordem de turnos nem Encontros. |
 | Progressão e Morte | `ProgressaoFichaLocal.tsx`, `progressaoPersistente.ts`, `progressaoMorte.ts`. | `progressao-persistente.test.mjs`, `progressao-morte.test.mjs`, `progressao-campanha.test.mjs` | Progressão Offline agora usa contrato neutro por padrão: o grupo decide o critério fora do WebApp e a Ficha registra apenas a autorização externa antes de exigir Descanso Completo na Sala de Descanso. Contratos históricos com Marco Narrativo ou Missões continuam válidos e preservados; novos registros não exigem nem armazenam escolha de método. Registro de Morte Offline reverte benefícios do último Nível e exige nova autorização; integração LAN permanece fora deste ciclo. |
@@ -500,3 +500,33 @@ A ordem sugerida para o próximo incremento é fechar os contratos de **equipar/
 - **Motivo:** esses dados já tinham validadores de domínio usados pela persistência/backup Offline, mas o endpoint LAN não aplicava todos eles antes de gravar. A UI não substitui validação do servidor.
 - **Cobertura adicionada:** `tests/personagens-local.test.mjs` envia estados inválidos e verifica HTTP 422, revisão inalterada e ausência de persistência do campo inválido.
 - **Limite:** testes automatizados e build não foram executados; não declarar a validação executada. O teste humano LAN aprovado não foi repetido. A mudança afeta o código LAN e fica sujeita à cobertura automatizada e à verificação posterior se houver regressão concreta.
+
+
+## Estado de validação automatizada — 17/11/2026
+
+**Branch:** `feat/offline-first-ficha`  
+**HEAD auditado:** `08bf11decfa647223bc40377a38b40619e1336b6`
+
+- **Build/TypeScript — TESTADO AUTOMATICAMENTE:** workflow `Validar compilação do WebApp` (run `44119389268`) concluído com sucesso neste HEAD.
+- **Suíte de testes — COM FALHAS:** workflow `Verificação da ficha offline` (run `44119389313`) percorreu os 154 arquivos `tests/*.test.mjs`; 2 arquivos terminaram com falha: `tests/estado-turno-combate.test.mjs` e `tests/reanimacao-registro-invalido.test.mjs`. Os demais arquivos concluíram sem erro. Como a etapa de testes falhou, a etapa de build desse workflow foi ignorada; o build independente acima passou.
+- A causa específica das duas falhas deve ser conferida no log e corrigida somente após distinguir divergência de implementação, expectativa de teste ou regra canônica. Não classificar a suíte como aprovada.
+- **Validação humana — PENDENTE:** não há confirmação de execução da bateria `docs/roteiro-humano-ficha-offline-local.md` nesta rodada.
+
+## Atualização de integração das Manobras — 17/11/2026
+
+A inspeção posterior ao checkpoint de 12/11 identificou que **Ajudar, Desengajar e Usar um Objeto já possuem integração operacional** em `src/PainelAcoesLocal.tsx`, helpers de domínio e testes dedicados. Mirar e Combate com Duas Armas também estão integrados. Portanto, descrições anteriores que listam Ajudar/Desengajar/Usar um Objeto como ausentes estão SUPERADAS e não devem gerar nova implementação.
+
+Permanecem sem controles operacionais específicos, conforme auditoria estática atual:
+- **Adiar Ação:** depende de gestão da ordem de Iniciativa/rodada, que não pertence à Ficha atual.
+- **Agarrar:** disputa e custo de “substituir um Ataque” ainda não estão mapeados com segurança à economia atual.
+- **Empurrar/Derrubar:** mesma dependência de custo de Ataque; deslocamento/Condição do alvo não devem ser executados automaticamente.
+- **Esconder-se:** exige confirmação contextual de ambiente/sentidos e escolha da Percepção pertinente.
+
+Essas quatro manobras permanecem como consulta canônica/manual, sem criar motor de turnos, movimentação de alvos ou resolução automática de efeitos. Ajudar/Desengajar/Usar Objeto não são pendências.
+
+## Limites de status desta matriz
+
+- IMPLEMENTADO descreve código presente; não equivale a teste aprovado.
+- TESTADO AUTOMATICAMENTE só pode ser atribuído ao HEAD e à execução identificados acima.
+- VALIDADO HUMANAMENTE permanece pendente até confirmação explícita de Gus.
+- Os blocos de auditoria antigos abaixo são registros históricos; quando divergirem desta atualização datada, prevalece esta atualização para o estado da branch indicada.
