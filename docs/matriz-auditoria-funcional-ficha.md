@@ -590,3 +590,35 @@ Cânone conferido no Arquivo do Jogador v1.0, pp. 77–78. O catálogo `src/mano
 
 ### Próxima ação exata
 Prosseguir com auditoria detalhada das integrações de combate e economia de ações na Ficha, incluindo ataques, mira, duas armas, reações, condições aplicadas ao próprio personagem e salvamento dos estados. Corrigir imediatamente qualquer divergência reproduzível e executar CI após mudanças de código. Em paralelo, preparar a validação real de inicialização/IndexedDB/Service Worker para a Fase 0, sem declarar teste humano executado.
+
+
+## Auditoria incremental — combate, economia de ações e reações — 17/11/2026
+
+**Branch:** `feat/offline-first-ficha`  
+**HEAD consultado:** `98e942f94b9124f66630f10ff12cad22177feead`  
+**Código de produção mais recente:** `a98bdc324df32d5e23708a2c8c88f4b471fde92e` (os commits posteriores são documentais).
+
+### Itens conferidos
+- **Economia de ações/turnos:** `src/economiaAcoes.ts`, `src/estadoTurnoCombate.ts` e `src/manobrasOperacionais.ts` foram confrontados com a janela de 3 SA, Esforço, renovação de ações, Mirar, Disparada/Fuga e Duas Armas. A transição integrada preserva gastos na janela e os marcadores são persistidos/migrados; Mirar mantém +2 apenas no Teste de Ataque e é consumido ao registrar o Ataque.
+- **Ataques:** `src/testes.ts` e `src/CalculadoraTesteLocal.tsx` mantêm Luta/Pontaria, seleção de Vantagem/Desvantagem, 20/1 naturais, margem especial de Crítico confirmada pela Mesa, cálculo de Dano separado e ausência de comparação automática com Defesa. A calculadora não aplica Dano aos PV.
+- **Reações:** `src/reacoesCombate.ts` e `src/PainelAcoesLocal.tsx` foram conferidos para janela defensiva, 20 natural, Esquiva autorizada, Contra-Ataque, Contra-Ataque Instintivo, Retaliação, Ataque de Oportunidade, Não Vai Escapar, Na Minha Mira e Mercenário. O registro da Reação defensiva é separado dos demais gatilhos, permitindo que Contra-Ataque Instintivo reutilize a mesma Reação apenas quando a defesa foi registrada.
+- **Condições em combate:** a calculadora recebe Condições ativas, aplica as penalidades codificadas e mantém avisos para requisitos dependentes de contexto ou da Mesa. Não foi encontrado novo defeito reproduzível no recorte examinado.
+
+### Lacuna funcional confirmada — Aparar universal
+O Arquivo do Jogador v1.0, em Reações e Defesa Ativa (pp. 80–81), estabelece que Aparar é universal para Personagens: após Ataque Corpo a Corpo bem-sucedido e aparável, usa Reação e Teste de Luta contra o resultado do Ataque; em sucesso, evita Dano e efeitos. A regra manda observar Durabilidade.
+
+A interface atual reconhece o gatilho, mas bloqueia o registro para personagens sem a Habilidade Socador de Pedras, exibindo que ainda não existe estado confiável de arma empunhada/elegibilidade/Durabilidade. Socador de Pedras tem fluxo próprio com punhos Indestrutíveis. Portanto:
+- **Regra:** definida no cânone.
+- **Implementação:** PARCIAL; fluxo universal de Aparar ainda não operacional para os demais personagens.
+- **Motivo do bloqueio:** a Fase 1 não inclui Inventário ativo e a Ficha ainda não dispõe de estado confiável de item empunhado/Durabilidade para validar e atualizar sem presumir equipamento nem perder integridade.
+- **Decisão de segurança:** não liberar Aparar genérico sem verificar elegibilidade e Durabilidade; não reduzir Durabilidade em dado de inventário inexistente nem criar uma cópia concorrente desse estado.
+- **Próxima investigação:** verificar se há fonte local de equipamento já persistida e autorizada na Fase 1. Se não houver, apresentar a Gus a menor alternativa compatível com o cânone, sem antecipar o Inventário ativo nem alterar regras.
+
+### Resultado deste incremento
+- Não foi alterado código nem teste: a lacuna de Aparar depende de fonte de equipamento/Durabilidade que ainda não está disponível de forma confiável nesta fase.
+- Testes existentes foram inspecionados, mas não executados neste incremento.
+- A CI aprovada permanece vinculada ao código `a98bdc3` (build/TypeScript e 154 arquivos de teste); não afirmar CI para o HEAD documental atual.
+- Validação humana permanece PENDENTE.
+
+### Próxima ação exata
+Inspecionar o modelo local persistido de personagem e os dados existentes de equipamento para determinar se é possível integrar Aparar sem ativar o Inventário. Em paralelo, continuar a auditoria de condições que restringem Ataques e efeitos de Reações. Se a fonte de Durabilidade não existir, registrar a dependência e solicitar decisão antes de qualquer solução alternativa.
