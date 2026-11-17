@@ -760,3 +760,7 @@ Testes de categorias, Surpreendido, Movimento 0 e autonomia do Jogador foram adi
 
 Countdown: (1) implementação realizada, aguardando CI; (2) testes adicionados, aguardando CI; (3) auditoria paralela em andamento, autonomia de Condições conferida; (4) CI/build em andamento; (5) documentação e roteiro final parcialmente atualizados. Validação humana PENDENTE.
 
+### Auditoria incremental — bloqueio de Usar um Objeto — 17/11/2026
+
+A revisão do Painel identificou que o botão Usar um Objeto consumia Ação, mas não verificava o bloqueio operacional por Condições. Corrigido em `src/PainelAcoesLocal.tsx` com `bloqueiosCondicao.acao`; adicionada asserção de regressão em `tests/condicoes-calculadora.test.mjs`. A correção está no commit `f5f1344`, e o teste adicional em `88c3475`. A CI do código-base `bbb7a6d` passou em testes e build; os workflows de `f5f1344` ainda estavam em execução e precisam ser confirmados para o HEAD atualizado.
+
