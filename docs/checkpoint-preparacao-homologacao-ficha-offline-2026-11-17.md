@@ -80,3 +80,27 @@ Com os cinco itens técnicos concluídos, Gus executará a bateria real no naveg
 
 ### Próxima ação exata
 Implementar primeiro a função pura de avaliação de bloqueios por Condição/categoria, depois integrar os controles da calculadora e do painel sem alterar a administração de Condições. Antes de bloquear Movimento/Ações por Surpreendido, verificar se existe sinal de primeiro turno confiável; caso contrário, bloquear apenas Reações e gasto de SA enquanto a Condição estiver ativa e manter o lembrete temporal explícito. Adicionar testes antes de executar CI.
+
+## Checkpoint — implementação inicial dos bloqueios por Condições — 17/11/2026
+
+- Branch: `feat/offline-first-ficha`.
+- HEAD antes deste checkpoint documental: `03503bf0d22fe7cad5e9cec53a98d440180ebd8d`.
+- Arquivos de código alterados: `src/condicoesCalculadora.ts`, `src/PainelAcoesLocal.tsx`, `src/CalculadoraTesteLocal.tsx`.
+- Testes alterados: `tests/condicoes-calculadora.test.mjs`.
+- Implementação: avaliador puro com bloqueios separados para Ação, Movimento, Reação, gasto de SA e Ataque; integração em recursos/manobras e calculadora; Ação Bônus/Interação Gratuita mantidas distintas.
+- Surpreendido: Reação e gasto de SA bloqueados enquanto ativo; Ação/Movimento permanecem sem bloqueio automático porque não existe sinal confiável de primeiro turno no painel. Lembrete temporal mantido.
+- Auditoria paralela: `src/CondicoesFichaLocal.tsx` mantém registro/encerramento pelo Jogador via salvamento confirmado; condições derivadas não podem ser editadas manualmente; nenhum controle de Mestre foi introduzido.
+- Testes específicos adicionados para categorias, combinações, Surpreendido, Movimento 0 e autonomia do Jogador.
+- CI do HEAD mais recente: workflow de testes e build foram disparados; estavam em andamento no momento do checkpoint. Resultado ainda NÃO confirmado.
+- Validação humana: não realizada. Fase 0 continua aguardando a bateria real de navegador.
+
+### Countdown
+1. Bloqueios por categoria: IMPLEMENTADO, aguardando CI.
+2. Testes automatizados: IMPLEMENTADOS, aguardando CI.
+3. Auditoria paralela: EM ANDAMENTO; autonomia das Condições conferida.
+4. CI/TypeScript/build: EM ANDAMENTO.
+5. Roteiro e documentação final: PARCIAL; depende do resultado de CI.
+
+### Próxima ação exata
+Aguardar/consultar os workflows associados ao HEAD `03503bf`. Se falharem, corrigir a regressão mais localizada e repetir CI. Se aprovarem, revisar a cobertura de cada controle que consome Ação, Movimento, Reação ou SA, concluir o registro documental e preparar o pacote de testes humanos. Não declarar validação humana nem reduzir o countdown antes das evidências.
+
