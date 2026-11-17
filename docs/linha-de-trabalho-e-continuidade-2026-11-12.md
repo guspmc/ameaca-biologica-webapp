@@ -674,3 +674,17 @@ Quando uma funcionalidade mudar de estado, atualizar a matriz e a linha de conti
 
 ### Próxima ação exata
 Continuar a auditoria funcional da Ficha com foco nas lacunas ainda não cobertas, sem reimplementar itens já presentes. Manter as quatro Manobras como consulta/manual até que exista desenho operacional seguro e compatível com o cânone. Em paralelo, preparar o ponto de passagem para os testes humanos, mas não declarar validação até Gus confirmar a execução.
+
+
+## Auditoria incremental de rolagens e estados da Ficha — 17/11/2026
+
+- Branch: `feat/offline-first-ficha`; HEAD de código consultado: `d182b291d3db9f3f912e0f6ae9200fbc72c3fc5d`.
+- Foram inspecionados `src/testes.ts`, `src/rolagemDados.ts`, `src/RoladoresBasicosLocal.tsx`, `src/recursosFicha.ts`, `src/condicoesFicha.ts`, `src/condicoesCalculadora.ts`, `src/descansoFicha.ts`, `src/DescansoFichaLocal.tsx` e `src/reanimacaoFicha.ts`, além dos testes dedicados correspondentes.
+- Resultado: os contratos centrais examinados estão coerentes com o Arquivo do Jogador v1.0; não foi comprovado defeito que justifique alteração de produção neste incremento. Não foi criado commit de código apenas para gerar atividade.
+- A auditoria identificou limites intencionais: a Ficha não decide acerto/Defesa, não executa efeitos narrativos, não aplica Dano/Condições automaticamente por turno, não mede duração ficcional de Descanso/Condições e não resolve Morte/Transformação pela Mesa.
+- Testes/build não foram executados nesta etapa. A CI aprovada mais recente continua vinculada ao código `a98bdc3`; os commits após ele são documentais.
+- Validação humana da Ficha Offline, IndexedDB real, Service Worker e modo avião continua PENDENTE.
+- A matriz `docs/matriz-auditoria-funcional-ficha.md` recebeu o detalhamento desta auditoria.
+
+### Próxima ação
+Continuar auditoria das integrações de combate/economia de ações e, em paralelo, preparar evidência de inicialização e persistência local para fechar a Fase 0. Corrigir falhas comprovadas durante a auditoria, acrescentar testes e repetir CI antes de atualizar status. Não avançar de fase nem iniciar Inventário ativo, Painel ou Laboratório.
