@@ -688,3 +688,17 @@ Continuar a auditoria funcional da Ficha com foco nas lacunas ainda não coberta
 
 ### Próxima ação
 Continuar auditoria das integrações de combate/economia de ações e, em paralelo, preparar evidência de inicialização e persistência local para fechar a Fase 0. Corrigir falhas comprovadas durante a auditoria, acrescentar testes e repetir CI antes de atualizar status. Não avançar de fase nem iniciar Inventário ativo, Painel ou Laboratório.
+
+
+## Auditoria incremental de combate e reações — 17/11/2026
+
+- HEAD documental consultado: `98e942f94b9124f66630f10ff12cad22177feead`; código de produção mais recente: `a98bdc3`.
+- Inspecionados: `src/economiaAcoes.ts`, `src/estadoTurnoCombate.ts`, `src/manobrasOperacionais.ts`, `src/reacoesCombate.ts`, `src/testes.ts`, `src/CalculadoraTesteLocal.tsx`, `src/PainelAcoesLocal.tsx` e testes de combate/reação.
+- Os contratos de economia de ações, janela de 3 SA, Mirar, Duas Armas, Ataques, Reações, Contra-Ataque e efeitos contextuais conferidos estão coerentes no recorte auditado; não foi encontrado defeito reproduzível que justificasse correção de código neste ciclo.
+- Lacuna confirmada: Aparar é universal no Arquivo do Jogador v1.0 (pp. 80–81), mas a interface só operacionaliza o caso de Socador de Pedras. Para os demais, bloqueia o registro porque não existe estado confiável de arma empunhada/elegibilidade/Durabilidade. Não liberar um fluxo genérico que ignore Durabilidade nem duplicar estado do Inventário.
+- Próxima investigação: conferir se há fonte local persistida de equipamento/Durabilidade já disponível na Fase 1. Se não houver, pedir decisão a Gus sobre a menor alternativa segura, sem antecipar Inventário ativo.
+- Nenhum teste/build foi executado neste incremento. Última CI aprovada continua vinculada ao código `a98bdc3`; validação humana permanece PENDENTE.
+- A matriz de auditoria recebeu o detalhamento acima.
+
+### Próxima ação
+Inspecionar modelo e persistência local de equipamento/Durabilidade e continuar auditoria de Condições e efeitos de Reações. Corrigir falhas comprovadas, adicionar testes e executar CI após qualquer mudança de código. Não avançar de fase.
