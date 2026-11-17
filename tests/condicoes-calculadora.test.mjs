@@ -176,6 +176,35 @@ test('Surpreendido bloqueia Reação e gasto de SA, mas não presume o primeiro 
   });
 });
 
+test('Condições combinadas acumulam bloqueios sem duplicar categorias', () => {
+  assert.deepEqual(api.avaliarBloqueiosOperacionaisPorCondicoes([
+    'desacordado', 'atordoado', 'incapacitado', 'desorientado', 'surpreendido',
+  ]), {
+    acao: true,
+    movimento: true,
+    reacao: true,
+    gastarSA: true,
+    ataque: true,
+  });
+});
+
+test('Remover uma Condição recalcula os bloqueios sem manter estado residual', () => {
+  const antes = api.avaliarBloqueiosOperacionaisPorCondicoes(['atordoado', 'surpreendido']);
+  assert.deepEqual(antes, {
+    acao: true, movimento: true, reacao: true, gastarSA: true, ataque: true,
+  });
+
+  const depois = api.avaliarBloqueiosOperacionaisPorCondicoes(['surpreendido']);
+  assert.deepEqual(depois, {
+    acao: false, movimento: false, reacao: true, gastarSA: true, ataque: false,
+  });
+
+  const encerradas = api.avaliarBloqueiosOperacionaisPorCondicoes([]);
+  assert.deepEqual(encerradas, {
+    acao: false, movimento: false, reacao: false, gastarSA: false, ataque: false,
+  });
+});
+
 test('Ação Bônus e Interação Gratuita não são bloqueadas por inferência a partir de Ação', () => {
   const bloqueios = api.avaliarBloqueiosOperacionaisPorCondicoes(['atordoado', 'incapacitado']);
   assert.equal(bloqueios.acao, true);
