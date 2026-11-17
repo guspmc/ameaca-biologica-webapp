@@ -251,14 +251,14 @@ export default function PainelAcoesLocal({ dados, saAtual, aoSalvar, origemDados
               {janelaDefensiva.podeAparar && habilidadesAtivas.includes('socador-de-pedras') && !apararComPunhosDeclarado && <>
                 <p>SOCADOR DE PEDRAS: seus punhos são Indestrutíveis para Aparar Ataques Corpo a Corpo aparáveis. Esta opção não depende de arma equipada nem reduz Durabilidade. Confirme a janela com a Mesa.</p>
                 <p className="ficha-local-legenda">{economia.normaisUsados.reacao ? 'A Reação normal já foi usada: será comprada outra por 1 SA.' : 'Será consumida sua Reação normal, sem custo de SA.'}</p>
-                <button type="button" disabled={salvando || (economia.normaisUsados.reacao && (economia.saAtual < 1 || janela >= 3))}
+                <button type="button" disabled={salvando || bloqueiosCondicao.reacao || (economia.normaisUsados.reacao && (economia.saAtual < 1 || janela >= 3))}
                   onClick={() => void aplicar(atual => aplicarReacaoDefensivaCombate(atual, economiaAtual => registrarReacaoDefensiva({ economia: economiaAtual, manobra: 'aparar', janela: janelaDefensiva })).estado, economia.normaisUsados.reacao ? 'Aparar com punhos declarado: Reação adicional comprada por 1 SA; punhos Indestrutíveis, sem perda de Durabilidade.' : 'Aparar com punhos declarado: Reação normal consumida; punhos Indestrutíveis, sem perda de Durabilidade.')}>Declarar Aparar com os punhos · Reação</button>
               </>}
               {apararComPunhosDeclarado && <p className="ficha-local-legenda" role="status">Aparar com os punhos foi registrado. Confirme com a Mesa se a defesa foi bem-sucedida antes de registrar um Contra-Ataque. A Ficha não calcula a defesa nem aplica Dano.</p>}
               {janelaDefensiva.podeEsquivar && !reacaoDefensivaDeclarada && <>
                 <p>Esquiva autorizada pelo gatilho confirmado. Declare a Reação antes de resolver o Teste defensivo.</p>
                 <p className="ficha-local-legenda">{economia.normaisUsados.reacao ? 'A Reação normal já foi usada: esta declaração comprará outra por 1 SA.' : 'Esta declaração consumirá sua Reação normal, sem custo de SA.'}</p>
-                <button type="button" disabled={salvando || (economia.normaisUsados.reacao && (economia.saAtual < 1 || janela >= 3))}
+                <button type="button" disabled={salvando || bloqueiosCondicao.reacao || (economia.normaisUsados.reacao && (economia.saAtual < 1 || janela >= 3))}
                   onClick={() => void aplicar(atual => aplicarReacaoDefensivaCombate(atual, economiaAtual => registrarReacaoDefensiva({ economia: economiaAtual, manobra: 'esquivar', janela: janelaDefensiva })).estado, economia.normaisUsados.reacao ? 'Esquiva declarada: Reação adicional comprada por 1 SA. Resolva o Teste defensivo conforme o modo configurado.' : 'Esquiva declarada: Reação normal consumida. Resolva o Teste defensivo conforme o modo configurado.')}>Declarar Esquiva · Reação</button>
               </>}
               {janelaDefensiva.podeEsquivar && reacaoDefensivaDeclarada && <div className="ficha-local-editor">
@@ -312,7 +312,7 @@ export default function PainelAcoesLocal({ dados, saAtual, aoSalvar, origemDados
                 : 'Sua Reação normal já foi usada: o Contra-Ataque precisará comprar outra Reação por 1 SA, além do custo de 1 SA da Manobra.'
               : 'O registro consumirá sua Reação normal e 1 SA pela Manobra.'}</p>
             <button type="button"
-              disabled={salvando || !confirmouDefesaBemSucedida || !confirmouAtaqueCorpoACorpo
+              disabled={salvando || bloqueiosCondicao.reacao || bloqueiosCondicao.gastarSA || !confirmouDefesaBemSucedida || !confirmouAtaqueCorpoACorpo
                 || economia.saAtual < (economia.normaisUsados.reacao && !(habilidadesAtivas.includes('contra-ataque-instintivo') && estado.reacaoDefensivaRegistrada) ? 2 : 1)
                 || janela + (economia.normaisUsados.reacao && !(habilidadesAtivas.includes('contra-ataque-instintivo') && estado.reacaoDefensivaRegistrada) ? 2 : 1) > 3}
               onClick={() => void aplicar(atual => aplicarReacaoCombate(atual, economiaAtual =>
@@ -338,7 +338,7 @@ export default function PainelAcoesLocal({ dados, saAtual, aoSalvar, origemDados
             <label><input type="checkbox" checked={miraArmaCarregada} disabled={salvando} onChange={evento => setMiraArmaCarregada(evento.target.checked)} /> Confirmo que tenho uma arma de fogo empunhada e carregada.</label>
             <label><input type="checkbox" checked={miraArmaElegivel} disabled={salvando} onChange={evento => setMiraArmaElegivel(evento.target.checked)} /> A Mesa confirmou que a arma permite este Ataque de Oportunidade à distância.</label>
             <p className="ficha-local-legenda">{economia.normaisUsados.reacao ? 'A Reação normal já foi usada: o registro comprará outra por 1 SA.' : 'O registro consumirá a Reação normal sem custo de SA.'}</p>
-            <button type="button" disabled={salvando || !miraUsoDisponivel || !miraAlvoPercebido || !miraAlcanceMedio || !miraNovaCondicao || !miraArmaCarregada || !miraArmaElegivel || (economia.normaisUsados.reacao && (economia.saAtual < 1 || janela >= 3))}
+            <button type="button" disabled={salvando || bloqueiosCondicao.reacao || !miraUsoDisponivel || !miraAlvoPercebido || !miraAlcanceMedio || !miraNovaCondicao || !miraArmaCarregada || !miraArmaElegivel || (economia.normaisUsados.reacao && (economia.saAtual < 1 || janela >= 3))}
               onClick={() => {
                 try {
                   const avaliacao = avaliarNaMinhaMira({ habilidadeAtiva: true, usoDisponivelNaRodada: miraUsoDisponivel, inimigoPercebido: miraAlvoPercebido, dentroDeAlcanceMedio: miraAlcanceMedio, adquiriuNovaCondicaoPenalizante: miraNovaCondicao, armaDeFogoCarregada: miraArmaCarregada, armaPermiteAtaqueOportunidade: miraArmaElegivel });
@@ -355,7 +355,7 @@ export default function PainelAcoesLocal({ dados, saAtual, aoSalvar, origemDados
             <label><input type="checkbox" checked={confirmouCombateCorpoACorpo} disabled={salvando} onChange={evento => setConfirmouCombateCorpoACorpo(evento.target.checked)} /> Confirmo que o gatilho ocorreu em combate Corpo a Corpo.</label>
             <p className="ficha-local-legenda">{economia.normaisUsados.reacao ? 'A Reação normal já foi usada: este registro comprará outra Reação por 1 SA.' : 'O registro consumirá sua Reação normal, sem custo de SA.'}</p>
             <button type="button"
-              disabled={salvando || !confirmouAoOParaVoceOuAliado || !confirmouCombateCorpoACorpo
+              disabled={salvando || bloqueiosCondicao.reacao || !confirmouAoOParaVoceOuAliado || !confirmouCombateCorpoACorpo
                 || (economia.normaisUsados.reacao && (economia.saAtual < 1 || janela >= 3))}
               onClick={() => {
                 const avaliacao = avaliarNaoVaiEscapar({
@@ -377,11 +377,11 @@ export default function PainelAcoesLocal({ dados, saAtual, aoSalvar, origemDados
             <h4>Resposta ao hostil oculto · Mercenário</h4>
             <p>1 vez por Descanso Completo, quando um hostil oculto fosse Surpreendê-lo, você pode usar uma Reação para sacar uma arma de fogo carregada e realizar um Ataque contra esse hostil. Ao fazer isso, percebe a ameaça a tempo e não fica Surpreendido. A Ficha registra a Reação e o uso; saque, Ataque e rolagem continuam manuais.</p>
             {!usoMercenarioValido && <p className="offline-erro" role="alert">O registro de usos por Descanso Completo está inválido. A Reação do Mercenário permanece bloqueada.</p>}
-            <label><input type="checkbox" checked={mercenarioHostilOculto} disabled={salvando || !mercenarioDisponivel} onChange={evento => setMercenarioHostilOculto(evento.target.checked)} /> Confirmo que o hostil estava oculto.</label>
-            <label><input type="checkbox" checked={mercenarioSurpreenderia} disabled={salvando || !mercenarioDisponivel} onChange={evento => setMercenarioSurpreenderia(evento.target.checked)} /> Confirmo que esse hostil me surpreenderia.</label>
-            <label><input type="checkbox" checked={mercenarioArmaCarregada} disabled={salvando || !mercenarioDisponivel} onChange={evento => setMercenarioArmaCarregada(evento.target.checked)} /> Confirmo que tenho uma arma de fogo carregada disponível para sacar.</label>
+            <label><input type="checkbox" checked={mercenarioHostilOculto} disabled={salvando || bloqueiosCondicao.reacao || !mercenarioDisponivel} onChange={evento => setMercenarioHostilOculto(evento.target.checked)} /> Confirmo que o hostil estava oculto.</label>
+            <label><input type="checkbox" checked={mercenarioSurpreenderia} disabled={salvando || bloqueiosCondicao.reacao || !mercenarioDisponivel} onChange={evento => setMercenarioSurpreenderia(evento.target.checked)} /> Confirmo que esse hostil me surpreenderia.</label>
+            <label><input type="checkbox" checked={mercenarioArmaCarregada} disabled={salvando || bloqueiosCondicao.reacao || !mercenarioDisponivel} onChange={evento => setMercenarioArmaCarregada(evento.target.checked)} /> Confirmo que tenho uma arma de fogo carregada disponível para sacar.</label>
             <p className="ficha-local-legenda">{!mercenarioDisponivel ? 'Uso indisponível até o próximo Descanso Completo ou registro inválido.' : economia.normaisUsados.reacao ? 'A Reação normal já foi usada: será comprada outra por 1 SA, respeitando o limite de 3 SA.' : 'O registro consumirá sua Reação normal, sem custo de SA.'}</p>
-            <button type="button" disabled={salvando || !mercenarioDisponivel || !mercenarioHostilOculto || !mercenarioSurpreenderia || !mercenarioArmaCarregada || (economia.normaisUsados.reacao && (economia.saAtual < 1 || janela >= 3))}
+            <button type="button" disabled={salvando || bloqueiosCondicao.reacao || !mercenarioDisponivel || !mercenarioHostilOculto || !mercenarioSurpreenderia || !mercenarioArmaCarregada || (economia.normaisUsados.reacao && (economia.saAtual < 1 || janela >= 3))}
               onClick={() => {
                 const avaliacao = avaliarRespostaMercenario({
                   origemMercenario: origem === 'Mercenário',
@@ -411,7 +411,7 @@ export default function PainelAcoesLocal({ dados, saAtual, aoSalvar, origemDados
             <label><input type="checkbox" checked={confirmouSemProtecaoAoO} disabled={salvando} onChange={evento => setConfirmouSemProtecaoAoO(evento.target.checked)} /> A criatura não estava protegida contra Ataque de Oportunidade.</label>
             <p className="ficha-local-legenda">{economia.normaisUsados.reacao ? 'Sua Reação normal já foi usada: registrar este Ataque comprará outra Reação por 1 SA, respeitando a janela de 3 SA.' : 'O registro consumirá sua Reação normal, sem custo de SA.'}</p>
             <button type="button"
-              disabled={salvando || !confirmouSaidaVoluntaria || !confirmouQuadradoAmeacado || !confirmouSemProtecaoAoO || (economia.normaisUsados.reacao && (economia.saAtual < 1 || janela >= 3))}
+              disabled={salvando || bloqueiosCondicao.reacao || !confirmouSaidaVoluntaria || !confirmouQuadradoAmeacado || !confirmouSemProtecaoAoO || (economia.normaisUsados.reacao && (economia.saAtual < 1 || janela >= 3))}
               onClick={() => {
                 const gatilho = avaliarAtaqueOportunidade({
                   saiuVoluntariamente: confirmouSaidaVoluntaria,
@@ -466,7 +466,7 @@ export default function PainelAcoesLocal({ dados, saAtual, aoSalvar, origemDados
             <p>Finalização de Luta Livre exige alvo Atordoado. Confirme a condição e, após resolver a Manobra com a Mesa, informe se o alvo foi derrotado por ela. O custo é 0 SA somente nesse último caso; caso contrário, são 3 SA.</p>
             <label><input type="checkbox" checked={alvoAtordoadoLutaLivre} disabled={salvando} onChange={evento => setAlvoAtordoadoLutaLivre(evento.target.checked)} /> A Mesa confirmou que o alvo está Atordoado.</label>
             <label><input type="checkbox" checked={alvoDerrotadoLutaLivre} disabled={salvando || !alvoAtordoadoLutaLivre} onChange={evento => setAlvoDerrotadoLutaLivre(evento.target.checked)} /> A Mesa confirmou que o alvo foi derrotado pela Manobra.</label>
-            <button type="button" disabled={salvando || !economia.turnoEmAndamento || !alvoAtordoadoLutaLivre || (!alvoDerrotadoLutaLivre && (economia.saAtual < 3 || janela + 3 > 3))}
+            <button type="button" disabled={salvando || !economia.turnoEmAndamento || !alvoAtordoadoLutaLivre || (bloqueiosCondicao.gastarSA && !alvoDerrotadoLutaLivre) || (!alvoDerrotadoLutaLivre && (economia.saAtual < 3 || janela + 3 > 3))}
               onClick={() => void aplicar(atual => aplicarManobraCombate(atual, (recursos, manobras) => registrarFinalizarLutaLivre(recursos, manobras, alvoDerrotadoLutaLivre)).estado, 'Luta Livre registrada: ' + (alvoDerrotadoLutaLivre ? 'alvo derrotado pela Manobra; custo de 0 SA.' : 'alvo não derrotado pela Manobra; custo de 3 SA.'))}>Registrar Finalização · {alvoDerrotadoLutaLivre ? '0' : '3'} SA</button>
           </div> : <div className="recursos-controles">
             <button type="button" disabled={salvando || !economia.turnoEmAndamento || economia.saAtual < 3 || janela + 3 > 3 || bloqueiosCondicao.gastarSA} onClick={() => void aplicar(atual => aplicarManobraCombate(atual, registrarFinalizar).estado)}>Registrar Finalizar · 3 SA</button>
