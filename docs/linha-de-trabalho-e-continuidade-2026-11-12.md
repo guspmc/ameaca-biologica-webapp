@@ -702,3 +702,14 @@ Continuar auditoria das integrações de combate/economia de ações e, em paral
 
 ### Próxima ação
 Inspecionar modelo e persistência local de equipamento/Durabilidade e continuar auditoria de Condições e efeitos de Reações. Corrigir falhas comprovadas, adicionar testes e executar CI após qualquer mudança de código. Não avançar de fase.
+
+
+### Decisão de escopo — Aparar e Inventário ativo — 17/11/2026
+
+**DECISÃO APROVADA POR GUS:** a implementação operacional de **Aparar universal** será realizada junto com o **Inventário ativo**, quando a Ficha passar a ter estado confiável dos itens e armas efetivamente equipados pelos jogadores. A integração deverá consultar a arma equipada, verificar elegibilidade e Durabilidade e aplicar o desgaste previsto pelo cânone, sem duplicar estado nem presumir equipamento.
+
+Até essa etapa, Aparar permanece parcialmente implementado/bloqueado para personagens que dependam de arma equipada. O fluxo específico de Socador de Pedras com punhos Indestrutíveis permanece distinto. **Não antecipar Inventário ativo na Fase 1 nem criar solução provisória que ignore elegibilidade ou Durabilidade.** Ao iniciar a fase de Inventário, incluir Aparar no mesmo escopo e nos respectivos testes.
+
+
+### Próxima ação ajustada
+Prosseguir com a auditoria das Condições que restringem Ataques e dos efeitos de Reações. A dependência de Aparar está decidida: implementar junto com Inventário ativo e armas equipadas; não reabrir essa decisão nem antecipar Inventário na Fase 1.
