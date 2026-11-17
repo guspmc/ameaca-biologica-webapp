@@ -104,6 +104,11 @@ test('Calculadora e Painel aplicam bloqueios operacionais sem retirar autonomia 
   assert.match(painel, /bloqueiosCondicao\.movimento/);
   assert.match(painel, /bloqueiosCondicao\.reacao/);
   assert.match(painel, /bloqueiosCondicao\.gastarSA/);
+  assert.match(painel, /bloqueiosCondicao\.ataque/);
+  const condicoes = await readFile(new URL('../src/CondicoesFichaLocal.tsx', import.meta.url), 'utf8');
+  assert.match(condicoes, /adicionarInstanciaCondicao\(itens/);
+  assert.match(condicoes, /encerrarInstanciaCondicao\(itens, id\)/);
+  assert.match(condicoes, /aoSalvar\(\{ condicoes: atualizadas \}\)/);
   assert.match(painel, /Ação Bônus e Interação Gratuita permanecem distintas de Ação/);
   assert.match(painel, /Restrições de Movimento/);
   assert.match(painel, /Agarrado: Movimento 0/);
