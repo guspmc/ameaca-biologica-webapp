@@ -39,14 +39,25 @@ jobs:
           mapfile -t test_files < <(printf '%s\n' tests/*.test.mjs | sort)
           batch_size=10
           total=${#test_files[@]}
+          failed=0
           echo "Total de arquivos de teste: $total"
           for ((start=0; start<total; start+=batch_size)); do
             batch=("${test_files[@]:start:batch_size}")
             echo "::group::Grupo $((start / batch_size + 1)) — ${#batch[@]} arquivos"
             printf 'Arquivo: %s\n' "${batch[@]}"
+            set +e
             timeout --signal=TERM --kill-after=10s 90s node --experimental-strip-types --experimental-sqlite --test "${batch[@]}"
+            result=$?
+            set -e
+            if [ "$result" -ne 0 ]; then
+              echo "::error::Grupo $((start / batch_size + 1)) terminou com codigo $result"
+              failed=1
+            fi
             echo "::endgroup::"
           done
+          if [ "$failed" -ne 0 ]; then
+            exit 1
+          fi
 
       - name: Validar build
         run: pnpm build
