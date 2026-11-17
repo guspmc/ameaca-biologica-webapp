@@ -18,18 +18,17 @@ test('A interface só declara Esquiva quando a janela a autoriza e registra o cu
   assert.match(painel, /aplicarReacaoCombate/);
 });
 
-test('Aparar não é registrado sem estado confiável de equipamento e Durabilidade', () => {
+test('Aparar fica bloqueado sem estado confiável; Socador de Pedras autoriza os punhos', () => {
   assert.match(painel, /Aparar seria permitido pelo gatilho, mas o registro está bloqueado/);
-  assert.doesNotMatch(painel, /manobra: 'aparar'/);
+  assert.match(painel, /habilidadesAtivas\.includes\('socador-de-pedras'\)/);
+  assert.match(painel, /manobra: 'aparar'/);
 });
 
-test('20 natural é informado como fechamento da janela e a Esquiva não resolve Teste ou efeitos automaticamente', () => {
+test('20 natural fecha a janela e a Esquiva calcula apenas após declaração explícita', () => {
   assert.match(painel, /20 natural: não é possível declarar Reação defensiva normal/);
-  assert.match(painel, /Resolva o Teste defensivo manualmente/);
-  assert.match(painel, /não rola o d20 nem aplica Defesa, Dano ou efeitos/);
+  assert.match(painel, /Resolva o Teste defensivo conforme o modo configurado/);
+  assert.match(painel, /O resultado é informativo e não altera Defesa, Dano, BI ou Condições/);
 });
-
-
 
 test('A interface bloqueia alterações no gatilho depois de declarar a Reação defensiva', () => {
   const trecho = painel.slice(painel.indexOf('Reações defensivas · Aparar e Esquivar'), painel.indexOf('Teste de Esquiva · Reflexos'));
