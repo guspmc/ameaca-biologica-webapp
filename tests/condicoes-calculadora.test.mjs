@@ -155,6 +155,14 @@ test('Bloqueios operacionais seguem apenas proibições explícitas das Condiç�
   });
 });
 
+test('Condições que zeram Movimento bloqueiam seu uso e compra por Esforço', () => {
+  for (const condicao of ['agarrado', 'imobilizado', 'atordoado']) {
+    assert.equal(api.avaliarBloqueiosOperacionaisPorCondicoes([condicao]).movimento, true, condicao);
+  }
+  assert.equal(api.avaliarBloqueiosOperacionaisPorCondicoes(['caido']).movimento, false);
+  assert.equal(api.avaliarBloqueiosOperacionaisPorCondicoes(['intoxicado']).movimento, false);
+});
+
 test('Surpreendido bloqueia Reação e gasto de SA, mas não presume o primeiro turno', () => {
   assert.deepEqual(api.avaliarBloqueiosOperacionaisPorCondicoes(['surpreendido']), {
     acao: false, movimento: false, reacao: true, gastarSA: true, ataque: false,
