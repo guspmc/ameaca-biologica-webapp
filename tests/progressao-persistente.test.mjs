@@ -120,7 +120,7 @@ test('registrar Marco Narrativo não concede nível e registra progresso posteri
   assert.equal(marcoNovo.marcoNarrativoAposUltimaMorte, true);
   assert.equal(marcoNovo.nivelAtual, 1);
   assert.equal(estadoProgressaoPersistenteValido(marcoNovo, 'Agente'), true);
-  assert.throws(() => registrarMarcoNarrativo({ ...inicial, metodo: 'missoes' }, 'Agente'), /Missões/);
+  assert.throws(() => registrarMarcoNarrativo({ ...inicial, metodo: 'missoes' }, 'Agente'), /não utiliza Marco Narrativo/);
 });
 
 
