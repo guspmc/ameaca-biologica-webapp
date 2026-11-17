@@ -87,11 +87,12 @@ test('Condições que proíbem Ações ou Atacar geram lembretes sem bloquear ro
   assert.deepEqual(api.restricoesDeAtaquePorCondicoes(['caido','imobilizado','intoxicado']), []);
 });
 
-test('Calculadora de Ataques apresenta restrições sem desabilitar ou resolver ações', async () => {
+test('Calculadora e Painel aplicam bloqueios operacionais sem retirar autonomia sobre Condições', async () => {
   const calc = await readFile(new URL('../src/CalculadoraTesteLocal.tsx', import.meta.url), 'utf8');
   assert.match(calc, /restricoesDeAtaquePorCondicoes/);
   assert.match(calc, /Condições que restringem Ataques/);
-  assert.match(calc, /Este aviso não bloqueia a rolagem/);
+  assert.match(calc, /disabled=\{ataqueBloqueadoPorCondicao\}/);
+  assert.match(calc, /if \(ataqueBloqueadoPorCondicao\)/);
   assert.match(calc, /Amedrontado: confirme se a personagem ainda percebe a fonte do medo/);
   assert.match(calc, /selecione Desvantagem manualmente/);
   assert.match(calc, /Cego: além da Desvantagem nos Ataques/);
@@ -99,7 +100,11 @@ test('Calculadora de Ataques apresenta restrições sem desabilitar ou resolver 
   const painel = await readFile(new URL('../src/PainelAcoesLocal.tsx', import.meta.url), 'utf8');
   assert.match(painel, /restricoesDeAtaquePorCondicoes\(condicoesAtivas\)/);
   assert.match(painel, /Condições que restringem sua atuação/);
-  assert.match(painel, /não bloqueia os controles/);
+  assert.match(painel, /bloqueiosCondicao\.acao/);
+  assert.match(painel, /bloqueiosCondicao\.movimento/);
+  assert.match(painel, /bloqueiosCondicao\.reacao/);
+  assert.match(painel, /bloqueiosCondicao\.gastarSA/);
+  assert.match(painel, /Ação Bônus e Interação Gratuita permanecem distintas de Ação/);
   assert.match(painel, /Restrições de Movimento/);
   assert.match(painel, /Agarrado: Movimento 0/);
   assert.match(painel, /Caído: só pode se deslocar Rastejando/);
@@ -131,3 +136,38 @@ test('Ficha apresenta todos os benefícios contextuais de Reflexos de Sobreviven
   assert.match(ficha, /habilidadesAtivasIds\.includes\('rolamento'\)/);
   assert.match(ficha, /reposicionar-se até 3 m sem provocar Ataques de Oportunidade/);
 });
+
+test('Bloqueios operacionais seguem apenas proibições explícitas das Condições', () => {
+  const vazio = api.avaliarBloqueiosOperacionaisPorCondicoes([]);
+  assert.deepEqual(vazio, { acao: false, movimento: false, reacao: false, gastarSA: false, ataque: false });
+
+  assert.deepEqual(api.avaliarBloqueiosOperacionaisPorCondicoes(['desacordado']), {
+    acao: true, movimento: false, reacao: true, gastarSA: false, ataque: true,
+  });
+  assert.deepEqual(api.avaliarBloqueiosOperacionaisPorCondicoes(['atordoado']), {
+    acao: true, movimento: true, reacao: true, gastarSA: false, ataque: true,
+  });
+  assert.deepEqual(api.avaliarBloqueiosOperacionaisPorCondicoes(['incapacitado']), {
+    acao: true, movimento: false, reacao: true, gastarSA: false, ataque: true,
+  });
+  assert.deepEqual(api.avaliarBloqueiosOperacionaisPorCondicoes(['desorientado']), {
+    acao: false, movimento: false, reacao: false, gastarSA: false, ataque: true,
+  });
+});
+
+test('Surpreendido bloqueia Reação e gasto de SA, mas não presume o primeiro turno', () => {
+  assert.deepEqual(api.avaliarBloqueiosOperacionaisPorCondicoes(['surpreendido']), {
+    acao: false, movimento: false, reacao: true, gastarSA: true, ataque: false,
+  });
+});
+
+test('Ação Bônus e Interação Gratuita não são bloqueadas por inferência a partir de Ação', () => {
+  const bloqueios = api.avaliarBloqueiosOperacionaisPorCondicoes(['atordoado', 'incapacitado']);
+  assert.equal(bloqueios.acao, true);
+  assert.equal(bloqueios.movimento, true);
+  assert.equal(bloqueios.reacao, true);
+  // O retorno não bloqueia Ação Bônus nem Interação Gratuita.
+  assert.equal(Object.hasOwn(bloqueios, 'acaoBonus'), false);
+  assert.equal(Object.hasOwn(bloqueios, 'interacaoGratuita'), false);
+});
+
