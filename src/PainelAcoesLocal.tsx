@@ -13,7 +13,7 @@ import { registrarCombateDuasArmas, registrarDisparada, registrarFuga, registrar
 import { avaliarAtaqueOportunidade, registrarAtaqueOportunidade, prepararContraAtaque, consultarRetaliacao, avaliarNaoVaiEscapar, registrarNaoVaiEscapar, avaliarJanelaReacao, registrarReacaoDefensiva, resolverTesteDefensivo, avaliarNaMinhaMira, registrarNaMinhaMira, avaliarRespostaMercenario, registrarRespostaMercenario, type JanelaReacao } from './reacoesCombate';
 import { sortearDados, validarResultadosFisicos } from './rolagemDados';
 import type { ModoDados } from './funcionamentoFicha';
-import { condicoesQueImpoemDesvantagem, restricoesDeAtaquePorCondicoes } from './condicoesCalculadora';
+import { avaliarBloqueiosOperacionaisPorCondicoes, condicoesQueImpoemDesvantagem, restricoesDeAtaquePorCondicoes } from './condicoesCalculadora';
 import type { CondicaoId } from './condicoesFicha';
 import { listarFontesUsosDescansoCompleto, registrarUsoDescansoCompleto, usosDescansoCompletoValido } from './usosDescansoCompleto';
 
@@ -183,6 +183,7 @@ export default function PainelAcoesLocal({ dados, saAtual, aoSalvar, origemDados
   const economia = estado.economia;
   const janela = saNaJanelaEsforco(economia);
   const restricoesCondicao = restricoesDeAtaquePorCondicoes(condicoesAtivas);
+  const bloqueiosCondicao = avaliarBloqueiosOperacionaisPorCondicoes(condicoesAtivas);
   const lembretesMovimentoCondicionado = [
     ...(condicoesAtivas.includes('agarrado') ? ['Agarrado: Movimento 0; não recebe bônus de Movimento.'] : []),
     ...(condicoesAtivas.includes('imobilizado') ? ['Imobilizado: Movimento 0.'] : []),
@@ -201,7 +202,7 @@ export default function PainelAcoesLocal({ dados, saAtual, aoSalvar, origemDados
   });
   return <details className="ficha-local-editor painel-acoes-local">
     <summary>Economia de Ações · {saNaJanelaEsforco(economia)}/3 SA · {economia.turnoEmAndamento ? 'Meu turno ativo' : 'Meu turno encerrado'}</summary>
-    {restricoesCondicao.length > 0 && <div className="ficha-local-aviso" role="status"><strong>Condições que restringem sua atuação</strong>{restricoesCondicao.map(item => <p key={item.condicao}>{item.motivo}</p>)}<small>Este aviso não bloqueia os controles nem resolve exceções; confira a condição, sua duração e a situação com a Mesa.</small></div>}
+    {restricoesCondicao.length > 0 && <div className="ficha-local-aviso" role="status"><strong>Condições que restringem sua atuação</strong>{restricoesCondicao.map(item => <p key={item.condicao}>{item.motivo}</p>)}<small>Os controles incompatíveis ficam bloqueados. Ação Bônus e Interação Gratuita permanecem distintas de Ação. Surpreendido bloqueia Reações e gasto de SA; a Ficha não presume se ainda é o primeiro turno para bloquear Ação ou Movimento.</small></div>}
     {lembretesMovimentoCondicionado.length > 0 && <div className="ficha-local-aviso" role="status"><strong>Restrições de Movimento</strong>{lembretesMovimentoCondicionado.map(item => <p key={item}>{item}</p>)}<small>A ficha não calcula deslocamento nem altera posições; aplique os limites manualmente com a Mesa.</small></div>}
     {!inicial.valido
       ? <p className="offline-erro" role="alert">O registro salvo da economia de ações está inválido. Ele foi preservado e o painel foi bloqueado para evitar sobrescrever dados.</p>
@@ -221,8 +222,8 @@ export default function PainelAcoesLocal({ dados, saAtual, aoSalvar, origemDados
               const usado = economia.normaisUsados[recurso.id];
               return <div className="painel-acoes-linha" key={recurso.id}>
                 <span><strong>{recurso.nome}</strong><small>{usado ? 'Uso normal registrado' : 'Uso normal disponível'} · Extras por Esforço: {economia.comprasEsforco[recurso.id]}</small></span>
-                <button type="button" disabled={salvando || foraDoTurno || usado} onClick={() => void aplicar(atual => comEconomia(atual, economiaAtual => consumirRecursoNormal(economiaAtual, recurso.id)))}>Usar</button>
-                <button type="button" disabled={salvando || foraDoTurno || economia.saAtual < (recurso.id === 'acao' ? 2 : 1) || janela >= 3} onClick={() => void aplicar(atual => comEconomia(atual, economiaAtual => comprarRecursoPorEsforco(economiaAtual, recurso.id)))}>Comprar · {recurso.custo}</button>
+                <button type="button" disabled={salvando || foraDoTurno || usado || (recurso.id === 'acao' && bloqueiosCondicao.acao) || (recurso.id === 'movimento' && bloqueiosCondicao.movimento) || (recurso.id === 'reacao' && bloqueiosCondicao.reacao)} onClick={() => void aplicar(atual => comEconomia(atual, economiaAtual => consumirRecursoNormal(economiaAtual, recurso.id)))}>Usar</button>
+                <button type="button" disabled={salvando || foraDoTurno || economia.saAtual < (recurso.id === 'acao' ? 2 : 1) || janela >= 3 || bloqueiosCondicao.gastarSA || (recurso.id === 'acao' && bloqueiosCondicao.acao) || (recurso.id === 'movimento' && bloqueiosCondicao.movimento) || (recurso.id === 'reacao' && bloqueiosCondicao.reacao)} onClick={() => void aplicar(atual => comEconomia(atual, economiaAtual => comprarRecursoPorEsforco(economiaAtual, recurso.id)))}>Comprar · {recurso.custo}</button>
               </div>;
             })}
           </div>
@@ -440,20 +441,20 @@ export default function PainelAcoesLocal({ dados, saAtual, aoSalvar, origemDados
 
           <h4>Ação Completa e Interação Gratuita</h4>
           <div className="recursos-controles">
-            <button type="button" disabled={salvando || !economia.turnoEmAndamento || economia.normaisUsados.acao || economia.normaisUsados.movimento} onClick={() => void aplicar(atual => comEconomia(atual, consumirAcaoCompleta))}>Ação Completa · Ação + Movimento</button>
+            <button type="button" disabled={salvando || !economia.turnoEmAndamento || economia.normaisUsados.acao || economia.normaisUsados.movimento || bloqueiosCondicao.acao || bloqueiosCondicao.movimento} onClick={() => void aplicar(atual => comEconomia(atual, consumirAcaoCompleta))}>Ação Completa · Ação + Movimento</button>
             <button type="button" disabled={salvando || !economia.turnoEmAndamento || economia.interacaoGratuitaUsada} onClick={() => void aplicar(atual => comEconomia(atual, consumirInteracaoGratuita))}>Registrar Interação Gratuita</button>
           </div>
 
           <h4>Manobras com gasto de SA</h4>
           <div className="recursos-controles">
-            <button type="button" disabled={salvando || !economia.turnoEmAndamento || economia.saAtual < 1 || janela >= 3} onClick={() => void aplicar(atual => comEconomia(atual, economiaAtual => gastarSAEmManobra(economiaAtual, 1)))}>Registrar Manobra · 1 SA</button>
-            <button type="button" disabled={salvando || !economia.turnoEmAndamento || economia.saAtual < 3 || janela > 0} onClick={() => void aplicar(atual => comEconomia(atual, economiaAtual => gastarSAEmManobra(economiaAtual, 3)))}>Registrar Manobra · 3 SA</button>
+            <button type="button" disabled={salvando || !economia.turnoEmAndamento || economia.saAtual < 1 || janela >= 3 || bloqueiosCondicao.gastarSA} onClick={() => void aplicar(atual => comEconomia(atual, economiaAtual => gastarSAEmManobra(economiaAtual, 1)))}>Registrar Manobra · 1 SA</button>
+            <button type="button" disabled={salvando || !economia.turnoEmAndamento || economia.saAtual < 3 || janela > 0 || bloqueiosCondicao.gastarSA} onClick={() => void aplicar(atual => comEconomia(atual, economiaAtual => gastarSAEmManobra(economiaAtual, 3)))}>Registrar Manobra · 3 SA</button>
           </div>
           <p className="ficha-local-legenda">Use o registro de Manobra somente após uma regra autorizar o gasto. Contra-Ataque, por exemplo, exige defesa bem-sucedida e 1 SA + Reação. O painel não faz rolagens nem presume gatilhos.</p>
 
           <h4>Desengajar e Usar um Objeto</h4>
           <div className="recursos-controles">
-            <button type="button" disabled={salvando || !economia.turnoEmAndamento || economia.normaisUsados.movimento}
+            <button type="button" disabled={salvando || !economia.turnoEmAndamento || economia.normaisUsados.movimento || bloqueiosCondicao.movimento}
               onClick={() => void aplicar(atual => aplicarManobraCombate(atual, registrarDesengajar).estado, 'Desengajar registrado: Movimento consumido. Desloque-se até 1,5 m sem provocar Ataque de Oportunidade por esse deslocamento.')}>Desengajar · Movimento</button>
             <button type="button" disabled={salvando || !economia.turnoEmAndamento || !economia.interacaoGratuitaUsada || economia.normaisUsados.acao}
               onClick={() => void aplicar(atual => aplicarManobraCombate(atual, registrarUsarObjeto).estado, 'Usar um Objeto registrado: Ação consumida para uma interação adicional com objeto.')}>Usar um Objeto · Ação</button>
