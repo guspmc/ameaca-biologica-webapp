@@ -50,3 +50,19 @@ Inspecionar o modelo e a persistência local de personagem para localizar eventu
 A implementação operacional de Aparar universal fica vinculada ao ciclo do **Inventário ativo e das armas efetivamente equipadas pelos jogadores**. Nesse momento, o fluxo deverá validar elegibilidade da arma e Durabilidade e registrar o desgaste conforme o cânone. Até lá, manter o bloqueio seguro para personagens que dependam de arma equipada; não antecipar Inventário na Fase 1 nem criar estado duplicado. O caso de Socador de Pedras com punhos Indestrutíveis permanece distinto.
 
 **Próxima ação:** continuar a auditoria de Condições e efeitos de Reações. Ao iniciar o Inventário ativo, incluir Aparar no escopo e na bateria de testes.
+
+
+## Auditoria incremental — restrições de Condições no painel — 17/11/2026
+
+- Referências canônicas: Arquivo do Jogador v1.0, pp. 81–83.
+- Inspecionados `src/condicoesCalculadora.ts`, `src/condicoesFicha.ts`, `src/PainelAcoesLocal.tsx` e os testes `tests/condicoes-calculadora.test.mjs`, `tests/reacoes-combate.test.mjs` e `tests/reacao-defensiva-ficha.test.mjs`.
+- As penalidades próprias de Ataques e Testes são calculadas em contextos aplicáveis: Caído, Cego, Imobilizado, Intoxicado, Enfraquecido, Infectado Especial, Desorientado e Reflexos sob Imobilizado, conforme o tipo de rolagem. Vantagem e Desvantagem se cancelam normalmente.
+- **Ponto de decisão funcional:** Desorientado, Desacordado, Atordoado, Incapacitado e Surpreendido geram avisos no painel, mas os controles de Ações/Reações e gasto de SA continuam habilitados. Os testes existentes confirmam explicitamente que esses avisos não desabilitam nem resolvem ações.
+- O cânone define proibições/restrições para essas Condições (Desorientado não pode Atacar; Desacordado e Incapacitado não realizam Ações/Reações; Atordoado não realiza Ações/Reações/Movimento; Surpreendido restringe Ações, Reações e SA conforme o primeiro turno/duração). A interface atualmente depende da conferência do jogador/Mesa.
+- **Não alterado:** nenhum código ou teste foi modificado neste incremento; testes foram inspecionados, não executados; nenhum build/CI foi executado. Não classificar como defeito definitivo antes de decidir se a Ficha deve apenas alertar ou também bloquear controles incompatíveis, considerando exceções e a responsabilidade da Mesa.
+- **Decisão necessária de Gus:** manter avisos informativos ou introduzir bloqueios operacionais condicionados às Condições, com tratamento explícito de duração/exceções. Não implementar bloqueio parcial improvisado.
+
+
+## Estado de validação da Fase 0
+
+Os componentes técnicos de entrada offline, IndexedDB, Service Worker e inicializador Windows foram rechecados no commit `8516f54`. A inspeção confirma a arquitetura prevista, mas não substitui execução no navegador. Permanecem pendentes a inicialização real, persistência após recarga, conflito entre abas, backup/recuperação e recarga em modo Offline conforme `docs/roteiro-humano-ficha-offline-local.md`. A Fase 0 não pode ser encerrada sem evidência desses testes humanos.
