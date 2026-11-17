@@ -9,15 +9,15 @@ test('Contra-Ataque exige confirmação de defesa bem-sucedida e do gatilho Corp
   assert.match(painel, /Confirmo que Aparar ou Esquivar foi bem-sucedido/);
   assert.match(painel, /O Ataque que originou a defesa foi Corpo a Corpo/);
   assert.match(painel, /prepararContraAtaque/);
-  assert.match(painel, /economia\\.saAtual < \\(economia\\.normaisUsados\\.reacao/);
+  assert.match(painel, /economia\.saAtual < \(economia\.normaisUsados\.reacao/);
 });
 
 test('Contra-Ataque Instintivo e Retaliação dependem das Habilidades realmente ativas', () => {
-  assert.match(ficha, /habilidadesAtivas=\\{habilidadesAtivasIds\\}/);
-  assert.match(painel, /habilidadesAtivas\\.includes\\('contra-ataque-instintivo'\\)/);
-  assert.match(painel, /estado\\.reacaoDefensivaRegistrada/);
+  assert.match(ficha, /habilidadesAtivas=\{habilidadesAtivasIds\}/);
+  assert.match(painel, /habilidadesAtivas\.includes\('contra-ataque-instintivo'\)/);
+  assert.match(painel, /estado\.reacaoDefensivaRegistrada/);
   assert.doesNotMatch(painel, /confirmouReacaoDaDefesa/);
-  assert.match(painel, /habilidadesAtivas\\.includes\\('retaliacao'\\)/);
+  assert.match(painel, /habilidadesAtivas\.includes\('retaliacao'\)/);
   assert.match(painel, /agressor fica Atordoado/);
   assert.match(painel, /acrescenta 1 dado de Dano se acertar/);
 });
