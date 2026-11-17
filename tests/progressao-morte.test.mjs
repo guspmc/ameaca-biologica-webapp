@@ -91,7 +91,7 @@ test('a calculadora aplica os modificadores da fase de Bio-Infecção e combina 
   const calculadora = await fs.readFile(new URL('../src/CalculadoraTesteLocal.tsx', import.meta.url), 'utf8');
   assert.match(calculadora, /bonusAtaqueBI/);
   assert.match(calculadora, /desvantagemBI/);
-  assert.match(calculadora, /vantagem === 'vantagem' \? 'normal' : 'desvantagem'/);
+  assert.match(calculadora, /const vantagemEfetiva: VantagemTeste = existeVantagem && existeDesvantagem \? 'normal'/);
   assert.match(calculadora, /vantagem: vantagemEfetiva/);
   const ficha = await fs.readFile(new URL('../src/FichaLocal.tsx', import.meta.url), 'utf8');
   assert.match(ficha, /bonusAtaqueBI=\{faseBi\.bonusTesteAtaque \?\? 0\}/);
