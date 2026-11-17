@@ -565,3 +565,28 @@ Cânone conferido no Arquivo do Jogador v1.0, pp. 77–78. O catálogo `src/mano
 - Fase 1: **EM ANDAMENTO**; auditoria funcional e lacunas de integração permanecem abertas.
 - Fase 2: **PENDENTE**; aguarda execução e relato de Gus conforme `docs/roteiro-humano-ficha-offline-local.md`.
 - As quatro Manobras acima permanecem PENDENTES de integração operacional; catálogo de consulta já existe.
+
+
+## Auditoria incremental — rolagens, recursos, Condições, Descanso e Reanimação — 17/11/2026
+
+**Branch:** `feat/offline-first-ficha`  
+**HEAD de código consultado:** `d182b291d3db9f3f912e0f6ae9200fbc72c3fc5d`  
+**Natureza:** auditoria estática de implementação e testes; nenhum teste/build foi executado neste incremento.
+
+### Itens conferidos
+- **Testes e Ataques:** `src/testes.ts` distingue Teste de Perícia/Atributo de rolagem de Ataque; valida d20, exige dois resultados em Vantagem/Desvantagem, escolhe maior/menor e mantém a comparação com Defesa fora da Ficha. 20 natural e 1 natural seguem os resultados descritos no cânone; o modificador CODE VERONICA é aplicado somente à faixa natural prevista no cálculo. `tests/roladores-ficha.test.mjs` cobre casos centrais.
+- **Dados físicos/virtuais:** `src/rolagemDados.ts` valida faces e quantidade, rejeita valores fora do universo aleatório e usa rejeição para evitar viés de módulo. `src/RoladoresBasicosLocal.tsx` limita roladores integrados ao modo Automático e exige ação expressa; não grava resultados na ficha.
+- **PV/SA/BI:** `src/recursosFicha.ts` preserva PV dentro do máximo, consome PV Temporários antes de PV Atuais, não soma PV Temporários novos, limita SA entre zero e máximo e permite BI alcançar/ultrapassar o máximo. A Origem Desgarrado recebe PV Temporários conforme a transição de BI implementada. Testes dedicados cobrem esses contratos.
+- **Condições:** `src/condicoesFicha.ts` preserva fontes distintas, não acumula efeitos de uma mesma Condição, mantém histórico de encerramento e deriva Vulnerável de PV. A UI não aplica Dano/efeitos de turno automaticamente; os lembretes de Corrosão, Queimadura, Surpreendido e Exposto permanecem declarativos. A calculadora aplica somente as penalidades contextuais codificadas; requisitos narrativos, como perceber a fonte de Amedrontado, não são presumidos.
+- **Descanso:** `src/descansoFicha.ts` e `src/DescansoFichaLocal.tsx` conferem um Dado de Vida por Nível no Parcial, dados de Classe corretos, recuperação apenas de PV, locais permitidos, restauração de PV/SA e encerramento de PV Temporários no Completo, preservando BI. A conclusão exige ação expressa e confirmação do salvamento; a UI não finge medir o tempo nem validar a localização ficcional.
+- **Reanimação:** `src/reanimacaoFicha.ts` mantém fluxos separados para 0 PV e Colapso Viral, valida até cinco tentativas, três sucessos/falhas, vantagem de Medicina/Cobaia e estados terminais. Morte e transformação permanecem pendentes de resolução/registro pela Mesa; a Ficha não as executa automaticamente.
+
+### Resultado deste incremento
+- Nenhuma divergência funcional comprovada foi encontrada nos trechos examinados que justificasse alterar código ou regra.
+- **Código/testes:** nenhum arquivo alterado. Não foi criado commit de produção artificialmente.
+- **Cobertura:** os testes existentes foram inspecionados, não executados neste incremento. A última CI aprovada continua sendo a do código `a98bdc3` (154 arquivos), anterior aos commits documentais.
+- **Validação humana:** permanece PENDENTE.
+- **Limites da auditoria:** a conferência não certifica toda a integração de condições na interface, todos os efeitos contextuais, nem a execução em navegador real. Amedrontado e efeitos que dependem de situação ficcional continuam sujeitos a confirmação humana/Mesa.
+
+### Próxima ação exata
+Prosseguir com auditoria detalhada das integrações de combate e economia de ações na Ficha, incluindo ataques, mira, duas armas, reações, condições aplicadas ao próprio personagem e salvamento dos estados. Corrigir imediatamente qualquer divergência reproduzível e executar CI após mudanças de código. Em paralelo, preparar a validação real de inicialização/IndexedDB/Service Worker para a Fase 0, sem declarar teste humano executado.
