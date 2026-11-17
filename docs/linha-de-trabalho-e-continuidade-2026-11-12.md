@@ -645,3 +645,32 @@ Esta seção é a referência mais recente para a retomada do trabalho. As decis
 ### Regra operacional de atualização documental
 
 Quando uma funcionalidade mudar de estado, atualizar a matriz e a linha de continuidade no mesmo ciclo em que a evidência for confirmada. Checkpoints antigos são preservados como histórico; devem receber uma nota de superação quando seu status deixar de representar a branch atual. Não reimplementar item marcado como IMPLEMENTADO sem evidência de defeito ou regressão.
+
+
+## Retomada após CI aprovada e reauditoria das Manobras — 17/11/2026
+
+### Repositório e validação
+- Branch: `feat/offline-first-ficha`.
+- Código testado: `a98bdc324df32d5e23708a2c8c88f4b471fde92e`.
+- Atualização documental da matriz: commit `482de4101c93039af04af2b0b41cf11c5eddecd5`.
+- Workflow `Validar compilação do WebApp`: run `44133790936`, SUCCESS; build de produção e TypeScript isolado aprovados.
+- Workflow `Verificação da ficha offline`: run `44133791005`, SUCCESS; 154/154 arquivos de teste percorridos, sem falhas nem timeout; build final também aprovado.
+- As falhas anteriores eram fixtures/expectativas desatualizadas nos testes de Combate e Reanimação. Correções somente em testes; nenhum código de produção foi alterado nesse ciclo.
+- O build emite aviso não bloqueante para chunk acima de 500 kB e avisos de depreciação no runner. Não houve refatoração de bundle.
+
+### Manobras — reauditoria canônica
+- Referência: Arquivo do Jogador v1.0, pp. 77–78; catálogo `src/manobrasUniversais.ts` e teste `tests/manobras-universais.test.mjs` preservam consulta/requisitos, mas não implementam os fluxos operacionais no painel.
+- **Adiar Ação:** PENDENTE, fora do escopo atual do painel, pois depende de ordem de Iniciativa/rodada que a Ficha não controla.
+- **Agarrar:** PENDENTE; precisa vincular a substituição de Ataque, mão livre, limite de categoria, escolha Atletismo/Reflexos do alvo e DT original de Escape.
+- **Empurrar/Derrubar:** PENDENTE; compartilha a disputa de Agarrar e exige escolha entre deslocar 1,5 m ou aplicar Caído, sem automatizar deslocamento/Condição.
+- **Esconder-se:** PENDENTE; requer confirmação contextual de sentidos/cobertura e escolha entre Percepção Passiva ou ativa.
+- Não criar botões que apenas gastem Ação/Ataque sem resolver com segurança o vínculo aos requisitos. Não criar motor de turnos, mover alvos ou aplicar Condições automaticamente.
+
+### Estado das fases
+- Fase 0 — Preparação Offline: EM ANDAMENTO; CI aprovada, mas auditoria de inicialização/persistência e validação humana aplicável continuam pendentes.
+- Fase 1 — Ficha Offline: EM ANDAMENTO; suíte automatizada aprovada, auditoria funcional e lacunas continuam abertas.
+- Fase 2 — Testes humanos: PENDENTE; aguarda Gus executar e relatar o roteiro `docs/roteiro-humano-ficha-offline-local.md`.
+- Nenhuma fase posterior iniciada.
+
+### Próxima ação exata
+Continuar a auditoria funcional da Ficha com foco nas lacunas ainda não cobertas, sem reimplementar itens já presentes. Manter as quatro Manobras como consulta/manual até que exista desenho operacional seguro e compatível com o cânone. Em paralelo, preparar o ponto de passagem para os testes humanos, mas não declarar validação até Gus confirmar a execução.
