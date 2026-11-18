@@ -784,3 +784,15 @@ Identificada divergência entre o bloqueio de gasto de SA do Painel e a confirma
 - **Countdown:** **4/5 pendências**. Nesta rodada foi encerrada a pendência de CI (testes, TypeScript e build no HEAD atualizado). As demais pendências permanecem abertas até serem concluídas com evidência; a implementação e os testes automatizados de bloqueios passaram pela CI.
 - **Validação humana:** PENDENTE. CI verde não substitui os testes reais de navegador por Gus.
 - Próxima ação: continuar auditoria funcional independente dos controles de gasto de SA, reações e manobras; registrar somente divergências comprovadas. Depois fechar o roteiro e as instruções da bateria humana.
+
+
+## Auditoria funcional incremental — Ações, Movimento, Reações e SA — 18/11/2026
+
+- Branch: `feat/offline-first-ficha`; HEAD de referência da inspeção: `58fe7a74da6dc3467b7115b90922671b2dc12ab3`.
+- Revisados `src/PainelAcoesLocal.tsx`, `src/CalculadoraTesteLocal.tsx`, `src/condicoesCalculadora.ts`, `src/reacoesCombate.ts`, `src/economiaAcoes.ts`, `src/estadoTurnoCombate.ts`, `src/manobrasOperacionais.ts` e `tests/condicoes-calculadora.test.mjs`.
+- Reações verificadas: Aparar com punhos (Socador de Pedras), Esquiva, Contra-Ataque, Na Minha Mira, Não Vai Escapar, resposta do Mercenário, Ataque de Oportunidade e Finalização Dupla. Os controles verificam bloqueio de Reação; caminhos que também gastam SA verificam o bloqueio de gasto de SA e limites de custo.
+- Ações/Movimento verificados: Ajudar, Ação Completa, Interação Gratuita, Desengajar, Usar um Objeto, Disparada, Ataque, Combate com Duas Armas e recursos normais/comprados. Os controles correspondentes consultam as categorias de bloqueio aplicáveis.
+- Manobras com SA verificadas: Mirar, Fuga, Finalizar, Luta Livre e gastos genéricos de 1/3 SA. Luta Livre dispensa o custo de 3 SA quando a Manobra derrotou o alvo; essa exceção foi preservada e não deve ser bloqueada como gasto de SA nesse ramo.
+- Resultado: nenhuma divergência operacional adicional comprovada nesta amostra; nenhum código/teste foi alterado neste incremento. A revisão é estática e não substitui testes de interface nem a bateria humana.
+- **Countdown:** a auditoria funcional paralela desta frente foi concluída. Restam **3 pendências técnicas** até a bateria humana. A validação humana permanece PENDENTE.
+- Próxima ação: concluir a consolidação do roteiro humano de navegador e conferir a matriz de critérios da Fase 0/1; não iniciar fases posteriores antes do checkpoint e dos testes humanos exigidos.
