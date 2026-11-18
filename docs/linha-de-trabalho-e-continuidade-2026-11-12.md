@@ -796,3 +796,15 @@ Identificada divergência entre o bloqueio de gasto de SA do Painel e a confirma
 - Resultado: nenhuma divergência operacional adicional comprovada nesta amostra; nenhum código/teste foi alterado neste incremento. A revisão é estática e não substitui testes de interface nem a bateria humana.
 - **Countdown:** a auditoria funcional paralela desta frente foi concluída. Restam **3 pendências técnicas** até a bateria humana. A validação humana permanece PENDENTE.
 - Próxima ação: concluir a consolidação do roteiro humano de navegador e conferir a matriz de critérios da Fase 0/1; não iniciar fases posteriores antes do checkpoint e dos testes humanos exigidos.
+
+
+## Consolidação do roteiro humano — 18/11/2026
+
+- Conferidos o fluxo real em `src/FichaOfflineApp.tsx` e `src/FichaLocal.tsx`, os editores de Características, Atributos/Perícias, Identificação e Inventário, além de `Menu_Testes.bat`, `Iniciar_Ficha_Offline.bat`, `Preparar_Dependencias.bat` e `Verificar_Ambiente.bat`.
+- O roteiro corresponde à navegação contínua atual: Características, Atributos e Perícias, Combate e Inventário. A Identificação é um editor próprio na ficha; os salvamentos manuais exibem confirmação local. O fluxo de fechar com alterações não salvas é mediado pela aplicação offline e pede confirmação de descarte.
+- Correção documental: esclarecido que a opção 1 do menu abre o inicializador e, depois, uma janela separada intitulada “Ameaca Biologica - Ficha Offline (4176)”, que mantém o processo `vite preview`. É essa janela que deve permanecer aberta e receber Ctrl+C ao fim. Também documentada a versão declarada de pnpm (11.25.0), conferida em `package.json`.
+- Roteiro atualizado em `docs/roteiro-humano-ficha-offline-local.md`, commit `8f6d8d38780be6ad8c9640de981bda5620637cb1`. Nenhum código ou teste foi alterado.
+- CI de referência concluída com sucesso nos runs `44226668841` (verificação da ficha offline, incluindo build) e `44226668798` (TypeScript/Vite), ambos para o estado documental anterior a este ajuste. O commit atual altera somente Markdown; não há execução de CI reportada para ele.
+- **Validação humana:** PENDENTE. Nenhum navegador foi iniciado nesta rodada; IndexedDB, Service Worker, concorrência entre abas, backup e modo offline ainda dependem da execução por Gus.
+- **Countdown:** roteiro reconciliado e instrução de inicialização esclarecida; permanecem **2 pendências técnicas** antes da bateria humana. Não considerar a Fase 0/1 homologada.
+- Próxima ação: conferir formalmente a matriz de critérios das Fases 0 e 1 contra o Documento Mestre e os checkpoints mais recentes; resolver qualquer critério técnico ainda sem evidência antes de liberar a bateria humana.
