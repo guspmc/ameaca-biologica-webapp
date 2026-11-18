@@ -698,3 +698,10 @@ A revisão dos controles do painel encontrou uma omissão concreta na implementa
 - Os testes são de unidade da função pura e não substituem o teste humano da interface de encerramento; a autonomia do Jogador é coberta separadamente por inspeção/teste estrutural do componente.
 - Commit dos testes: `16aaed95aa691750459f8946aa823034c9879963`. Workflow de verificação da Ficha foi enfileirado para esse commit; resultado ainda PENDENTE.
 
+### Correção — bônus de Origem que exige SA durante Surpreendido — 17/11/2026
+
+- Auditoria encontrou um caminho inconsistente: o Painel bloqueava o gasto de SA enquanto Surpreendido estava ativo, mas a Calculadora ainda permitia marcar o bônus de +5 de Atleta/Investigador, que pressupõe gasto prévio de 1 SA.
+- Ajustado o controle de confirmação desse gasto em `src/CalculadoraTesteLocal.tsx` para também respeitar `bloqueiosCondicao.gastarSA`. A condição não consome SA automaticamente e o cálculo não presume que o recurso foi gasto.
+- Acrescentada asserção estrutural em `tests/condicoes-calculadora.test.mjs`.
+- Commits: código `e23d2a0d0320f10c66daf413f46b41d24bc7efd6`; teste `adf9adc644747332e834474b9d7897945c42ce43`. CI ainda pendente neste registro.
+
