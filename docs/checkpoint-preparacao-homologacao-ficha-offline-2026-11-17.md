@@ -141,3 +141,15 @@ Acompanhar o workflow `44190904552` do commit `16aaed9`. Se passar, considerar a
 ### Próxima ação exata
 Acompanhar CI do commit `adf9adc`. Se passar, continuar auditoria de condições que exigem SA e de ações/reacões; se falhar, corrigir apenas a causa comprovada. Validação humana permanece pendente.
 
+
+
+## Atualização de evidências — CI verde no HEAD — 18/11/2026
+
+- Branch: `feat/offline-first-ficha`.
+- HEAD validado: `9c4951c5f47c8a65a8a1d81eddcd4d898e1cf4fc`.
+- Workflow **Verificação da ficha offline**: run `44214943091`, conclusão SUCCESS.
+- Workflow **Validar compilação do WebApp**: run `44214943645`, conclusão SUCCESS.
+- Os dois workflows foram executados sobre o mesmo HEAD acima. A correção de bloqueio do bônus de Origem sob Surpreendido e seus testes estruturais estão, portanto, cobertos por CI verde neste estado do código.
+- **Countdown:** etapa 4/5 (CI completa, TypeScript e build) CONCLUÍDA. Restam 4 etapas? Não: o countdown representa cinco critérios técnicos; com esta etapa concluída, restam **4 critérios a fechar**, incluindo auditoria funcional paralela e pacote final de documentação/roteiro. A implementação e os testes automatizados de bloqueios já estão no código e passaram pela CI.
+- **Validação humana:** PENDENTE. CI verde não substitui os testes reais de navegador por Gus.
+- Próxima ação: continuar auditoria funcional independente dos controles de gasto de SA, reações e manobras; registrar somente divergências comprovadas. Depois fechar o roteiro e as instruções da bateria humana.
