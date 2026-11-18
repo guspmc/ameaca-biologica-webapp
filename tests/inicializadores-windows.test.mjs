@@ -4,15 +4,19 @@ import { readFile } from 'node:fs/promises';
 
 const arquivo = caminho => new URL(caminho, import.meta.url);
 
-test('inicializador da Ficha offline usa porta exclusiva, verifica disponibilidade e aguarda a previa', async () => {
+test('inicializador da Ficha offline escolhe porta livre sem encerrar processos existentes', async () => {
   const script = await readFile(arquivo('../scripts/windows/Iniciar_Ficha_Offline.bat'), 'utf8');
   assert.ok(script.includes('VITE_PWA_TESTE=true'));
   assert.ok(script.includes('vite build --mode teste'));
-  assert.ok(script.includes('vite preview --host 127.0.0.1 --port 4176 --strictPort'));
-  assert.ok(script.includes('4176/ameaca-biologica-webapp'));
-  assert.ok(script.includes('Get-NetTCPConnection -State Listen -LocalPort 4176'));
+  assert.ok(script.includes('$port = 4176'));
+  assert.ok(script.includes('TcpListener'));
+  assert.ok(script.includes('LocalEndpoint'));
+  assert.ok(script.includes('vite preview --host 127.0.0.1 --port %PORT_FICHA% --strictPort'));
+  assert.ok(script.includes('127.0.0.1:%PORT_FICHA%/ameaca-biologica-webapp'));
   assert.ok(script.includes('Invoke-WebRequest'));
   assert.ok(script.includes('Preparar_Dependencias.bat'));
+  assert.ok(!script.includes('Get-Process'));
+  assert.ok(!script.includes('Stop-Process'));
   assert.ok(!script.includes('--port 4174'));
 });
 
@@ -37,14 +41,14 @@ test('preparacao compartilhada serializa a instalacao e respeita o lockfile', as
   assert.ok(script.includes('node_modules/.modules.yaml'));
 });
 
-test('menu permite iniciar os ambientes em paralelo sem compartilhar portas', async () => {
+test('menu permite iniciar os ambientes em paralelo sem compartilhar portas fixas', async () => {
   const script = await readFile(arquivo('../scripts/windows/Menu_Testes.bat'), 'utf8');
   const ficha = await readFile(arquivo('../scripts/windows/Iniciar_Ficha_Offline.bat'), 'utf8');
   const lan = await readFile(arquivo('../scripts/windows/Iniciar_Mesa_LAN.bat'), 'utf8');
   assert.ok(script.includes('Iniciar_Ficha_Offline.bat'));
   assert.ok(script.includes('Iniciar_Mesa_LAN.bat'));
   assert.ok(script.includes('goto ambos'));
-  assert.ok(ficha.includes('4176'));
+  assert.ok(ficha.includes('PORT_FICHA'));
   assert.ok(lan.includes('4174'));
 });
 
