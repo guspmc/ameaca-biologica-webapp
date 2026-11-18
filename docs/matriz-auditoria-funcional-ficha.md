@@ -741,3 +741,48 @@ A revisão dos controles do painel encontrou uma omissão concreta na implementa
 - **Validação humana:** PENDENTE. Nenhum navegador foi iniciado nesta rodada; IndexedDB, Service Worker, concorrência entre abas, backup e modo offline ainda dependem da execução por Gus.
 - **Countdown:** roteiro reconciliado e instrução de inicialização esclarecida; permanecem **2 pendências técnicas** antes da bateria humana. Não considerar a Fase 0/1 homologada.
 - Próxima ação: conferir formalmente a matriz de critérios das Fases 0 e 1 contra o Documento Mestre e os checkpoints mais recentes; resolver qualquer critério técnico ainda sem evidência antes de liberar a bateria humana.
+
+
+## Auditoria cruzada dos critérios de saída — Fases 0 e 1 — 18/11/2026
+
+**Referência de planejamento:** Documento Mestre de Planejamento v3.0, §§ 3.2, 3.5, 6.1, 7, 17 (Fases 0 e 1) e 19.  
+**Estado de código auditado:** branch `feat/offline-first-ficha`, HEAD `3c12d6808cf4a4e4d8e58db34e2a52f3feefcf97`.  
+**CI no mesmo HEAD:** `Verificação da ficha offline`, run `44228378857`, SUCCESS; `Validar compilação do WebApp`, run `44228378922`, SUCCESS.
+
+### Fase 0 — Preparação Offline
+
+| Critério do planejamento | Evidência atual | Estado |
+|---|---|---|
+| Ficha Offline é a entrada padrão; LAN é explícita | `src/main.tsx`: `FichaOfflineApp` por padrão; `ConexaoServidorLocal` somente com `?servidor=local` | IMPLEMENTADO / TESTADO AUTOMATICAMENTE |
+| Nenhuma dependência Supabase no grafo ativo | `tests/entradas-offline-sem-supabase.test.mjs` percorre as entradas Offline e LAN; verifica SDK apenas em `devDependencies` | TESTADO AUTOMATICAMENTE |
+| Persistência local principal em IndexedDB | `src/persistenciaFicha.ts`, IndexedDB v3, stores de personagens e vínculos LAN separados; testes de gravação, patch, migração, operações e concorrência | IMPLEMENTADO / TESTADO AUTOMATICAMENTE |
+| Cache limitado ao shell/recursos estáticos, sem dados pessoais ou API | `public/sw.js`; testes `pwa-shell.test.mjs` e `service-worker-shell.test.mjs` cobrem shell offline, assets, exclusão de API LAN, outros domínios e métodos de escrita | IMPLEMENTADO / TESTADO AUTOMATICAMENTE |
+| Inicialização local reproduzível | Scripts Windows verificados; opção 1 prepara dependências com lockfile congelado, TypeScript, build de teste e preview em `127.0.0.1:4176` | IMPLEMENTADO; EXECUÇÃO HUMANA PENDENTE |
+| Persistência, Service Worker e shell confirmados em navegador real | A suíte automatizada usa contratos/ambientes de teste; não há relato de execução humana nesta branch | PENDENTE DE VALIDAÇÃO HUMANA |
+
+**Conclusão da Fase 0:** a arquitetura e os mecanismos estão implementados e cobertos por testes automatizados, mas a fase permanece **EM ANDAMENTO** até a confirmação real de inicialização, IndexedDB, Service Worker e recarga sem internet no navegador. Não declarar a Fase 0 concluída com base apenas em CI.
+
+### Fase 1 — Ficha Offline sem Inventário ativo
+
+| Critério do planejamento | Evidência atual | Estado |
+|---|---|---|
+| Criação, Identidade, Características, Classe/Origem, Atributos e Perícias | `FichaOfflineApp.tsx`, `FichaLocal.tsx`, `EditorCaracteristicasLocal.tsx`, `EditorAtributosPericiasLocal.tsx`, `IdentidadeLocal.tsx`; testes de criação, integridade, identidade, atributos/perícias e revisão | IMPLEMENTADO / TESTADO AUTOMATICAMENTE |
+| Habilidades e benefícios não dependentes do Inventário; Progressão | planejador/catálogos e `ProgressaoFichaLocal.tsx`; testes de catálogo, pré-requisitos, progressão persistente e morte | IMPLEMENTADO / TESTADO AUTOMATICAMENTE, com limites LAN já registrados nesta matriz |
+| PV, SA, BI, Defesa, Condições, Descanso e Reanimação | módulos de recursos, condições, cálculos derivados, descanso e reanimação; testes de domínio e integração | IMPLEMENTADO / TESTADO AUTOMATICAMENTE |
+| Ataques, Testes, Dano, Mirar, Duas Armas e Reações | `CalculadoraTesteLocal.tsx` cobre Perícia/Atributo, Ataque e cálculo de Dano; `PainelAcoesLocal.tsx` integra economia, Mirar, Duas Armas e Reações dentro dos limites documentados | IMPLEMENTADO / TESTADO AUTOMATICAMENTE |
+| Manobras dentro dos limites da Ficha | Ajudar, Desengajar, Usar um Objeto, Mirar e Duas Armas têm fluxos operacionais; Adiar Ação, Agarrar, Empurrar/Derrubar e Esconder-se permanecem consulta/manual por dependerem de Iniciativa, alvo ou contexto da Mesa | IMPLEMENTADO DENTRO DOS LIMITES; LIMITAÇÕES EXPLÍCITAS |
+| Modos Automático, Misto e Manual; dados Físicos, Virtuais e Mistos | `funcionamentoFicha.ts`, `RoladoresBasicosLocal.tsx`, `CalculadoraTesteLocal.tsx` e testes `funcionamento.test.mjs` / `roladores-ficha.test.mjs`; calculadoras e roladores integrados só são montados em Automático; escolha física/virtual/mista respeita preferência e ação explícita | IMPLEMENTADO / TESTADO AUTOMATICAMENTE |
+| Roladores de Ataque, Dano e Testes exclusivamente no modo Automático | `FichaLocal.tsx` monta `CalculadoraTesteLocal` para Testes e Ataques apenas em Automático; a calculadora permite rolagem virtual de Dano ou entrada física e cálculo, sem aplicar PV | IMPLEMENTADO / TESTADO AUTOMATICAMENTE |
+| IndexedDB, backup, restauração e proteção contra conflito | `persistenciaFicha.ts`, `backupFicha.ts` e `FichaOfflineApp.tsx`; testes de migração, gravação, patch, conflito, cópias, substituição e validação de backup | IMPLEMENTADO / TESTADO AUTOMATICAMENTE; navegador real PENDENTE |
+| Inventário ativo | O rascunho permite planejar equipamento inicial/compras; gerenciamento ativo está deliberadamente reservado à Fase 3 | FORA DO ESCOPO DA FASE 1 |
+
+**Limitações conhecidas que não são regressões nem autorizam antecipar outra fase:** Aparar universal depende do estado confiável de arma equipada e Durabilidade e foi expressamente adiado por decisão de Gus para junto do Inventário ativo; as quatro Manobras acima permanecem manuais/consultivas conforme dependências de contexto e limites do Painel. Não implementar motor de Iniciativa, mutação de alvo ou Inventário ativo para mascarar essas limitações.
+
+**Conclusão da Fase 1:** a auditoria cruzada dos critérios funcionais foi concluída neste recorte; não foi encontrada nova lacuna bloqueadora além das limitações já classificadas e aceitas no escopo. A Fase 1 permanece registrada como **EM ANDAMENTO / CRITÉRIOS TÉCNICOS AUDITADOS**, pois a sequência de fases exige fechar a preparação Offline e cumprir a bateria humana antes de avançar. Os testes automatizados e build passaram no HEAD acima; isso não equivale a validação humana.
+
+### Resultado consolidado
+
+- Fase 0: mecanismos Offline implementados e testados automaticamente; teste real de navegador ainda pendente.
+- Fase 1: critérios funcionais auditados contra o Documento Mestre; cobertura automatizada e build aprovados; limites conhecidos explicitados.
+- Fase 2: **PENDENTE**, depende da execução por Gus do roteiro humano. Nenhuma validação humana é declarada.
+- Nenhum código ou teste foi alterado nesta auditoria; somente esta matriz foi atualizada.
