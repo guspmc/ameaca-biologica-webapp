@@ -92,6 +92,7 @@ test('Calculadora e Painel aplicam bloqueios operacionais sem retirar autonomia 
   assert.match(calc, /restricoesDeAtaquePorCondicoes/);
   assert.match(calc, /Condições que restringem Ataques/);
   assert.match(calc, /disabled=\{ataqueBloqueadoPorCondicao\}/);
+  assert.match(calc, /disabled=\{bloqueiosCondicao\.gastarSA \|\| \(origem === 'Atleta'/);
   assert.match(calc, /if \(ataqueBloqueadoPorCondicao\)/);
   assert.match(calc, /Amedrontado: confirme se a personagem ainda percebe a fonte do medo/);
   assert.match(calc, /selecione Desvantagem manualmente/);
