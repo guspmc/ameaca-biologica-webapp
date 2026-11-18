@@ -768,3 +768,7 @@ A revisão do Painel identificou que o botão Usar um Objeto consumia Ação, ma
 
 Ampliada a suíte `tests/condicoes-calculadora.test.mjs` com dois casos: combinação simultânea de condições impeditivas e recálculo após remover uma condição, mantendo apenas os bloqueios ainda justificados pelas condições restantes. Ao encerrar todas, o avaliador retorna todas as categorias liberadas. Commit `16aaed95aa691750459f8946aa823034c9879963`; CI do commit ainda enfileirada no momento do registro. Esses testes unitários não substituem validação humana de interação/salvamento.
 
+### Correção adicional na auditoria de Condições — 17/11/2026
+
+Identificada divergência entre o bloqueio de gasto de SA do Painel e a confirmação do gasto prévio usada pelos bônus de Origem Atleta/Investigador na Calculadora. Com Surpreendido ativo, a confirmação podia continuar selecionável, apesar de o gasto não poder ser realizado no Painel. O controle agora também respeita `bloqueiosCondicao.gastarSA`; teste estrutural adicionado. Commits `e23d2a0` (código) e `adf9adc` (teste). CI pendente.
+
