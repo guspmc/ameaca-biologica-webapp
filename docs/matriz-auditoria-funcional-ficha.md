@@ -786,3 +786,15 @@ A revisão dos controles do painel encontrou uma omissão concreta na implementa
 - Fase 1: critérios funcionais auditados contra o Documento Mestre; cobertura automatizada e build aprovados; limites conhecidos explicitados.
 - Fase 2: **PENDENTE**, depende da execução por Gus do roteiro humano. Nenhuma validação humana é declarada.
 - Nenhum código ou teste foi alterado nesta auditoria; somente esta matriz foi atualizada.
+
+
+## Liberação da bateria humana — 18/11/2026
+
+- Branch de trabalho: `feat/offline-first-ficha`. Último commit conhecido antes deste registro: `16be0c2fce50a94a5381136037314116d54d3753`.
+- Verificação da CI: os dois workflows do commit de código `3c12d6808cf4a4e4d8e58db34e2a52f3feefcf97` concluíram com sucesso: Verificação da Ficha Offline (run `44228378857`) e TypeScript/Vite (run `44228378922`). Jobs e etapas foram consultados e todos estão concluídos com `success`.
+- Comparação entre `3c12d68` e `16be0c2`: três commits à frente, todos limitados a alterações em Markdown nos documentos de checkpoint, continuidade e matriz; nenhum arquivo de código, teste, configuração ou workflow foi alterado. Portanto, os resultados de CI permanecem aplicáveis ao conteúdo executável da branch. Não afirmar que houve execução de CI no commit documental `16be0c2`.
+- Prontidão do pacote humano: roteiro existe e foi reconciliado com a navegação contínua da Ficha, os editores, o fluxo de salvamento/descartar alterações, os scripts Windows e a porta local `4176`. O pacote instrui uso de dados fictícios e separa explicitamente os testes Offline dos recursos LAN.
+- Verificação de ferramenta: `package.json` declara `pnpm@11.25.0`; o roteiro usa instalação com lockfile congelado, TypeScript, build de teste e preview local.
+- **Countdown técnico: 0.** Critérios de auditoria e prontidão documental concluídos; bateria humana liberada.
+- **Validação humana: PENDENTE.** Não declarar Fase 0 ou Fase 1 homologadas até Gus executar os passos e registrar os resultados. Fase 2 inicia somente com essa execução; nenhum avanço para Inventário ativo ou fases posteriores.
+- Próxima ação exata: Gus executar `docs/roteiro-humano-ficha-offline-local.md` em Windows/navegador, registrar aprovado/falhou/não executado e compartilhar os resultados. Se a aplicação não abrir, parar e registrar a mensagem sem improvisar correções.
