@@ -6,10 +6,10 @@
 
 ## 1. Preparar o ambiente
 
-1. Atualize a branch `feat/offline-first-ficha` para o commit indicado no checkpoint aprovado.
+1. Baixe/atualize o ZIP da branch `feat/offline-first-ficha` indicada no checkpoint aprovado. Extraia o conteúdo para uma pasta local.
 2. No Windows, execute `scripts\\windows\\Menu_Testes.bat` com duplo clique. Escolha **1 — Iniciar Ficha Offline**. Não escolha a opção 3: ela inicia também a Mesa LAN, que não faz parte desta bateria.
-3. A opção 1 abre uma janela própria para preparar e iniciar a Ficha. Em seguida, o inicializador abre outra janela, que executa `vite preview` na porta 4176, e abre o navegador. **Mantenha aberta a janela intitulada “Ameaca Biologica - Ficha Offline (4176)”** durante todos os testes. É nela que o servidor local está rodando; encerre-o com Ctrl+C somente ao terminar. A janela do menu e a janela intermediária do inicializador não substituem essa janela do servidor.
-4. O endereço esperado é `http://127.0.0.1:4176/ameaca-biologica-webapp/`.
+3. A opção 1 abre uma janela própria para preparar e iniciar a Ficha. O inicializador prefere a porta 4176; se ela estiver ocupada, seleciona uma porta local alternativa sem encerrar o processo existente. A janela do servidor mostra o número da porta no título e o endereço completo. **Mantenha aberta a janela “Ameaca Biologica - Ficha Offline (PORTA)”** durante todos os testes. Encerre-a com Ctrl+C somente ao terminar.
+4. Use exatamente o endereço exibido pelo inicializador. O endereço tem o formato `http://127.0.0.1:PORTA/ameaca-biologica-webapp/`.
 5. Se preferir preparar manualmente, no PowerShell, na pasta do projeto, confira `node --version` (Node 22.12 ou superior) e `pnpm.cmd --version` (versão declarada pelo projeto: 11.25.0). Depois execute:
 
 ```powershell
@@ -18,10 +18,10 @@ $env:VITE_PWA_TESTE = "true"
 pnpm.cmd exec tsc --noEmit
 pnpm.cmd exec vite build --mode teste
 Remove-Item Env:VITE_PWA_TESTE
-pnpm.cmd exec vite preview --host 127.0.0.1 --port 4176 --strictPort
+pnpm.cmd exec vite preview --host 127.0.0.1 --port 4176
 ```
 
-6. Abra `http://127.0.0.1:4176/ameaca-biologica-webapp/`.
+6. Abra o endereço informado no terminal.
 7. Confirme que o topo identifica **Ficha do Jogador · Modo offline**, sem conta e sem servidor. Não configure `.env`, Supabase ou credenciais.
 8. Abra DevTools → Application. O banco `ameaca-biologica-ficha` deve aparecer em IndexedDB; o Service Worker deve controlar o escopo da aplicação depois do primeiro carregamento.
 
