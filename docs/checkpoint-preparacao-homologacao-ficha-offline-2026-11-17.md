@@ -128,3 +128,16 @@ Consultar workflows associados ao HEAD atualizado. Se aprovados, continuar audit
 ### Próxima ação exata
 Acompanhar o workflow `44190904552` do commit `16aaed9`. Se passar, considerar a cobertura automatizada de combinações/remoção confirmada e continuar auditoria de controles restantes. Se falhar, corrigir apenas a causa demonstrada e repetir CI.
 
+## Checkpoint incremental — bloqueio de bônus que exige SA durante Surpreendido — 17/11/2026
+
+- Branch: `feat/offline-first-ficha`.
+- Código: `e23d2a0d0320f10c66daf413f46b41d24bc7efd6`, arquivo `src/CalculadoraTesteLocal.tsx`.
+- Teste: `adf9adc644747332e834474b9d7897945c42ce43`, arquivo `tests/condicoes-calculadora.test.mjs`.
+- Causa: o Painel bloqueava gastar SA sob Surpreendido, mas a Calculadora ainda permitia confirmar o gasto prévio de 1 SA para os bônus de Origem Atleta/Investigador.
+- Correção: a confirmação agora fica desabilitada também por `bloqueiosCondicao.gastarSA`; nenhuma SA é consumida ou inferida pela Calculadora.
+- CI deste novo código/teste ainda pendente; não declarar validado até workflows verdes.
+- Último checkpoint completo anterior: `c6164fd540aa897c93e10c4c68cbf11070c3213e`, com 154 arquivos de teste e build aprovados.
+
+### Próxima ação exata
+Acompanhar CI do commit `adf9adc`. Se passar, continuar auditoria de condições que exigem SA e de ações/reacões; se falhar, corrigir apenas a causa comprovada. Validação humana permanece pendente.
+
