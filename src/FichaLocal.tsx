@@ -128,6 +128,7 @@ export default function FichaLocal({ nome, mesa, contextoId, dados, aoFechar, ao
   const [avisoFechamento, setAvisoFechamento] = useState('');
   const [fecharAposSalvar, setFecharAposSalvar] = useState(false);
   const [ajustandoSA, setAjustandoSA] = useState(false);
+  const ajusteSALock = useRef(false);
   const [erroAjusteSA, setErroAjusteSA] = useState('');
   const [statusAjusteSA, setStatusAjusteSA] = useState('');
   const corpoRef = useRef<HTMLDivElement | null>(null);
@@ -227,10 +228,11 @@ export default function FichaLocal({ nome, mesa, contextoId, dados, aoFechar, ao
   }
 
   async function ajustarSaldoSA(delta: number) {
-    if (ajustandoSA) return;
+    if (ajustandoSA || ajusteSALock.current) return;
     const atual = recursosAtuais.saAtual;
     const proximo = Math.min(sa, Math.max(0, atual + delta));
     if (proximo === atual) return;
+    ajusteSALock.current = true;
     setAjustandoSA(true);
     setErroAjusteSA('');
     setStatusAjusteSA('');
@@ -240,7 +242,7 @@ export default function FichaLocal({ nome, mesa, contextoId, dados, aoFechar, ao
       setStatusAjusteSA(`SA atualizado: ${proximo}/${sa}.`);
     } catch (problema) {
       setErroAjusteSA(problema instanceof Error ? problema.message : 'Não foi possível ajustar o SA.');
-    } finally { setAjustandoSA(false); }
+    } finally { ajusteSALock.current = false; setAjustandoSA(false); }
   }
 
   function abrirAdministracaoRecursos() {
