@@ -3,7 +3,7 @@
 ## Estado do repositório
 - Repositório: `guspmc/ameaca-biologica-webapp`.
 - Branch confirmada: `feat/offline-first-ficha`.
-- HEAD de código/testes: `070be137dafdbc61590376cef6816733a3b9a4a3`.
+- HEAD de código/testes: `070be137dafdbc61590376cef6816733a3b9a4a3`. HEAD remoto atual: `1cc762aae3a668a5d9ff20b9b3e87850c9a281bb` (commits posteriores alteraram somente documentação).
 - Não houve troca de branch, merge, publicação ou deploy. `main` não foi alterada.
 
 ## Objetivo do ciclo
@@ -40,15 +40,15 @@ Separar os ajustes manuais de SA das manobras de Combate, fixar a barra compacta
 
 ## Verificações
 - Build TypeScript/Vite no HEAD `070be137dafdbc61590376cef6816733a3b9a4a3`: workflow `44544876587` — SUCCESS.
-- Suíte completa de testes offline no mesmo HEAD: workflow `44544876672` — IN_PROGRESS no momento deste checkpoint.
-- Runs anteriores de testes falharam por asserts de interface desatualizados após a separação de SA e pelo teste antigo de Mirar; esses asserts foram atualizados. Não declarar a suíte aprovada até consultar o resultado de `44544876672` ou de um run posterior no HEAD atual.
+- Suíte completa de testes offline no mesmo HEAD: workflow `44544876672` — SUCCESS.
+- Runs intermediários falharam por asserts de interface desatualizados após a separação de SA e pelo teste antigo de Mirar; os asserts foram atualizados. A suíte completa passou no run final `44544876672`.
 - Validação humana: PENDENTE. Não foi solicitada bateria humana intermediária; o protocolo determina uma única bateria integrada após a conclusão da Fase 1, imediatamente antes do Inventário ativo.
 
 ## Estado funcional
-- Barra PV/SA/BI e ajustes rápidos: IMPLEMENTADOS; TESTE AUTOMÁTICO PENDENTE.
-- Bloqueio por SA atual e SA máximo: IMPLEMENTADO; TESTE AUTOMÁTICO PENDENTE.
-- Consumo persistido de Mirar: IMPLEMENTADO; TESTE AUTOMÁTICO PENDENTE.
-- Estrutura visual de Combate e recolhíveis: IMPLEMENTADA; TESTE AUTOMÁTICO PENDENTE.
+- Barra PV/SA/BI e ajustes rápidos: TESTADOS AUTOMATICAMENTE.
+- Bloqueio por SA atual e SA máximo: TESTADO AUTOMATICAMENTE.
+- Consumo persistido de Mirar: TESTADO AUTOMATICAMENTE.
+- Estrutura visual de Combate e recolhíveis: TESTADA AUTOMATICAMENTE.
 - Integrações dependentes do Inventário: PENDENTES para Fase 3.
 - Validação humana de toda a Ficha Offline: PENDENTE.
 
