@@ -69,7 +69,6 @@ export default function ReanimacaoFichaLocal({ dados, recursos, origem, pvMaximo
         throw new Error('O armazenamento não confirmou a alteração da Reanimação.');
       }
       setReanimacao(proxima);
-      setPrimeiroDado(''); setSegundoDado('');
       setMensagem(origemDados === 'servidor' ? 'Estado de Reanimação confirmado pelo servidor.' : 'Estado de Reanimação salvo neste dispositivo.');
     } catch (e) {
       setErro(e instanceof Error ? e.message : 'Não foi possível salvar a Reanimação.');
@@ -142,7 +141,7 @@ export default function ReanimacaoFichaLocal({ dados, recursos, origem, pvMaximo
     <p>Ao atingir a BI Máxima, o Colapso Viral e a Reanimação específica são registrados automaticamente, conforme a regra. Se houver Transformação ativa e PV 0 ao mesmo tempo, a Ficha apresenta as opções para a Mesa escolher o que registrar. A Ficha não decide morte nem transformação e não avança turnos.</p>
     {transformacaoPVZero && <p className="ficha-local-aviso" role="status">{transformacaoAtiva === 'infectado-especial' ? 'Infectado Especial a 0 PV: o cânone descreve 1 hora inerte antes da transformação em Cabeça Carmesim, salvo regra ou efeito que a impeça.' : transformacaoAtiva === 'cabeca-carmesim' ? 'Cabeça Carmesim a 0 PV antes da reversão: o cânone prevê morte da personagem.' : 'Há mais de uma Transformação ativa com 0 PV; a situação precisa ser resolvida pela Mesa.'} Este texto é referência, não decisão automática. A Ficha não mata, transforma nem bloqueia registros decididos pela Mesa. Registre abaixo o fluxo que a Mesa determinar.</p>}
     {prioridadeManual && <p className="ficha-local-aviso" role="status">PV 0 e BI Máxima estão presentes ao mesmo tempo. A Ficha não escolhe qual fluxo prevalece; a Mesa deve determinar o que registrar.</p>}
-    {modo === 'automatico' && modoDados === 'mistos' && <label>Método deste Teste<select value={metodo} onChange={e => { setMetodo(e.target.value as 'fisico' | 'virtual'); setPrimeiroDado(''); setSegundoDado(''); }}><option value="fisico">Dados físicos</option><option value="virtual">Dados virtuais</option></select></label>}
+    {modo === 'automatico' && modoDados === 'mistos' && <label>Método deste Teste<select value={metodo} onChange={e => setMetodo(e.target.value as 'fisico' | 'virtual')}><option value="fisico">Dados físicos</option><option value="virtual">Dados virtuais</option></select></label>}
     {modo === 'automatico' && modoDados !== 'mistos' && <p>Método: {modoDados === 'fisicos' ? 'Dados físicos' : 'Dados virtuais'}.</p>}
     {modo !== 'automatico' && <p>Modo {modo === 'misto' ? 'Misto' : 'Manual'}: roladores integrados ocultos. Informe abaixo o resultado obtido fora da Ficha.</p>}
     {bloqueado && <p role="status">Salve ou descarte outras alterações pendentes da ficha antes de alterar a Reanimação.</p>}
