@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import type { FacesDado } from './rolagemDados';
-import { sortearDados, validarResultadosFisicos } from './rolagemDados';
+import { sortearDados, somarModificadorRolagem, validarResultadosFisicos } from './rolagemDados';
 import type { ModoDados, VisibilidadeRolagem } from './funcionamentoFicha';
 
 type Props = {
@@ -18,6 +18,7 @@ export default function RoladoresBasicosLocal({ modo, modoDados, visibilidade, a
   const [quantidade, setQuantidade] = useState('1');
   const [faces, setFaces] = useState<FacesDado>(20);
   const [resultadosFisicos, setResultadosFisicos] = useState('');
+  const [modificadorLivre, setModificadorLivre] = useState('0');
   const [resultadoIniciativa, setResultadoIniciativa] = useState('');
   const [resultadoLivre, setResultadoLivre] = useState('');
   const [erro, setErro] = useState('');
@@ -47,7 +48,10 @@ export default function RoladoresBasicosLocal({ modo, modoDados, visibilidade, a
       const dados = metodo === 'virtual'
         ? sortearDados(totalDados, faces)
         : validarResultadosFisicos(resultadosFisicos, totalDados, faces);
-      setResultadoLivre(`${dados.join(' + ')} = ${dados.reduce((soma, valor) => soma + valor, 0)}`);
+      const modificador = modificadorLivre.trim() === '' ? 0 : Number(modificadorLivre);
+      const total = somarModificadorRolagem(dados, modificador);
+      const expressaoModificador = modificador > 0 ? ` + ${modificador}` : modificador < 0 ? ` - ${Math.abs(modificador)}` : '';
+      setResultadoLivre(`${dados.join(' + ')}${expressaoModificador} = ${total}`);
       setErro('');
     } catch (problema) {
       setErro(problema instanceof Error ? problema.message : 'Não foi possível registrar a rolagem.');
@@ -90,6 +94,9 @@ export default function RoladoresBasicosLocal({ modo, modoDados, visibilidade, a
       {metodo === 'fisico' && <label>Resultados físicos (separados por espaço ou vírgula)
         <input type="text" value={resultadosFisicos} onChange={evento => setResultadosFisicos(evento.target.value)} placeholder="Ex.: 4, 2, 6" />
       </label>}
+      <label>Bônus / modificador (+ ou −) · Atributo, Perícia etc.
+        <input type="number" step="1" value={modificadorLivre} onChange={evento => setModificadorLivre(evento.target.value)} placeholder="Ex.: 5 ou -2" />
+      </label>
       <button type="button" className="botao-claro" onClick={rolarLivre}>{metodo === 'virtual' ? 'Rolar dados' : 'Registrar resultados físicos'}</button>
       {resultadoLivre && <p role="status">{resultadoLivre}</p>}
     </div>
