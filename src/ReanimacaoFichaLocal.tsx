@@ -5,7 +5,7 @@ import {
   concederAjudaMedicina,
   encerrarColapsoPorReducaoBI,
   iniciarReanimacao,
-  iniciarTurnoReanimacao,
+  registrarResultadoReanimacao,
   reanimacaoValida,
   resolverTesteReanimacao,
   gerarIdReanimacao,
@@ -38,8 +38,6 @@ export default function ReanimacaoFichaLocal({ dados, recursos, origem, pvMaximo
   useEffect(() => { setReanimacao(inicial); }, [inicial]);
   const [metodo, setMetodo] = useState<'fisico' | 'virtual'>(modo === 'automatico' && modoDados === 'virtuais' ? 'virtual' : 'fisico');
   useEffect(() => { setMetodo(modo === 'automatico' && modoDados === 'virtuais' ? 'virtual' : 'fisico'); }, [modo, modoDados]);
-  const [primeiroDado, setPrimeiroDado] = useState('');
-  const [segundoDado, setSegundoDado] = useState('');
   const [cura, setCura] = useState('1');
   const [ocupado, setOcupado] = useState(false);
   const [mensagem, setMensagem] = useState('');
@@ -54,14 +52,9 @@ export default function ReanimacaoFichaLocal({ dados, recursos, origem, pvMaximo
   const podeIniciarPV = !registroReanimacaoInvalido && pvMaximo > 0 && !transformacaoPVZero && recursos.pvAtual === 0 && (reanimacao === null || reanimacaoAnteriorConcluida);
   const podeIniciarColapso = !registroReanimacaoInvalido && !prioridadeManual && biMaximo > 0 && recursos.biAtual >= biMaximo && (reanimacao === null || reanimacaoAnteriorConcluida);
   const vantagem = !!reanimacao && (reanimacao.vantagemProximoTeste || (reanimacao.causa === 'colapso_bi' && origem === 'Cobaia'));
-  const primeiro = Number(primeiroDado);
-  const segundo = Number(segundoDado);
-  const dadoValido = (n: number) => Number.isSafeInteger(n) && n >= 1 && n <= 20;
   const rolagemVirtualAtiva = modo === 'automatico' && metodo === 'virtual';
-  const resultadoValido = rolagemVirtualAtiva || (primeiroDado.trim() !== '' && dadoValido(primeiro)
-    && (vantagem ? segundoDado.trim() !== '' && dadoValido(segundo) : segundoDado.trim() === ''));
-  const estadoAtivo = reanimacao?.estado === 'em_andamento';
-  const estadoPV0 = reanimacao?.causa === 'pv_zero' && ['aguardando_proximo_turno', 'em_andamento'].includes(reanimacao.estado);
+  const estadoAtivo = !!reanimacao && ['aguardando_proximo_turno', 'em_andamento'].includes(reanimacao.estado);
+  const estadoPV0 = reanimacao?.causa === 'pv_zero' && estadoAtivo;
   const desfechoAguardandoMesa = !!reanimacao && ['morte_a_registrar', 'transformacao_no_proximo_turno'].includes(reanimacao.estado);
   const registrosMesaValidos = dados.registrosMesa === undefined || listaDecisoesMesaValida(dados.registrosMesa);
   const decisoesVinculadas = desfechoAguardandoMesa && reanimacao?.id && registrosMesaValidos && Array.isArray(dados.registrosMesa)
@@ -104,22 +97,19 @@ export default function ReanimacaoFichaLocal({ dados, recursos, origem, pvMaximo
     void iniciar('pv_zero');
   }, [recursos.pvAtual, recursos.biAtual, biMaximo, podeIniciarPV, bloqueado, ocupado]);
 
-  async function registrarTeste() {
-    if (!reanimacao || !estadoAtivo || !resultadoValido) return;
+  async function registrarTeste(sucessoFisico?: boolean) {
+    if (!reanimacao || !estadoAtivo) return;
     try {
-      const resultados = rolagemVirtualAtiva
-        ? (vantagem ? sortearDados(2, 20) as [number, number] : sortearDados(1, 20)[0])
-        : vantagem ? [primeiro, segundo] as [number, number] : primeiro;
-      const resultado = resolverTesteReanimacao(reanimacao, resultados, pvMaximo, origem === 'Cobaia');
+      const resultado = rolagemVirtualAtiva
+        ? resolverTesteReanimacao(reanimacao, vantagem ? sortearDados(2, 20) as [number, number] : sortearDados(1, 20)[0], pvMaximo, origem === 'Cobaia')
+        : registrarResultadoReanimacao(reanimacao, sucessoFisico === true, pvMaximo);
       const recursosPatch = resultado.pvAoDespertar === null ? {} : { pvAtual: resultado.pvAoDespertar };
       await persistir(resultado.reanimacao, recursosPatch);
       const avisos: string[] = [];
-      if (resultado.falhaCritica) avisos.push('1 natural: Falha Crítica no Teste de Reanimação. Como não é um Ataque, não ativa Exposto automaticamente.');
       if (resultado.morteParaRegistroDoMestre || resultado.transformacaoPendente) avisos.push('Três falhas: resultado mecânico registrado — decisão da Mesa pendente. Consulte o desfecho previsto no cânone e registre a decisão da Mesa no histórico. Nenhuma consequência narrativa foi executada.');
       else if (resultado.pvAoDespertar !== null) avisos.push(`Três sucessos: personagem desperta com ${resultado.pvAoDespertar} PV.`);
       else if (resultado.reanimacao.estado === 'desacordada_ate_reducao_bi') avisos.push('Três sucessos: permanece Desacordada até a BI ficar abaixo do máximo.');
-      const faces = Array.isArray(resultados) ? resultados.join(' e ') : String(resultados);
-      const resultadoExibido = rolagemVirtualAtiva ? `Rolagem virtual: ${faces}.` : `Dados físicos registrados: ${faces}.`;
+      const resultadoExibido = rolagemVirtualAtiva ? 'Teste virtual rolado e registrado.' : sucessoFisico ? 'Sucesso registrado.' : 'Falha registrada.';
       setMensagem([resultadoExibido, ...avisos].join(' '));
     } catch (e) { setErro(e instanceof Error ? e.message : 'Resultado de Reanimação inválido.'); }
   }
@@ -133,18 +123,10 @@ export default function ReanimacaoFichaLocal({ dados, recursos, origem, pvMaximo
     } catch (e) { setErro(e instanceof Error ? e.message : 'Não foi possível acumular a cura.'); }
   }
 
-  async function registrarMedicina(sucesso: boolean, falhaCritica = false) {
+  async function registrarMedicina(sucesso: boolean) {
     if (!reanimacao) return;
-    try {
-      await persistir(concederAjudaMedicina(reanimacao, sucesso));
-      if (falhaCritica) setMensagem('1 natural no Teste de Medicina: Falha Crítica. Por ser um Teste comum de Perícia, não ativa Exposto automaticamente; essa ativação automática é restrita a Falha Crítica em Ataque.');
-    } catch (e) { setErro(e instanceof Error ? e.message : 'Não foi possível registrar o Teste de Medicina.'); }
-  }
-
-  async function iniciarProximoTurno() {
-    if (!reanimacao) return;
-    try { await persistir(iniciarTurnoReanimacao(reanimacao)); }
-    catch (e) { setErro(e instanceof Error ? e.message : 'Não foi possível avançar a Reanimação.'); }
+    try { await persistir(concederAjudaMedicina(reanimacao, sucesso)); }
+    catch (e) { setErro(e instanceof Error ? e.message : 'Não foi possível registrar o Teste de Medicina.'); }
   }
 
   async function encerrarColapso() {
@@ -186,14 +168,12 @@ export default function ReanimacaoFichaLocal({ dados, recursos, origem, pvMaximo
       } as Record<string, string>)[reanimacao.estado]}</strong></p>
       <p>Sucessos: {reanimacao.sucessos}/3 · Falhas: {reanimacao.falhas}/3 · Tentativas: {reanimacao.tentativas}/5</p>
       {reanimacao.causa === 'pv_zero' && <p>Cura acumulada: {reanimacao.curaAcumulada} PV. A cura não desperta a personagem antes do terceiro sucesso.</p>}
-      {reanimacao.estado === 'aguardando_proximo_turno' && <button type="button" className="acao" disabled={ocupado || bloqueado} onClick={() => void iniciarProximoTurno()}>Iniciar Testes no próximo turno <span>→</span></button>}
       {estadoPV0 && <>
         <h4>Primeiros Socorros · Medicina DT 15</h4>
-        <p>O ajudante realiza o Teste de Medicina DT 15 na própria Ficha, considerando seu Atributo, Treinamento e modificadores. Registre aqui apenas o resultado final. Sucesso concede Vantagem ao próximo Teste de Reanimação.</p>
+        <p>O ajudante realiza o Teste de Medicina DT 15. Registre aqui apenas se o teste foi bem-sucedido; o sucesso concede Vantagem ao próximo Teste de Reanimação.</p>
         <div className="recursos-controles">
           <button type="button" disabled={ocupado || bloqueado} onClick={() => void registrarMedicina(true)}>Registrar sucesso</button>
           <button type="button" disabled={ocupado || bloqueado} onClick={() => void registrarMedicina(false)}>Registrar falha</button>
-          <button type="button" disabled={ocupado || bloqueado} onClick={() => void registrarMedicina(false, true)}>Registrar falha crítica (1 natural)</button>
         </div>
         <label>Cura recebida enquanto estava em 0 PV
           <input type="number" min="0" step="1" value={cura} disabled={ocupado || bloqueado} onChange={e => setCura(e.target.value)}/>
@@ -203,11 +183,14 @@ export default function ReanimacaoFichaLocal({ dados, recursos, origem, pvMaximo
       {estadoAtivo && <>
           <h4>Teste de Reanimação · 1d20 contra DT 12</h4>
           {vantagem && <p>Vantagem ativa: {rolagemVirtualAtiva ? 'a Ficha rolará dois d20 e usará o melhor.' : 'informe dois resultados físicos de d20; será considerado o melhor.'}</p>}
-          {!rolagemVirtualAtiva ? <div className="recursos-controles">
-            <label>Resultado do d20<input type="number" min="1" max="20" step="1" value={primeiroDado} disabled={ocupado || bloqueado} onChange={e => setPrimeiroDado(e.target.value)}/></label>
-            {vantagem && <label>Segundo d20<input type="number" min="1" max="20" step="1" value={segundoDado} disabled={ocupado || bloqueado} onChange={e => setSegundoDado(e.target.value)}/></label>}
-          </div> : <p>{vantagem ? 'A Ficha rolará virtualmente dois d20 e usará o melhor.' : 'A Ficha rolará virtualmente um d20.'}</p>}
-          <button type="button" className="acao" disabled={ocupado || bloqueado || !resultadoValido} onClick={() => void registrarTeste()}>{rolagemVirtualAtiva ? 'Rolar e registrar Teste' : 'Registrar resultado do Teste'} <span>→</span></button>
+          {rolagemVirtualAtiva ? <>
+            <p>{vantagem ? 'A Ficha rolará virtualmente dois d20 e usará o melhor.' : 'A Ficha rolará virtualmente um d20.'}</p>
+            <button type="button" className="acao" disabled={ocupado || bloqueado} onClick={() => void registrarTeste()}>Rolar e registrar Teste <span>→</span></button>
+          </> : <div className="recursos-controles">
+            {vantagem && <p>Role dois d20 físicos e considere o melhor resultado contra DT 12; depois registre se houve sucesso ou falha.</p>}
+            <button type="button" disabled={ocupado || bloqueado} onClick={() => void registrarTeste(true)}>Registrar sucesso</button>
+            <button type="button" disabled={ocupado || bloqueado} onClick={() => void registrarTeste(false)}>Registrar falha</button>
+          </div>}
         </>}
       {reanimacao.estado === 'desacordada_ate_reducao_bi' && <button type="button" className="acao" disabled={ocupado || bloqueado || recursos.biAtual >= biMaximo} onClick={() => void encerrarColapso()}>Confirmar BI abaixo do máximo e encerrar <span>→</span></button>}
       {desfechoAguardandoMesa && <section className="ficha-local-aviso" aria-live="polite">
