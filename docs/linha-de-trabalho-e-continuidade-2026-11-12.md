@@ -901,3 +901,19 @@ Identificada divergência entre o bloqueio de gasto de SA do Painel e a confirma
 - Validação humana PENDENTE. A bateria integrada não deve ser antecipada: realizar uma única rodada humana após completar a Fase 1, imediatamente antes da Fase 3.
 - Não houve troca de branch, merge, publicação ou deploy. `main` permanece intocada.
 - Checkpoint: `docs/checkpoint-interface-combate-2026-11-19.md`.
+
+
+## Atualização de continuidade — auditoria final da Fase 1 — 19/11/2026
+
+- Branch: `feat/offline-first-ficha`.
+- Código/teste validado: HEAD `bc355a4c1699ddd7d487450317e74877cdfa99a7`.
+- Defeito localizado: o cartão Ataque à Distância não recebia `aoConsumirMirar`; corrigido em `src/FichaLocal.tsx`. Teste atualizado em `tests/ataques-calculadora.test.mjs` para exigir callback nos dois cartões.
+- CI: testes run `44554731868` — SUCCESS (155/155 arquivos, zero falhas); build run `44554732144` — SUCCESS. Ambos no mesmo HEAD.
+- O roteiro `docs/roteiro-humano-ficha-offline-local.md` foi ampliado para incluir recursos, SA, Manobras, Mirar corpo a corpo/à distância, modos/dados, Condições, Descanso, Reanimação e Progressão.
+- Auditoria cruzada da Fase 1 concluída sem pendência técnica bloqueadora conhecida após a correção. Limitações aceitas: Inventário ativo/Aparar universal dependente de equipamento ficam para Fase 3; quatro Manobras dependentes de contexto continuam manuais/consultivas.
+- Fase 0: EM ANDAMENTO, aguardando validação humana de inicialização Offline, IndexedDB real, Service Worker e modo avião.
+- Fase 1: EM ANDAMENTO, critérios técnicos auditados, aguardando bateria humana integrada.
+- Fase 2: PENDENTE. O teste de 18/11 ocorreu no fluxo LAN e não valida Offline.
+- Próxima ação exata: Gus executar o roteiro atualizado pelo inicializador **Ficha Offline**, registrar APROVADO/FALHOU/NÃO EXECUTADO e compartilhar resultados. Não iniciar Inventário ativo antes da aprovação expressa da Fase 2.
+- Checkpoint: `docs/checkpoint-auditoria-pendencias-fase1-2026-11-19.md`.
+- Sem troca de branch, alteração de `main`, merge, publicação ou deploy.
