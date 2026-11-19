@@ -587,44 +587,55 @@ export default function FichaLocal({ nome, mesa, contextoId, dados, aoFechar, ao
           <div className="ficha-local-titulo-secao"><h2><span>03</span> Combate</h2><span className="ficha-local-selo">PREPARAÇÃO</span></div>
           <p className="ficha-local-legenda">Resumo operacional da personagem. {origemDados === 'servidor' ? 'O painel opcional registra recursos de ação e gastos de SA confirmados pelo servidor' : 'O painel opcional registra recursos de ação e gastos de SA salvos neste dispositivo'}; não controla a Iniciativa da Mesa nem resolve rolagens ou efeitos.</p>
 
-          <h3 className="ficha-local-subtitulo">Defesa e deslocamento</h3>
-          <div className="ficha-local-grade">
+          <h3 className="ficha-local-subtitulo">Deslocamento · Defesa · Iniciativa</h3>
+          <div className="ficha-local-grade ficha-local-combate-resumo">
             <div><small>DEFESA ATUAL</small><strong>{defesaAtual}</strong><p>Base {defesa} · {condicoesAtivasIds.includes('desorientado') ? 'AGI removida por Desorientado' : 'AGI aplicada'}{condicoesAtivasIds.includes('exposto') ? ' · −2 por Exposto' : ''}. Equipamentos ainda não aplicados.</p></div>
+            <div><small>DESLOCAMENTO</small><strong>9 m</strong><p>Movimento base. Condições e fases da BI são exibidas em seus respectivos modificadores.</p></div>
+            <div><small>INICIATIVA</small><strong>+{numero(atributos.agilidade)}</strong><p>Modificador de AGI. A rolagem pontual fica disponível no modo Automático; a ordem do Encontro pertence ao Painel do Mestre.</p></div>
             {reflexosSobreviventeAtivo && <div><small>DEFESA CONTRA ATAQUES — REFLEXOS DE SOBREVIVENTE</small><strong>{defesaContraAtaques}</strong><p>Use o maior entre a Defesa atual e 10 + Acrobacia ({10 + acrobaciaAtual}). A escolha é feita contra cada Ataque; não altera a Defesa-base.</p><p>Uma vez por rodada, pode Esquivar sem gastar Reação; a próxima Ação Bônus fica comprometida. Também pode atravessar espaços ocupados por personagens ou inimigos Médios e menores sem provocar Ataque de Oportunidade.</p></div>}
             {habilidadesAtivasIds.includes('rolamento') && <div><small>ROLAMENTO</small><p>Após Esquivar com sucesso, pode reposicionar-se até 3 m sem provocar Ataques de Oportunidade.</p></div>}
-            <div><small>MOVIMENTO BASE</small><strong>9 m</strong><p>Deslocamento base informado pela ficha.</p></div>
           </div>
 
-          <h3 className="ficha-local-subtitulo">Habilidade e equipamento</h3>
-          <div className="ficha-local-grade">
-            {habilidadesExibicao.map(item => <div key={item.id}>
-              <small>HABILIDADE DE CLASSE · {item.nivelAquisicao === null ? 'NÍVEL NÃO IDENTIFICADO' : 'NÍVEL ' + item.nivelAquisicao} · {item.grauRotulo.toUpperCase()}</small>
-              <strong>{item.nome}</strong>
-              <p>{item.descricao || 'Descrição indisponível no catálogo.'}</p>
-            </div>)}
-            {!habilidadesExibicao.length && <div><small>HABILIDADES DE CLASSE</small><strong>Nenhuma Habilidade registrada</strong><p>As Habilidades adquiridas aparecerão aqui após a escolha e o registro na Progressão.</p></div>}
-            <div><small>ARMAMENTO</small><strong>Não equipado</strong><p>{kit ? 'Conjunto inicial selecionado: ' + kit.nome + '. A escolha faz parte do planejamento do inventário e não significa que uma arma esteja equipada.' : 'Selecione um conjunto inicial na seção Inventário. A seleção não equipa automaticamente uma arma.'}</p></div>
-          </div>
+          <details className="ficha-local-acordeao">
+            <summary>Habilidades e equipamento <span>{habilidadesExibicao.length} Habilidades · {kit ? kit.nome : 'Sem conjunto inicial'}</span></summary>
+            <div className="ficha-local-grade">
+              {habilidadesExibicao.map(item => <div key={item.id}>
+                <small>HABILIDADE DE CLASSE · {item.nivelAquisicao === null ? 'NÍVEL NÃO IDENTIFICADO' : 'NÍVEL ' + item.nivelAquisicao} · {item.grauRotulo.toUpperCase()}</small>
+                <strong>{item.nome}</strong>
+                <p>{item.descricao || 'Descrição indisponível no catálogo.'}</p>
+              </div>)}
+              {!habilidadesExibicao.length && <div><small>HABILIDADES DE CLASSE</small><strong>Nenhuma Habilidade registrada</strong><p>As Habilidades adquiridas aparecerão aqui após a escolha e o registro na Progressão.</p></div>}
+              <div><small>ARMAMENTO</small><strong>Não equipado</strong><p>{kit ? 'Conjunto inicial selecionado: ' + kit.nome + '. A escolha faz parte do planejamento do inventário e não significa que uma arma esteja equipada.' : 'Selecione um conjunto inicial na seção Inventário. A seleção não equipa automaticamente uma arma.'}</p></div>
+            </div>
+          </details>
 
-          <h3 className="ficha-local-subtitulo">Bio-Infecção</h3>
-          <div className="ficha-local-grade">
+          <details className="ficha-local-acordeao">
+            <summary>Bio-Infecção <span>{biAtual}/{bi} BI · {faseBi.estado === 'fase' ? 'Fase ' + faseBi.fase : faseBi.estado === 'colapso' ? 'Colapso Viral' : 'Sem fase'}</span></summary>
+            <div className="ficha-local-grade">
             <div><small>BI ATUAL / MÁXIMA</small><strong>{biAtual} / {bi}</strong><p>{faseBi.estado === 'fase' ? 'Fase ' + faseBi.fase + ' · ' + faseBi.efeito : faseBi.efeito}</p></div>
             <div><small>MOVIMENTO PELA BI</small><strong>{faseBi.modificadorMovimento === null ? (faseBi.estado === 'colapso' ? 'Desacordada' : '—') : (9 + faseBi.modificadorMovimento) + ' m'}</strong><p>{faseBi.modificadorMovimento === null ? 'Sem valor de movimento derivável.' : 'Base 9 m ' + (faseBi.modificadorMovimento > 0 ? '+ ' : faseBi.modificadorMovimento < 0 ? '− ' : '') + (faseBi.modificadorMovimento === 0 ? 'sem ajuste' : Math.abs(faseBi.modificadorMovimento) + ' m pela fase de BI')}</p></div>
             <div><small>BÔNUS EM TESTES DE ATAQUE</small><strong>{faseBi.bonusTesteAtaque === null ? '—' : '+' + faseBi.bonusTesteAtaque}</strong><p>{faseBi.bonusTesteAtaque === null ? 'Não aplicável.' : 'Modificador da fase de BI, antes de outros efeitos.'}</p></div>
             <div><small>DANO CORPO A CORPO</small><strong>{faseBi.danoCorpoACorpoAdicional ? '+' + faseBi.danoCorpoACorpoAdicional : '—'}</strong><p>{faseBi.danoCorpoACorpoAdicional ? 'Dano adicional da 4ª fase.' : 'Sem bônus de dano corpo a corpo por BI.'}</p></div>
             <div><small>DESVANTAGEM POR BI</small><strong>{faseBi.desvantagemAtaquesETestes === null ? '—' : faseBi.desvantagemAtaquesETestes ? 'Sim' : 'Não'}</strong><p>Aplica-se a Ataques e Testes de Perícia e Atributo na 5ª fase.</p></div>
-          </div>
-          {penalidadeMorteNivel1 && <p className="ficha-local-aviso" role="status">Penalidade por Morte no Nível 1 ativa: −2 em Testes de Atributo, Perícia e Ataque. Será encerrada automaticamente quando a personagem recuperar o Nível 2.</p>}
-          <p className="ficha-local-legenda">A BI começa em 0 e não progride sozinha. Alterações são registradas expressamente no painel de Recursos. Este resumo calcula os modificadores da fase, sem aplicá-los automaticamente a movimento, ataques ou dano. Ao confirmar BI igual ou superior ao máximo, o módulo Reanimação registra o Colapso Viral automaticamente, exceto quando PV 0 e Transformação ativa exigem decisão da Mesa sobre o fluxo a registrar; a Ficha não avança turnos nem decide morte ou transformação.</p>
+            </div>
+            {penalidadeMorteNivel1 && <p className="ficha-local-aviso" role="status">Penalidade por Morte no Nível 1 ativa: −2 em Testes de Atributo, Perícia e Ataque. Será encerrada automaticamente quando a personagem recuperar o Nível 2.</p>}
+            <p className="ficha-local-legenda">A BI começa em 0 e não progride sozinha. Alterações são registradas expressamente no painel de Recursos. Este resumo calcula os modificadores da fase, sem aplicá-los automaticamente a movimento, ataques ou dano. Ao confirmar BI igual ou superior ao máximo, o módulo Reanimação registra o Colapso Viral automaticamente, exceto quando PV 0 e Transformação ativa exigem decisão da Mesa sobre o fluxo a registrar; a Ficha não avança turnos nem decide morte ou transformação.</p>
+          </details>
 
           <h3 className="ficha-local-subtitulo">Combate ativo</h3>
           <PainelAcoesLocal dados={dados} saAtual={recursosAtuais.saAtual} origemDados={origemDados} origem={origem} habilidadesAtivas={habilidadesAtivasIds} valorLuta={valorBasePericia('Luta', atributos, treinada || null, distribuicao, extra || null, extraTentativa || null)} valorReflexos={valorBasePericia('Reflexos', atributos, treinada || null, distribuicao, extra || null, extraTentativa || null)} modo={configuracaoFuncionamento.modo} modoDados={configuracaoFuncionamento.modoDados} desvantagemBI={faseBi.desvantagemAtaquesETestes === true} condicoesAtivas={condicoesAtivasIds} aoSalvar={aoSalvarRecursos} />
           <RoladoresBasicosLocal modo={configuracaoFuncionamento.modo} modoDados={configuracaoFuncionamento.modoDados} visibilidade={configuracaoFuncionamento.visibilidadeRolagem} agilidade={numero(atributos.agilidade)} />
-          <div className="ficha-local-grade">
-            <div><small>MODIFICADOR DE INICIATIVA</small><strong>+{numero(atributos.agilidade)}</strong><p>AGI da personagem. A rolagem pontual fica disponível no modo Automático; a ordem do Encontro pertence ao Painel do Mestre.</p></div>
-          </div>
           {paredeHumanaAtiva && <p className="ficha-local-aviso">PAREDE HUMANA: ao fim do seu turno, se não tiver gasto o recurso Movimento, até o início do próximo turno recebe +VIG na Defesa e RD igual a 1 + metade do Nível de Operador (arredondada para baixo; máximo 6). Confirme o gatilho e a duração na Mesa; a Ficha não acompanha o gasto de Movimento nem ativa esse efeito automaticamente.</p>}
-          {configuracaoFuncionamento.modo === 'automatico' && <CalculadoraTesteLocal escopo="ataques" atributos={atributos} treinada={treinada} periciaOrigemExtra={extra} periciaTentativaErroTreinada={extraTentativa} temTentativaEErro={temTentativaEErro} distribuicao={distribuicao} modoDados={configuracaoFuncionamento.modoDados} origem={origem} saDisponivel={recursosAtuais.saAtual} aoFalharCriticoAtaque={registrarExpostoPorFalhaCritica} armaOperario={armaOperario} penalidadeMorteNivel1={penalidadeMorteNivel1} bonusAtaqueBI={faseBi.bonusTesteAtaque ?? 0} danoCorpoACorpoAdicionalBI={faseBi.danoCorpoACorpoAdicional} desvantagemBI={faseBi.desvantagemAtaquesETestes === true} condicoesAtivas={condicoesAtivasIds} habilidadesAtivas={habilidadesAtivasIds} mirarPreparado={estadoTurnoCombateAtual.valido && estadoTurnoCombateAtual.estado.manobras.mirarPreparado} />}
+          {configuracaoFuncionamento.modo === 'automatico' && <div className="ficha-local-grade ficha-local-cartoes-ataque">
+            <details className="ficha-local-acordeao ficha-local-cartao-ataque">
+              <summary>Ataque Corpo a Corpo <span>Luta</span></summary>
+              <CalculadoraTesteLocal escopo="ataques" tipoAtaqueFixo="ataque-corpo" atributos={atributos} treinada={treinada} periciaOrigemExtra={extra} periciaTentativaErroTreinada={extraTentativa} temTentativaEErro={temTentativaEErro} distribuicao={distribuicao} modoDados={configuracaoFuncionamento.modoDados} origem={origem} saDisponivel={recursosAtuais.saAtual} aoFalharCriticoAtaque={registrarExpostoPorFalhaCritica} armaOperario={armaOperario} penalidadeMorteNivel1={penalidadeMorteNivel1} bonusAtaqueBI={faseBi.bonusTesteAtaque ?? 0} danoCorpoACorpoAdicionalBI={faseBi.danoCorpoACorpoAdicional} desvantagemBI={faseBi.desvantagemAtaquesETestes === true} condicoesAtivas={condicoesAtivasIds} habilidadesAtivas={habilidadesAtivasIds} mirarPreparado={estadoTurnoCombateAtual.valido && estadoTurnoCombateAtual.estado.manobras.mirarPreparado} />
+            </details>
+            <details className="ficha-local-acordeao ficha-local-cartao-ataque">
+              <summary>Ataque à Distância <span>Pontaria</span></summary>
+              <CalculadoraTesteLocal escopo="ataques" tipoAtaqueFixo="ataque-distancia" atributos={atributos} treinada={treinada} periciaOrigemExtra={extra} periciaTentativaErroTreinada={extraTentativa} temTentativaEErro={temTentativaEErro} distribuicao={distribuicao} modoDados={configuracaoFuncionamento.modoDados} origem={origem} saDisponivel={recursosAtuais.saAtual} aoFalharCriticoAtaque={registrarExpostoPorFalhaCritica} armaOperario={armaOperario} penalidadeMorteNivel1={penalidadeMorteNivel1} bonusAtaqueBI={faseBi.bonusTesteAtaque ?? 0} danoCorpoACorpoAdicionalBI={faseBi.danoCorpoACorpoAdicional} desvantagemBI={faseBi.desvantagemAtaquesETestes === true} condicoesAtivas={condicoesAtivasIds} habilidadesAtivas={habilidadesAtivasIds} mirarPreparado={estadoTurnoCombateAtual.valido && estadoTurnoCombateAtual.estado.manobras.mirarPreparado} />
+            </details>
+          </div>}
           <p className="ficha-local-aviso">O painel registra usos de Ação, Movimento, Ação Bônus, Reação, Interação Gratuita, Esforço e gastos de Manobra; ele não presume gatilhos nem aplica efeitos. PV, SA e BI continuam administrados nos painéis próprios. A Ficha Automática disponibiliza a consulta de perfis de armas, o Teste de Ataque e o cálculo manual de Dano; nenhum resultado altera PV. As demais modalidades de Ficha não exibem roladores nem calculadoras. Condições próprias já aplicam à calculadora as Desvantagens expressamente previstas para cada tipo de Teste/Ataque, além dos ajustes de Exposto e Desorientado na Defesa apresentada. Condições do alvo, bloqueios de Ação, efeitos dependentes de percepção, duração em turnos e demais consequências continuam sob controle da mesa. O controle de munição, recarga e propriedades operacionais das armas será integrado ao Inventário, respeitando as regras de cada arma. A ordem de Iniciativa pertence ao Painel do Mestre; a Ficha do Jogador exibe o modificador e, no modo Automático, a rolagem pontual.</p>
         </section>
 
