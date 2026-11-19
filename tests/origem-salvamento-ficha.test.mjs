@@ -14,7 +14,7 @@ test('status genérico de autosave não presume servidor no fluxo local', async 
 
 test('Ficha propaga a origem de persistência aos painéis compartilhados', async () => {
   const ficha = await ler('FichaLocal.tsx');
-  assert.match(ficha, /<PainelAcoesLocal dados=\\{dados\\} saAtual=\\{recursosAtuais\\.saAtual\\} saMaximo=\\{sa\\}/);
+  assert.ok(ficha.includes('<PainelAcoesLocal dados={dados} saAtual={recursosAtuais.saAtual} saMaximo={sa}'));
   assert.match(ficha, /<FuncionamentoFichaLocal origemDados=\{origemDados\}/);
 });
 
