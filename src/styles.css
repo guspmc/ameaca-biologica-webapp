@@ -1178,3 +1178,16 @@ footer { margin-top:45px; border-top:1px solid #dce2df; padding-top:19px; color:
 @media(max-width:600px){
  .ficha-local-combate-resumo,.ficha-local-cartoes-ataque{grid-template-columns:1fr}
 }
+
+
+/* Barra compacta de PV/SA/BI, fixa durante a rolagem da Ficha. */
+.ficha-local-recursos-sticky{position:sticky;top:0;z-index:24;grid-template-columns:repeat(3,minmax(0,1fr));align-items:stretch;padding:6px;background:#eee7d7ef;border:1px solid #b7aa92;border-radius:7px;box-shadow:0 4px 12px #25272522;backdrop-filter:blur(8px)}
+.ficha-local-recursos-sticky .ficha-local-recurso-atalho{width:100%;min-width:0;display:grid;justify-items:center;align-content:center;gap:2px;padding:5px 3px;border:0;background:transparent;color:inherit;cursor:pointer}
+.ficha-local-recursos-sticky .ficha-local-recurso-atalho small{font:800 8px 'Courier New',monospace}
+.ficha-local-recursos-sticky .ficha-local-recurso-atalho strong{font:800 16px Georgia,serif}
+.ficha-local-recursos-sticky .ficha-local-recurso-icone{min-height:16px}
+.ficha-local-recurso-sa{display:grid;grid-template-rows:1fr auto;min-width:0;border-left:1px solid #b7aa92;border-right:1px solid #b7aa92}
+.ficha-local-recurso-ajustes{display:flex;justify-content:center;gap:5px;padding:0 3px 3px}
+.ficha-local-recurso-ajustes button{min-width:35px;min-height:25px;padding:2px 7px;border:1px solid #8d7c65;border-radius:4px;background:#e9dfca;color:#292c29;font-size:11px;font-weight:850}
+.ficha-local-recurso-ajustes button:disabled{opacity:.4;cursor:not-allowed}
+@media(max-width:560px){.ficha-local-recursos-sticky{top:0;gap:3px;padding:4px}.ficha-local-recursos-sticky .ficha-local-recurso-atalho strong{font-size:14px}.ficha-local-recurso-ajustes button{min-width:30px;min-height:23px}}
