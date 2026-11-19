@@ -374,3 +374,12 @@ test('rolagem virtual da Motosserra encadeia resultados 6 sem limite arbitrário
   assert.match(rolagemDano, /dadosExtrasEncadeados/);
   assert.match(rolagemDano, /limite de segurança de 1.000 Dados/);
 });
+
+
+test('Mirar é consumido somente após persistência e mantém +2 no resultado confirmado', () => {
+  assert.ok(ui.includes('aoConsumirMirar?: () => Promise<boolean>'));
+  assert.ok(ui.includes('const consumido = await aoConsumirMirar?.()'));
+  assert.ok(ui.includes('setMirarAplicadoResultado(ehAtaque && mirarPreparado)'));
+  assert.ok(ui.includes('Boolean(dadosConfirmados) && mirarAplicadoResultado'));
+  assert.ok(ficha.includes('aoConsumirMirar={async () => await aoSalvarRecursos({ mirarPreparado: false })}'));
+});
