@@ -91,8 +91,8 @@ test('Calculadora aplica bloqueios operacionais; painel de Manobras não adminis
   const calc = await readFile(new URL('../src/CalculadoraTesteLocal.tsx', import.meta.url), 'utf8');
   const painel = await readFile(new URL('../src/PainelAcoesLocal.tsx', import.meta.url), 'utf8');
   assert.match(calc, /restricoesDeAtaquePorCondicoes/);
-  assert.match(calc, /disabled=\\{ataqueBloqueadoPorCondicao\\}/);
-  assert.match(calc, /if \\(ataqueBloqueadoPorCondicao\\)/);
+  assert.ok(calc.includes('disabled={ataqueBloqueadoPorCondicao}'));
+  assert.ok(calc.includes('if (ataqueBloqueadoPorCondicao)'));
   assert.doesNotMatch(painel, /restricoesDeAtaquePorCondicoes|Condições que restringem sua atuação|turnoEmAndamento/);
   const condicoes = await readFile(new URL('../src/CondicoesFichaLocal.tsx', import.meta.url), 'utf8');
   assert.ok(condicoes.includes('adicionarInstanciaCondicao(itens, {'));
