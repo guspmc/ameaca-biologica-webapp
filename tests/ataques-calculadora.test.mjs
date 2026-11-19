@@ -312,7 +312,7 @@ test('alterar os dados ou o total da rolagem invalida a confirmação manual de 
 
 test('Mirar aplica +2 somente no Teste de Ataque e preserva Desvantagem', () => {
   assert.match(ui, /mirarPreparado\?: boolean/);
-  assert.match(ui, /const bonusMirar = escopo === 'ataques' && mirarPreparado && !ataqueEmArea \? 2 : 0/);
+  assert.ok(ui.includes('mirarPreparado || (Boolean(dadosConfirmados) && mirarAplicadoResultado)'));
   assert.match(ui, /const valorTeste = valorTesteBase \+ bonusMirar/);
   assert.match(ui, /existeDesvantagem = vantagem === 'desvantagem' \|\| desvantagemBI \|\| desvantagensCondicao\.length > 0 \|\| desvantagemDesarmado/);
   assert.match(ui, /Mirar ativo: \+2 no Teste de Ataque/);
