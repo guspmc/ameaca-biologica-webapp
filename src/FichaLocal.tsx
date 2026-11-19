@@ -463,15 +463,7 @@ export default function FichaLocal({ nome, mesa, contextoId, dados, aoFechar, ao
           <button type="button" className="ficha-local-recurso-atalho" onClick={abrirAdministracaoRecursos} aria-label={`Administrar BI: ${biAtual} de ${bi}`}><span className="ficha-local-recurso-icone"><IconeFicha tipo="bio" /></span><small>BI</small><strong>{biAtual}/{bi}</strong></button>
         </div>
         {(erroAjusteSA || statusAjusteSA) && <p className={erroAjusteSA ? 'offline-erro' : 'offline-status'} role={erroAjusteSA ? 'alert' : 'status'}>{erroAjusteSA || statusAjusteSA}</p>}
-        <ProgressaoFichaLocal dados={dados} classe={classe} nivel={nivelAtual} origemDados={origemDados} aoSalvar={aoSalvarRecursos} />
-
-        <CondicoesFichaLocal dados={dados} pvAtual={recursosAtuais.pvAtual} pvMaximo={pv} biAtual={biAtual} biMaximo={bi} aoSalvar={aoSalvarRecursos} origemDados={origemDados} />
-        <RegistroDecisoesMesaLocal dados={dados} aoSalvar={aoSalvarRecursos} origemDados={origemDados} />
-
-        {origem === 'Agente de Saúde' && <p className="ficha-local-aviso">AGENTE DE SAÚDE: ao curar um aliado com item ou efeito, acrescente +1d4 aos Dados de Cura. O benefício não se aplica à própria personagem; a cura do aliado continua sendo registrada na ficha correspondente.</p>}
-
-        <BeneficiosOrigemContextuaisLocal dados={dados as Record<string, unknown>} origem={origem} aoSalvar={aoSalvarRecursos} />
-                <RecursosFichaLocal origemDados={origemDados} autoSalvar={autoSalvar}
+        <RecursosFichaLocal origemDados={origemDados} autoSalvar={autoSalvar}
           dados={dados}
           pvMaximo={pv}
           saMaximo={sa}
@@ -481,6 +473,12 @@ export default function FichaLocal({ nome, mesa, contextoId, dados, aoFechar, ao
           aoSalvar={aoSalvarRecursos}
           aoAlterarPendencia={pendente => registrarPendencia('Recursos', pendente)}
         />
+
+        <CondicoesFichaLocal dados={dados} pvAtual={recursosAtuais.pvAtual} pvMaximo={pv} biAtual={biAtual} biMaximo={bi} aoSalvar={aoSalvarRecursos} origemDados={origemDados} />
+        {origem === 'Agente de Saúde' && <p className="ficha-local-aviso">AGENTE DE SAÚDE: ao curar um aliado com item ou efeito, acrescente +1d4 aos Dados de Cura. O benefício não se aplica à própria personagem; a cura do aliado continua sendo registrada na ficha correspondente.</p>}
+
+        <BeneficiosOrigemContextuaisLocal dados={dados as Record<string, unknown>} origem={origem} aoSalvar={aoSalvarRecursos} />
+
 
         <UsosDescansoCompletoLocal
           dados={dados}
@@ -680,7 +678,9 @@ export default function FichaLocal({ nome, mesa, contextoId, dados, aoFechar, ao
             {inventarioPlanejado ? inventarioPlanejado.itens.map(item => <div key={item.chaveCriacao}><strong>{item.nome} × {item.quantidade}</strong><small>{item.local === 'caracteristico' ? 'Característico · vinculado à Classe' : 'Inventário · ' + item.espacos + ' Espaço(s)'} · {item.estado.tipo.replace('_',' ')}</small></div>) : <p>Não foi possível montar a prévia do inventário. Confira Classe, Origem, kit e compras do rascunho.</p>}
           </div>
           <p className="ficha-local-legenda">A capacidade considera 4 + FOR{origem === 'Mochileiro' ? ' + 1 de Mochileiro' : ''} = {capacidade} Espaços. O conjunto selecionado ocupa {inventarioPlanejado?.ocupados ?? espacosKit} de {capacidade} Espaços. Os itens aparecem em estado inicial guardado/não equipado; operações de Inventário ainda não estão integradas.</p>
-        <FuncionamentoFichaLocal origemDados={origemDados} autoSalvar={autoSalvar}
+        <ProgressaoFichaLocal dados={dados} classe={classe} nivel={nivelAtual} origemDados={origemDados} aoSalvar={aoSalvarRecursos} />
+         <RegistroDecisoesMesaLocal dados={dados} aoSalvar={aoSalvarRecursos} origemDados={origemDados} />
+         <FuncionamentoFichaLocal origemDados={origemDados} autoSalvar={autoSalvar}
           inicial={ficha.configuracaoFuncionamento as ConfiguracaoFuncionamento | undefined}
           aoSalvar={aoSalvarFuncionamento}
           aoAlterarPendencia={pendente => registrarPendencia('Funcionamento', pendente)}
