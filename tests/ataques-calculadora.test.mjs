@@ -381,5 +381,5 @@ test('Mirar é consumido somente após persistência e mantém +2 no resultado c
   assert.ok(ui.includes('const consumido = await aoConsumirMirar?.()'));
   assert.ok(ui.includes('setMirarAplicadoResultado(ehAtaque && mirarPreparado)'));
   assert.ok(ui.includes('Boolean(dadosConfirmados) && mirarAplicadoResultado'));
-  assert.ok(ficha.includes('aoConsumirMirar={async () => await aoSalvarRecursos({ mirarPreparado: false })}'));
+  assert.equal((ficha.match(/aoConsumirMirar=\{async \(\) => await aoSalvarRecursos\(\{ mirarPreparado: false \}\)\}/g) ?? []).length, 2, 'ataques corpo a corpo e à distância devem consumir Mirar após persistência');
 });
