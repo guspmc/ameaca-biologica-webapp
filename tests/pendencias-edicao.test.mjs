@@ -61,7 +61,7 @@ test('calculadora integrada usa rolagem expressa física/virtual e não persiste
   const ficha = await ler('FichaLocal.tsx');
   assert.match(ficha, /<CalculadoraTesteLocal[^>]*atributos=/);
   const calculadora = await ler('CalculadoraTesteLocal.tsx');
-  assert.match(calculadora, /calcularTesteManual/);
+  assert.match(calculadora, /calcularRolagemTesteManual/);
   assert.match(calculadora, /modoDados === 'virtuais'/);
   assert.match(calculadora, /sortearDados/);
   assert.match(calculadora, /validarResultadosFisicos/);
