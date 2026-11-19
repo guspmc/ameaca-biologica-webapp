@@ -172,10 +172,12 @@ test('rejeita propriedades que JSON.stringify descartaria ou transformaria', () 
 });
 
 test('valida o estado persistível de Reanimação sem misturar causas ou contadores', async () => {
-  const { iniciarReanimacao, iniciarTurnoReanimacao, resolverTesteReanimacao } = await import('../src/reanimacaoFicha.ts');
-  let r = iniciarTurnoReanimacao(iniciarReanimacao('pv_zero'));
+  const { iniciarReanimacao, resolverTesteReanimacao } = await import('../src/reanimacaoFicha.ts');
+  let r = iniciarReanimacao('pv_zero');
+  assert.equal(r.estado, 'em_andamento');
   r = resolverTesteReanimacao(r, 12, 12).reanimacao;
   assert.equal(validarPersonagemLocal(base({ versaoModelo: 1, estadoFicha: 'rascunho', reanimacao: r })), true);
+  assert.equal(validarPersonagemLocal(base({ versaoModelo: 1, estadoFicha: 'rascunho', reanimacao: { ...r, estado: 'aguardando_proximo_turno' } })), true);
   assert.equal(validarPersonagemLocal(base({ versaoModelo: 1, estadoFicha: 'rascunho', reanimacao: { ...r, causa: 'colapso_bi', curaAcumulada: 3 } })), false);
   assert.equal(validarPersonagemLocal(base({ versaoModelo: 1, estadoFicha: 'rascunho', reanimacao: { ...r, sucessos: 3 } })), false);
   assert.equal(validarPersonagemLocal(base({ versaoModelo: 1, estadoFicha: 'rascunho', reanimacao: { ...r, tentativas: 4 } })), false);
