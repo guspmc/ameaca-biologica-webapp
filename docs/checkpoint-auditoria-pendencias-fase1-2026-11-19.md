@@ -80,8 +80,8 @@ Gus executa o roteiro atualizado `docs/roteiro-humano-ficha-offline-local.md` us
 
 ## Consolidação documental do ciclo
 - Roteiro humano ampliado: commit `30c682b7a8a65bce2b42c7595004d1f837611d3d`.
-- Este checkpoint: commit inicial `cab1f81e9e1f4b540271450317e74877cdfa99a7` (registro criado antes da consolidação; o SHA completo do commit pode ser consultado no histórico da branch).
+- Este checkpoint: commit inicial `cab1f81e9e1f4b540271532792fd205c2114b7c0`.
 - Matriz atualizada: commit `25419a7b77d290fbf6270e8b91373493b9ee1313`.
 - Continuidade atualizada: commit `f0b984a0079847c3cdb29221f40b114cc0f58886`.
-- **HEAD remoto atual:** `f0b984a0079847c3cdb29221f40b114cc0f58886`. Todos os commits posteriores ao HEAD de código/teste `bc355a4` alteraram somente documentação Markdown; portanto, não modificaram o conteúdo executável coberto pelos runs `44554731868` e `44554732144`.
+- **HEAD remoto no momento desta correção documental:** `aa4eee6937c7051e48c2f4a374f2abfa5a245a00`. Todos os commits posteriores ao HEAD de código/teste `bc355a4` alteraram somente documentação Markdown; portanto, não modificaram o conteúdo executável coberto pelos runs `44554731868` e `44554732144`.
 - Nenhum arquivo de código, teste, configuração ou workflow foi alterado após a CI verde no HEAD `bc355a4`.
