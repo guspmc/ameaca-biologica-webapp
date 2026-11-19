@@ -95,8 +95,8 @@ test('Calculadora aplica bloqueios operacionais; painel de Manobras não adminis
   assert.match(calc, /if \\(ataqueBloqueadoPorCondicao\\)/);
   assert.doesNotMatch(painel, /restricoesDeAtaquePorCondicoes|Condições que restringem sua atuação|turnoEmAndamento/);
   const condicoes = await readFile(new URL('../src/CondicoesFichaLocal.tsx', import.meta.url), 'utf8');
-  assert.match(condicoes, /adicionarInstanciaCondicao\\(itens/);
-  assert.match(condicoes, /encerrarInstanciaCondicao\\(itens, id\\)/);
+  assert.ok(condicoes.includes('adicionarInstanciaCondicao(itens, {'));
+  assert.ok(condicoes.includes('encerrarInstanciaCondicao(itens, id)'));
 });
 
 test('Reflexos de Sobrevivente usa a maior Defesa atual ou 10 + Acrobacia somente quando ativo', () => {
