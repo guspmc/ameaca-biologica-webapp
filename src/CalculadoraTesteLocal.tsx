@@ -46,10 +46,11 @@ type Props = {
   academicoDisponivel?: boolean;
   criminosoDisponivel?: boolean;
   mirarPreparado?: boolean;
+  aoConsumirMirar?: () => Promise<boolean>;
   tipoAtaqueFixo?: 'ataque-corpo' | 'ataque-distancia';
 };
 
-export default function CalculadoraTesteLocal({ atributos, treinada, distribuicao, periciaOrigemExtra = '', periciaTentativaErroTreinada = '', temTentativaEErro = false, modoDados, origem = '', saDisponivel = 0, aoFalharCriticoAtaque, penalidadeMorteNivel1 = false, bonusAtaqueBI = 0, danoCorpoACorpoAdicionalBI = null, desvantagemBI = false, condicoesAtivas = [], habilidadesAtivas = [], escopo = 'testes', armaOperario = '', academicoDisponivel = false, criminosoDisponivel = false, mirarPreparado = false, tipoAtaqueFixo }: Props) {
+export default function CalculadoraTesteLocal({ atributos, treinada, distribuicao, periciaOrigemExtra = '', periciaTentativaErroTreinada = '', temTentativaEErro = false, modoDados, origem = '', saDisponivel = 0, aoFalharCriticoAtaque, penalidadeMorteNivel1 = false, bonusAtaqueBI = 0, danoCorpoACorpoAdicionalBI = null, desvantagemBI = false, condicoesAtivas = [], habilidadesAtivas = [], escopo = 'testes', armaOperario = '', academicoDisponivel = false, criminosoDisponivel = false, mirarPreparado = false, aoConsumirMirar, tipoAtaqueFixo }: Props) {
   const [tipo, setTipo] = useState<'pericia' | 'atributo' | 'ataque-corpo' | 'ataque-distancia'>(tipoAtaqueFixo ?? (escopo === 'ataques' ? 'ataque-corpo' : 'pericia'));
   const [pericia, setPericia] = useState('Percepção');
   const [armaId, setArmaId] = useState(() => escopo === 'ataques' && origem === 'Operário' ? listarPerfisArma().find(perfil => perfil.nome === armaOperario)?.id ?? '' : '');
@@ -78,6 +79,7 @@ export default function CalculadoraTesteLocal({ atributos, treinada, distribuica
   const [erroRolagem, setErroRolagem] = useState('');
   const [mensagemCondicao, setMensagemCondicao] = useState('');
   const [regiaoMirada, setRegiaoMirada] = useState('');
+  const [mirarAplicadoResultado, setMirarAplicadoResultado] = useState(false);
 
   useEffect(() => {
     setMetodo(modoDados === 'virtuais' ? 'virtual' : 'fisico');
@@ -85,10 +87,12 @@ export default function CalculadoraTesteLocal({ atributos, treinada, distribuica
     setErroRolagem('');
   }, [modoDados]);
   useEffect(() => {
+    if (!mirarPreparado) return;
     setRegiaoMirada('');
     setDadosConfirmados(null);
     setDado1('');
     setDado2('');
+    setMirarAplicadoResultado(false);
     setErroRolagem('');
   }, [mirarPreparado]);
 
@@ -171,7 +175,7 @@ export default function CalculadoraTesteLocal({ atributos, treinada, distribuica
   const cadenciadoSelecionado = modoDisparoEfetivo === 'cadenciado' && (modosArmaFogo?.cadenciado ?? false);
   const disparoUnicoIndisponivel = Boolean(modosArmaFogo && !modosArmaFogo.disparoUnico && !rajadaSelecionada && !cadenciadoSelecionado);
   const ataqueEmArea = ataqueEmAreaGM79 || rajadaSelecionada;
-  const bonusMirar = escopo === 'ataques' && mirarPreparado && !ataqueEmArea ? 2 : 0;
+  const bonusMirar = escopo === 'ataques' && !ataqueEmArea && (mirarPreparado || (Boolean(dadosConfirmados) && mirarAplicadoResultado)) ? 2 : 0;
   const valorTeste = valorTesteBase + bonusMirar;
 
   const calculado = useMemo(() => {
@@ -277,7 +281,7 @@ export default function CalculadoraTesteLocal({ atributos, treinada, distribuica
     } catch (problema) { return { erro: problema instanceof Error ? problema.message : 'Não foi possível calcular o Dano.' }; }
   }, [formulaDanoConvencional, resultadoDadosDano, resultadoDadosAdicionais, perfilSelecionado, multiplicadorCriticoDano, perfilCorpo, perfilFogo, limiteCritico, atributoDano, criticoDanoAplicado, armaOperarioEscolhida, ataqueEmArea, bearLauncherSelecionado]);
 
-  function registrarRolagem() {
+  async function registrarRolagem() {
     if (ataqueBloqueadoPorCondicao) {
       setErroRolagem('Ataque bloqueado pela Condição ativa. Encerre/remova a Condição conforme a regra antes de prosseguir.');
       return;
@@ -287,10 +291,15 @@ export default function CalculadoraTesteLocal({ atributos, treinada, distribuica
       const resultados = metodo === 'virtual'
         ? sortearDados(quantidadeDados, 20)
         : validarResultadosFisicos([dado1, ...(quantidadeDados === 2 ? [dado2] : [])].join(' '), quantidadeDados, 20);
+      const ehAtaque = tipo === 'ataque-corpo' || tipo === 'ataque-distancia';
+      if (ehAtaque && mirarPreparado) {
+        const consumido = await aoConsumirMirar?.();
+        if (!consumido) throw new Error('Não foi possível confirmar o consumo de Mirar. A rolagem não foi registrada; confira o salvamento e tente novamente.');
+      }
+      setMirarAplicadoResultado(ehAtaque && mirarPreparado);
       setDadosConfirmados({ dado1: resultados[0], dado2: resultados[1] });
       setErroRolagem('');
       setMensagemCondicao('');
-      const ehAtaque = tipo === 'ataque-corpo' || tipo === 'ataque-distancia';
       const resultado = ehAtaque
         ? calcularRolagemAtaqueManual({ valorBase: valorTeste, modificador: Number(modificador || 0), dado1: resultados[0], dado2: resultados[1] ?? null, vantagem: vantagemEfetiva })
         : calcularRolagemTesteManual({ valorBase: valorTeste, modificador: Number(modificador || 0), dado1: resultados[0], dado2: resultados[1] ?? null, vantagem: vantagemEfetiva, naturalDe2a9Como10: codeVeronicaAtiva });
