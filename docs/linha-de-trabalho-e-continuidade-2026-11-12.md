@@ -847,3 +847,16 @@ Identificada divergência entre o bloqueio de gasto de SA do Painel e a confirma
 - Checkpoint: `docs/checkpoint-auditoria-recursos-descanso-2026-11-19.md`. Matriz funcional atualizada.
 - Estados: correção IMPLEMENTADA; teste automatizado/CI PENDENTE; validação humana PENDENTE. Não foi feita migração ou limpeza de dados antigos; registros antigos de Reanimação em andamento exigem análise individual.
 - Próxima ação: confirmar CI; em seguida, Gus testa criação de personagem nova e verifica PV/SA no máximo, BI 0, ausência de Reanimação espúria e Descanso Parcial/Completo na Sala de Descanso. A Ficha testada anteriormente estava em sessão LAN, não conta como validação Offline.
+
+
+## Atualização de continuidade — auditoria de Reanimação — 19/11/2026
+
+- Branch: `feat/offline-first-ficha`.
+- Código e UI: commits `775aff4e9679f1c9dfb0fb1a59ba21c5f9f9cf36`, `562bdcc6a84ce511061f2e105fef53e398d1d8bc` e `f526c5c1205942575815ca32cbb09ccd4d427ea0`; correção de build para remover referências aos campos físicos obsoletos: `8745a3aa6c3055920b513bb03bfe23b8e56281d2`.
+- Testes: `a03f779aa001f98a6475de7b2854b6d1cd7a6f9f`, `5a33096421dc0aa6ae2fad533ccd86ebe6f9fc09`, `d9e6022614735524768fa74f6a270fdbce3e0397`, `7a56376c3f07c001e691335c2ab61144258a5ad8`, `e4720f90e0fc5eb3a6f64d12d5e36763e7a2b0d6`.
+- Reanimação por 0 PV agora começa disponível para registro; removido botão “Iniciar Testes no próximo turno”. Dados físicos usam somente botões de sucesso/falha; dados virtuais no Automático mantêm rolagem integrada. Cobaia continua com Vantagem no Colapso.
+- Removida Falha Crítica por 1 natural da Reanimação e botão “Registrar falha crítica (1 natural)” do Teste de Medicina, pois o cânone consultado não prevê efeito especial para isso. Medicina continua registrando sucesso/falha e sucesso concede Vantagem.
+- Compatibilidade: estado antigo `aguardando_proximo_turno` permanece válido, sem exigir a ação de turno; primeira gravação de resultado converte para `em_andamento`.
+- CI no commit `8745a3a`: testes run `44451540098`, build run `44451540101`; estavam IN_PROGRESS quando foi registrado o checkpoint. Os builds intermediários anteriores falharam por referências a setters de campos físicos que foram removidos em `8745a3a`; a conclusão do CI final precisa ser consultada antes de declarar a tarefa testada.
+- Checkpoint: `docs/checkpoint-auditoria-reanimacao-sem-turnos-2026-11-19.md`; matriz funcional atualizada.
+- Validação humana PENDENTE. Não declarar fluxo homologado até Gus testar dados físicos/virtuais, Cobaia, Medicina, estados terminais e persistência após recarga.
