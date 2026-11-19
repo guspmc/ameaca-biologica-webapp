@@ -34,7 +34,7 @@ test('Rolador de Ataque fica identificado e aberto por padrão na seção de Com
 
 test('Rolador de Ataque calcula total sem comparar Defesa ou declarar acerto comum', () => {
   assert.match(ui, /calcularRolagemAtaqueManual/);
-  assert.match(ui, /Compare o total com a Defesa do alvo na mesa/);
+  assert.match(ui, /Compare com a Defesa do alvo na mesa/);
   assert.doesNotMatch(ui, /<label>Defesa do alvo/);
   assert.match(ui, /A Ficha não decide o resultado do Ataque/);
 });
@@ -159,7 +159,7 @@ test('GM 79 apresenta procedimentos de cartuchos e modos direto/área', () => {
 });
 
 test('GM 79 em Área não oferece rolagem de Ataque nem permite multiplicador crítico', () => {
-  assert.match(ui, /!impossivel && !ataqueEmArea && !disparoUnicoIndisponivel/);
+  assert.match(ui, /!ataqueEmArea && !disparoUnicoIndisponivel/);
   assert.match(ui, /critico: criticoDanoAplicado && !ataqueEmArea/);
   assert.match(ui, /Disparo em Área: não existe Teste de Ataque/);
 });
