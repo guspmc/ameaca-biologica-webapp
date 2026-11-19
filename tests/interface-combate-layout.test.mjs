@@ -46,7 +46,7 @@ test('Painel de SA permite ajustes manuais e registra custos das manobras', () =
   assert.match(ficha, /PainelAcoesLocal dados=\\{dados\\} saAtual=\\{recursosAtuais\\.saAtual\\} saMaximo=\\{sa\\} aoSalvar=\\{aoSalvarRecursos\\}/);
   assert.match(painel, /−1 SA/);
   assert.match(painel, /\\+1 SA/);
-  assert.match(painel, /nome: 'Mirar', custo: 1/);
+  assert.match(painel, /Mirar · 1 SA/);
   assert.match(painel, /nome: 'Finalizar', custo: 3/);
   assert.match(painel, /nome: 'Fuga', custo: 1/);
   assert.match(painel, /nome: 'Contra-Ataque', custo: 1/);
