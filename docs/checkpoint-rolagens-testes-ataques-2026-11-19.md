@@ -45,12 +45,12 @@
 
 ## Testes e build
 - Build TypeScript/Vite no HEAD `fbbd6a2d6c91309beedea0e43cd3edbac4c108a6`: run `44452755198` — **SUCCESS**.
-- Testes offline no mesmo HEAD: run `44452755076` — **IN_PROGRESS** no momento deste checkpoint.
+- Testes offline no mesmo HEAD: run `44452755076` — **SUCCESS**.
 - Runs anteriores com falhas foram diagnósticos de asserts desatualizados após mudanças intencionais:
   - `44452577489`: falhou somente no cenário de validação de Reanimação legado, corrigido no commit `fbbd6a2`.
   - `44452565808`: falhas no teste de integração da calculadora ainda esperando o nome antigo `calcularTesteManual` e no cenário legado, ambos corrigidos em commits subsequentes.
   - `44452276278`: asserts de interface do Rolador de Ataque e GM 79 desatualizados, corrigidos em `616f081`.
-- Não declarar testes automatizados aprovados até conclusão do run `44452755076` ou novo run equivalente no HEAD posterior.
+- A suíte completa foi aprovada no HEAD `fbbd6a2`; commits posteriores (`a9a7f2d`, `cd62311`, `89a3712`) alteraram somente documentação, sem mudar código ou testes.
 - Validação humana: **PENDENTE**.
 
 ## Riscos e limites
@@ -61,12 +61,12 @@
 - Nenhuma regra canônica de rolagem foi alterada.
 
 ## Próxima ação exata
-1. Aguardar conclusão do run de testes offline `44452755076`; corrigir somente falhas demonstradas.
-2. Após CI verde, solicitar teste humano do Rolador Livre (bônus positivo/negativo), Teste de Perícia/Atributo (físico, virtual, Vantagem/Desvantagem, CODE VERONICA), Rolador de Ataque corpo a corpo/à distância e confirmação de que a Ficha não compara com Defesa.
+1. CI offline e build aprovados no código/testes HEAD `fbbd6a2` (runs `44452755076` e `44452755198`).
+2. Solicitar teste humano do Rolador Livre (bônus positivo/negativo), Teste de Perícia/Atributo (físico, virtual, Vantagem/Desvantagem, CODE VERONICA), Rolador de Ataque corpo a corpo/à distância e confirmação de que a Ficha não compara com Defesa.
 3. Continuar com a auditoria D — estrutura da interface de Combate — sem iniciar integração ativa com Inventário.
 
 ## Estado
 - Rolador Livre com modificador: **IMPLEMENTADO / BUILD APROVADO / TESTES AUTOMATIZADOS PENDENTES / VALIDAÇÃO HUMANA PENDENTE**.
 - Rolagem de Perícia/Atributo sem DT genérica: **IMPLEMENTADA / BUILD APROVADO / TESTES AUTOMATIZADOS PENDENTES / VALIDAÇÃO HUMANA PENDENTE**.
 - Rolador de Ataque visível e aberto por padrão: **IMPLEMENTADO / BUILD APROVADO / TESTES AUTOMATIZADOS PENDENTES / VALIDAÇÃO HUMANA PENDENTE**.
-- Compatibilidade do fluxo de Reanimação da tarefa B: **TESTE DE VALIDAÇÃO AJUSTADO / CI PENDENTE**.
+- Compatibilidade do fluxo de Reanimação da tarefa B: **TESTE DE VALIDAÇÃO AJUSTADO / SUÍTE AUTOMATIZADA APROVADA / VALIDAÇÃO HUMANA PENDENTE**.
