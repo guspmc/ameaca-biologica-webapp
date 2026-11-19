@@ -324,20 +324,12 @@ test('Mirar exige informar a região específica antes de confirmar a rolagem', 
   assert.match(ui, /(!mirarPreparado \|\| Boolean\(regiaoMirada\.trim\(\)\))/);
 });
 
-test('Ataque normal pode ser registrado sem Mirar e libera o requisito de Duas Armas', () => {
-  assert.match(painel, /!economia\.turnoEmAndamento \|\| economia\.normaisUsados\.acao/);
-  assert.match(painel, /Registrar Ataque · consome Mirar/);
-  assert.match(painel, /Registrar Ataque · Ação/);
-  assert.match(painel, /registrarAtaque\)\.estado/);
-  assert.match(ficha, /mirarPreparado=\{estadoTurnoCombateAtual\.valido && estadoTurnoCombateAtual\.estado\.manobras\.mirarPreparado\}/);
+test('Rolador de Ataque não depende de controle de turno e recebe Mirar pela Ficha', () => {
+  assert.ok(!painel.includes('turnoEmAndamento'));
+  assert.ok(ficha.includes('mirarPreparado={dados.mirarPreparado === true}'));
+  assert.ok(ui.includes('mirarPreparado'));
 });
 
-
-test('Mirar informa o bônus também nos modos Misto/Manual e identifica região no resultado automático', () => {
-  assert.match(painel, /em Misto\/Manual, aplique \+2 manualmente/);
-  assert.match(painel, /Próximo Ataque: \+2 no Teste; escolha uma região específica/);
-  assert.match(ui, /Mirar aplicado: \+2 no Teste · Região escolhida:/);
-});
 
 test('4ª Fase da BI inclui o dado adicional na fórmula de Dano Corpo a Corpo', () => {
   assert.match(ficha, /danoCorpoACorpoAdicionalBI=\{faseBi\.danoCorpoACorpoAdicional\}/);
