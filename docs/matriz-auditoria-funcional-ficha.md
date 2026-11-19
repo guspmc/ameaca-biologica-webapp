@@ -824,3 +824,17 @@ A revisão dos controles do painel encontrou uma omissão concreta na implementa
 - **Compatibilidade:** `aguardando_proximo_turno` e a função técnica de transição permanecem apenas para dados/API legados; não há mais botão nem dependência de turno na interface.
 - **CI:** testes run `44451540098` e build run `44451540101`, no commit de código/UI/testes `8745a3a`, estavam IN_PROGRESS ao registrar o checkpoint. Consultar conclusão; commits intermediários tiveram build falho por referências remanescentes aos setters removidos no commit `8745a3a`.
 - **Validação humana:** PENDENTE. Checkpoint: `docs/checkpoint-auditoria-reanimacao-sem-turnos-2026-11-19.md`.
+
+
+## Auditoria de Rolagens e Calculadoras — 19/11/2026
+
+- **Cânone:** Arquivo do Jogador v1.0, Capítulo 2 — Perícias, p. 41: Teste de Perícia = 1d20 + Perícia + modificadores; Teste puro de Atributo = 1d20 + Atributo + modificadores; Perícia já inclui Atributo. Impossível é uma ação que não pode funcionar nas circunstâncias atuais. Arquivo do Mestre v1.0, Apêndice, p. 69, reforça as fórmulas e os resultados naturais.
+- **Decisão de interface:** a Ficha calcula os números; DT e resultado comum ficam para avaliação do Mestre. Removidos apenas o campo genérico de DT e o seletor “Impossível — sem Teste”; DTs de Habilidades e procedimentos específicos permanecem como lembretes canônicos.
+- **Rolador Livre:** incluído modificador numérico inteiro positivo/negativo para somar Atributo, Perícia ou outra fonte. Campo vazio = zero; nenhum contexto é inferido automaticamente.
+- **Calculadora de Testes:** nova função `calcularRolagemTesteManual` calcula total, Vantagem/Desvantagem e CODE VERONICA sem comparar DT. Preserva 20 natural e 1 natural.
+- **Rolador de Ataque:** já existia e calculava Luta/Pontaria sem comparar Defesa. Agora está identificado como “Rolador de Ataque · Corpo a Corpo / à Distância” e aberto por padrão no painel de Combate.
+- **Limites preservados:** a Ficha não decide acerto/erro, não aplica Dano aos PV e não grava a rolagem na personagem. Perfis de arma continuam apenas consulta de catálogo; integração com Inventário segue fora do escopo.
+- **Arquivos:** `src/rolagemDados.ts`, `src/RoladoresBasicosLocal.tsx`, `src/testes.ts`, `src/CalculadoraTesteLocal.tsx`, `tests/roladores-ficha.test.mjs`, `tests/testes.test.mjs`, `tests/ataques-calculadora.test.mjs`, `tests/pendencias-edicao.test.mjs`, `tests/validacao-personagem-local.test.mjs`.
+- **Build:** run `44452755198` — SUCCESS no código HEAD `fbbd6a2`.
+- **Testes:** run `44452755076` — IN_PROGRESS no momento do checkpoint. Não marcar como TESTADO AUTOMATICAMENTE até conclusão.
+- **Validação humana:** PENDENTE. Checkpoint: `docs/checkpoint-rolagens-testes-ataques-2026-11-19.md`.
