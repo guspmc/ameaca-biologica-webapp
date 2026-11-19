@@ -811,3 +811,16 @@ A revisão dos controles do painel encontrou uma omissão concreta na implementa
 - **CI no commit de código/teste** `dfaf6f5a4eaf25d6905e99913011375db67d5952`: workflow de testes run `44450648921` e build run `44450648983`; ambos estavam IN_PROGRESS no checkpoint inicial. Consultar conclusão antes de classificar a regressão como TESTADA AUTOMATICAMENTE.
 - **Validação humana:** PENDENTE. A correção não remove estados de Reanimação antigos já persistidos. Testar um personagem novo após CI verde.
 - **Checkpoint:** `docs/checkpoint-auditoria-recursos-descanso-2026-11-19.md`.
+
+
+## Auditoria do fluxo de Reanimação — 19/11/2026
+
+- **Cânone:** Arquivo do Jogador v1.0, p. 90: Teste de Reanimação usa 1d20 contra DT 12, sem modificador salvo regra específica; até 5 tentativas, 3 sucessos ou 3 falhas. Cobaia rola 2d20 e usa o melhor durante Colapso Viral. Não há Falha Crítica específica por 1 natural no texto consultado.
+- **Defeito de fluxo:** Reanimação por 0 PV começava em `aguardando_proximo_turno` e exigia botão de avanço, embora a Ficha não administre turnos. Novas instâncias agora começam em `em_andamento`; registros antigos aguardando continuam aceitos e podem receber resultados sem clique de turno.
+- **Dados físicos:** interface agora registra diretamente sucesso/falha, sem pedir faces do dado. No modo Automático com dados Virtuais, a Ficha continua rolando 1d20 ou 2d20 com Vantagem e comparando à DT 12.
+- **Medicina:** mantido registro de sucesso/falha do Teste DT 15; sucesso concede Vantagem ao próximo Teste. Removido botão sem efeito “Registrar falha crítica (1 natural)”.
+- **Falha Crítica:** removida classificação mecânica/visual de 1 natural no Teste de Reanimação; resultado 1 conta apenas como falha por ser inferior à DT.
+- **Arquivos:** `src/reanimacaoFicha.ts`, `src/ReanimacaoFichaLocal.tsx`, `tests/reanimacao-ficha.test.mjs`, `tests/reanimacao-integracao-ficha.test.mjs`, `tests/reanimacao-registro-invalido.test.mjs`.
+- **Compatibilidade:** `aguardando_proximo_turno` e a função técnica de transição permanecem apenas para dados/API legados; não há mais botão nem dependência de turno na interface.
+- **CI:** testes run `44451540098` e build run `44451540101`, no commit de código/UI/testes `8745a3a`, estavam IN_PROGRESS ao registrar o checkpoint. Consultar conclusão; commits intermediários tiveram build falho por referências remanescentes aos setters removidos no commit `8745a3a`.
+- **Validação humana:** PENDENTE. Checkpoint: `docs/checkpoint-auditoria-reanimacao-sem-turnos-2026-11-19.md`.
