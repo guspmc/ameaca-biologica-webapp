@@ -71,7 +71,55 @@ Se a aplicação não abrir, registre a mensagem e pare; não tente corrigir o a
 4. Voltar à conexão normal, recarregar e confirmar que os dados locais continuam.
 5. **Android/PWA:** este roteiro local em `localhost` valida o shell e o IndexedDB no computador. Para instalar/testar no Android, use uma origem HTTPS confiável com o mesmo commit já publicado. O IP privado HTTP usado no teste LAN não é contexto seguro para Service Worker; não tente contornar isso expondo o servidor de desenvolvimento. Como esta branch ainda não foi publicada, o teste Android do código desta branch permanece pendente até uma publicação aprovada.
 
-## 7. Limites que não devem ser confundidos com falhas
+## 7. Verificação funcional da Fase 1
+
+Faça estes testes com uma personagem descartável. Não use uma personagem de campanha. Quando um resultado depender de uma decisão narrativa, use somente uma situação fictícia e não invente consequências.
+
+### 7.1 Criação e recursos iniciais
+
+1. Depois de selecionar uma Classe válida, confira PV Atual = PV Máximos, SA Atual = SA Máxima e BI = 0. Antes da escolha da Classe, os valores derivados ainda podem estar indefinidos; não avalie o rascunho incompleto como personagem pronta.
+2. Salve Características, Atributos/Perícias e Identidade. Feche e reabra a ficha para confirmar que continuam presentes.
+3. Confira os valores derivados de Defesa e os resumos de Classe/Origem. Não altere manualmente valores que a Ficha calcula.
+
+### 7.2 Barra de recursos e Manobras
+
+1. Role a Ficha para baixo e confirme que a barra compacta PV/SA/BI permanece visível no topo do corpo da Ficha.
+2. Toque em PV, SA e BI separadamente. Cada indicador deve abrir “Administrar recursos e Integridade Física”.
+3. Use −1 SA e +1 SA na barra. Aguarde a confirmação de salvamento e confira o valor atualizado. −1 não pode passar de 0; +1 não pode ultrapassar SA Máxima.
+4. No painel Manobras, confirme que não há contador de turno nem bloqueio por janela de turno.
+5. Com SA atual abaixo de 3 e SA Máxima igual ou superior a 3, Finalizar deve ficar inativo. Depois de ajustar SA atual para 3, deve ficar disponível. Se houver uma Classe com SA Máxima inferior a 3, confirme também que Finalizar permanece inativo mesmo com SA no máximo.
+6. Teste um gasto de 1 SA e um de 2 SA (Esforço), conferindo o desconto após a confirmação. Use apenas ações fictícias; não tente reproduzir gatilhos narrativos reais.
+7. Prepare Mirar e confirme o gasto de 1 SA. Na calculadora de Ataque Corpo a Corpo, escolha uma região, registre a rolagem e confira o bônus +2 no resultado. A preparação deve ser consumida somente depois do salvamento confirmado.
+8. Repita Mirar na calculadora de Ataque à Distância. O mesmo bônus +2 e o consumo persistido devem funcionar. Se o salvamento falhar, a rolagem não deve ser registrada.
+9. Prepare Mirar e use Cancelar Mirar. A preparação deve ser removida, mas o SA não é devolvido automaticamente; se necessário, ajuste-o pelos controles do topo.
+
+### 7.3 Modos de funcionamento e dados
+
+1. Em Automático + dados Virtuais, abra a calculadora de Testes e de Ataque. Abrir a seção não deve gerar rolagem; somente o comando explícito deve fazê-lo.
+2. Em Automático + dados Físicos, informe resultados válidos e confira o cálculo. Em dados Mistos, escolha o método da rolagem quando a interface solicitar.
+3. Mude o modo para Misto e depois Manual. Os roladores integrados de Testes/Ataques/Dano não devem aparecer nesses modos.
+4. Salve as preferências, feche e reabra a ficha. Confirme que modo e preferência de dados permanecem salvos.
+5. Quando disponível, confira que o cálculo de Dano apresenta o resultado, mas não altera PV automaticamente.
+
+### 7.4 Condições, Descanso e Reanimação
+
+1. Registre uma Condição fictícia com fonte identificável, salve, feche e reabra. Encerre-a expressamente e confirme o histórico. A Ficha não deve inventar duração nem remover Condições por passagem automática de tempo.
+2. Na Sala de Descanso, confira que Descanso Parcial e Completo estão disponíveis. Na Sala Segura, somente Descanso Parcial deve ser permitido.
+3. Faça um Descanso Parcial com resultados físicos ou virtuais conforme o modo. Confira PV recuperados e que SA não foi recuperado.
+4. Em uma ficha descartável, faça Descanso Completo na Sala de Descanso e confira restauração de PV/SA. Não use o mesmo teste para alegar que Condições ou infecções foram removidas automaticamente.
+5. Em outra ficha descartável, teste Reanimação por 0 PV. Registre um resultado físico de sucesso/falha ou use a rolagem virtual no modo Automático. Feche e reabra para conferir a persistência do estado e da contagem.
+6. Se estiver testando uma personagem Cobaia em Colapso Viral, confira a Vantagem (2d20, melhor resultado). O teste de Medicina bem-sucedido deve conceder Vantagem ao próximo Teste. Não é necessário forçar um desfecho de morte/transformação: a decisão final permanece com a Mesa.
+
+### 7.5 Progressão
+
+1. Em uma personagem descartável de Nível 1, abra Progressão e confira que o critério neutro aparece como decidido pelo grupo, sem exigir escolha de Missões ou Marco Narrativo.
+2. Registre a autorização externa do grupo/Narrador e solicite o avanço. O Nível não deve mudar imediatamente.
+3. Cancele a solicitação e confirme que o Nível continua igual. Se desejar testar o fluxo completo, repita a autorização/solicitação, conclua Descanso Completo na Sala de Descanso, escolha os benefícios exigidos e confirme o salvamento.
+4. Confira que o Nível e o histórico de benefícios só mudam depois da confirmação de persistência.
+
+**Importante:** o Inventário ativo continua fora desta bateria. Não teste equipar/desequipar, uso/consumo, munição, recarga, Peças, Durabilidade, Aparar universal, Baú ou transferências. A seção Inventário nesta fase serve apenas para consultar o planejamento/equipamento inicial.
+
+## 8. Limites que não devem ser confundidos com falhas
 
 - Esta aplicação offline não autentica contas, não cria Mesas compartilhadas e não sincroniza dispositivos.
 - Fichas permanecem rascunhos locais. A presença de seções de Combate ou Inventário na ficha não significa que combate operacional, recursos compartilhados, Inventário ativo ou Baú estejam concluídos.
@@ -79,6 +127,6 @@ Se a aplicação não abrir, registre a mensagem e pare; não tente corrigir o a
 - O modo offline não substitui o teste separado do servidor LAN.
 - Não apagar dados do navegador nem desinstalar o PWA antes de exportar um backup.
 
-## 8. Registro do resultado
+## 9. Registro do resultado
 
 Para cada seção, anotar **aprovado**, **falhou** ou **não executado**, o passo e a mensagem observada. Capturas devem ocultar dados pessoais. Não marcar um teste como aprovado só porque o build ou os testes automatizados passaram.
