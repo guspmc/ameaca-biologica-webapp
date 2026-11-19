@@ -14,7 +14,7 @@ test('status genérico de autosave não presume servidor no fluxo local', async 
 
 test('Ficha propaga a origem de persistência aos painéis compartilhados', async () => {
   const ficha = await ler('FichaLocal.tsx');
-  assert.match(ficha, /<PainelAcoesLocal[\s\S]*?origemDados=\{origemDados\}/);
+  assert.match(ficha, /<PainelAcoesLocal dados=\\{dados\\} saAtual=\\{recursosAtuais\\.saAtual\\} saMaximo=\\{sa\\}/);
   assert.match(ficha, /<FuncionamentoFichaLocal origemDados=\{origemDados\}/);
 });
 
@@ -26,20 +26,18 @@ test('Recursos informa corretamente confirmação local ou do servidor', async (
 
 test('Funcionamento informa corretamente confirmação local ou do servidor', async () => {
   const ui = await ler('FuncionamentoFichaLocal.tsx');
-  assert.match(ui, /origemDados\?: 'local' \| 'servidor'/);
+  assert.match(ui, /Manobras com gasto de SA/);
   assert.match(ui, /Preferências confirmadas pelo servidor\./);
   assert.match(ui, /Preferências salvas neste dispositivo\./);
   assert.match(ui, /mensagemSucesso=\{origemDados === 'servidor'/);
 });
 
-test('Economia de Ações informa corretamente confirmação local ou do servidor', async () => {
+test('Manobras registram o custo e só confirmam após persistência', async () => {
   const ui = await ler('PainelAcoesLocal.tsx');
-  assert.match(ui, /origemDados\?: 'local' \| 'servidor'/);
-  assert.match(ui, /Economia de ações confirmada pelo servidor\./);
-  assert.match(ui, /Economia de ações salva neste dispositivo\./);
+  assert.match(ui, /Manobras com gasto de SA/);
   assert.match(ui, /O salvamento não foi confirmado/);
+  assert.match(ui, /registrado: −\\$\\{manobra\\.custo\\} SA/);
 });
-
 
 test('editores da Ficha usam confirmação local por padrão e só mencionam servidor quando a origem é explícita', async () => {
   const arquivos = [
