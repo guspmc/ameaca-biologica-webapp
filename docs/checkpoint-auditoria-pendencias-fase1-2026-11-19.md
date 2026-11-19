@@ -76,3 +76,12 @@ Auditar as pendências remanescentes da Fase 1 contra o Documento Mestre v3.0, r
 
 ## Próxima ação exata
 Gus executa o roteiro atualizado `docs/roteiro-humano-ficha-offline-local.md` usando o inicializador **Ficha Offline** (não LAN), registra cada resultado e compartilha o relatório. Corrigir somente falhas observadas e retestar regressões pertinentes. Não iniciar Inventário ativo antes da aprovação humana expressa.
+
+
+## Consolidação documental do ciclo
+- Roteiro humano ampliado: commit `30c682b7a8a65bce2b42c7595004d1f837611d3d`.
+- Este checkpoint: commit inicial `cab1f81e9e1f4b540271450317e74877cdfa99a7` (registro criado antes da consolidação; o SHA completo do commit pode ser consultado no histórico da branch).
+- Matriz atualizada: commit `25419a7b77d290fbf6270e8b91373493b9ee1313`.
+- Continuidade atualizada: commit `f0b984a0079847c3cdb29221f40b114cc0f58886`.
+- **HEAD remoto atual:** `f0b984a0079847c3cdb29221f40b114cc0f58886`. Todos os commits posteriores ao HEAD de código/teste `bc355a4` alteraram somente documentação Markdown; portanto, não modificaram o conteúdo executável coberto pelos runs `44554731868` e `44554732144`.
+- Nenhum arquivo de código, teste, configuração ou workflow foi alterado após a CI verde no HEAD `bc355a4`.
