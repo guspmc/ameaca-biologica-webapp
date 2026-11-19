@@ -26,7 +26,7 @@ test('Recursos informa corretamente confirmação local ou do servidor', async (
 
 test('Funcionamento informa corretamente confirmação local ou do servidor', async () => {
   const ui = await ler('FuncionamentoFichaLocal.tsx');
-  assert.match(ui, /Manobras com gasto de SA/);
+  assert.match(ui, /origemDados\?: 'local' \| 'servidor'/);
   assert.match(ui, /Preferências confirmadas pelo servidor\./);
   assert.match(ui, /Preferências salvas neste dispositivo\./);
   assert.match(ui, /mensagemSucesso=\{origemDados === 'servidor'/);
@@ -36,7 +36,7 @@ test('Manobras registram o custo e só confirmam após persistência', async () 
   const ui = await ler('PainelAcoesLocal.tsx');
   assert.match(ui, /Manobras com gasto de SA/);
   assert.match(ui, /O salvamento não foi confirmado/);
-  assert.match(ui, /registrado: −\\$\\{manobra\\.custo\\} SA/);
+  assert.ok(ui.includes('registrado: −${manobra.custo} SA.'));
 });
 
 test('editores da Ficha usam confirmação local por padrão e só mencionam servidor quando a origem é explícita', async () => {
