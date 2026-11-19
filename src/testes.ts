@@ -1,6 +1,6 @@
 export type VantagemTeste = 'normal' | 'vantagem' | 'desvantagem';
 export type ResultadoTeste = {
-  estado: 'impossivel' | 'incompleto' | 'sucesso' | 'falha' | 'critico-sucesso' | 'falha-critica' | 'rolagem-ataque';
+  estado: 'impossivel' | 'incompleto' | 'sucesso' | 'falha' | 'critico-sucesso' | 'falha-critica' | 'rolagem-ataque' | 'rolagem-teste';
   dadoEscolhido: number | null;
   total: number | null;
   dt: number | null;
