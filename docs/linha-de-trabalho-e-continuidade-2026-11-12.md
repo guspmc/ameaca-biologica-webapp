@@ -860,3 +860,17 @@ Identificada divergência entre o bloqueio de gasto de SA do Painel e a confirma
 - CI no commit `8745a3a`: testes run `44451540098`, build run `44451540101`; estavam IN_PROGRESS quando foi registrado o checkpoint. Os builds intermediários anteriores falharam por referências a setters de campos físicos que foram removidos em `8745a3a`; a conclusão do CI final precisa ser consultada antes de declarar a tarefa testada.
 - Checkpoint: `docs/checkpoint-auditoria-reanimacao-sem-turnos-2026-11-19.md`; matriz funcional atualizada.
 - Validação humana PENDENTE. Não declarar fluxo homologado até Gus testar dados físicos/virtuais, Cobaia, Medicina, estados terminais e persistência após recarga.
+
+
+## Atualização de continuidade — Rolagens, Rolador Livre e Ataques — 19/11/2026
+
+- Branch: `feat/offline-first-ficha`.
+- Código/testes no checkpoint: `fbbd6a2d6c91309beedea0e43cd3edbac4c108a6`; documentação acrescentada nos commits `a9a7f2d` (checkpoint) e `cd62311` (matriz).
+- Rolador Livre: campo numérico de bônus/modificador (+/−) permite somar Atributo, Perícia ou outra fonte ao total dos dados.
+- Testes comuns: UI não exibe DT genérica nem seletor Impossível; função `calcularRolagemTesteManual` calcula total, Vantagem/Desvantagem e CODE VERONICA, deixando a DT e o resultado comum para o Mestre. 20 natural e 1 natural continuam respeitados.
+- Ataques: o Rolador de Ataque já existia, mas estava recolhido sob “Conferir Ataque”. Agora está identificado e aberto por padrão; mantém Luta/Pontaria e não compara Defesa nem declara acerto/erro.
+- Build no código HEAD `fbbd6a2`: run `44452755198` — SUCCESS.
+- Testes offline no mesmo HEAD: run `44452755076` — IN_PROGRESS ao registrar a atualização. Falhas de asserts desatualizados em runs intermediários foram corrigidas; não declarar suíte aprovada antes do resultado final.
+- O ajuste de teste de compatibilidade da Reanimação foi atualizado para representar estado legado `aguardando_proximo_turno` antes de qualquer tentativa.
+- Validação humana PENDENTE. Próxima ação: concluir CI, depois solicitar teste humano dos três roladores; em seguida auditoria D da estrutura de Combate.
+- Checkpoint: `docs/checkpoint-rolagens-testes-ataques-2026-11-19.md`; matriz funcional atualizada.
