@@ -50,7 +50,8 @@ export default function ReanimacaoFichaLocal({ dados, recursos, origem, pvMaximo
   const reanimacaoAnteriorConcluida = reanimacao?.estado === 'concluida';
   const transformacaoPVZero = transformacaoAtiva !== null && recursos.pvAtual <= 0;
   const prioridadeManual = transformacaoPVZero && biMaximo > 0 && recursos.biAtual >= biMaximo;
-  const podeIniciarPV = !registroReanimacaoInvalido && !transformacaoPVZero && recursos.pvAtual === 0 && (reanimacao === null || reanimacaoAnteriorConcluida);
+  // Rascunhos ainda sem Classe não possuem PV Máximos derivados. Não iniciar Reanimação nem persistir recursos zerados antes da criação estar definida.
+  const podeIniciarPV = !registroReanimacaoInvalido && pvMaximo > 0 && !transformacaoPVZero && recursos.pvAtual === 0 && (reanimacao === null || reanimacaoAnteriorConcluida);
   const podeIniciarColapso = !registroReanimacaoInvalido && !prioridadeManual && biMaximo > 0 && recursos.biAtual >= biMaximo && (reanimacao === null || reanimacaoAnteriorConcluida);
   const vantagem = !!reanimacao && (reanimacao.vantagemProximoTeste || (reanimacao.causa === 'colapso_bi' && origem === 'Cobaia'));
   const primeiro = Number(primeiroDado);
