@@ -43,20 +43,16 @@ test('cura em 0 PV é direcionada à acumulação da Reanimação, sem botão de
   assert.match(painel, /Acumular cura sem despertar/);
 });
 
-test('Teste de Medicina também permite registrar resultado crítico de 1 natural', () => {
-  assert.match(painel, /Registrar falha crítica \(1 natural\)/);
-  assert.match(painel, /1 natural no Teste de Medicina: Falha Crítica/);
-  assert.match(painel, /não ativa Exposto automaticamente/);
-  assert.match(painel, /Teste de Medicina DT 15 na própria Ficha/);
-  assert.doesNotMatch(painel, /Falha Crítica e Exposto para quem realizou o Teste/);
+test('Teste de Medicina registra apenas sucesso ou falha, sem falha crítica', () => {
+  assert.doesNotMatch(painel, /Registrar falha crítica \(1 natural\)/);
+  assert.doesNotMatch(painel, /falhaCritica/);
+  assert.match(painel, /Registrar sucesso/);
+  assert.match(painel, /Registrar falha/);
 });
-
-test('1 natural em Reanimação é Falha Crítica, mas não ativa Exposto por não ser Ataque', () => {
-  assert.match(painel, /Falha Crítica no Teste de Reanimação/);
-  assert.match(painel, /não ativa Exposto automaticamente/);
-  assert.doesNotMatch(painel, /Falha Crítica e Exposto/);
+test('a interface não classifica 1 natural como Falha Crítica em Reanimação', () => {
+  assert.doesNotMatch(painel, /Falha Crítica no Teste de Reanimação/);
+  assert.doesNotMatch(painel, /falhaCritica/);
 });
-
 test('resumo da BI informa corretamente que Colapso Viral inicia Reanimação automaticamente', () => {
   assert.match(ficha, /Ao confirmar BI igual ou superior ao máximo, o módulo Reanimação registra o Colapso Viral automaticamente/);
   assert.doesNotMatch(ficha, /nem inicia Reanimação/);
@@ -120,13 +116,13 @@ test('três falhas registram resultado mecânico e deixam o desfecho para a Mesa
   assert.doesNotMatch(painel, /Morte sinalizada para registro do Mestre|retorno como Zumbi Especial pendente para o próximo turno/);
 });
 
-test('0 PV inicia automaticamente o estado de Reanimação somente após haver PV Máximos derivados', () => {
+test('0 PV inicia Reanimação após haver PV Máximos; a Ficha não controla turnos', () => {
   assert.match(painel, /podeIniciarPV = !registroReanimacaoInvalido && pvMaximo > 0 && !transformacaoPVZero && recursos\.pvAtual === 0/);
   assert.match(painel, /pvZeroAutoTentado/);
   assert.match(painel, /void iniciar\('pv_zero'\)/);
-  assert.match(painel, /recursos\.pvAtual > 0/);
-  assert.match(painel, /aguardando_proximo_turno/);
-  assert.match(painel, /Iniciar Testes no próximo turno/);
+  assert.match(painel, /registrarResultadoReanimacao/);
+  assert.doesNotMatch(painel, /Iniciar Testes no próximo turno/);
+  assert.doesNotMatch(painel, /iniciarTurnoReanimacao/);
 });
 
 test('Reanimação virtual não é bloqueada e Teste de Medicina comum não ativa Exposto', () => {
@@ -150,4 +146,12 @@ test('decisão vinculada substitui o aviso de pendência sem executar efeitos na
   assert.match(painel, /gerarIdReanimacao/);
   assert.match(painel, /não executa consequências narrativas/);
   assert.match(painel, /item\.retificaRegistroId && <small> Retifica o registro/);
+});
+
+test('dados físicos registram sucesso ou falha sem pedir faces de d20', () => {
+  assert.match(painel, /onClick=\{\(\) => void registrarTeste\(true\)\}>Registrar sucesso/);
+  assert.match(painel, /onClick=\{\(\) => void registrarTeste\(false\)\}>Registrar falha/);
+  assert.match(painel, /rolagemVirtualAtiva \? <>/);
+  assert.doesNotMatch(painel, /Resultado do d20/);
+  assert.doesNotMatch(painel, /Segundo d20/);
 });
