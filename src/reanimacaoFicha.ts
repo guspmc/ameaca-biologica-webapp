@@ -24,7 +24,6 @@ export type ResultadoReanimacao = {
   pvAoDespertar: number | null;
   transformacaoPendente: boolean;
   morteParaRegistroDoMestre: boolean;
-  falhaCritica: boolean;
 };
 
 const inteiroNaoNegativo = (v: unknown): v is number =>
@@ -72,7 +71,7 @@ export function iniciarReanimacao(causa: CausaReanimacao): Reanimacao {
   return {
     id: gerarIdReanimacao(),
     causa,
-    estado: causa === 'pv_zero' ? 'aguardando_proximo_turno' : 'em_andamento',
+    estado: 'em_andamento',
     sucessos: 0,
     falhas: 0,
     tentativas: 0,
@@ -81,7 +80,7 @@ export function iniciarReanimacao(causa: CausaReanimacao): Reanimacao {
   };
 }
 
-/** A Reanimação por 0 PV começa no próximo turno, nunca por rolagem automática. */
+/** Compatibilidade com registros antigos que aguardavam o próximo turno. Novas Reanimações já começam disponíveis. */
 export function iniciarTurnoReanimacao(r: Reanimacao): Reanimacao {
   validarEstado(r);
   if (r.estado !== 'aguardando_proximo_turno') throw new Error('Reanimação não está aguardando o próximo turno.');
@@ -119,7 +118,7 @@ export function resolverTesteReanimacao(
   origemCobaia = false,
 ): ResultadoReanimacao {
   validarEstado(r);
-  if (r.estado !== 'em_andamento' || r.tentativas >= 5 || r.sucessos >= 3 || r.falhas >= 3
+  if (!['em_andamento', 'aguardando_proximo_turno'].includes(r.estado) || r.tentativas >= 5 || r.sucessos >= 3 || r.falhas >= 3
     || !inteiroNaoNegativo(pvMaximo) || pvMaximo < 1) {
     throw new Error('Reanimação não está apta a receber outro Teste.');
   }
@@ -131,12 +130,26 @@ export function resolverTesteReanimacao(
   }
   const resultadoFinal = Math.max(...lista);
   const passou = resultadoFinal >= 12;
-  const falhaCritica = resultadoFinal === 1;
+  return registrarResultadoReanimacao(r, passou, pvMaximo);
+}
+
+/** Registra diretamente o desfecho de um Teste feito com dados físicos ou fora da Ficha. */
+export function registrarResultadoReanimacao(
+  r: Reanimacao,
+  sucesso: boolean,
+  pvMaximo: number,
+): ResultadoReanimacao {
+  validarEstado(r);
+  if (!['em_andamento', 'aguardando_proximo_turno'].includes(r.estado) || r.tentativas >= 5
+    || r.sucessos >= 3 || r.falhas >= 3 || typeof sucesso !== 'boolean'
+    || !inteiroNaoNegativo(pvMaximo) || pvMaximo < 1) {
+    throw new Error('Reanimação não está apta a receber outro resultado.');
+  }
   const proximo: Reanimacao = {
     ...r,
     estado: 'em_andamento',
-    sucessos: r.sucessos + (passou ? 1 : 0),
-    falhas: r.falhas + (passou ? 0 : 1),
+    sucessos: r.sucessos + (sucesso ? 1 : 0),
+    falhas: r.falhas + (sucesso ? 0 : 1),
     tentativas: r.tentativas + 1,
     vantagemProximoTeste: false,
   };
@@ -144,19 +157,17 @@ export function resolverTesteReanimacao(
     if (r.causa === 'pv_zero') {
       const pvAoDespertar = Math.min(pvMaximo, Math.max(1, r.curaAcumulada));
       proximo.estado = 'concluida';
-      return { reanimacao: proximo, pvAoDespertar, transformacaoPendente: false, morteParaRegistroDoMestre: false, falhaCritica };
+      return { reanimacao: proximo, pvAoDespertar, transformacaoPendente: false, morteParaRegistroDoMestre: false };
     }
     proximo.estado = 'desacordada_ate_reducao_bi';
   } else if (proximo.falhas === 3) {
-    if (r.causa === 'pv_zero') proximo.estado = 'morte_a_registrar';
-    else proximo.estado = 'transformacao_no_proximo_turno';
+    proximo.estado = r.causa === 'pv_zero' ? 'morte_a_registrar' : 'transformacao_no_proximo_turno';
   }
   return {
     reanimacao: proximo,
     pvAoDespertar: null,
     transformacaoPendente: proximo.estado === 'transformacao_no_proximo_turno',
     morteParaRegistroDoMestre: proximo.estado === 'morte_a_registrar',
-    falhaCritica,
   };
 }
 
