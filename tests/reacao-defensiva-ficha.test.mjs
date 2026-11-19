@@ -4,37 +4,10 @@ import { readFile } from 'node:fs/promises';
 
 const painel = await readFile(new URL('../src/PainelAcoesLocal.tsx', import.meta.url), 'utf8');
 
-test('A interface avalia a janela com resultado total e d20 natural, sem inferir o gatilho', () => {
-  assert.match(painel, /avaliarJanelaReacao/);
-  assert.match(painel, /Resultado total do Ataque/);
-  assert.match(painel, /Dado natural do Ataque/);
-  assert.match(painel, /Habilidade ou regra autoriza Esquivar/);
+test('Painel compacto não tenta administrar janelas de Reação defensiva', () => {
+  assert.doesNotMatch(painel, /avaliarJanelaReacao|registrarReacaoDefensiva|janelaDefensiva|Reações defensivas/);
 });
 
-test('A interface só declara Esquiva quando a janela a autoriza e registra o custo pela transição integrada', () => {
-  assert.match(painel, /janelaDefensiva\.podeEsquivar/);
-  assert.match(painel, /registrarReacaoDefensiva\(\{ economia: economiaAtual, manobra: 'esquivar'/);
-  assert.match(painel, /aplicarReacaoDefensivaCombate/);
-  assert.match(painel, /aplicarReacaoCombate/);
-});
-
-test('Aparar fica bloqueado sem estado confiável; Socador de Pedras autoriza os punhos', () => {
-  assert.match(painel, /Aparar seria permitido pelo gatilho, mas o registro está bloqueado/);
-  assert.match(painel, /habilidadesAtivas\.includes\('socador-de-pedras'\)/);
-  assert.match(painel, /manobra: 'aparar'/);
-});
-
-test('20 natural fecha a janela e a Esquiva calcula apenas após declaração explícita', () => {
-  assert.match(painel, /20 natural: não é possível declarar Reação defensiva normal/);
-  assert.match(painel, /Resolva o Teste defensivo conforme o modo configurado/);
-  assert.match(painel, /O resultado é informativo e não altera Defesa, Dano, BI ou Condições/);
-});
-
-test('A interface bloqueia alterações no gatilho depois de declarar a Reação defensiva', () => {
-  const trecho = painel.slice(painel.indexOf('Reações defensivas · Aparar e Esquivar'), painel.indexOf('Teste de Esquiva · Reflexos'));
-  for (const campo of ['resultadoAtaqueDefensivo', 'dadoNaturalDefensivo', 'ataqueCorpoACorpoDefensivo', 'ataqueAcertouDefensivo', 'ataqueAparavelDefensivo', 'gatilhoEsquivaAutorizado']) {
-    assert.ok(trecho.includes(campo), 'Campo ausente: ' + campo);
-  }
-  assert.ok((trecho.match(/disabled=\{salvando \|\| reacaoDefensivaDeclarada\}/g) || []).length >= 6);
-  assert.match(trecho, /disabled=\{salvando \|\| reacaoDefensivaDeclarada \|\|/);
+test('Aparar e Esquivar permanecem fora do controle de turnos da Ficha', () => {
+  assert.doesNotMatch(painel, /turnoEmAndamento|iniciarTurno|encerrarTurno|JANELA DE 3 SA/);
 });
