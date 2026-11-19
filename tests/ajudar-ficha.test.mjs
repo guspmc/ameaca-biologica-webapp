@@ -4,8 +4,8 @@ import { readFile } from 'node:fs/promises';
 const painel = await readFile(new URL('../src/PainelAcoesLocal.tsx', import.meta.url), 'utf8');
 const ficha = await readFile(new URL('../src/FichaLocal.tsx', import.meta.url), 'utf8');
 test('Painel de Manobras não contém controles genéricos de SA', () => {
-  assert.ok(!painel.includes('salvarSA(-1'));
-  assert.ok(!painel.includes('salvarSA(1'));
+  assert.ok(!painel.includes('>−1 SA</button>'));
+  assert.ok(!painel.includes('>+1 SA</button>'));
   assert.ok(!painel.includes('Registrar Ajudar'));
 });
 test('Ajustes manuais de SA ficam na barra de recursos do topo', () => {
