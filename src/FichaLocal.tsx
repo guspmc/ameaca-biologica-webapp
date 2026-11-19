@@ -127,6 +127,9 @@ export default function FichaLocal({ nome, mesa, contextoId, dados, aoFechar, ao
   const [secaoAtiva, setSecaoAtiva] = useState('caracteristicas');
   const [avisoFechamento, setAvisoFechamento] = useState('');
   const [fecharAposSalvar, setFecharAposSalvar] = useState(false);
+  const [ajustandoSA, setAjustandoSA] = useState(false);
+  const [erroAjusteSA, setErroAjusteSA] = useState('');
+  const [statusAjusteSA, setStatusAjusteSA] = useState('');
   const corpoRef = useRef<HTMLDivElement | null>(null);
   const salvandoExpostoRef = useRef(false);
   const chavePosicao = 'ameaca-biologica:ficha:posicao:v1:' + (contextoId ?? mesa + ':' + nome);
@@ -221,6 +224,28 @@ export default function FichaLocal({ nome, mesa, contextoId, dados, aoFechar, ao
     } finally {
       salvandoExpostoRef.current = false;
     }
+  }
+
+  async function ajustarSaldoSA(delta: number) {
+    if (ajustandoSA) return;
+    const atual = recursosAtuais.saAtual;
+    const proximo = Math.min(sa, Math.max(0, atual + delta));
+    if (proximo === atual) return;
+    setAjustandoSA(true);
+    setErroAjusteSA('');
+    setStatusAjusteSA('');
+    try {
+      const salvo = await aoSalvarRecursos({ saAtual: proximo });
+      if (!salvo) throw new Error('O salvamento não foi confirmado.');
+      setStatusAjusteSA(`SA atualizado: ${proximo}/${sa}.`);
+    } catch (problema) {
+      setErroAjusteSA(problema instanceof Error ? problema.message : 'Não foi possível ajustar o SA.');
+    } finally { setAjustandoSA(false); }
+  }
+
+  function abrirAdministracaoRecursos() {
+    const painel = document.getElementById('ficha-local-administrar-recursos');
+    if (painel instanceof HTMLDetailsElement) { painel.open = true; painel.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
   }
 
   function fecharFicha() {
@@ -429,12 +454,15 @@ export default function FichaLocal({ nome, mesa, contextoId, dados, aoFechar, ao
           {estadoFicha === 'rascunho' && <button type="button" className="botao-claro" onClick={() => abrirEditor('caracteristicas')}>Editar rascunho</button>}
         </div>
 
-        <div className="ficha-local-recursos">
-          <div><span className="ficha-local-recurso-icone"><IconeFicha tipo="vida" /></span><small>PONTOS DE VIDA</small><strong>{recursosAtuais.pvAtual} / {pv}</strong><span>Temporários: {recursosAtuais.pvTemporarios}</span></div>
-          <div><span className="ficha-local-recurso-icone"><IconeFicha tipo="adrenalina" /></span><small>SURTO DE ADRENALINA</small><strong>{recursosAtuais.saAtual} / {sa}</strong><span>Máximo derivado</span></div>
-          <div><span className="ficha-local-recurso-icone"><IconeFicha tipo="bio" /></span><small>BIO-INFECÇÃO</small><strong>{biAtual} / {bi}</strong><span>{faseBi.estado === 'colapso' ? 'Colapso Viral' : faseBi.fase ? 'Fase ' + faseBi.fase : 'Fase indisponível'}</span></div>
-          <div><span className="ficha-local-recurso-icone"><IconeFicha tipo="defesa" /></span><small>DEFESA</small><strong>{defesa}</strong><span>Sem equipamento</span></div>
+        <div className="ficha-local-recursos ficha-local-recursos-sticky" aria-label="Recursos rápidos">
+          <button type="button" className="ficha-local-recurso-atalho" onClick={abrirAdministracaoRecursos} aria-label={`Administrar PV: ${recursosAtuais.pvAtual} de ${pv}`}><span className="ficha-local-recurso-icone"><IconeFicha tipo="vida" /></span><small>PV</small><strong>{recursosAtuais.pvAtual}/{pv}</strong></button>
+          <div className="ficha-local-recurso-sa">
+            <button type="button" className="ficha-local-recurso-atalho" onClick={abrirAdministracaoRecursos} aria-label={`Administrar SA: ${recursosAtuais.saAtual} de ${sa}`}><span className="ficha-local-recurso-icone"><IconeFicha tipo="adrenalina" /></span><small>SA</small><strong>{recursosAtuais.saAtual}/{sa}</strong></button>
+            <div className="ficha-local-recurso-ajustes"><button type="button" disabled={ajustandoSA || recursosAtuais.saAtual <= 0} onClick={() => void ajustarSaldoSA(-1)} aria-label="Diminuir 1 SA">−1</button><button type="button" disabled={ajustandoSA || recursosAtuais.saAtual >= sa} onClick={() => void ajustarSaldoSA(1)} aria-label="Aumentar 1 SA">+1</button></div>
+          </div>
+          <button type="button" className="ficha-local-recurso-atalho" onClick={abrirAdministracaoRecursos} aria-label={`Administrar BI: ${biAtual} de ${bi}`}><span className="ficha-local-recurso-icone"><IconeFicha tipo="bio" /></span><small>BI</small><strong>{biAtual}/{bi}</strong></button>
         </div>
+        {(erroAjusteSA || statusAjusteSA) && <p className={erroAjusteSA ? 'offline-erro' : 'offline-status'} role={erroAjusteSA ? 'alert' : 'status'}>{erroAjusteSA || statusAjusteSA}</p>}
         <ProgressaoFichaLocal dados={dados} classe={classe} nivel={nivelAtual} origemDados={origemDados} aoSalvar={aoSalvarRecursos} />
 
         <CondicoesFichaLocal dados={dados} pvAtual={recursosAtuais.pvAtual} pvMaximo={pv} biAtual={biAtual} biMaximo={bi} aoSalvar={aoSalvarRecursos} origemDados={origemDados} />
@@ -620,7 +648,7 @@ export default function FichaLocal({ nome, mesa, contextoId, dados, aoFechar, ao
             <p className="ficha-local-legenda">A BI começa em 0 e não progride sozinha. Alterações são registradas expressamente no painel de Recursos. Este resumo calcula os modificadores da fase, sem aplicá-los automaticamente a movimento, ataques ou dano. Ao confirmar BI igual ou superior ao máximo, o módulo Reanimação registra o Colapso Viral automaticamente, exceto quando PV 0 e Transformação ativa exigem decisão da Mesa sobre o fluxo a registrar; a Ficha não avança turnos nem decide morte ou transformação.</p>
           </details>
 
-          <h3 className="ficha-local-subtitulo">Combate ativo</h3>
+          <h3 className="ficha-local-subtitulo">Manobras</h3>
           <PainelAcoesLocal dados={dados} saAtual={recursosAtuais.saAtual} saMaximo={sa} aoSalvar={aoSalvarRecursos} />
           <RoladoresBasicosLocal modo={configuracaoFuncionamento.modo} modoDados={configuracaoFuncionamento.modoDados} visibilidade={configuracaoFuncionamento.visibilidadeRolagem} agilidade={numero(atributos.agilidade)} />
           {paredeHumanaAtiva && <p className="ficha-local-aviso">PAREDE HUMANA: ao fim do seu turno, se não tiver gasto o recurso Movimento, até o início do próximo turno recebe +VIG na Defesa e RD igual a 1 + metade do Nível de Operador (arredondada para baixo; máximo 6). Confirme o gatilho e a duração na Mesa; a Ficha não acompanha o gasto de Movimento nem ativa esse efeito automaticamente.</p>}
