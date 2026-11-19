@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { ATRIBUTO_PERICIA, bonusTentativaErro, valorBasePericia } from './pericias';
 import { bonusCondicionalOrigemTeste } from './efeitosOrigens';
-import { calcularTesteManual, calcularRolagemAtaqueManual, type VantagemTeste } from './testes';
+import { calcularRolagemTesteManual, calcularRolagemAtaqueManual, type VantagemTeste } from './testes';
 import { avaliarBloqueiosOperacionaisPorCondicoes, condicoesQueImpoemDesvantagem, restricoesDeAtaquePorCondicoes } from './condicoesCalculadora';
 import { CATALOGO_CONDICOES, type CondicaoId } from './condicoesFicha';
 import { sortearDados, validarResultadosFisicos } from './rolagemDados';
@@ -63,8 +63,6 @@ export default function CalculadoraTesteLocal({ atributos, treinada, distribuica
   const [modoDisparoAutomatico, setModoDisparoAutomatico] = useState<'normal' | 'cadenciado' | 'rajada'>('normal');
   const [coronhaMatildaConfirmada, setCoronhaMatildaConfirmada] = useState(false);
   const [atributo, setAtributo] = useState<keyof AtributosIniciais>('astucia');
-  const [dt, setDt] = useState('12');
-  const [impossivel, setImpossivel] = useState(false);
   const [modificador, setModificador] = useState('0');
   const [vantagem, setVantagem] = useState<VantagemTeste>('normal');
   const [dado1, setDado1] = useState('');
@@ -176,29 +174,24 @@ export default function CalculadoraTesteLocal({ atributos, treinada, distribuica
   const valorTeste = valorTesteBase + bonusMirar;
 
   const calculado = useMemo(() => {
-    if (escopo === 'ataques') {
-      try { return { resultado: calcularRolagemAtaqueManual({ valorBase: valorTeste, modificador: Number(modificador || 0), dado1: dadosConfirmados?.dado1 ?? null, dado2: dadosConfirmados?.dado2 ?? null, vantagem: vantagemEfetiva }), erro: '' }; }
-      catch (problema) { return { resultado: null, erro: problema instanceof Error ? problema.message : 'Valores inválidos.' }; }
-    }
-    if (impossivel) return { resultado: calcularTesteManual({ valorBase: valorTeste, modificador: Number(modificador || 0), dt: null }), erro: '' };
-    if (!dt.trim()) return { resultado: null, erro: '' };
     try {
+      const argumentos = {
+        valorBase: valorTeste,
+        modificador: Number(modificador || 0),
+        dado1: dadosConfirmados?.dado1 ?? null,
+        dado2: dadosConfirmados?.dado2 ?? null,
+        vantagem: vantagemEfetiva,
+      };
       return {
-        resultado: calcularTesteManual({
-          valorBase: valorTeste,
-          modificador: Number(modificador || 0),
-          dt: Number(dt),
-          dado1: dadosConfirmados?.dado1 ?? null,
-          dado2: dadosConfirmados?.dado2 ?? null,
-          vantagem: vantagemEfetiva,
-          naturalDe2a9Como10: codeVeronicaAtiva,
-        }),
+        resultado: escopo === 'ataques'
+          ? calcularRolagemAtaqueManual(argumentos)
+          : calcularRolagemTesteManual({ ...argumentos, naturalDe2a9Como10: codeVeronicaAtiva }),
         erro: '',
       };
     } catch (problema) {
       return { resultado: null, erro: problema instanceof Error ? problema.message : 'Valores inválidos.' };
     }
-  }, [escopo, impossivel, valorTeste, modificador, dt, dadosConfirmados, vantagemEfetiva, codeVeronicaAtiva, parrudoAtivo]);
+  }, [escopo, valorTeste, modificador, dadosConfirmados, vantagemEfetiva, codeVeronicaAtiva]);
 
   function mudarTipo(valor: 'pericia' | 'atributo' | 'ataque-corpo' | 'ataque-distancia') {
     setTipo(valor);
@@ -299,7 +292,7 @@ export default function CalculadoraTesteLocal({ atributos, treinada, distribuica
       const ehAtaque = tipo === 'ataque-corpo' || tipo === 'ataque-distancia';
       const resultado = ehAtaque
         ? calcularRolagemAtaqueManual({ valorBase: valorTeste, modificador: Number(modificador || 0), dado1: resultados[0], dado2: resultados[1] ?? null, vantagem: vantagemEfetiva })
-        : calcularTesteManual({ valorBase: valorTeste, modificador: Number(modificador || 0), dt: Number(dt), dado1: resultados[0], dado2: resultados[1] ?? null, vantagem: vantagemEfetiva, naturalDe2a9Como10: codeVeronicaAtiva });
+        : calcularRolagemTesteManual({ valorBase: valorTeste, modificador: Number(modificador || 0), dado1: resultados[0], dado2: resultados[1] ?? null, vantagem: vantagemEfetiva, naturalDe2a9Como10: codeVeronicaAtiva });
       if (ehAtaque) setCriticoDano(false);
       if (ehAtaque && resultado.estado === 'falha-critica' && aoFalharCriticoAtaque) {
         void aoFalharCriticoAtaque().then(salvo => setMensagemCondicao(salvo ? 'Falha Crítica: Exposto ativado automaticamente e salvo na Ficha.' : 'Falha Crítica: não foi possível confirmar o salvamento de Exposto. Confira as Condições da Ficha.'));
@@ -310,8 +303,8 @@ export default function CalculadoraTesteLocal({ atributos, treinada, distribuica
     }
   }
 
-  return <details className="ficha-local-editor calculadora-teste">
-    <summary>{escopo === 'ataques' ? 'Conferir Ataque' : 'Conferir Teste'}</summary>
+  return <details className="ficha-local-editor calculadora-teste" open={escopo === 'ataques'}>
+    <summary>{escopo === 'ataques' ? 'Rolador de Ataque · Corpo a Corpo / à Distância' : 'Rolador de Testes · Perícia / Atributo'}</summary>
     {penalidadeMorteNivel1 && <p className="ficha-local-aviso" role="status">Penalidade por Morte no Nível 1: −2 aplicada a este Teste de Atributo, Perícia ou Ataque até recuperar o Nível 2.</p>}
     {desvantagemBI && <p className="ficha-local-aviso" role="status">5ª Fase da BI: Desvantagem aplicada a este Teste. Uma Vantagem e uma Desvantagem se anulam normalmente.</p>}
     {desvantagensCondicao.length > 0 && <p className="ficha-local-aviso" role="status">Desvantagem por Condição ativa: {desvantagensCondicao.map(id => CATALOGO_CONDICOES[id].nome).join(', ')}. Uma Vantagem e uma Desvantagem se anulam normalmente; fontes iguais não acrescentam dados adicionais.</p>}
@@ -480,13 +473,6 @@ export default function CalculadoraTesteLocal({ atributos, treinada, distribuica
     <label>Modificador circunstancial
       <input type="number" step="1" value={modificador} onChange={evento => setModificador(evento.target.value)} />
     </label>
-    {escopo === 'testes' && <label>DT
-      <input type="number" min="1" step="1" value={dt} disabled={impossivel} onChange={evento => setDt(evento.target.value)} placeholder="Ex.: 15" />
-    </label>}
-    {escopo === 'testes' && <label className="ficha-local-opcao">
-      <input type="checkbox" checked={impossivel} onChange={evento => { setImpossivel(evento.target.checked); setDado1(''); setDado2(''); setDadosConfirmados(null); setErroRolagem(''); }} />
-      Impossível — sem Teste
-    </label>}
     {origem === 'Criminoso' && escopo === 'testes' && tipo === 'pericia' && periciaEfetiva === 'Investigação' && criminosoDisponivel && <div className="ficha-local-editor">
       <label>Finalidade da Investigação
         <select value={finalidadeCriminoso} onChange={evento => { setFinalidadeCriminoso(evento.target.value as 'outra' | 'procurar_itens_recursos'); setUsarBeneficioCriminoso(false); setDado1(''); setDado2(''); setDadosConfirmados(null); }}>
@@ -506,13 +492,13 @@ export default function CalculadoraTesteLocal({ atributos, treinada, distribuica
     {parrudoAtivo && <p className="ficha-local-aviso" role="status">PARRUDO: Vantagem automática em Testes de Fortitude.</p>}
     {codeVeronicaAtiva && <p className="ficha-local-aviso" role="status">CODE VERONICA: Vantagem automática em Testes de Perícia; resultados naturais de 2 a 9 contam como 10. Um 1 natural continua sendo Falha Crítica. Fontes de Desvantagem cancelam a Vantagem normalmente.</p>}
     <label>Condição da rolagem
-      <select value={vantagem} disabled={impossivel} onChange={evento => { setVantagem(evento.target.value as VantagemTeste); setDado1(''); setDado2(''); setDadosConfirmados(null); setErroRolagem(''); }}>
+      <select value={vantagem} onChange={evento => { setVantagem(evento.target.value as VantagemTeste); setDado1(''); setDado2(''); setDadosConfirmados(null); setErroRolagem(''); }}>
         <option value="normal">Normal · 1d20</option>
         <option value="vantagem">Vantagem · 2d20, usar o melhor</option>
         <option value="desvantagem">Desvantagem · 2d20, usar o pior</option>
       </select>
     </label>
-    {!impossivel && metodo === 'fisico' && <div className="ficha-local-grade">
+    {metodo === 'fisico' && <div className="ficha-local-grade">
       <label>Resultado físico do d20
         <input type="number" min="1" max="20" step="1" value={dado1} onChange={evento => { setDado1(evento.target.value); setDadosConfirmados(null); setCriticoDano(false); }} placeholder="1–20" />
       </label>
@@ -520,23 +506,23 @@ export default function CalculadoraTesteLocal({ atributos, treinada, distribuica
         <input type="number" min="1" max="20" step="1" value={dado2} onChange={evento => { setDado2(evento.target.value); setDadosConfirmados(null); setCriticoDano(false); }} placeholder="1–20" />
       </label>}
     </div>}
-    {!impossivel && !ataqueEmArea && !disparoUnicoIndisponivel && (!mirarPreparado || Boolean(regiaoMirada.trim())) && <button type="button" className="botao-claro" disabled={ataqueBloqueadoPorCondicao} onClick={registrarRolagem}>{metodo === 'virtual' ? (escopo === 'ataques' ? 'Rolar Ataque' : 'Rolar Teste') : (escopo === 'ataques' ? 'Confirmar dados do Ataque' : 'Confirmar dados físicos')}</button>}
+    {!ataqueEmArea && !disparoUnicoIndisponivel && (!mirarPreparado || Boolean(regiaoMirada.trim())) && <button type="button" className="botao-claro" disabled={ataqueBloqueadoPorCondicao} onClick={registrarRolagem}>{metodo === 'virtual' ? (escopo === 'ataques' ? 'Rolar Ataque' : 'Rolar Teste') : (escopo === 'ataques' ? 'Confirmar dados do Ataque' : 'Confirmar dados físicos')}</button>}
     {ataqueEmArea && <p className="ficha-local-aviso" role="status">{rajadaSelecionada ? 'Rajada: não existe Teste de Ataque. Todos os alvos no cone de 4,5 m, inclusive aliados, fazem Reflexos DT 12; sucesso sofre metade do Dano da arma e falha sofre Dano integral. Ação Completa e 10 cartuchos.' : 'Disparo em Área: não existe Teste de Ataque. Use os Testes de Reflexos e a resolução de Dano descritos acima, fora desta rolagem de Ataque.'}</p>}{disparoUnicoIndisponivel && <p className="ficha-local-aviso" role="status">Este perfil não permite Disparo Único. Selecione um modo compatível antes de rolar.</p>}
     {erroRolagem && <p className="offline-erro" role="alert">{erroRolagem}</p>}
     {mensagemCondicao && <p role="status">{mensagemCondicao}</p>}
     {calculado.erro && <p className="offline-erro" role="alert">{calculado.erro}</p>}
     {calculado.resultado && <div className="offline-status ficha-local-resultado" role="status">
-      <strong>{calculado.resultado.estado === 'impossivel' ? 'Sem Teste'
-        : calculado.resultado.estado === 'incompleto' ? 'Aguardando dados'
+      <strong>{calculado.resultado.estado === 'incompleto' ? 'Aguardando dados'
         : calculado.resultado.estado === 'critico-sucesso' ? (escopo === 'ataques' ? 'Acerto Crítico · 20 natural' : 'Sucesso automático · 20 natural')
         : calculado.resultado.estado === 'falha-critica' ? 'Falha Crítica · 1 natural'
         : calculado.resultado.estado === 'rolagem-ataque' ? 'Rolagem de Ataque'
+        : calculado.resultado.estado === 'rolagem-teste' ? 'Rolagem de Teste'
         : calculado.resultado.estado === 'sucesso' ? 'Sucesso'
         : 'Falha'}</strong>
       <p>{calculado.resultado.detalhe}</p>
       {resultadoAtaqueCritico && <p><strong>Acerto Crítico</strong>{multiplicadorCritico ? ` · multiplicador ×${multiplicadorCritico}` : ' · consulte a regra específica do perfil'}</p>}
       {bonusOperario > 0 && <p>Bônus da Origem Operário: +{bonusOperario} no Ataque.</p>}
-      {calculado.resultado.total !== null && <p>Dado escolhido: {calculado.resultado.dadoEscolhido} · Valor base: {valorTeste} · Modificador: {Number(modificador || 0)} · Total: {calculado.resultado.total} · {escopo === 'ataques' ? 'Compare com a Defesa do alvo na mesa.' : `DT: ${calculado.resultado.dt}`}</p>}
+      {calculado.resultado.total !== null && <p>Dado escolhido: {calculado.resultado.dadoEscolhido} · Valor base: {valorTeste} · Modificador: {Number(modificador || 0)} · Total: {calculado.resultado.total} · {escopo === 'ataques' ? 'Compare com a Defesa do alvo na mesa.' : 'O Mestre avalia a DT e o resultado.'}</p>}
       {bonusMirar > 0 && <p>Mirar aplicado: +2 no Teste · Região escolhida: {regiaoMirada}</p>}
     </div>}
   </details>;
