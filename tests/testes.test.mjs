@@ -5,7 +5,7 @@ import ts from 'typescript';
 
 const source = await readFile(new URL('../src/testes.ts', import.meta.url), 'utf8');
 const { outputText } = ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2022 } });
-const { calcularTesteManual } = await import('data:text/javascript;base64,' + Buffer.from(outputText).toString('base64'));
+const { calcularTesteManual, calcularRolagemTesteManual } = await import('data:text/javascript;base64,' + Buffer.from(outputText).toString('base64'));
 
 test('Teste de Perícia usa o valor que já inclui Atributo e Treinamento', () => {
   const r = calcularTesteManual({ valorBase: 5, modificador: 1, dt: 15, dado1: 9 });
@@ -74,4 +74,40 @@ test('CODE VERONICA aplica o ajuste ao resultado escolhido com Vantagem', () => 
   assert.equal(resultado.dadoEscolhido, 8);
   assert.equal(resultado.total, 10);
   assert.match(resultado.detalhe, /Natural 8 conta como 10 por CODE VERONICA/);
+});
+
+
+test('Rolagem de Perícia e Atributo calcula total sem avaliar DT ou declarar sucesso/falha comum', () => {
+  const resultado = calcularRolagemTesteManual({ valorBase: 5, modificador: 2, dado1: 9 });
+  assert.equal(resultado.estado, 'rolagem-teste');
+  assert.equal(resultado.total, 16);
+  assert.equal(resultado.dt, null);
+  assert.match(resultado.detalhe, /Mestre avalia a DT e o resultado/);
+});
+
+test('Rolagem de Teste preserva Vantagem, Desvantagem e CODE VERONICA', () => {
+  const vantagem = calcularRolagemTesteManual({ valorBase: 3, dado1: 4, dado2: 15, vantagem: 'vantagem' });
+  const desvantagem = calcularRolagemTesteManual({ valorBase: 3, dado1: 4, dado2: 15, vantagem: 'desvantagem' });
+  const code = calcularRolagemTesteManual({ valorBase: 2, dado1: 8, naturalDe2a9Como10: true });
+  assert.equal(vantagem.dadoEscolhido, 15);
+  assert.equal(vantagem.total, 18);
+  assert.equal(desvantagem.dadoEscolhido, 4);
+  assert.equal(desvantagem.total, 7);
+  assert.equal(code.total, 12);
+  assert.match(code.detalhe, /CODE VERONICA/);
+});
+
+test('Rolagem de Teste preserva 20 natural e 1 natural sem depender de DT', () => {
+  const vinte = calcularRolagemTesteManual({ valorBase: -50, dado1: 20 });
+  const um = calcularRolagemTesteManual({ valorBase: 50, dado1: 1 });
+  assert.equal(vinte.estado, 'critico-sucesso');
+  assert.equal(um.estado, 'falha-critica');
+  assert.equal(vinte.dt, null);
+  assert.equal(um.dt, null);
+});
+
+test('Rolagem de Teste exige os dois d20 quando há Vantagem ou Desvantagem', () => {
+  const incompleto = calcularRolagemTesteManual({ valorBase: 2, dado1: 10, vantagem: 'vantagem' });
+  assert.equal(incompleto.estado, 'incompleto');
+  assert.throws(() => calcularRolagemTesteManual({ valorBase: 2, dado1: 21 }), /entre 1 e 20/);
 });
