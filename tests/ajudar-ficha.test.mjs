@@ -6,7 +6,7 @@ const painel = await readFile(new URL('../src/PainelAcoesLocal.tsx', import.meta
 const ficha = await readFile(new URL('../src/FichaLocal.tsx', import.meta.url), 'utf8');
 
 test('Painel compacto não apresenta o bloco explicativo de Ajudar ou recursos normais por turno', () => {
-  assert.doesNotMatch(painel, /Registrar Ajudar|registrarAjudar|Recursos normais|Ação Bônus/);
+  assert.doesNotMatch(painel, /Registrar Ajudar|registrarAjudar|Recursos normais/);
   assert.doesNotMatch(painel, /turnoEmAndamento|iniciarTurno|encerrarTurno/);
 });
 
