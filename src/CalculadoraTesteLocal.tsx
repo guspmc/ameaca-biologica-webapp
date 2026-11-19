@@ -46,10 +46,11 @@ type Props = {
   academicoDisponivel?: boolean;
   criminosoDisponivel?: boolean;
   mirarPreparado?: boolean;
+  tipoAtaqueFixo?: 'ataque-corpo' | 'ataque-distancia';
 };
 
-export default function CalculadoraTesteLocal({ atributos, treinada, distribuicao, periciaOrigemExtra = '', periciaTentativaErroTreinada = '', temTentativaEErro = false, modoDados, origem = '', saDisponivel = 0, aoFalharCriticoAtaque, penalidadeMorteNivel1 = false, bonusAtaqueBI = 0, danoCorpoACorpoAdicionalBI = null, desvantagemBI = false, condicoesAtivas = [], habilidadesAtivas = [], escopo = 'testes', armaOperario = '', academicoDisponivel = false, criminosoDisponivel = false, mirarPreparado = false }: Props) {
-  const [tipo, setTipo] = useState<'pericia' | 'atributo' | 'ataque-corpo' | 'ataque-distancia'>(escopo === 'ataques' ? 'ataque-corpo' : 'pericia');
+export default function CalculadoraTesteLocal({ atributos, treinada, distribuicao, periciaOrigemExtra = '', periciaTentativaErroTreinada = '', temTentativaEErro = false, modoDados, origem = '', saDisponivel = 0, aoFalharCriticoAtaque, penalidadeMorteNivel1 = false, bonusAtaqueBI = 0, danoCorpoACorpoAdicionalBI = null, desvantagemBI = false, condicoesAtivas = [], habilidadesAtivas = [], escopo = 'testes', armaOperario = '', academicoDisponivel = false, criminosoDisponivel = false, mirarPreparado = false, tipoAtaqueFixo }: Props) {
+  const [tipo, setTipo] = useState<'pericia' | 'atributo' | 'ataque-corpo' | 'ataque-distancia'>(tipoAtaqueFixo ?? (escopo === 'ataques' ? 'ataque-corpo' : 'pericia'));
   const [pericia, setPericia] = useState('Percepção');
   const [armaId, setArmaId] = useState(() => escopo === 'ataques' && origem === 'Operário' ? listarPerfisArma().find(perfil => perfil.nome === armaOperario)?.id ?? '' : '');
   const [resultadoDadosDano, setResultadoDadosDano] = useState('');
@@ -304,7 +305,7 @@ export default function CalculadoraTesteLocal({ atributos, treinada, distribuica
   }
 
   return <details className="ficha-local-editor calculadora-teste" open={escopo === 'ataques'}>
-    <summary>{escopo === 'ataques' ? 'Rolador de Ataque · Corpo a Corpo / à Distância' : 'Rolador de Testes · Perícia / Atributo'}</summary>
+    <summary>{tipoAtaqueFixo === 'ataque-corpo' ? 'Rolagem de Ataque Corpo a Corpo · Luta' : tipoAtaqueFixo === 'ataque-distancia' ? 'Rolagem de Ataque à Distância · Pontaria' : escopo === 'ataques' ? 'Rolador de Ataque · Corpo a Corpo / à Distância' : 'Rolador de Testes · Perícia / Atributo'}</summary>
     {penalidadeMorteNivel1 && <p className="ficha-local-aviso" role="status">Penalidade por Morte no Nível 1: −2 aplicada a este Teste de Atributo, Perícia ou Ataque até recuperar o Nível 2.</p>}
     {desvantagemBI && <p className="ficha-local-aviso" role="status">5ª Fase da BI: Desvantagem aplicada a este Teste. Uma Vantagem e uma Desvantagem se anulam normalmente.</p>}
     {desvantagensCondicao.length > 0 && <p className="ficha-local-aviso" role="status">Desvantagem por Condição ativa: {desvantagensCondicao.map(id => CATALOGO_CONDICOES[id].nome).join(', ')}. Uma Vantagem e uma Desvantagem se anulam normalmente; fontes iguais não acrescentam dados adicionais.</p>}
@@ -321,12 +322,12 @@ export default function CalculadoraTesteLocal({ atributos, treinada, distribuica
     </label>}
     {(tipo === 'ataque-corpo' || tipo === 'ataque-distancia') && !ataqueEmArea && <p>20 natural: Acerto Crítico automático e fecha as Reações defensivas normais. 1 natural: Falha Crítica; Exposto é ativado automaticamente somente no modo Automático. A Ficha apresenta a rolagem e o total, sem comparar com a Defesa ou decidir acerto/erro. {limiteCritico === 19 ? 'Este perfil tem margem 19–20: em 19 natural, confira na mesa se o total alcança a Defesa antes de aplicar o Crítico.' : ''} A Ficha não decide o resultado do Ataque nem aplica Dano aos PV; use a calculadora abaixo após a confirmação da Mesa.</p>}
 
-    <label>{escopo === 'ataques' ? 'Tipo de Ataque' : 'Tipo de Teste'}
+    {!tipoAtaqueFixo && <label>{escopo === 'ataques' ? 'Tipo de Ataque' : 'Tipo de Teste'}
       <select value={tipo} onChange={evento => mudarTipo(evento.target.value as 'pericia' | 'atributo' | 'ataque-corpo' | 'ataque-distancia')}>
         {escopo === 'testes' && <><option value="pericia">Teste de Perícia</option><option value="atributo">Teste puro de Atributo</option></>}
         {escopo === 'ataques' && <><option value="ataque-corpo">Ataque Corpo a Corpo · Luta</option><option value="ataque-distancia">Ataque à distância · Pontaria</option></>}
       </select>
-    </label>
+    </label>}
     {escopo === 'ataques' && restricoesAtaque.length > 0 && <div className="ficha-local-aviso" role="status"><strong>Condições que restringem Ataques</strong>{restricoesAtaque.map(item => <p key={item.condicao}>{item.motivo}</p>)}<small>Os bloqueios mecânicos explícitos impedem confirmar ou rolar Ataques. A Ficha não presume exceções narrativas ou duração; confira a Condição ativa com a Mesa.</small></div>}
     {quantoMaisMelhorAtiva && <p className="ficha-local-aviso" role="status">QUANTO MAIS MELHOR: se você estiver na Área de Ameaça de 3 ou mais inimigos, recebe Vantagem nos Ataques. Confirme a circunstância com a Mesa e selecione Vantagem manualmente; a Ficha não conta inimigos nem presume posicionamento.</p>}
     {armeiroAtivo && <p className="ficha-local-legenda">ARMEIRO: ao atacar com arma modificada, some +1 ao Teste de Ataque por Peça Extra instalada nela. Confira a arma efetivamente empunhada e informe o bônus no modificador manual; a seleção do perfil não confirma peças instaladas.</p>}
