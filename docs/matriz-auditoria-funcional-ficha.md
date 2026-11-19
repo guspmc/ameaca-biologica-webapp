@@ -798,3 +798,16 @@ A revisão dos controles do painel encontrou uma omissão concreta na implementa
 - **Countdown técnico: 0.** Critérios de auditoria e prontidão documental concluídos; bateria humana liberada.
 - **Validação humana: PENDENTE.** Não declarar Fase 0 ou Fase 1 homologadas até Gus executar os passos e registrar os resultados. Fase 2 inicia somente com essa execução; nenhum avanço para Inventário ativo ou fases posteriores.
 - Próxima ação exata: Gus executar `docs/roteiro-humano-ficha-offline-local.md` em Windows/navegador, registrar aprovado/falhou/não executado e compartilhar os resultados. Se a aplicação não abrir, parar e registrar a mensagem sem improvisar correções.
+
+
+## Auditoria de PV, SA, BI e Descanso — 19/11/2026
+
+- **Cânone:** Arquivo do Jogador v1.0, pp. 26, 90 e 97. PV por Nível, BI Base e SA Máxima derivam da Classe; BI começa em 0. Sala de Descanso permite Descanso Parcial e Completo; Sala Segura permite somente Parcial. Parcial usa um Dado de Vida por Nível e não recupera SA; Completo restaura PV e SA.
+- **Contrato de recursos:** `src/recursosFicha.ts` já inicializa PV Atual e SA Atual pelos máximos quando os campos não existem, e PV Temporários/BI em 0. Testes existentes cobrem esses valores.
+- **Defeito confirmado:** rascunho novo não tem Classe e, portanto, ainda não tem PV Máximos derivados. `src/ReanimacaoFichaLocal.tsx` iniciava Reanimação automaticamente sempre que PV Atual fosse 0, inclusive com PV Máximos 0. O salvamento do estado crítico persistia PV/SA/BI zerados; após definir Classe, os zeros explícitos substituíam os padrões de recursos e a Reanimação em andamento bloqueava Descanso.
+- **Correção:** início automático por 0 PV agora exige `pvMaximo > 0`. Não inicia nem persiste Reanimação em rascunho sem Classe/máximos derivados; mantém o gatilho para personagem válida realmente em 0 PV.
+- **Descanso:** `localPermiteDescanso` e `DescansoFichaLocal` já permitem as duas modalidades na Sala de Descanso e somente Parcial na Sala Segura. O botão Parcial depende do preenchimento dos resultados dos Dados de Vida ou de rolagem virtual; isso não é bloqueio do local. Sem alteração necessária.
+- **Arquivos de código/teste:** `src/ReanimacaoFichaLocal.tsx`; `tests/reanimacao-integracao-ficha.test.mjs`. Contratos relacionados conferidos em `src/recursosFicha.ts`, `src/descansoFicha.ts`, `src/RecursosFichaLocal.tsx`, `src/DescansoFichaLocal.tsx`, `src/FichaLocal.tsx` e `src/FichaOfflineApp.tsx`.
+- **CI no commit de código/teste** `dfaf6f5a4eaf25d6905e99913011375db67d5952`: workflow de testes run `44450648921` e build run `44450648983`; ambos estavam IN_PROGRESS no checkpoint inicial. Consultar conclusão antes de classificar a regressão como TESTADA AUTOMATICAMENTE.
+- **Validação humana:** PENDENTE. A correção não remove estados de Reanimação antigos já persistidos. Testar um personagem novo após CI verde.
+- **Checkpoint:** `docs/checkpoint-auditoria-recursos-descanso-2026-11-19.md`.
