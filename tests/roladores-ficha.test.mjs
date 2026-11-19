@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
-import { sortearDados, validarResultadosFisicos } from '../src/rolagemDados.ts';
+import { sortearDados, somarModificadorRolagem, validarResultadosFisicos } from '../src/rolagemDados.ts';
 import { calcularTesteManual, calcularRolagemAtaqueManual } from '../src/testes.ts';
 
 test('rolagem virtual usa a fonte aleatória fornecida e respeita os lados do dado', () => {
@@ -25,6 +25,22 @@ test('entrada física exige quantidade e faces válidas', () => {
   assert.deepEqual(validarResultadosFisicos('4, 2 6', 3, 6), [4, 2, 6]);
   assert.throws(() => validarResultadosFisicos('4 2', 3, 6), /exatamente 3/);
   assert.throws(() => validarResultadosFisicos('7', 1, 6), /entre 1 e 6/);
+});
+
+
+test('Rolador Livre soma modificadores positivos, negativos e zero', () => {
+  assert.equal(somarModificadorRolagem([4, 2, 6], 5), 17);
+  assert.equal(somarModificadorRolagem([4, 2, 6], -3), 9);
+  assert.equal(somarModificadorRolagem([4, 2, 6], 0), 12);
+  assert.throws(() => somarModificadorRolagem([4, 2], 1.5), /inteiro/);
+  assert.throws(() => somarModificadorRolagem([], 2), /resultados/);
+});
+
+test('Rolador Livre apresenta campo de bônus para Atributo, Perícia e outros modificadores', async () => {
+  const ui = await readFile(new URL('../src/RoladoresBasicosLocal.tsx', import.meta.url), 'utf8');
+  assert.match(ui, /Bônus \/ modificador \(\+ ou −\) · Atributo, Perícia etc\./);
+  assert.match(ui, /somarModificadorRolagem\(dados, modificador\)/);
+  assert.match(ui, /expressaoModificador/);
 });
 
 test('roladores integrados só são renderizados no modo Automático e não alteram ficha', async () => {
