@@ -181,13 +181,13 @@ export default function ReanimacaoFichaLocal({ dados, recursos, origem, pvMaximo
         <button type="button" className="botao-claro" disabled={ocupado || bloqueado} onClick={() => void registrarCura()}>Acumular cura sem despertar</button>
       </>}
       {estadoAtivo && <>
-          <h4>Teste de Reanimação · 1d20 contra DT 12</h4>
-          {vantagem && <p>Vantagem ativa: {rolagemVirtualAtiva ? 'a Ficha rolará dois d20 e usará o melhor.' : 'informe dois resultados físicos de d20; será considerado o melhor.'}</p>}
+          <h4>Registro do Teste de Reanimação</h4>
+          {vantagem && <p>Vantagem ativa: {rolagemVirtualAtiva ? 'a Ficha rolará dois d20 e usará o melhor.' : 'role dois d20 físicos e considere o melhor resultado.'}</p>}
           {rolagemVirtualAtiva ? <>
-            <p>{vantagem ? 'A Ficha rolará virtualmente dois d20 e usará o melhor.' : 'A Ficha rolará virtualmente um d20.'}</p>
+            <p>{vantagem ? 'A Ficha rolará virtualmente dois d20 e usará o melhor.' : 'A Ficha rolará virtualmente um d20.'} O resultado é comparado à DT 12.</p>
             <button type="button" className="acao" disabled={ocupado || bloqueado} onClick={() => void registrarTeste()}>Rolar e registrar Teste <span>→</span></button>
           </> : <div className="recursos-controles">
-            {vantagem && <p>Role dois d20 físicos e considere o melhor resultado contra DT 12; depois registre se houve sucesso ou falha.</p>}
+            <p>Faça o teste fora da Ficha com 1d20 contra DT 12{vantagem ? ' (role dois d20 e use o melhor resultado)' : ''}. Registre apenas o desfecho.</p>
             <button type="button" disabled={ocupado || bloqueado} onClick={() => void registrarTeste(true)}>Registrar sucesso</button>
             <button type="button" disabled={ocupado || bloqueado} onClick={() => void registrarTeste(false)}>Registrar falha</button>
           </div>}
