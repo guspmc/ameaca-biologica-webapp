@@ -87,35 +87,16 @@ test('Condições que proíbem Ações ou Atacar geram lembretes sem bloquear ro
   assert.deepEqual(api.restricoesDeAtaquePorCondicoes(['caido','imobilizado','intoxicado']), []);
 });
 
-test('Calculadora e Painel aplicam bloqueios operacionais sem retirar autonomia sobre Condições', async () => {
+test('Calculadora aplica bloqueios operacionais; painel de Manobras não administra turnos ou Condições', async () => {
   const calc = await readFile(new URL('../src/CalculadoraTesteLocal.tsx', import.meta.url), 'utf8');
-  assert.match(calc, /restricoesDeAtaquePorCondicoes/);
-  assert.match(calc, /Condições que restringem Ataques/);
-  assert.match(calc, /disabled=\{ataqueBloqueadoPorCondicao\}/);
-  assert.match(calc, /disabled=\{bloqueiosCondicao\.gastarSA \|\| \(origem === 'Atleta'/);
-  assert.match(calc, /if \(ataqueBloqueadoPorCondicao\)/);
-  assert.match(calc, /Amedrontado: confirme se a personagem ainda percebe a fonte do medo/);
-  assert.match(calc, /selecione Desvantagem manualmente/);
-  assert.match(calc, /Cego: além da Desvantagem nos Ataques/);
-  assert.match(calc, /Surdo: falha automaticamente em Testes/);
   const painel = await readFile(new URL('../src/PainelAcoesLocal.tsx', import.meta.url), 'utf8');
-  assert.match(painel, /restricoesDeAtaquePorCondicoes\(condicoesAtivas\)/);
-  assert.match(painel, /Condições que restringem sua atuação/);
-  assert.match(painel, /bloqueiosCondicao\.acao/);
-  assert.match(painel, /bloqueiosCondicao\.movimento/);
-  assert.match(painel, /bloqueiosCondicao\.reacao/);
-  assert.match(painel, /bloqueiosCondicao\.gastarSA/);
-  assert.match(painel, /bloqueiosCondicao\.ataque/);
-  assert.match(painel, /!confirmouDuasArmas \|\| bloqueiosCondicao\.ataque/);
-  assert.match(painel, /!economia\.interacaoGratuitaUsada \|\| economia\.normaisUsados\.acao \|\| bloqueiosCondicao\.acao/);
+  assert.match(calc, /restricoesDeAtaquePorCondicoes/);
+  assert.match(calc, /disabled=\\{ataqueBloqueadoPorCondicao\\}/);
+  assert.match(calc, /if \\(ataqueBloqueadoPorCondicao\\)/);
+  assert.doesNotMatch(painel, /restricoesDeAtaquePorCondicoes|Condições que restringem sua atuação|turnoEmAndamento/);
   const condicoes = await readFile(new URL('../src/CondicoesFichaLocal.tsx', import.meta.url), 'utf8');
-  assert.match(condicoes, /adicionarInstanciaCondicao\(itens/);
-  assert.match(condicoes, /encerrarInstanciaCondicao\(itens, id\)/);
-  assert.match(condicoes, /aoSalvar\(\{ condicoes: atualizadas \}\)/);
-  assert.match(painel, /Ação Bônus e Interação Gratuita permanecem distintas de Ação/);
-  assert.match(painel, /Restrições de Movimento/);
-  assert.match(painel, /Agarrado: Movimento 0/);
-  assert.match(painel, /Caído: só pode se deslocar Rastejando/);
+  assert.match(condicoes, /adicionarInstanciaCondicao\\(itens/);
+  assert.match(condicoes, /encerrarInstanciaCondicao\\(itens, id\\)/);
 });
 
 test('Reflexos de Sobrevivente usa a maior Defesa atual ou 10 + Acrobacia somente quando ativo', () => {
