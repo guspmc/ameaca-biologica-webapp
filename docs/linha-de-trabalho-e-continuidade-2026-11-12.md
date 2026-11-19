@@ -885,3 +885,19 @@ Identificada divergência entre o bloqueio de gasto de SA do Painel e a confirma
 - Tarefa C — Rolador Livre, Testes sem DT genérica e Rolador de Ataque: **TESTADA AUTOMATICAMENTE**; validação humana PENDENTE.
 - Após o HEAD aprovado `fbbd6a2`, commits `a9a7f2d`, `cd62311`, `89a3712`, `f3af6a3`, `10566f1` e `9ac2b54` alteraram somente documentação.
 - Próxima ação: iniciar auditoria D — estrutura da interface de Combate — sem antecipar integração ativa com Inventário.
+
+
+## Atualização de continuidade — Interface de Combate e barra rápida de recursos — 19/11/2026
+
+- Branch: `feat/offline-first-ficha`.
+- HEAD de código/testes registrado: `070be137dafdbc61590376cef6816733a3b9a4a3`.
+- Barra sticky PV/SA/BI com +1/−1 SA no topo; Administração de Recursos antes de Condições; Progressão e Registro de Decisões após Inventário.
+- Painel de Manobras dentro de Combate, sem controles de turno e sem ajustes manuais duplicados. Custos bloqueados quando SA atual ou SA máximo são insuficientes.
+- Mirar passou a ser consumido somente após confirmação do salvamento; o resultado confirmado mantém o bônus +2 e a região escolhida. Falha de persistência impede registrar a rolagem.
+- Fonte consultada: Arquivo do Jogador v1.0, pp. 77–81. Esquivar não é gasto universal de SA; exige Habilidade/regra liberadora e usa janela de Reação. Portanto não foi incluído no painel de gastos de SA.
+- Dependências de Inventário ativo (seleção de armas, Aparar/Durabilidade, munição, modos de disparo e Recarga) permanecem reservadas à Fase 3; nenhuma integração paralela foi criada.
+- Build no HEAD `070be137dafdbc61590376cef6816733a3b9a4a3`: run `44544876587` — SUCCESS.
+- Testes no mesmo HEAD: run `44544876672` — IN_PROGRESS ao registrar. Consultar resultado final; não marcar como TESTADO AUTOMATICAMENTE até SUCCESS.
+- Validação humana PENDENTE. A bateria integrada não deve ser antecipada: realizar uma única rodada humana após completar a Fase 1, imediatamente antes da Fase 3.
+- Não houve troca de branch, merge, publicação ou deploy. `main` permanece intocada.
+- Checkpoint: `docs/checkpoint-interface-combate-2026-11-19.md`.
