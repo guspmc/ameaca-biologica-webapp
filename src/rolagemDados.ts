@@ -40,3 +40,13 @@ export function validarResultadosFisicos(texto: string, quantidade: number, face
   }
   return resultados;
 }
+
+
+/** Soma um modificador inteiro aos resultados de uma rolagem livre, sem alterar os dados. */
+export function somarModificadorRolagem(dados: number[], modificador: number): number {
+  if (!Array.isArray(dados) || dados.length < 1 || dados.some(valor => !Number.isSafeInteger(valor) || valor < 1)) {
+    throw new Error('Informe resultados de dados inteiros e positivos.');
+  }
+  if (!Number.isSafeInteger(modificador)) throw new Error('O bônus/modificador precisa ser um inteiro.');
+  return dados.reduce((soma, valor) => soma + valor, 0) + modificador;
+}
