@@ -838,3 +838,11 @@ A revisão dos controles do painel encontrou uma omissão concreta na implementa
 - **Build:** run `44452755198` — SUCCESS no código HEAD `fbbd6a2`.
 - **Testes:** run `44452755076` — IN_PROGRESS no momento do checkpoint. Não marcar como TESTADO AUTOMATICAMENTE até conclusão.
 - **Validação humana:** PENDENTE. Checkpoint: `docs/checkpoint-rolagens-testes-ataques-2026-11-19.md`.
+
+
+### Verificação posterior — CI verde — 19/11/2026
+- Suíte completa de testes offline no código/testes HEAD `fbbd6a2d6c91309beedea0e43cd3edbac4c108a6`: run `44452755076` — **SUCCESS**.
+- Build TypeScript/Vite no mesmo HEAD: run `44452755198` — **SUCCESS**.
+- O cenário de compatibilidade de Reanimação foi corrigido para validar estado legado aguardando turno antes de qualquer tentativa; a suíte completa aprovou.
+- As tarefas B e C estão **TESTADAS AUTOMATICAMENTE**. Validação humana de ambas permanece **PENDENTE**.
+- Após o HEAD aprovado, somente documentação foi alterada nos commits `a9a7f2d`, `cd62311`, `89a3712`, `f3af6a3` e `10566f1`; nenhum código ou teste foi modificado.
