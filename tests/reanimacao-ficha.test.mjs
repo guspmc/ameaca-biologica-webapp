@@ -52,12 +52,11 @@ test('0 PV: três falhas sinalizam Morte para registro do Mestre, sem morte auto
   assert.throws(() => aplicar(r, 20), /apta/);
 });
 
-test('Ajuda de Medicina pode ser prestada enquanto aguarda o próximo turno', () => {
+test('Ajuda de Medicina pode ser prestada antes do registro do próximo Teste', () => {
   let r = api.iniciarReanimacao('pv_zero');
   r = api.concederAjudaMedicina(r, true);
-  assert.equal(r.estado, 'aguardando_proximo_turno');
-  assert.equal(r.vantagemProximoTeste, true);
   assert.equal(r.estado, 'em_andamento');
+  assert.equal(r.vantagemProximoTeste, true);
   assert.equal(aplicar(r, [5, 12]).reanimacao.sucessos, 1);
 });
 
@@ -139,12 +138,11 @@ test('estado de Reanimação recusa campos extras e protótipos personalizados',
 });
 
 
-test('instância de Reanimação recebe ID estável e mantém compatibilidade com registros legados', () => {
+test('instância nova recebe ID estável e mantém compatibilidade com registros sem ID', () => {
   const nova = api.iniciarReanimacao('pv_zero');
+  assert.equal(nova.estado, 'em_andamento');
   assert.equal(typeof nova.id, 'string');
   assert.ok(nova.id.length > 0);
-  const avancada = api.iniciarTurnoReanimacao(nova);
-  assert.equal(avancada.id, nova.id);
   const legada = { ...nova };
   delete legada.id;
   assert.equal(api.reanimacaoValida(legada), true);
