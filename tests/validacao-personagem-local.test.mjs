@@ -175,9 +175,9 @@ test('valida o estado persistível de Reanimação sem misturar causas ou contad
   const { iniciarReanimacao, resolverTesteReanimacao } = await import('../src/reanimacaoFicha.ts');
   let r = iniciarReanimacao('pv_zero');
   assert.equal(r.estado, 'em_andamento');
-  r = resolverTesteReanimacao(r, 12, 12).reanimacao;
   assert.equal(validarPersonagemLocal(base({ versaoModelo: 1, estadoFicha: 'rascunho', reanimacao: r })), true);
   assert.equal(validarPersonagemLocal(base({ versaoModelo: 1, estadoFicha: 'rascunho', reanimacao: { ...r, estado: 'aguardando_proximo_turno' } })), true);
+  r = resolverTesteReanimacao(r, 12, 12).reanimacao;
   assert.equal(validarPersonagemLocal(base({ versaoModelo: 1, estadoFicha: 'rascunho', reanimacao: { ...r, causa: 'colapso_bi', curaAcumulada: 3 } })), false);
   assert.equal(validarPersonagemLocal(base({ versaoModelo: 1, estadoFicha: 'rascunho', reanimacao: { ...r, sucessos: 3 } })), false);
   assert.equal(validarPersonagemLocal(base({ versaoModelo: 1, estadoFicha: 'rascunho', reanimacao: { ...r, tentativas: 4 } })), false);
