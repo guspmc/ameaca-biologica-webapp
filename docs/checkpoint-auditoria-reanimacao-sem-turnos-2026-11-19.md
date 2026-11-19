@@ -62,3 +62,11 @@
 - Registro físico por sucesso/falha: **IMPLEMENTADO / TESTE AUTOMATIZADO PENDENTE / VALIDAÇÃO HUMANA PENDENTE**.
 - Rolagem virtual e regra de Vantagem: **IMPLEMENTADO / TESTE AUTOMATIZADO PENDENTE / VALIDAÇÃO HUMANA PENDENTE**.
 - Remoção de Falha Crítica não prevista no cânone: **IMPLEMENTADO / TESTE AUTOMATIZADO PENDENTE / VALIDAÇÃO HUMANA PENDENTE**.
+
+
+## Verificação posterior — 19/11/2026
+- A suíte completa de testes offline foi concluída com sucesso no código/testes HEAD `fbbd6a2d6c91309beedea0e43cd3edbac4c108a6`: run `44452755076` — **SUCCESS**.
+- Build TypeScript/Vite no mesmo HEAD: run `44452755198` — **SUCCESS**.
+- A suíte incluiu o teste de validação de personagem que havia falhado nos runs intermediários; o cenário foi corrigido para validar estado legado `aguardando_proximo_turno` antes de qualquer tentativa.
+- A tarefa B fica **TESTADA AUTOMATICAMENTE**. Validação humana permanece **PENDENTE**.
+- A branch recebeu depois apenas commits de documentação (`a9a7f2d`, `cd62311`, `89a3712`); nenhum código ou teste foi alterado após o HEAD aprovado `fbbd6a2`.
