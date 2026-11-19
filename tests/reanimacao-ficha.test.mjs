@@ -12,21 +12,19 @@ function aplicar(r, resultado, pvMaximo = 12, cobaia = false) {
 }
 function tresSucessos(causa, pvMaximo = 12, cobaia = false) {
   let r = api.iniciarReanimacao(causa);
-  if (r.estado === 'aguardando_proximo_turno') r = api.iniciarTurnoReanimacao(r);
   for (let i = 0; i < 3; i++) r = aplicar(r, cobaia ? [12, 4] : 12, pvMaximo, cobaia).reanimacao;
   return r;
 }
 
-test('Reanimação por 0 PV aguarda o próximo turno e não rola automaticamente', () => {
+test('Reanimação por 0 PV fica disponível imediatamente sem controlar turnos', () => {
   const r = api.iniciarReanimacao('pv_zero');
-  assert.equal(r.estado, 'aguardando_proximo_turno');
+  assert.equal(r.estado, 'em_andamento');
   assert.equal(r.tentativas, 0);
-  assert.throws(() => aplicar(r, 20), /apta/);
-  assert.equal(api.iniciarTurnoReanimacao(r).estado, 'em_andamento');
+  assert.equal(aplicar(r, 20).reanimacao.sucessos, 1);
 });
 
 test('0 PV: três sucessos despertam com pelo menos 1 PV ou cura acumulada, respeitando o máximo', () => {
-  let r = api.iniciarTurnoReanimacao(api.iniciarReanimacao('pv_zero'));
+  let r = api.iniciarReanimacao('pv_zero');
   r = api.acumularCuraDuranteReanimacao(r, 5);
   assert.equal(r.curaAcumulada, 5);
   let out;
@@ -38,14 +36,14 @@ test('0 PV: três sucessos despertam com pelo menos 1 PV ou cura acumulada, resp
   assert.equal(out.pvAoDespertar, 5);
   assert.equal(r.estado, 'concluida');
   assert.equal(tresSucessos('pv_zero').estado, 'concluida');
-  let curada = api.acumularCuraDuranteReanimacao(api.iniciarTurnoReanimacao(api.iniciarReanimacao('pv_zero')), 30);
+  let curada = api.acumularCuraDuranteReanimacao(api.iniciarReanimacao('pv_zero'), 30);
   let final;
   for (let i = 0; i < 3; i++) final = aplicar(curada, 12, 8), curada = final.reanimacao;
   assert.equal(final.pvAoDespertar, 8);
 });
 
 test('0 PV: três falhas sinalizam Morte para registro do Mestre, sem morte automática', () => {
-  let r = api.iniciarTurnoReanimacao(api.iniciarReanimacao('pv_zero'));
+  let r = api.iniciarReanimacao('pv_zero');
   let out;
   for (let i = 0; i < 3; i++) out = aplicar(r, 1), r = out.reanimacao;
   assert.equal(r.estado, 'morte_a_registrar');
@@ -59,12 +57,12 @@ test('Ajuda de Medicina pode ser prestada enquanto aguarda o próximo turno', ()
   r = api.concederAjudaMedicina(r, true);
   assert.equal(r.estado, 'aguardando_proximo_turno');
   assert.equal(r.vantagemProximoTeste, true);
-  r = api.iniciarTurnoReanimacao(r);
+  assert.equal(r.estado, 'em_andamento');
   assert.equal(aplicar(r, [5, 12]).reanimacao.sucessos, 1);
 });
 
 test('sucesso em Medicina DT 15 concede Vantagem ao próximo Teste e consome a Vantagem', () => {
-  let r = api.iniciarTurnoReanimacao(api.iniciarReanimacao('pv_zero'));
+  let r = api.iniciarReanimacao('pv_zero');
   r = api.concederAjudaMedicina(r, true);
   assert.equal(r.vantagemProximoTeste, true);
   let out = aplicar(r, [4, 12]);
@@ -84,14 +82,13 @@ test('Colapso: testes começam imediatamente; Cobaia rola dois d20 e três suces
   assert.equal(api.encerrarColapsoPorReducaoBI(r, 9, 10).estado, 'concluida');
 });
 
-test('1 natural em Reanimação sinaliza Falha Crítica sem ativar Exposto; Vantagem usa o melhor resultado', () => {
-  const normal = api.iniciarTurnoReanimacao(api.iniciarReanimacao('pv_zero'));
+test('1 natural é apenas uma falha comum; Vantagem usa o melhor resultado', () => {
+  const normal = api.iniciarReanimacao('pv_zero');
   const falha = aplicar(normal, 1);
-  assert.equal(falha.falhaCritica, true);
   assert.equal(falha.reanimacao.falhas, 1);
+  assert.equal('falhaCritica' in falha, false);
   const cobaia = api.iniciarReanimacao('colapso_bi');
   const comVantagem = aplicar(cobaia, [1, 12], 12, true);
-  assert.equal(comVantagem.falhaCritica, false);
   assert.equal(comVantagem.reanimacao.sucessos, 1);
 });
 
@@ -106,11 +103,31 @@ test('Colapso: três falhas deixam transformação pendente para o próximo turn
 
 test('causa, faixa de resultados, vantagem e estados terminais são validados', () => {
   assert.throws(() => api.iniciarReanimacao('outro'), /Causa/);
-  const r = api.iniciarTurnoReanimacao(api.iniciarReanimacao('pv_zero'));
+  const r = api.iniciarReanimacao('pv_zero');
   assert.throws(() => aplicar(r, 0), /resultado/);
   assert.throws(() => aplicar(r, [10, 12]), /um resultado/);
   assert.throws(() => api.acumularCuraDuranteReanimacao(r, -1), /Cura/);
   assert.throws(() => api.concederAjudaMedicina(api.iniciarReanimacao('colapso_bi'), true), /Ajuda/);
+});
+
+
+test('registros antigos aguardando turno continuam válidos e aceitam registrar resultado', () => {
+  const legado = { ...api.iniciarReanimacao('pv_zero'), estado: 'aguardando_proximo_turno' };
+  assert.equal(api.reanimacaoValida(legado), true);
+  const resultado = api.registrarResultadoReanimacao(legado, true, 12);
+  assert.equal(resultado.reanimacao.estado, 'em_andamento');
+  assert.equal(resultado.reanimacao.sucessos, 1);
+});
+
+test('dados físicos registram sucesso ou falha diretamente, sem inserir face de dado', () => {
+  const inicio = api.iniciarReanimacao('pv_zero');
+  const sucesso = api.registrarResultadoReanimacao(inicio, true, 12);
+  assert.equal(sucesso.reanimacao.sucessos, 1);
+  assert.equal(sucesso.reanimacao.tentativas, 1);
+  const falha = api.registrarResultadoReanimacao(sucesso.reanimacao, false, 12);
+  assert.equal(falha.reanimacao.falhas, 1);
+  assert.equal(falha.reanimacao.tentativas, 2);
+  assert.throws(() => api.registrarResultadoReanimacao(falha.reanimacao, 'falha', 12), /apta/);
 });
 
 test('estado de Reanimação recusa campos extras e protótipos personalizados', () => {
