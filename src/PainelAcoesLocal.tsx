@@ -54,32 +54,17 @@ export default function PainelAcoesLocal({ dados, saAtual, saMaximo, aoSalvar }:
   ];
 
   return <details className="ficha-local-editor painel-acoes-local" open>
-    <summary>Surto de Adrenalina · Manobras e ajustes</summary>
-    <div className="ficha-local-grade">
-      <div>
-        <small>SA DISPONÍVEL</small>
-        <strong>{saAtual} / {saMaximo}</strong>
-        <p>Os gastos são registrados na Ficha. A Mesa acompanha o andamento do Encontro.</p>
-      </div>
-      <div>
-        <small>AJUSTE MANUAL</small>
-        <div className="recursos-controles">
-          <button type="button" disabled={salvando || saAtual <= 0} onClick={() => void salvarSA(-1)}>−1 SA</button>
-          <button type="button" disabled={salvando || saAtual >= saMaximo} onClick={() => void salvarSA(1)}>+1 SA</button>
-        </div>
-        <p>Use para corrigir um gasto ou registro equivocado.</p>
-      </div>
-    </div>
-
-    <h4>Gastos de SA</h4>
+    <summary>Manobras com gasto de SA</summary>
+    <p>O custo é descontado ao registrar a manobra. A Ficha não controla turnos; use os ajustes no topo para corrigir o saldo quando necessário.</p>
+    <h4>Manobras</h4>
     <div className="painel-acoes-lista">
       {manobras.map(manobra => <div className="painel-acoes-linha" key={manobra.id}>
         <span><strong>{manobra.nome}</strong><small>{manobra.descricao}</small></span>
-        <button type="button" disabled={salvando || saAtual < manobra.custo} onClick={() => void salvarSA(-manobra.custo, {}, `${manobra.nome} registrado: −${manobra.custo} SA.`)}>Gastar · {manobra.custo} SA</button>
+        <button type="button" disabled={salvando || saAtual < manobra.custo || saMaximo < manobra.custo} onClick={() => void salvarSA(-manobra.custo, {}, `${manobra.nome} registrado: −${manobra.custo} SA.`)}>Gastar · {manobra.custo} SA</button>
       </div>)}
       <div className="painel-acoes-linha">
         <span><strong>Mirar</strong><small>Gasta 1 SA; concede +2 no próximo Teste de Ataque e permite escolher uma região específica.</small></span>
-        <button type="button" disabled={salvando || saAtual < 1 || mirarPreparado} onClick={() => void salvarSA(-1, { mirarPreparado: true }, 'Mirar registrado: −1 SA. O bônus está preparado na calculadora de Ataque.')}>Mirar · 1 SA</button>
+        <button type="button" disabled={salvando || saAtual < 1 || saMaximo < 1 || mirarPreparado} onClick={() => void salvarSA(-1, { mirarPreparado: true }, 'Mirar registrado: −1 SA. O bônus está preparado na calculadora de Ataque.')}>Mirar · 1 SA</button>
       </div>
       {mirarPreparado && <div className="painel-acoes-linha">
         <span><strong>Mirar preparado</strong><small>A preparação permanece até ser consumida. Se precisar cancelar, ajuste o SA manualmente após limpar a preparação.</small></span>
