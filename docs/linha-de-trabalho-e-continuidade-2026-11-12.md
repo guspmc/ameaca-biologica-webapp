@@ -833,3 +833,17 @@ Identificada divergência entre o bloqueio de gasto de SA do Painel e a confirma
 - **Countdown técnico: 0.** Critérios de auditoria e prontidão documental concluídos; bateria humana liberada.
 - **Validação humana: PENDENTE.** Não declarar Fase 0 ou Fase 1 homologadas até Gus executar os passos e registrar os resultados. Fase 2 inicia somente com essa execução; nenhum avanço para Inventário ativo ou fases posteriores.
 - Próxima ação exata: Gus executar `docs/roteiro-humano-ficha-offline-local.md` em Windows/navegador, registrar aprovado/falhou/não executado e compartilhar os resultados. Se a aplicação não abrir, parar e registrar a mensagem sem improvisar correções.
+
+
+## Atualização de continuidade — PV, SA, BI e Descanso — 19/11/2026
+
+- Branch: `feat/offline-first-ficha`.
+- Correção de código/teste: commits `6d25f36603732e183369bc61347e5f597da72d6f` e `dfaf6f5a4eaf25d6905e99913011375db67d5952`.
+- Auditoria confirmou que o contrato puro de `recursosIniciais` já aplica PV Máximos/SA Máxima quando ausentes e BI 0. A Sala de Descanso já permite ambos os descansos; o Parcial só habilita após informar todos os Dados de Vida.
+- Causa raiz do relato: rascunho sem Classe ainda tinha PV Máximos 0; a UI de Reanimação iniciava o fluxo de 0 PV nesse estado transitório, persistindo recursos zerados e bloqueando Descanso mesmo depois de a Classe ser escolhida.
+- Correção em `src/ReanimacaoFichaLocal.tsx`: `podeIniciarPV` exige PV Máximos maiores que zero. Reanimação automática legítima de personagem válida em 0 PV permanece.
+- Teste de regressão em `tests/reanimacao-integracao-ficha.test.mjs`.
+- CI do commit `dfaf6f5`: teste run `44450648921` e build run `44450648983`; estavam IN_PROGRESS na abertura deste registro. Não declarar CI verde até consultar os resultados finais.
+- Checkpoint: `docs/checkpoint-auditoria-recursos-descanso-2026-11-19.md`. Matriz funcional atualizada.
+- Estados: correção IMPLEMENTADA; teste automatizado/CI PENDENTE; validação humana PENDENTE. Não foi feita migração ou limpeza de dados antigos; registros antigos de Reanimação em andamento exigem análise individual.
+- Próxima ação: confirmar CI; em seguida, Gus testa criação de personagem nova e verifica PV/SA no máximo, BI 0, ausência de Reanimação espúria e Descanso Parcial/Completo na Sala de Descanso. A Ficha testada anteriormente estava em sessão LAN, não conta como validação Offline.
