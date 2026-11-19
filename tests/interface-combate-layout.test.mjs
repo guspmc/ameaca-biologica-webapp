@@ -31,7 +31,7 @@ test('Manobras estão em Combate e bloqueiam custo acima do SA atual ou máximo'
   assert.ok(ficha.includes('<h3 className="ficha-local-subtitulo">Manobras</h3>'));
   assert.ok(painel.includes('saAtual < manobra.custo || saMaximo < manobra.custo'));
   assert.ok(painel.includes('saAtual < 1 || saMaximo < 1'));
-  assert.ok(!painel.includes('−1 SA') && !painel.includes('+1 SA'));
+  assert.ok(!painel.includes('salvarSA(-1') && !painel.includes('salvarSA(1'));
 });
 test('Progressão e Registro de Decisões aparecem depois da seção Inventário', () => {
   assert.ok(ficha.indexOf('id="ficha-local-inventario"') < ficha.indexOf('<ProgressaoFichaLocal'));
