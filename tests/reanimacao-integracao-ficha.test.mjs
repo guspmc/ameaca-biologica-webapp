@@ -17,21 +17,18 @@ test('painel de Reanimação está integrado à ficha contínua e aos salvamento
   assert.match(painel, /O armazenamento não confirmou a alteração da Reanimação/);
 });
 
-test('painel inicia Colapso Viral automaticamente sem presumir rolagens ou avançar turnos', () => {
-  assert.match(painel, /resultadoValido/);
-  assert.match(painel, /informe dois resultados físicos de d20/);
+test('painel inicia Colapso Viral automaticamente e registra resultados sem controlar turnos', () => {
   assert.match(painel, /sortearDados\(2, 20\)/);
+  assert.match(painel, /sortearDados\(1, 20\)\[0\]/);
   assert.match(painel, /Colapso Viral e a Reanimação específica são registrados automaticamente/);
   assert.match(painel, /void iniciar\('colapso_bi'\)/);
-  assert.match(painel, /não avança turnos/);
+  assert.doesNotMatch(painel, /Iniciar Testes no próximo turno/);
 });
-
-test('Primeiros Socorros e cura acumulada ficam disponíveis enquanto aguarda o próximo turno', () => {
+test('Primeiros Socorros e cura acumulada ficam disponíveis durante Reanimação por 0 PV', () => {
   assert.match(painel, /estadoPV0 &&/);
   assert.match(painel, /Registrar sucesso/);
   assert.match(painel, /Acumular cura sem despertar/);
 });
-
 test('um novo evento crítico pode iniciar outra Reanimação após a anterior ser concluída', () => {
   assert.match(painel, /reanimacaoAnteriorConcluida/);
   assert.match(painel, /reanimacao === null \|\| reanimacaoAnteriorConcluida/);
@@ -84,14 +81,15 @@ test('descanso não restaura PV enquanto Reanimação ou transformação estiver
   assert.match(descanso, /bloqueado/);
 });
 
-test('Reanimação respeita dados físicos, virtuais e mistos sem presumir resultados', () => {
+test('Reanimação respeita modos e tipos de dados sem exigir faces físicas na Ficha', () => {
   assert.match(painel, /sortearDados\(2, 20\)/);
   assert.match(painel, /sortearDados\(1, 20\)\[0\]/);
   assert.match(painel, /modoDados === 'mistos'/);
-  assert.match(painel, /Rolar e registrar Teste/);
-  assert.match(painel, /Dados físicos registrados/);
+  assert.match(painel, /Registrar sucesso/);
+  assert.match(painel, /Registrar falha/);
+  assert.doesNotMatch(painel, /Resultado do d20/);
+  assert.doesNotMatch(painel, /Segundo d20/);
 });
-
 test('Transformações a 0 PV exibem o cânone como referência e permitem registrar a decisão da Mesa', () => {
   assert.match(ficha, /transformacaoAtiva=\{condicoesRegistradasIds\.includes\('infectado-especial'\)/);
   assert.match(painel, /transformacaoPVZero = transformacaoAtiva !== null && recursos\.pvAtual <= 0/);
@@ -125,12 +123,11 @@ test('0 PV inicia Reanimação após haver PV Máximos; a Ficha não controla tu
   assert.doesNotMatch(painel, /iniciarTurnoReanimacao/);
 });
 
-test('Reanimação virtual não é bloqueada e Teste de Medicina comum não ativa Exposto', () => {
+test('Reanimação virtual continua disponível no modo Automático', () => {
   assert.doesNotMatch(painel, /bloqueioVirtual/);
   assert.match(painel, /sortearDados\(2, 20\)/);
-  assert.match(painel, /não ativa Exposto automaticamente/);
+  assert.match(painel, /sortearDados\(1, 20\)\[0\]/);
 });
-
 test('roladores de Reanimação ficam disponíveis somente no modo Automático', () => {
   assert.match(painel, /rolagemVirtualAtiva = modo === 'automatico' && metodo === 'virtual'/);
   assert.match(painel, /modo === 'automatico' && modoDados === 'mistos'/);
