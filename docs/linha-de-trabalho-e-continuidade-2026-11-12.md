@@ -874,3 +874,14 @@ Identificada divergência entre o bloqueio de gasto de SA do Painel e a confirma
 - O ajuste de teste de compatibilidade da Reanimação foi atualizado para representar estado legado `aguardando_proximo_turno` antes de qualquer tentativa.
 - Validação humana PENDENTE. Próxima ação: concluir CI, depois solicitar teste humano dos três roladores; em seguida auditoria D da estrutura de Combate.
 - Checkpoint: `docs/checkpoint-rolagens-testes-ataques-2026-11-19.md`; matriz funcional atualizada.
+
+
+## Confirmação de CI — tarefas B e C — 19/11/2026
+
+- A suíte completa de testes offline passou no código/testes HEAD `fbbd6a2d6c91309beedea0e43cd3edbac4c108a6`: run `44452755076` — SUCCESS.
+- Build TypeScript/Vite no mesmo HEAD: run `44452755198` — SUCCESS.
+- O run incluiu a correção do teste de validação de personagem para registros legados de Reanimação aguardando turno, antes da primeira tentativa.
+- Tarefa B — Reanimação: **TESTADA AUTOMATICAMENTE**; validação humana PENDENTE.
+- Tarefa C — Rolador Livre, Testes sem DT genérica e Rolador de Ataque: **TESTADA AUTOMATICAMENTE**; validação humana PENDENTE.
+- Após o HEAD aprovado `fbbd6a2`, commits `a9a7f2d`, `cd62311`, `89a3712`, `f3af6a3`, `10566f1` e `9ac2b54` alteraram somente documentação.
+- Próxima ação: iniciar auditoria D — estrutura da interface de Combate — sem antecipar integração ativa com Inventário.
