@@ -24,6 +24,29 @@ test('modo de Ataque não compara com Defesa e mantém os resultados críticos o
   assert.match(ui, /1 natural: Falha Crítica; Exposto é ativado automaticamente somente no modo Automático/);
 });
 
+
+test('Rolador de Ataque fica identificado e aberto por padrão na seção de Combate', () => {
+  assert.match(ui, /<details className="ficha-local-editor calculadora-teste" open=\{escopo === 'ataques'\}>/);
+  assert.match(ui, /Rolador de Ataque · Corpo a Corpo \/ à Distância/);
+  assert.match(ui, /Ataque Corpo a Corpo · Luta/);
+  assert.match(ui, /Ataque à distância · Pontaria/);
+});
+
+test('Rolador de Ataque calcula total sem comparar Defesa ou declarar acerto comum', () => {
+  assert.match(ui, /calcularRolagemAtaqueManual/);
+  assert.match(ui, /Compare o total com a Defesa do alvo na mesa/);
+  assert.doesNotMatch(ui, /<label>Defesa do alvo/);
+  assert.match(ui, /A Ficha não decide o resultado do Ataque/);
+});
+
+test('Calculadora de Testes não apresenta DT genérica nem opção Impossível na Ficha', () => {
+  assert.doesNotMatch(ui, /<label>DT/);
+  assert.doesNotMatch(ui, /Impossível — sem Teste/);
+  assert.doesNotMatch(ui, /value=\{dt\}/);
+  assert.match(ui, /calcularRolagemTesteManual/);
+  assert.match(ui, /O Mestre avalia a DT e o resultado/);
+});
+
 test('calculadora não rola dados nem aplica Dano automaticamente', () => {
   assert.match(ui, /sortearDados/);
   assert.match(ui, /Cada rolagem exige comando explícito/);
