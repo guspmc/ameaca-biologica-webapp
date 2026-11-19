@@ -120,7 +120,8 @@ test('três falhas registram resultado mecânico e deixam o desfecho para a Mesa
   assert.doesNotMatch(painel, /Morte sinalizada para registro do Mestre|retorno como Zumbi Especial pendente para o próximo turno/);
 });
 
-test('0 PV inicia automaticamente o estado de Reanimação, aguardando o próximo turno', () => {
+test('0 PV inicia automaticamente o estado de Reanimação somente após haver PV Máximos derivados', () => {
+  assert.match(painel, /podeIniciarPV = !registroReanimacaoInvalido && pvMaximo > 0 && !transformacaoPVZero && recursos\.pvAtual === 0/);
   assert.match(painel, /pvZeroAutoTentado/);
   assert.match(painel, /void iniciar\('pv_zero'\)/);
   assert.match(painel, /recursos\.pvAtual > 0/);
