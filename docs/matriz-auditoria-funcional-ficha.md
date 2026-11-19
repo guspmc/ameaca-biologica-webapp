@@ -846,3 +846,20 @@ A revisão dos controles do painel encontrou uma omissão concreta na implementa
 - O cenário de compatibilidade de Reanimação foi corrigido para validar estado legado aguardando turno antes de qualquer tentativa; a suíte completa aprovou.
 - As tarefas B e C estão **TESTADAS AUTOMATICAMENTE**. Validação humana de ambas permanece **PENDENTE**.
 - Após o HEAD aprovado, somente documentação foi alterada nos commits `a9a7f2d`, `cd62311`, `89a3712`, `f3af6a3` e `10566f1`; nenhum código ou teste foi modificado.
+
+
+## Interface de Combate e barra rápida de recursos — 19/11/2026
+
+- **Implementado:** barra PV/SA/BI compacta e sticky no topo do corpo rolável; botões de ajuste de SA na barra, com limites de 0 e SA máximo, confirmação de persistência e proteção contra cliques concorrentes.
+- **Implementado:** tocar nos indicadores abre “Administrar recursos e Integridade Física”; o painel de Recursos foi posicionado antes de Condições.
+- **Implementado:** Progressão e Registro de Decisões da Mesa aparecem depois da seção Inventário.
+- **Implementado:** painel de Manobras no Combate sem controle de turnos e sem ajustes genéricos duplicados de SA. Botões bloqueados se SA atual ou SA máximo forem inferiores ao custo.
+- **Implementado:** Esforço (1 SA para Movimento/Ação Bônus/Reação adicional; 2 SA para Ação adicional), Fuga (1 SA), Contra-Ataque (1 SA), Finalizar (3 SA), Finalização Dupla (3 SA) e Mirar (1 SA).
+- **Mirar:** estado preparado é limpo somente após confirmação de persistência; bônus +2 e região específica permanecem no resultado já confirmado. Falha no salvamento impede registrar a rolagem.
+- **Cânone:** Arquivo do Jogador v1.0, pp. 77–81. Esquivar não possui custo universal de SA; depende de Habilidade/regra liberadora e usa janela de Reação (p. 80). Não é botão de gasto de SA.
+- **Dependências preservadas:** seleção de armas equipadas, Aparar com Durabilidade/desgaste, munição, Rajada, Disparo Cadenciado e Recarga dependem do Inventário ativo e ficam para a Fase 3. Não duplicar estado de equipamento.
+- **Arquivos:** `src/FichaLocal.tsx`, `src/PainelAcoesLocal.tsx`, `src/CalculadoraTesteLocal.tsx`, `src/RecursosFichaLocal.tsx`, `src/styles.css` e testes de interface/rolagens/condições/origem de salvamento.
+- **Build:** workflow `44544876587` — SUCCESS no HEAD `070be137dafdbc61590376cef6816733a3b9a4a3`.
+- **Testes:** workflow `44544876672` — IN_PROGRESS no momento do checkpoint. Consultar resultado final; não classificar como TESTADO AUTOMATICAMENTE antes do sucesso.
+- **Validação humana:** PENDENTE. A bateria humana integrada será feita somente após a conclusão da Fase 1, conforme o protocolo de continuidade.
+- **Checkpoint:** `docs/checkpoint-interface-combate-2026-11-19.md`.
