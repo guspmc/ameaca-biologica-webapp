@@ -58,7 +58,7 @@ export default function RecursosFichaLocal({ dados, pvMaximo, saMaximo, biMaximo
     try { atualizar(operacao()); } catch (e) { setErroOperacao(e instanceof Error ? e.message : 'Operação inválida.'); }
   }
 
-  return <details className="ficha-local-editor recursos-ficha" aria-label="Recursos da personagem">
+  return <details id="ficha-local-administrar-recursos" className="ficha-local-editor recursos-ficha" aria-label="Recursos da personagem">
     <summary>Administrar recursos e Integridade Física</summary>
     <h3>Recursos e Integridade Física</h3>
     <p>Valores atuais são separados dos máximos derivados. {origemDados === 'servidor' ? 'Ajustes são enviados ao servidor após a confirmação.' : 'Ajustes são gravados neste dispositivo após a confirmação.'} Não registram descanso, rolagem, ação ou efeito automático.</p>
@@ -86,11 +86,7 @@ export default function RecursosFichaLocal({ dados, pvMaximo, saMaximo, biMaximo
     </div>
     <p className="ficha-local-legenda">Dano consome PV Temporários antes dos PV Atuais. Cura afeta apenas PV Atuais. Novos PV Temporários conservam o maior valor, sem soma. Durante Reanimação por 0 PV, a edição direta de PV fica bloqueada; registre toda cura no painel de Reanimação para acumular até o terceiro sucesso.</p>
     <h4>Surto de Adrenalina</h4>
-    <div className="recursos-controles">
-      <button type="button" disabled={ocupado || recursos.saAtual === 0} onClick={() => tentar(() => ajustarSA(recursos, -1, pvMaximo, saMaximo))}>-1 SA</button>
-      <button type="button" disabled={ocupado || recursos.saAtual >= saMaximo} onClick={() => tentar(() => ajustarSA(recursos, 1, pvMaximo, saMaximo))}>+1 SA</button>
-    </div>
-    <p className="ficha-local-legenda">A ficha registra a quantidade; não compra ações nem controla automaticamente a janela de Esforço.</p>
+    <p className="ficha-local-legenda">O saldo de SA pode ser corrigido pelos controles rápidos no topo ou pelo campo numérico acima. A ficha não controla turnos nem a janela de Esforço.</p>
     <h4>Bio-Infecção</h4>
     <div className="recursos-controles">
       <button type="button" disabled={ocupado || biMaximo <= 0 || recursos.biAtual === 0} onClick={() => tentar(() => ajustarBI(recursos, -1, pvMaximo, saMaximo))}>-1 BI</button>
