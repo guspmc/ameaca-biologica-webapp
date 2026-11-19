@@ -863,3 +863,19 @@ A revisão dos controles do painel encontrou uma omissão concreta na implementa
 - **Testes:** workflow `44544876672` — IN_PROGRESS no momento do checkpoint. Consultar resultado final; não classificar como TESTADO AUTOMATICAMENTE antes do sucesso.
 - **Validação humana:** PENDENTE. A bateria humana integrada será feita somente após a conclusão da Fase 1, conforme o protocolo de continuidade.
 - **Checkpoint:** `docs/checkpoint-interface-combate-2026-11-19.md`.
+
+
+## Auditoria final das pendências da Fase 1 — 19/11/2026
+
+- **Planejamento cruzado:** Documento Mestre v3.0, §§ 3.2, 6.1, 7 e 17. A Ficha Offline deve permanecer independente de conta/servidor, com IndexedDB, shell PWA, backup e as funções da Fase 1, sem Inventário ativo.
+- **Defeito encontrado:** o callback de consumo persistido de Mirar estava conectado ao Ataque Corpo a Corpo, mas ausente no Ataque à Distância. Isso impedia concluir uma rolagem à distância quando Mirar estava preparado.
+- **Correção:** `src/FichaLocal.tsx` agora conecta `aoConsumirMirar` nos dois cartões. `tests/ataques-calculadora.test.mjs` exige as duas conexões. Código/teste no HEAD `bc355a4c1699ddd7d487450317e74877cdfa99a7`.
+- **CI:** Verificação Offline run `44554731868` — SUCCESS, 155/155 arquivos de teste, zero falhas. Build/TypeScript/Vite run `44554732144` — SUCCESS. Ambos no mesmo HEAD de código/teste.
+- **Fase 0:** entrada Offline, ausência de Supabase no grafo ativo, IndexedDB v3, proteção de conflito, backup e Service Worker do shell estão IMPLEMENTADOS/TESTADOS AUTOMATICAMENTE. Inicialização real, IndexedDB real, Service Worker e modo avião seguem PENDENTES de validação humana.
+- **Fase 1:** criação/edição, Características, Identidade, Classe/Origem, Atributos/Perícias, Habilidades, Progressão, PV/SA/BI/Defesa, Condições, Descanso, Reanimação, rolagens, Combate e backup foram auditados contra o planejamento e checkpoints. Não foi encontrada nova lacuna bloqueadora após a correção de Mirar à distância.
+- **Limitações aceitas:** Inventário ativo e Aparar universal dependente de arma/Durabilidade ficam para Fase 3; Adiar Ação, Agarrar, Empurrar/Derrubar e Esconder-se permanecem manuais/consultivos conforme dependências de contexto e limites da Ficha. Não criar motor de turnos, estado paralelo de equipamento ou mutação de alvo.
+- **Roteiro humano:** atualizado em `docs/roteiro-humano-ficha-offline-local.md`, incluindo barra PV/SA/BI, limites de SA, Manobras, Mirar corpo a corpo/à distância, modos/dados, Condições, Descanso, Reanimação e Progressão.
+- **Validação humana:** PENDENTE. O teste relatado em 18/11 usou o fluxo LAN, portanto não valida a Ficha Offline. A bateria integrada deve usar o inicializador Offline, sem LAN.
+- **Classificação:** auditoria técnica da Fase 1 CONCLUÍDA neste recorte; Fase 0 e Fase 1 continuam EM ANDAMENTO até a bateria humana e aprovação expressa de Gus.
+- **Checkpoint:** `docs/checkpoint-auditoria-pendencias-fase1-2026-11-19.md`.
+- **Próxima ação:** Gus executar o roteiro humano atualizado. Não iniciar Inventário ativo antes da aprovação da Fase 2.
