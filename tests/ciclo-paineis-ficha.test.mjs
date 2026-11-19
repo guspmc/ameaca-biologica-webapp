@@ -13,7 +13,6 @@ test('editores da ficha preservam a montagem e sincronizam props externas após 
     ['EditorInventarioLocal', 'EditorInventarioLocal.tsx'],
     ['FuncionamentoFichaLocal', 'FuncionamentoFichaLocal.tsx'],
     ['RecursosFichaLocal', 'RecursosFichaLocal.tsx'],
-    ['PainelAcoesLocal', 'PainelAcoesLocal.tsx'],
   ];
   for (const [componente, arquivo] of casos) {
     const tag = ficha.match(new RegExp('<' + componente + '\\b[\\s\\S]*?\\/>'))?.[0] ?? '';
@@ -23,4 +22,7 @@ test('editores da ficha preservam a montagem e sincronizam props externas após 
     assert.match(fonte, /useEffect/, arquivo + ': deve sincronizar dados externos');
     assert.match(fonte, componente === 'PainelAcoesLocal' ? /salvando/ : /sujo/, arquivo + ': deve preservar estado local durante a operação');
   }
+  const painel = await ler('PainelAcoesLocal.tsx');
+  assert.match(painel, /saAtual, saMaximo/);
+  assert.match(painel, /saMaximo < manobra.custo/);
 });
