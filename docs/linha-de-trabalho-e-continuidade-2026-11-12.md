@@ -930,3 +930,16 @@ Identificada divergência entre o bloqueio de gasto de SA do Painel e a confirma
 - Testes automatizados/build não executados neste ambiente remoto; validação humana desktop/mobile PENDENTE. Não classificar a missão como testada ou homologada.
 - HEAD remoto após checkpoint: `3634d140c9b7dcc5fcabc0f380d6678b4bfee99a`. Árvore de trabalho local de Gus não pôde ser inspecionada.
 - Próxima ação: Gus atualizar a branch local, executar build/testes e validar desktop maximizado, janela desktop baixa, mobile retrato e paisagem. Depois, retomar bateria humana da Ficha no passo Identidade. Fase 3 permanece bloqueada.
+
+
+## Atualização de continuidade — largura responsiva desktop — 20/11/2026
+
+- Gus aprovou adaptar a largura da Ficha ao desktop, preservando a experiência mobile e a identidade visual congelada.
+- Em `src/styles.css`, a regra final desktop passou a usar `min(calc(100vw - 48px),1180px)` para viewports acima de 760 px e altura acima de 560 px.
+- Mobile até 760 px permanece integral; janelas com altura até 560 px mantêm o comportamento de paisagem/tela integral existente.
+- Nenhuma alteração em React, persistência, regras, navegação ou componentes.
+- Commit de código: `2635135c72329a2fd36e879e331e7fb256ee1896`.
+- Checkpoint: `docs/checkpoint-largura-responsiva-ficha-2026-11-20.md`.
+- Classificação: IMPLEMENTADO; testes automatizados, build e validação humana da nova largura PENDENTES. A aprovação humana anterior da Missão 07 não valida a nova largura.
+- Próxima ação: Gus atualizar a branch local, validar desktop em larguras intermediárias/maximizada, janela baixa, mobile retrato e paisagem; depois retomar o checklist humano no passo Identidade — salvar. Fase 3/Inventário ativo continua bloqueada.
+- HEAD remoto após o checkpoint: `057e363c329c7defb823f1aa632db5d3bb6f195b`. Árvore local não inspecionada.
