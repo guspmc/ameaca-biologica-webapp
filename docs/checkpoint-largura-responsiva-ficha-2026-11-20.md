@@ -88,3 +88,11 @@ Missão 08 validada humanamente por Gus. Próxima ação: retomar a bateria huma
 - Resultado: proteção contra descarte acidental e descarte intencional **VALIDADOS HUMANAMENTE**; dados previamente salvos permaneceram preservados.
 - Próxima ação exata: seção 3, item 1 do roteiro humano — com a ficha salva, pressionar F5, reabrir a personagem e conferir os dados salvos.
 - Fase 2 permanece em andamento; Inventário ativo/Fase 3 continua bloqueado. Testes automatizados/build após os ajustes CSS continuam PENDENTES.
+
+
+## Bateria humana — recarga F5 — 20/11/2026
+
+- Gus reportou **APROVADO** para a seção 3, item 1 do roteiro humano: após pressionar F5, reabrir a mesma personagem e conferir os dados, a persistência dos dados salvos foi confirmada.
+- Resultado: recarga da aplicação e reabertura da personagem sem perda dos dados previamente salvos **VALIDADAS HUMANAMENTE**.
+- Próxima ação exata: seção 3, item 2 — abrir duas abas do mesmo navegador/perfil, ambas com a mesma personagem, sem ainda editar.
+- Fase 2 permanece em andamento; Inventário ativo/Fase 3 continua bloqueado. Testes automatizados/build após os ajustes CSS continuam PENDENTES.
