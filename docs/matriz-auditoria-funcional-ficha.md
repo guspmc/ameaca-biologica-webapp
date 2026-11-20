@@ -953,3 +953,9 @@ A revisão dos controles do painel encontrou uma omissão concreta na implementa
 - Persistência após recarga da aplicação confirmada para os dados já gravados na ficha.
 - Próxima verificação: abrir duas abas do mesmo navegador/perfil com a mesma personagem, sem editar (roteiro, seção 3, item 2).
 - Fase 2 segue em andamento; Inventário ativo/Fase 3 bloqueado. Testes automatizados/build posteriores aos ajustes CSS permanecem PENDENTES.
+
+## Bateria humana — abertura simultânea em duas abas — 20/11/2026
+
+- Seção 3, item 2 do roteiro humano: **VALIDADO HUMANAMENTE**. Gus abriu a mesma personagem em duas abas do mesmo navegador/perfil; ambas exibiram a personagem normalmente, sem edição.
+- Escopo da evidência: abertura simultânea. Não representa ainda validação de gravação concorrente ou resolução de conflito.
+- Próximo teste humano: seção 3, item 3 — salvar uma alteração na aba A e, sem recarregar a aba B, tentar salvar uma alteração na mesma seção pela aba B. Fase 2 continua em andamento; Inventário ativo/Fase 3 bloqueado.
