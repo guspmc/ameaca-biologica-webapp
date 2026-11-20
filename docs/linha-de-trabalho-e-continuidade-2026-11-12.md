@@ -943,3 +943,12 @@ Identificada divergência entre o bloqueio de gasto de SA do Painel e a confirma
 - Classificação: IMPLEMENTADO; testes automatizados, build e validação humana da nova largura PENDENTES. A aprovação humana anterior da Missão 07 não valida a nova largura.
 - Próxima ação: Gus atualizar a branch local, validar desktop em larguras intermediárias/maximizada, janela baixa, mobile retrato e paisagem; depois retomar o checklist humano no passo Identidade — salvar. Fase 3/Inventário ativo continua bloqueada.
 - HEAD remoto após o checkpoint: `057e363c329c7defb823f1aa632db5d3bb6f195b`. Árvore local não inspecionada.
+
+
+## Validação humana — Missão 08: largura responsiva — 20/11/2026
+
+- Gus confirmou que a largura fluida no desktop funcionou e que o comportamento mobile permaneceu correto: **VALIDADO HUMANAMENTE**.
+- Observação não bloqueadora: ao pressionar F5, a aplicação retornou à tela de seleção de personagem. Gus aceitou o comportamento por ora; registrar como possível melhoria futura, sem correção neste ciclo.
+- Checkpoint atualizado: `docs/checkpoint-largura-responsiva-ficha-2026-11-20.md`.
+- Testes automatizados e build após o ajuste CSS continuam PENDENTES; a validação humana visual não os substitui.
+- Próxima ação: retomar a bateria humana integrada no passo **Identidade — salvar**. A Fase 2 permanece em andamento; Inventário ativo/Fase 3 continua bloqueado.
