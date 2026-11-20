@@ -965,3 +965,11 @@ A revisão dos controles do painel encontrou uma omissão concreta na implementa
 - Seção 3, item 3 do roteiro humano: **VALIDADO HUMANAMENTE** quanto à detecção e ao bloqueio de gravação concorrente. Gus informou que a Aba B bloqueou a alteração e apresentou um aviso após a Aba A salvar uma alteração na mesma seção.
 - A evidência ainda não confirma a releitura do valor persistido pela Aba A. Próximo teste: recarregar a Aba B e verificar o valor da Aba A, sem editar antes.
 - Fase 2 segue em andamento; Inventário ativo/Fase 3 bloqueado.
+
+
+## Bateria humana — recuperação após conflito entre abas — 20/11/2026
+
+- Seção 3, item 4 do roteiro humano: **VALIDADO HUMANAMENTE**. Gus recarregou a Aba B, reabriu a mesma personagem e confirmou que o campo apresentou o valor salvo pela Aba A.
+- Classificação: recuperação/releitura do estado persistido após conflito **VALIDADA HUMANAMENTE**. Em conjunto com o item 3, há evidência humana de bloqueio da gravação desatualizada e recuperação do valor mais recente.
+- Próximo teste: seção 3, item 5 — repetir em seções diferentes para verificar a mesclagem de alterações independentes conforme o contrato de persistência.
+- Fase 2 continua em andamento; Inventário ativo/Fase 3 permanece bloqueado.
