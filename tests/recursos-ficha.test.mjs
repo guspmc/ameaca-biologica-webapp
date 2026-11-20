@@ -72,7 +72,7 @@ test('a interface liga recursos ao salvamento do rascunho e explica os limites',
   assert.match(ui, /patchEntre\(recursos, proximo\)/);
   assert.match(ui, /aoSalvar\(patch\)/);
   assert.match(ui, /Tentar salvar novamente/);
-  assert.match(ui, /Aplicar PV/);
+  assert.match(ui, /async function aplicarPV\(\)/);
   assert.doesNotMatch(ui, /Descartar alterações não salvas/);
   assert.match(ui, /Desfazer último ajuste/);
 });
