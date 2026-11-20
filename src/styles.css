@@ -1193,11 +1193,11 @@ footer { margin-top:45px; border-top:1px solid #dce2df; padding-top:19px; color:
 @media(max-width:560px){.ficha-local-recursos-sticky{top:0;gap:3px;padding:4px}.ficha-local-recursos-sticky .ficha-local-recurso-atalho strong{font-size:14px}.ficha-local-recurso-ajustes button{min-width:30px;min-height:23px}}
 
 
-/* Missão 07 — Ficha sem moldura de aparelho, em todas as larguras. */
+/* Missão 07 — Ficha sem moldura; largura fluida no desktop, mobile preservado. */
 .ficha-local-fundo{padding:0}
 .ficha-local{height:100dvh;border:0;border-radius:0;box-shadow:none}
 .ficha-local:before{content:none;display:none}
-@media(min-width:736px){
- .ficha-local{width:min(100%,425px);height:100dvh;min-height:0;border:0;border-radius:0;box-shadow:none}
+@media(min-width:761px) and (min-height:561px){
+ .ficha-local{width:min(calc(100vw - 48px),1180px);height:100dvh;min-height:0;border:0;border-radius:0;box-shadow:none}
  .ficha-local-corpo{padding-top:18px}
 }
