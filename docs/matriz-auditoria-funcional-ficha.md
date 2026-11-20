@@ -930,3 +930,10 @@ A revisão dos controles do painel encontrou uma omissão concreta na implementa
 - Próximo passo: seção 2, item 8 do roteiro — testar alteração não salva, aviso ao fechar, cancelamento do descarte e descarte intencional; reabrir e confirmar que a alteração não persistiu.
 - F5 ainda não executado; será testado separadamente na seção 3.
 - Fase 2 em andamento; Inventário ativo/Fase 3 bloqueado.
+
+
+## Bateria humana — proteção contra descarte acidental — 20/11/2026
+
+- **VALIDADO HUMANAMENTE:** o aviso de descarte apareceu ao tentar fechar com alteração não salva; Gus cancelou e confirmou que a ficha permaneceu aberta.
+- Próximo passo: descartar intencionalmente a alteração e reabrir a ficha para confirmar que o valor não salvo não persistiu.
+- F5 ainda não executado; será testado na seção 3. Fase 2 em andamento; Inventário ativo/Fase 3 bloqueado.
