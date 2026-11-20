@@ -917,3 +917,16 @@ Identificada divergência entre o bloqueio de gasto de SA do Painel e a confirma
 - Próxima ação exata: Gus executar o roteiro atualizado pelo inicializador **Ficha Offline**, registrar APROVADO/FALHOU/NÃO EXECUTADO e compartilhar resultados. Não iniciar Inventário ativo antes da aprovação expressa da Fase 2.
 - Checkpoint: `docs/checkpoint-auditoria-pendencias-fase1-2026-11-19.md`.
 - Sem troca de branch, alteração de `main`, merge, publicação ou deploy.
+
+
+## Atualização de continuidade — Missão 07: layout desktop — 20/11/2026
+
+- Gus aprovou preservar a largura estreita da Ficha no desktop, ocupar a altura útil da janela e remover notch e bezel em todas as versões.
+- Diagnóstico em `src/styles.css`: a regra desktop limitava altura a 840 px/viewport menos 46 px e impunha altura mínima de 600 px; moldura era composta por borda, raio e sombras; notch vinha de `.ficha-local:before`.
+- Correção implementada somente em `src/styles.css`: contêiner sem padding externo, superfície com altura `100dvh`, sem borda/raio/sombra e pseudo-elemento do notch removido. Desktop mantém largura máxima de 425 px e deixa de impor altura mínima. Rolagem interna foi preservada.
+- `src/FichaLocal.tsx` não foi alterado.
+- Commit CSS: `235e7a0738285ba25efd3b1f790e0ba887f8dd7d`.
+- Checkpoint: `docs/checkpoint-layout-responsivo-desktop-2026-11-20.md`, commit `3634d140c9b7dcc5fcabc0f380d6678b4bfee99a`.
+- Testes automatizados/build não executados neste ambiente remoto; validação humana desktop/mobile PENDENTE. Não classificar a missão como testada ou homologada.
+- HEAD remoto após checkpoint: `3634d140c9b7dcc5fcabc0f380d6678b4bfee99a`. Árvore de trabalho local de Gus não pôde ser inspecionada.
+- Próxima ação: Gus atualizar a branch local, executar build/testes e validar desktop maximizado, janela desktop baixa, mobile retrato e paisagem. Depois, retomar bateria humana da Ficha no passo Identidade. Fase 3 permanece bloqueada.
