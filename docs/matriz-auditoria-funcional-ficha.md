@@ -879,3 +879,11 @@ A revisão dos controles do painel encontrou uma omissão concreta na implementa
 - **Classificação:** auditoria técnica da Fase 1 CONCLUÍDA neste recorte; Fase 0 e Fase 1 continuam EM ANDAMENTO até a bateria humana e aprovação expressa de Gus.
 - **Checkpoint:** `docs/checkpoint-auditoria-pendencias-fase1-2026-11-19.md`.
 - **Próxima ação:** Gus executar o roteiro humano atualizado. Não iniciar Inventário ativo antes da aprovação da Fase 2.
+
+
+## Interface — responsividade desktop e moldura — 20/11/2026
+
+- **Ajuste aprovado:** preservar largura desktop máxima de 425 px; ocupar a altura integral da viewport; remover notch e bezel tanto no desktop quanto no mobile.
+- **Implementação:** `src/styles.css`, sem alteração estrutural em `src/FichaLocal.tsx`. A rolagem interna foi mantida.
+- **Classificação:** IMPLEMENTADO. Testes automatizados/build e validação humana ainda PENDENTES; conferir desktop maximizado, desktop com janela baixa, mobile retrato e paisagem.
+- **Checkpoint:** `docs/checkpoint-layout-responsivo-desktop-2026-11-20.md`.
