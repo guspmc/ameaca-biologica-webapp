@@ -80,3 +80,11 @@ Missão 08 validada humanamente por Gus. Próxima ação: retomar a bateria huma
 - Próxima ação exata: com a alteração ainda não salva, tentar fechar novamente e confirmar o descarte intencional. Reabrir a ficha e verificar que a alteração não persistiu.
 - Não executar F5 ainda; a recarga será testada separadamente na seção 3 do roteiro.
 - Fase 2 permanece em andamento; Inventário ativo/Fase 3 continua bloqueado.
+
+
+## Bateria humana — descarte intencional de alteração não salva — 20/11/2026
+
+- Gus reportou **APROVADO**: após cancelar a primeira tentativa de fechamento, tentou fechar novamente, escolheu descartar as alterações, reabriu a mesma personagem e confirmou que o valor não salvo não persistiu.
+- Resultado: proteção contra descarte acidental e descarte intencional **VALIDADOS HUMANAMENTE**; dados previamente salvos permaneceram preservados.
+- Próxima ação exata: seção 3, item 1 do roteiro humano — com a ficha salva, pressionar F5, reabrir a personagem e conferir os dados salvos.
+- Fase 2 permanece em andamento; Inventário ativo/Fase 3 continua bloqueado. Testes automatizados/build após os ajustes CSS continuam PENDENTES.
