@@ -977,3 +977,10 @@ Identificada divergência entre o bloqueio de gasto de SA do Painel e a confirma
 - Próxima ação exata: executar a seção 2, item 8 do roteiro humano. Em uma seção, fazer uma alteração sem salvar e tentar fechar; confirmar o aviso de descarte. Cancelar e verificar que a ficha permanece aberta; depois descartar intencionalmente, reabrir e confirmar que a alteração não salva não persistiu.
 - Não executar F5 ainda; a recarga será testada separadamente na seção 3.
 - Fase 2 permanece em andamento; Inventário ativo/Fase 3 continua bloqueado.
+
+
+## Bateria humana — aviso de descarte cancelado — 20/11/2026
+
+- Gus confirmou **APROVADO** para o aviso de alteração não salva: o aviso apareceu ao tentar fechar e, ao cancelar, a ficha permaneceu aberta.
+- Próximo passo: confirmar o descarte intencional da alteração ainda não salva e reabrir a ficha para verificar que ela não persistiu.
+- F5 permanece reservado para a seção 3 do roteiro. Fase 2 em andamento; Fase 3 bloqueada.
