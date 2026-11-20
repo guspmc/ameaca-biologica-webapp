@@ -973,3 +973,17 @@ A revisão dos controles do painel encontrou uma omissão concreta na implementa
 - Classificação: recuperação/releitura do estado persistido após conflito **VALIDADA HUMANAMENTE**. Em conjunto com o item 3, há evidência humana de bloqueio da gravação desatualizada e recuperação do valor mais recente.
 - Próximo teste: seção 3, item 5 — repetir em seções diferentes para verificar a mesclagem de alterações independentes conforme o contrato de persistência.
 - Fase 2 continua em andamento; Inventário ativo/Fase 3 permanece bloqueado.
+
+
+## Correção de salvamento de recursos — patches mínimos — 20/11/2026
+
+- Gus confirmou o contrato: PV só grava após clicar em **Aplicar**; cada clique SA +1/-1 e BI +1/-1 representa uma operação aplicada e deve salvar imediatamente.
+- Causa do conflito entre seções: o editor de recursos enviava o objeto completo de PV/SA/BI, incluindo valores antigos de chaves que não haviam sido editadas. A persistência compara todas as chaves presentes no patch; por isso uma alteração de SA podia bloquear indevidamente uma alteração independente de PV.
+- Implementado em `src/recursosFicha.ts` e `src/RecursosFichaLocal.tsx`: `RecursosPatch` parcial e geração de patches mínimos; PV direto com confirmação explícita; operações de cura, dano, PV Temporários e BI salvam imediatamente; dano e efeito de BI Desgarrado preservam gravação atômica de todas as chaves alteradas; falha mantém pendência e oferece retentativa.
+- Ajuste em `src/FichaOfflineApp.tsx`: a gravação de SA rápido deriva a base esperada do saldo atual persistido quando não é enviada explicitamente, mantendo as verificações da Economia de Ações e estado do turno.
+- Teste estrutural atualizado em `tests/recursos-ficha.test.mjs`; **não executado nesta sessão**. Build/TypeScript também **não executado**. Nenhum workflow CI foi localizado para os commits deste ciclo.
+- Checkpoint: `docs/checkpoint-salvamento-recursos-patches-minimos-2026-11-20.md`.
+- Commits de implementação/teste: `14059b2`, `8a71177`, `7e440b4`, `33bb0b5`, `33fc5f8`, `81bef55`; checkpoint documental: `8e61222`.
+- Classificação: **IMPLEMENTADO**; teste automatizado, build e validação humana **PENDENTES**. Não declarar correção validada até execução e teste humano.
+- Próxima ação exata: Gus atualizar a cópia de teste com a branch `feat/offline-first-ficha`, executar `pnpm test` e `pnpm build`, e então repetir a Missão 06, seção 3, item 5 (alterações independentes SA/PV em abas diferentes). Revalidar conflito na mesma chave, PV Aplicar, SA/BI por botões, BI Desgarrado, dano/PV Temporários e falha de salvamento.
+- Fase 2 continua em andamento; Fase 3/Inventário ativo permanece bloqueada. Nenhuma alteração em `main`, merge, publicação ou deploy.
