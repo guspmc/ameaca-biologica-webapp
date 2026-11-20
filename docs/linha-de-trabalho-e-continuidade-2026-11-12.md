@@ -1008,3 +1008,10 @@ Identificada divergência entre o bloqueio de gasto de SA do Painel e a confirma
 - O resultado confirma apenas a abertura simultânea; a proteção contra alterações concorrentes ainda precisa ser testada.
 - Próxima ação exata: seção 3, item 3 do roteiro humano — alterar e salvar uma seção na aba A; sem recarregar a aba B, alterar a mesma seção na aba B e tentar salvar. Verificar se o conflito é informado e se a alteração já salva na aba A não é sobrescrita.
 - Fase 2 permanece em andamento; Fase 3/Inventário ativo bloqueada. Build e testes automatizados após os ajustes CSS permanecem PENDENTES.
+
+## Bateria humana — conflito entre abas — 20/11/2026
+
+- **VALIDADO HUMANAMENTE:** Gus confirmou que, após a Aba A salvar uma alteração, a Aba B desatualizada bloqueou a tentativa de salvar outra alteração na mesma seção e apresentou um aviso.
+- A evidência valida o bloqueio da gravação concorrente; a conferência de recuperação do valor mais recente ainda está pendente.
+- Próxima ação exata: recarregar a Aba B e verificar que o valor salvo na Aba A é exibido. Não editar antes da conferência.
+- Fase 2 permanece em andamento; Inventário ativo/Fase 3 bloqueada. Build e testes automatizados após os ajustes CSS continuam PENDENTES.
