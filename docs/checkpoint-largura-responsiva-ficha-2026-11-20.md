@@ -37,3 +37,12 @@ Gus aprovou tornar a largura da Ficha fluida no desktop, mantendo a experiência
 
 ## Próxima ação exata
 Missão 08 validada humanamente por Gus. Próxima ação: retomar a bateria humana integrada no passo **Identidade — salvar**. Não iniciar Inventário ativo; Fase 2 permanece em andamento.
+
+
+## Registro de continuidade — retomada da bateria integrada
+
+- Missão 08: **VALIDADO HUMANAMENTE** por Gus; largura desktop adaptável aprovada e mobile preservado.
+- Observação não bloqueadora: F5 retorna à seleção de personagem; comportamento aceito por Gus, sem correção nesta rodada.
+- Missão 06 — bateria humana integrada: passos anteriores aprovados por Gus: abertura Offline, criação de personagem/ficha contínua, Características e Atributos/Perícias. Próximo passo pendente: **Identidade — preencher dados fictícios e salvar**.
+- Próxima ação exata: executar somente o teste de Identidade e aguardar o resultado de Gus antes de avançar.
+- Build e testes automatizados após os ajustes CSS seguem PENDENTES; validação humana visual não substitui essas verificações.
