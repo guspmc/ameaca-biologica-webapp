@@ -921,3 +921,12 @@ A revisão dos controles do painel encontrou uma omissão concreta na implementa
 - Próxima verificação: confirmar a permanência dos dados salvos após a reabertura.
 - F5 ainda não executado nesta etapa; será verificado na seção 3 do roteiro.
 - Fase 2 em andamento; Inventário ativo/Fase 3 bloqueado.
+
+
+## Bateria humana — persistência após reabertura — 20/11/2026
+
+- **VALIDADO HUMANAMENTE:** Gus confirmou que os dados salvos permaneceram presentes após fechar e reabrir a mesma ficha pela lista.
+- Características, Atributos/Perícias e Identidade conferidos: **APROVADOS**.
+- Próximo passo: seção 2, item 8 do roteiro — testar alteração não salva, aviso ao fechar, cancelamento do descarte e descarte intencional; reabrir e confirmar que a alteração não persistiu.
+- F5 ainda não executado; será testado separadamente na seção 3.
+- Fase 2 em andamento; Inventário ativo/Fase 3 bloqueado.
