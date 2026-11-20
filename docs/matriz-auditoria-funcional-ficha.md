@@ -905,3 +905,11 @@ A revisão dos controles do painel encontrou uma omissão concreta na implementa
 - **IMPLEMENTADO:** regra CSS em `src/styles.css`, largura fluida até 1180 px em desktop.
 - **TESTES AUTOMATIZADOS / BUILD:** PENDENTES após esta alteração.
 - Próxima ação da bateria integrada: **Identidade — salvar**. Fase 2 segue em andamento; não iniciar Fase 3.
+
+
+## Bateria humana — Identidade — 20/11/2026
+
+- **VALIDADO HUMANAMENTE:** Gus reportou aprovação do preenchimento e salvamento da seção Identidade.
+- Bateria integrada aprovada até o momento: inicialização Offline, criação/ficha contínua, Características, Atributos/Perícias e Identidade.
+- Próxima ação: fechar a ficha pelo controle próprio e reabri-la pela lista; confirmar que os dados salvos permanecem presentes. O teste de F5 fica para a etapa específica de persistência/recarga.
+- Build e testes automatizados após ajuste responsivo permanecem PENDENTES. Fase 2 ainda não concluída.
