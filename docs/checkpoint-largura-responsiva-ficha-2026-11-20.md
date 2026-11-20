@@ -96,3 +96,10 @@ Missão 08 validada humanamente por Gus. Próxima ação: retomar a bateria huma
 - Resultado: recarga da aplicação e reabertura da personagem sem perda dos dados previamente salvos **VALIDADAS HUMANAMENTE**.
 - Próxima ação exata: seção 3, item 2 — abrir duas abas do mesmo navegador/perfil, ambas com a mesma personagem, sem ainda editar.
 - Fase 2 permanece em andamento; Inventário ativo/Fase 3 continua bloqueado. Testes automatizados/build após os ajustes CSS continuam PENDENTES.
+
+## Bateria humana — duas abas com a mesma personagem — 20/11/2026
+
+- Gus reportou **APROVADO** para a seção 3, item 2 do roteiro humano: abriu uma segunda aba no mesmo navegador/perfil e conseguiu abrir a mesma personagem nas duas abas, sem editar.
+- Resultado: abertura simultânea da mesma personagem em duas instâncias do navegador **VALIDADA HUMANAMENTE**. Este passo não testa ainda a resolução de alterações concorrentes.
+- Próxima ação exata: seção 3, item 3 — na aba A, alterar uma seção da personagem e salvar; depois, sem recarregar a aba B, alterar a mesma seção na aba B e tentar salvar. Aguardar o resultado antes de avançar.
+- Fase 2 permanece em andamento; Inventário ativo/Fase 3 continua bloqueado. Testes automatizados/build após os ajustes CSS continuam PENDENTES.
