@@ -959,3 +959,9 @@ A revisão dos controles do painel encontrou uma omissão concreta na implementa
 - Seção 3, item 2 do roteiro humano: **VALIDADO HUMANAMENTE**. Gus abriu a mesma personagem em duas abas do mesmo navegador/perfil; ambas exibiram a personagem normalmente, sem edição.
 - Escopo da evidência: abertura simultânea. Não representa ainda validação de gravação concorrente ou resolução de conflito.
 - Próximo teste humano: seção 3, item 3 — salvar uma alteração na aba A e, sem recarregar a aba B, tentar salvar uma alteração na mesma seção pela aba B. Fase 2 continua em andamento; Inventário ativo/Fase 3 bloqueado.
+
+## Bateria humana — bloqueio de conflito entre abas — 20/11/2026
+
+- Seção 3, item 3 do roteiro humano: **VALIDADO HUMANAMENTE** quanto à detecção e ao bloqueio de gravação concorrente. Gus informou que a Aba B bloqueou a alteração e apresentou um aviso após a Aba A salvar uma alteração na mesma seção.
+- A evidência ainda não confirma a releitura do valor persistido pela Aba A. Próximo teste: recarregar a Aba B e verificar o valor da Aba A, sem editar antes.
+- Fase 2 segue em andamento; Inventário ativo/Fase 3 bloqueado.
