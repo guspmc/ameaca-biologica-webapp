@@ -896,3 +896,12 @@ A revisão dos controles do painel encontrou uma omissão concreta na implementa
 - **Arquivos:** somente `src/styles.css` no código; checkpoint `docs/checkpoint-largura-responsiva-ficha-2026-11-20.md`.
 - **Classificação:** IMPLEMENTADO. Build, testes automatizados e validação humana da nova largura PENDENTES. A validação 4/4 da Missão 07 não cobre esta alteração.
 - **Próxima ação:** teste humano responsivo e, depois, retomada do checklist integrado em Identidade — salvar. Fase 3 continua bloqueada.
+
+
+## Validação da largura responsiva desktop — 20/11/2026
+
+- **VALIDADO HUMANAMENTE:** Gus confirmou funcionamento da largura adaptável no desktop e preservação do comportamento mobile.
+- Observação: F5 retorna à seleção de personagem. Comportamento aceito por Gus como não bloqueador e reservado para eventual melhoria futura.
+- **IMPLEMENTADO:** regra CSS em `src/styles.css`, largura fluida até 1180 px em desktop.
+- **TESTES AUTOMATIZADOS / BUILD:** PENDENTES após esta alteração.
+- Próxima ação da bateria integrada: **Identidade — salvar**. Fase 2 segue em andamento; não iniciar Fase 3.
