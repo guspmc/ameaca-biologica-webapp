@@ -887,3 +887,12 @@ A revisão dos controles do painel encontrou uma omissão concreta na implementa
 - **Implementação:** `src/styles.css`, sem alteração estrutural em `src/FichaLocal.tsx`. A rolagem interna foi mantida.
 - **Classificação:** IMPLEMENTADO. Testes automatizados/build e validação humana ainda PENDENTES; conferir desktop maximizado, desktop com janela baixa, mobile retrato e paisagem.
 - **Checkpoint:** `docs/checkpoint-layout-responsivo-desktop-2026-11-20.md`.
+
+
+## Largura responsiva da Ficha no desktop — 20/11/2026
+
+- **Ajuste aprovado e implementado:** largura desktop fluida com limite máximo de 1180 px e margem lateral mínima de 24 px, em `src/styles.css`.
+- **Preservado:** mobile até 760 px; modo de tela integral para altura até 560 px; altura integral, ausência de moldura, cores, tipografia, navegação, componentes e rolagem interna.
+- **Arquivos:** somente `src/styles.css` no código; checkpoint `docs/checkpoint-largura-responsiva-ficha-2026-11-20.md`.
+- **Classificação:** IMPLEMENTADO. Build, testes automatizados e validação humana da nova largura PENDENTES. A validação 4/4 da Missão 07 não cobre esta alteração.
+- **Próxima ação:** teste humano responsivo e, depois, retomada do checklist integrado em Identidade — salvar. Fase 3 continua bloqueada.
