@@ -28,14 +28,18 @@ Gus aprovou a correção de responsividade desktop com largura estreita preserva
 - Inspeção estática da regra e do seletor: REALIZADA.
 - Testes automatizados: PENDENTES nesta missão; não foi possível executar build/testes no ambiente remoto usado para a edição.
 - Build: NÃO EXECUTADO.
-- Validação humana em desktop/mobile: PENDENTE.
-- Não declarar a Missão 07 homologada até Gus testar as versões reais.
+- Validação humana: **VALIDADO HUMANAMENTE — 4/4 verificações aprovadas por Gus em 20/11/2026**:
+  - Desktop maximizado: altura preenchida e largura estreita — APROVADO.
+  - Desktop com janela baixa: conteúdo acessível — APROVADO.
+  - Mobile retrato: sem notch ou bezel — APROVADO.
+  - Mobile paisagem: sem cortes ou problemas de rolagem — APROVADO.
+- A validação humana da Missão 07 está concluída. Isso não substitui build/testes automatizados, nem homologa as Fases 0/1 ou a Ficha como um todo.
 
-## Riscos e verificações humanas
-- Conferir se o conteúdo continua rolando até o rodapé e se a navegação fixa não cobre os controles.
-- Conferir janela desktop baixa, largura desktop, mobile retrato e paisagem.
+## Riscos e verificações
+- As quatro verificações visuais e responsivas solicitadas foram aprovadas.
 - A largura desktop continua limitada a 425 px; a Ficha não se expande para ocupar toda a tela.
 - O fundo escuro externo deixa de formar uma moldura visível porque o contêiner ocupa toda a viewport.
+- Build e testes automatizados ainda não foram executados especificamente após esta alteração CSS.
 
 ## Próxima ação exata
-Gus atualiza a branch `feat/offline-first-ficha` no ambiente local, executa build e testes pertinentes e abre a Ficha em desktop maximizado, desktop com janela baixa, mobile retrato e paisagem. Registrar APROVADO/FALHOU para cada verificação. A bateria humana integrada deve ser retomada no passo Identidade após a resolução desta missão. Não iniciar a Fase 3/Inventário ativo.
+Retomar a bateria humana integrada da Ficha Offline no passo **Identidade — salvar**. Em ciclo separado, executar build/testes pertinentes quando o ambiente local estiver disponível e registrar a evidência. Não iniciar a Fase 3/Inventário ativo; a validação humana da Ficha ainda está em andamento.
