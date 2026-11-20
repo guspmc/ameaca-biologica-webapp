@@ -960,3 +960,11 @@ Identificada divergência entre o bloqueio de gasto de SA do Painel e a confirma
 - Bateria integrada aprovada até agora: abertura Offline, criação/ficha contínua, Características, Atributos/Perícias e Identidade.
 - Próximo passo exato: fechar a ficha pelo controle próprio e reabri-la pela lista; depois conferir persistência dos dados. Ainda não executar F5 nesta etapa.
 - Build e testes automatizados após ajustes CSS continuam PENDENTES. Fase 2 em andamento; Inventário ativo/Fase 3 bloqueado.
+
+
+## Bateria humana — reabertura da ficha aprovada — 20/11/2026
+
+- Gus confirmou **APROVADO** para fechar a ficha pelo controle próprio e reabri-la pela lista de personagens.
+- Próximo passo: verificar se os dados salvos permanecem presentes após a reabertura (seção 2, item 7 do roteiro).
+- Não pressionar F5 nesta etapa; recarga será testada separadamente na seção 3.
+- Fase 2 permanece em andamento; Inventário ativo/Fase 3 continua bloqueado.
