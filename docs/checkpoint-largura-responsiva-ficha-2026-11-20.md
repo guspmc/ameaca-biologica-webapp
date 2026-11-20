@@ -25,7 +25,8 @@ Gus aprovou tornar a largura da Ficha fluida no desktop, mantendo a experiência
 - Inspeção estática do bloco final: realizada; o novo bloco substitui exatamente a regra desktop anterior.
 - Testes automatizados: PENDENTES.
 - Build: PENDENTE.
-- Validação humana da nova largura: PENDENTE.
+- Validação humana da nova largura: **VALIDADO HUMANAMENTE** — Gus confirmou que a adaptação funcionou e que o mobile permaneceu correto.
+- Observação não bloqueadora: ao pressionar F5, a aplicação retornou à seleção de personagem. Gus aceitou o comportamento por ora; registrar como melhoria futura, sem abrir correção nesta etapa.
 - A validação humana 4/4 da Missão 07 continua válida para o comportamento anterior (altura, ausência de moldura e mobile), mas não valida a nova largura desktop.
 
 ## Riscos e teste esperado
@@ -35,4 +36,4 @@ Gus aprovou tornar a largura da Ficha fluida no desktop, mantendo a experiência
 - Testar desktop em larguras intermediárias e maximizada, janela baixa, mobile retrato e paisagem. Se houver regressão, corrigir somente o CSS necessário, mediante nova análise.
 
 ## Próxima ação exata
-Gus atualizar a branch local e validar a nova largura nos tamanhos de tela indicados. Depois, retomar a bateria humana integrada no passo **Identidade — salvar**. Não iniciar Inventário ativo; Fase 2 permanece em andamento.
+Missão 08 validada humanamente por Gus. Próxima ação: retomar a bateria humana integrada no passo **Identidade — salvar**. Não iniciar Inventário ativo; Fase 2 permanece em andamento.
