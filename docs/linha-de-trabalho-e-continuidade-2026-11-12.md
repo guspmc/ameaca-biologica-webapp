@@ -968,3 +968,12 @@ Identificada divergência entre o bloqueio de gasto de SA do Painel e a confirma
 - Próximo passo: verificar se os dados salvos permanecem presentes após a reabertura (seção 2, item 7 do roteiro).
 - Não pressionar F5 nesta etapa; recarga será testada separadamente na seção 3.
 - Fase 2 permanece em andamento; Inventário ativo/Fase 3 continua bloqueado.
+
+
+## Bateria humana — persistência após reabertura aprovada — 20/11/2026
+
+- Gus confirmou **APROVADO** para a conferência dos dados após fechar e reabrir a mesma ficha pela lista.
+- Características, Atributos/Perícias e Identidade permaneceram preenchidos após a reabertura normal.
+- Próxima ação exata: executar a seção 2, item 8 do roteiro humano. Em uma seção, fazer uma alteração sem salvar e tentar fechar; confirmar o aviso de descarte. Cancelar e verificar que a ficha permanece aberta; depois descartar intencionalmente, reabrir e confirmar que a alteração não salva não persistiu.
+- Não executar F5 ainda; a recarga será testada separadamente na seção 3.
+- Fase 2 permanece em andamento; Inventário ativo/Fase 3 continua bloqueado.
