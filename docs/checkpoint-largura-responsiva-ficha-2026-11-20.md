@@ -72,3 +72,11 @@ Missão 08 validada humanamente por Gus. Próxima ação: retomar a bateria huma
 - Próximo passo exato do roteiro `docs/roteiro-humano-ficha-offline-local.md`, seção 2, item 8: em uma seção, fazer uma alteração sem salvar e tentar fechar; confirmar o aviso de descarte. Cancelar e verificar que a ficha permanece aberta; depois descartar intencionalmente, reabrir e confirmar que a alteração não persistiu.
 - Não executar F5 ainda; a recarga é testada separadamente na seção 3.
 - Fase 2 continua em andamento; Inventário ativo/Fase 3 permanece bloqueado.
+
+
+## Bateria humana — proteção contra descarte acidental — 20/11/2026
+
+- Gus confirmou **APROVADO** para a primeira parte do teste de alteração não salva: ao tentar fechar a ficha, o aviso de descarte foi apresentado e, ao cancelar, a ficha permaneceu aberta.
+- Próxima ação exata: com a alteração ainda não salva, tentar fechar novamente e confirmar o descarte intencional. Reabrir a ficha e verificar que a alteração não persistiu.
+- Não executar F5 ainda; a recarga será testada separadamente na seção 3 do roteiro.
+- Fase 2 permanece em andamento; Inventário ativo/Fase 3 continua bloqueado.
