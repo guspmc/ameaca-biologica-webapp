@@ -46,3 +46,12 @@ Missão 08 validada humanamente por Gus. Próxima ação: retomar a bateria huma
 - Missão 06 — bateria humana integrada: passos anteriores aprovados por Gus: abertura Offline, criação de personagem/ficha contínua, Características e Atributos/Perícias. Próximo passo pendente: **Identidade — preencher dados fictícios e salvar**.
 - Próxima ação exata: executar somente o teste de Identidade e aguardar o resultado de Gus antes de avançar.
 - Build e testes automatizados após os ajustes CSS seguem PENDENTES; validação humana visual não substitui essas verificações.
+
+
+## Bateria humana integrada — resultado do passo Identidade
+
+- Gus reportou **APROVADO** para o passo 5 do ciclo básico: preencher Identidade com dados fictícios e salvar.
+- Etapas humanas aprovadas até aqui: abertura Offline; criação de personagem/ficha contínua; Características; Atributos/Perícias; Identidade.
+- Próximo passo exato do roteiro `docs/roteiro-humano-ficha-offline-local.md`, seção 2, item 6: fechar a ficha pelo controle da própria ficha e abri-la novamente pela lista.
+- Após esse passo, verificar se os dados salvos continuam presentes (seção 2, item 7). Não avançar para recarga F5 ainda.
+- Build e testes automatizados após os ajustes CSS continuam PENDENTES. Fase 2 segue em andamento; Inventário ativo/Fase 3 continua bloqueado.
