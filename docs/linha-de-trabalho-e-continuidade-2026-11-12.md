@@ -1015,3 +1015,11 @@ Identificada divergência entre o bloqueio de gasto de SA do Painel e a confirma
 - A evidência valida o bloqueio da gravação concorrente; a conferência de recuperação do valor mais recente ainda está pendente.
 - Próxima ação exata: recarregar a Aba B e verificar que o valor salvo na Aba A é exibido. Não editar antes da conferência.
 - Fase 2 permanece em andamento; Inventário ativo/Fase 3 bloqueada. Build e testes automatizados após os ajustes CSS continuam PENDENTES.
+
+
+## Bateria humana — recuperação após conflito entre abas — 20/11/2026
+
+- **VALIDADO HUMANAMENTE:** Gus aprovou a seção 3, item 4 do roteiro. Após recarregar a Aba B e reabrir a mesma personagem, o campo exibiu o valor que havia sido salvo pela Aba A.
+- A evidência confirma a recuperação/releitura do estado persistido após o bloqueio de uma gravação concorrente desatualizada.
+- Próxima ação exata: seção 3, item 5 — repetir o teste em seções diferentes e verificar se alterações independentes podem ser mescladas conforme o contrato, sem sobrescrita indevida.
+- Fase 2 permanece em andamento; Inventário ativo/Fase 3 bloqueado. Build e testes automatizados após os ajustes CSS continuam PENDENTES.
