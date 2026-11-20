@@ -63,3 +63,12 @@ Missão 08 validada humanamente por Gus. Próxima ação: retomar a bateria huma
 - Próximo passo exato: conferir se os dados salvos nas seções já preenchidas continuam presentes após a reabertura (seção 2, item 7 do roteiro).
 - Não executar F5 ainda; a recarga será testada na seção 3.
 - Fase 2 permanece em andamento; Inventário ativo/Fase 3 continua bloqueado.
+
+
+## Bateria humana integrada — persistência após reabertura — 20/11/2026
+
+- Gus reportou **APROVADO** para a conferência dos dados após fechar e reabrir a mesma ficha pela lista.
+- Características, Atributos/Perícias e Identidade permaneceram preenchidos após a reabertura normal.
+- Próximo passo exato do roteiro `docs/roteiro-humano-ficha-offline-local.md`, seção 2, item 8: em uma seção, fazer uma alteração sem salvar e tentar fechar; confirmar o aviso de descarte. Cancelar e verificar que a ficha permanece aberta; depois descartar intencionalmente, reabrir e confirmar que a alteração não persistiu.
+- Não executar F5 ainda; a recarga é testada separadamente na seção 3.
+- Fase 2 continua em andamento; Inventário ativo/Fase 3 permanece bloqueado.
