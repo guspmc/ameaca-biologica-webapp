@@ -55,3 +55,11 @@ Missão 08 validada humanamente por Gus. Próxima ação: retomar a bateria huma
 - Próximo passo exato do roteiro `docs/roteiro-humano-ficha-offline-local.md`, seção 2, item 6: fechar a ficha pelo controle da própria ficha e abri-la novamente pela lista.
 - Após esse passo, verificar se os dados salvos continuam presentes (seção 2, item 7). Não avançar para recarga F5 ainda.
 - Build e testes automatizados após os ajustes CSS continuam PENDENTES. Fase 2 segue em andamento; Inventário ativo/Fase 3 continua bloqueado.
+
+
+## Bateria humana integrada — reabertura da ficha
+
+- Gus reportou **APROVADO** para fechar a ficha pelo controle próprio e reabri-la pela lista de personagens.
+- Próximo passo exato: conferir se os dados salvos nas seções já preenchidas continuam presentes após a reabertura (seção 2, item 7 do roteiro).
+- Não executar F5 ainda; a recarga será testada na seção 3.
+- Fase 2 permanece em andamento; Inventário ativo/Fase 3 continua bloqueado.
