@@ -945,3 +945,11 @@ A revisão dos controles do painel encontrou uma omissão concreta na implementa
 - Dados previamente salvos de Características, Atributos/Perícias e Identidade permaneceram preservados.
 - Próxima verificação humana: recarga F5 e persistência dos dados salvos (roteiro, seção 3, item 1).
 - Fase 2 segue em andamento; Inventário ativo/Fase 3 bloqueado. Testes automatizados/build posteriores aos ajustes CSS permanecem PENDENTES.
+
+
+### Bateria humana — recarga F5 — 20/11/2026
+
+- **VALIDADO HUMANAMENTE:** após pressionar F5 e reabrir a mesma personagem, Gus confirmou que os dados salvos continuaram disponíveis.
+- Persistência após recarga da aplicação confirmada para os dados já gravados na ficha.
+- Próxima verificação: abrir duas abas do mesmo navegador/perfil com a mesma personagem, sem editar (roteiro, seção 3, item 2).
+- Fase 2 segue em andamento; Inventário ativo/Fase 3 bloqueado. Testes automatizados/build posteriores aos ajustes CSS permanecem PENDENTES.
