@@ -1,5 +1,5 @@
 export type RecursosAtuais = { pvAtual: number; pvTemporarios: number; saAtual: number; biAtual: number };
-export type RecursosPatch = RecursosAtuais;
+export type RecursosPatch = Partial<RecursosAtuais>;
 
 const inteiro = (v: unknown): v is number => typeof v === 'number' && Number.isSafeInteger(v) && v >= 0;
 
