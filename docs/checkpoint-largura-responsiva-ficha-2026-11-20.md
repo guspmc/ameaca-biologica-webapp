@@ -103,3 +103,10 @@ Missão 08 validada humanamente por Gus. Próxima ação: retomar a bateria huma
 - Resultado: abertura simultânea da mesma personagem em duas instâncias do navegador **VALIDADA HUMANAMENTE**. Este passo não testa ainda a resolução de alterações concorrentes.
 - Próxima ação exata: seção 3, item 3 — na aba A, alterar uma seção da personagem e salvar; depois, sem recarregar a aba B, alterar a mesma seção na aba B e tentar salvar. Aguardar o resultado antes de avançar.
 - Fase 2 permanece em andamento; Inventário ativo/Fase 3 continua bloqueado. Testes automatizados/build após os ajustes CSS continuam PENDENTES.
+
+## Bateria humana — bloqueio de gravação concorrente entre abas — 20/11/2026
+
+- Gus reportou **APROVADO** para o teste da seção 3, item 3: após salvar uma alteração na Aba A, tentou salvar outra alteração na mesma seção pela Aba B, sem recarregá-la; a Aba B bloqueou a gravação e apresentou um aviso.
+- Resultado: detecção/bloqueio de gravação concorrente com estado desatualizado **VALIDADOS HUMANAMENTE** nesta etapa. O teste ainda não confirma a atualização/releitura do valor da Aba A pela Aba B.
+- Próxima ação exata: seção 3, item 4 — recarregar a Aba B e confirmar que ela apresenta o valor salvo pela Aba A. Não editar antes dessa conferência.
+- Fase 2 permanece em andamento; Inventário ativo/Fase 3 continua bloqueado. Testes automatizados/build após os ajustes CSS continuam PENDENTES.
