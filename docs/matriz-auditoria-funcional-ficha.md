@@ -937,3 +937,11 @@ A revisão dos controles do painel encontrou uma omissão concreta na implementa
 - **VALIDADO HUMANAMENTE:** o aviso de descarte apareceu ao tentar fechar com alteração não salva; Gus cancelou e confirmou que a ficha permaneceu aberta.
 - Próximo passo: descartar intencionalmente a alteração e reabrir a ficha para confirmar que o valor não salvo não persistiu.
 - F5 ainda não executado; será testado na seção 3. Fase 2 em andamento; Inventário ativo/Fase 3 bloqueado.
+
+
+### Bateria humana — proteção contra descarte — 20/11/2026
+
+- **VALIDADO HUMANAMENTE:** Gus confirmou que cancelar o aviso mantém a ficha aberta e que o descarte intencional elimina somente a alteração não salva; após reabrir a mesma personagem, o valor original persistiu.
+- Dados previamente salvos de Características, Atributos/Perícias e Identidade permaneceram preservados.
+- Próxima verificação humana: recarga F5 e persistência dos dados salvos (roteiro, seção 3, item 1).
+- Fase 2 segue em andamento; Inventário ativo/Fase 3 bloqueado. Testes automatizados/build posteriores aos ajustes CSS permanecem PENDENTES.
