@@ -984,3 +984,12 @@ Identificada divergência entre o bloqueio de gasto de SA do Painel e a confirma
 - Gus confirmou **APROVADO** para o aviso de alteração não salva: o aviso apareceu ao tentar fechar e, ao cancelar, a ficha permaneceu aberta.
 - Próximo passo: confirmar o descarte intencional da alteração ainda não salva e reabrir a ficha para verificar que ela não persistiu.
 - F5 permanece reservado para a seção 3 do roteiro. Fase 2 em andamento; Fase 3 bloqueada.
+
+
+## Bateria humana integrada — descarte intencional — 20/11/2026
+
+- Gus confirmou **APROVADO** para o descarte intencional de uma alteração não salva.
+- O aviso já havia sido validado: cancelar mantém a ficha aberta; escolher descartar fecha a ficha e a alteração não persiste após reabrir a mesma personagem.
+- Características, Atributos/Perícias e Identidade salvos anteriormente permanecem preservados.
+- Próxima ação exata: seção 3, item 1 do roteiro humano — pressionar F5 com a ficha salva, reabrir a personagem e confirmar os dados.
+- A bateria humana continua sequencial e depende do resultado de Gus para avançar. Fase 2 não concluída; Inventário ativo/Fase 3 permanece bloqueado.
