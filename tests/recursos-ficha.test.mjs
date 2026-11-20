@@ -64,6 +64,7 @@ test('a interface liga recursos ao salvamento do rascunho e explica os limites',
   assert.match(ui, /if \(ocupado \|\| pendencia\) return/);
   assert.doesNotMatch(ficha, /key=\{JSON\.stringify\(\[pv, sa, bi/);
   assert.match(app, /aoSalvarRecursos=\{recursos => salvarDados\(recursos\)\}/);
+  assert.match(app, /typeof patchEfetivo\.saAtual === 'number'/);
   assert.match(servidor, /aoSalvarRecursos=\{recursos => salvarDadosFicha\(recursos\)\}/);
   assert.match(laboratorio, /aoSalvarRecursos=\{async recursos =>/);
   assert.match(ui, /Dano consome PV Temporários antes dos PV Atuais/);
