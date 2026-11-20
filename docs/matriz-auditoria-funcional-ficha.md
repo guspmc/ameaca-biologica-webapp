@@ -913,3 +913,11 @@ A revisão dos controles do painel encontrou uma omissão concreta na implementa
 - Bateria integrada aprovada até o momento: inicialização Offline, criação/ficha contínua, Características, Atributos/Perícias e Identidade.
 - Próxima ação: fechar a ficha pelo controle próprio e reabri-la pela lista; confirmar que os dados salvos permanecem presentes. O teste de F5 fica para a etapa específica de persistência/recarga.
 - Build e testes automatizados após ajuste responsivo permanecem PENDENTES. Fase 2 ainda não concluída.
+
+
+## Bateria humana — reabertura da ficha — 20/11/2026
+
+- **VALIDADO HUMANAMENTE:** Gus aprovou fechar a ficha pelo controle próprio e reabri-la pela lista.
+- Próxima verificação: confirmar a permanência dos dados salvos após a reabertura.
+- F5 ainda não executado nesta etapa; será verificado na seção 3 do roteiro.
+- Fase 2 em andamento; Inventário ativo/Fase 3 bloqueado.
