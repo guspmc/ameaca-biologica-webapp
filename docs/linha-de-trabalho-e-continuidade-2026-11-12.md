@@ -952,3 +952,11 @@ Identificada divergência entre o bloqueio de gasto de SA do Painel e a confirma
 - Checkpoint atualizado: `docs/checkpoint-largura-responsiva-ficha-2026-11-20.md`.
 - Testes automatizados e build após o ajuste CSS continuam PENDENTES; a validação humana visual não os substitui.
 - Próxima ação: retomar a bateria humana integrada no passo **Identidade — salvar**. A Fase 2 permanece em andamento; Inventário ativo/Fase 3 continua bloqueado.
+
+
+## Bateria humana — Identidade aprovada — 20/11/2026
+
+- Gus confirmou **APROVADO** para preencher e salvar Identidade na Ficha Offline.
+- Bateria integrada aprovada até agora: abertura Offline, criação/ficha contínua, Características, Atributos/Perícias e Identidade.
+- Próximo passo exato: fechar a ficha pelo controle próprio e reabri-la pela lista; depois conferir persistência dos dados. Ainda não executar F5 nesta etapa.
+- Build e testes automatizados após ajustes CSS continuam PENDENTES. Fase 2 em andamento; Inventário ativo/Fase 3 bloqueado.
