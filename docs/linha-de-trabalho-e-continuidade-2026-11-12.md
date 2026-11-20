@@ -1001,3 +1001,10 @@ Identificada divergência entre o bloqueio de gasto de SA do Painel e a confirma
 - Aprovados na sequência: descarte intencional de alteração não salva e persistência dos dados gravados após F5.
 - Próxima ação exata: roteiro humano, seção 3, item 2 — abrir duas abas do mesmo navegador/perfil, ambas com a mesma personagem, sem editar ainda.
 - A bateria humana continua em execução, uma etapa por vez. Fase 2 não concluída; Inventário ativo/Fase 3 permanece bloqueado.
+
+## Bateria humana — duas abas com a mesma personagem — 20/11/2026
+
+- **VALIDADO HUMANAMENTE:** Gus aprovou a abertura da mesma personagem em duas abas do mesmo navegador/perfil, sem edição.
+- O resultado confirma apenas a abertura simultânea; a proteção contra alterações concorrentes ainda precisa ser testada.
+- Próxima ação exata: seção 3, item 3 do roteiro humano — alterar e salvar uma seção na aba A; sem recarregar a aba B, alterar a mesma seção na aba B e tentar salvar. Verificar se o conflito é informado e se a alteração já salva na aba A não é sobrescrita.
+- Fase 2 permanece em andamento; Fase 3/Inventário ativo bloqueada. Build e testes automatizados após os ajustes CSS permanecem PENDENTES.
