@@ -993,3 +993,11 @@ Identificada divergência entre o bloqueio de gasto de SA do Painel e a confirma
 - Características, Atributos/Perícias e Identidade salvos anteriormente permanecem preservados.
 - Próxima ação exata: seção 3, item 1 do roteiro humano — pressionar F5 com a ficha salva, reabrir a personagem e confirmar os dados.
 - A bateria humana continua sequencial e depende do resultado de Gus para avançar. Fase 2 não concluída; Inventário ativo/Fase 3 permanece bloqueado.
+
+
+## Bateria humana integrada — recarga F5 — 20/11/2026
+
+- Gus confirmou **APROVADO** para o teste de recarga F5: após recarregar a aplicação e reabrir a mesma personagem, os dados salvos permaneceram disponíveis.
+- Aprovados na sequência: descarte intencional de alteração não salva e persistência dos dados gravados após F5.
+- Próxima ação exata: roteiro humano, seção 3, item 2 — abrir duas abas do mesmo navegador/perfil, ambas com a mesma personagem, sem editar ainda.
+- A bateria humana continua em execução, uma etapa por vez. Fase 2 não concluída; Inventário ativo/Fase 3 permanece bloqueado.
