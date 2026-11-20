@@ -110,3 +110,11 @@ Missão 08 validada humanamente por Gus. Próxima ação: retomar a bateria huma
 - Resultado: detecção/bloqueio de gravação concorrente com estado desatualizado **VALIDADOS HUMANAMENTE** nesta etapa. O teste ainda não confirma a atualização/releitura do valor da Aba A pela Aba B.
 - Próxima ação exata: seção 3, item 4 — recarregar a Aba B e confirmar que ela apresenta o valor salvo pela Aba A. Não editar antes dessa conferência.
 - Fase 2 permanece em andamento; Inventário ativo/Fase 3 continua bloqueado. Testes automatizados/build após os ajustes CSS continuam PENDENTES.
+
+
+## Bateria humana — recuperação da versão mais recente após conflito — 20/11/2026
+
+- Gus reportou **APROVADO** para a seção 3, item 4 do roteiro humano: após recarregar a Aba B e reabrir a mesma personagem, o campo exibiu o valor salvo pela Aba A.
+- Resultado: recuperação/releitura do valor persistido após bloqueio de gravação concorrente **VALIDADA HUMANAMENTE**. A alteração conflitante não foi tratada como salvamento válido.
+- Próxima ação exata: seção 3, item 5 — repetir o teste em seções diferentes da personagem e verificar se alterações independentes podem ser mescladas conforme o contrato de persistência, sem sobrescrita indevida.
+- Fase 2 permanece em andamento; Inventário ativo/Fase 3 continua bloqueado. Testes automatizados e build após os ajustes CSS continuam PENDENTES.
