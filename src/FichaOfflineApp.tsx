@@ -84,7 +84,12 @@ export default function FichaOfflineApp() {
       const base = selecionadoRef.current;
       if (!base) return false;
       const patchEfetivo = { ...patch };
-      const saldoBaseEsperado = patchEfetivo.economiaAcoesSaldoBase;
+      const saldoBaseEsperado = patchEfetivo.economiaAcoesSaldoBase
+        ?? (typeof patchEfetivo.saAtual === 'number'
+          ? (typeof base.dados.saAtual === 'number'
+            ? base.dados.saAtual
+            : estadoEconomiaAcoesValido(base.dados.economiaAcoes) ? base.dados.economiaAcoes.saAtual : undefined)
+          : undefined);
       delete patchEfetivo.economiaAcoesSaldoBase;
       // Ajustes de SA pelo painel de Recursos também atualizam o espelho da
       // Economia de Ações, evitando saldos divergentes entre as duas seções.
