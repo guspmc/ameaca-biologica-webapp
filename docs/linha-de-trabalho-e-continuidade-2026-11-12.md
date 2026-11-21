@@ -1037,3 +1037,16 @@ Identificada divergência entre o bloqueio de gasto de SA do Painel e a confirma
 - Classificação: **IMPLEMENTADO**; teste automatizado, build e validação humana **PENDENTES**. Não declarar correção validada até execução e teste humano.
 - Próxima ação exata: Gus atualizar a cópia de teste com a branch `feat/offline-first-ficha`, executar `pnpm test` e `pnpm build`, e então repetir a Missão 06, seção 3, item 5 (alterações independentes SA/PV em abas diferentes). Revalidar conflito na mesma chave, PV Aplicar, SA/BI por botões, BI Desgarrado, dano/PV Temporários e falha de salvamento.
 - Fase 2 continua em andamento; Fase 3/Inventário ativo permanece bloqueada. Nenhuma alteração em `main`, merge, publicação ou deploy.
+
+## CI aprovada — patches mínimos e retentativa de SA — 20/11/2026
+
+- HEAD remoto da branch `feat/offline-first-ficha`: `689376e9540d01ca9476bd235a22432a85aed361`.
+- A bateria **Verificação da ficha offline** (run `44849055888`) concluiu com **success**. Todos os grupos de testes registrados no log tiveram `fail 0`; o passo de build dentro do workflow também passou.
+- O workflow **Validar compilação do WebApp** (run `44849055890`) concluiu com **success**: TypeScript, Vite build e verificação de tipos dos cenários isolados passaram.
+- A correção de salvamento de recursos permanece **TESTADA AUTOMATICAMENTE** no HEAD atual. Foi acrescentado teste estrutural da preservação/retentativa do ajuste rápido de SA após falha.
+- Implementado em `src/FichaLocal.tsx`: falha no salvamento rápido de SA mantém o valor pretendido pendente, impede novos cliques enquanto não resolvido e oferece retentativa; não sinaliza sucesso antes da confirmação.
+- Avisos não bloqueantes do build: chunk JS de 639,79 kB acima do limite de aviso de 500 kB; aviso de depreciação do Node.js 20 nas actions e do módulo `punycode`. Não houve falha de build. Avaliar otimização de bundle em ciclo próprio, sem alterar escopo agora.
+- Checkpoint: `docs/checkpoint-patches-minimos-retentativa-sa-2026-11-20.md` (commit documental `214cd4c`).
+- Validação humana da correção continua **PENDENTE**. O teste anterior SA/PV em seções diferentes foi bloqueado indevidamente pela versão antiga; deve ser repetido com o HEAD atual.
+- Próxima ação exata: Gus atualizar a cópia de teste para o HEAD acima e repetir Missão 06, seção 3, item 5: uma aba altera SA e outra PV; ambas devem salvar sem conflito e preservar os dois valores. Depois revalidar conflito na mesma chave e continuar os testes de recursos, um por vez.
+- Fase 2 permanece em andamento; Fase 3/Inventário ativo continua bloqueada. Nenhuma alteração em `main`, merge, publicação ou deploy.
