@@ -987,3 +987,14 @@ A revisão dos controles do painel encontrou uma omissão concreta na implementa
 - Classificação: **IMPLEMENTADO**; teste automatizado, build e validação humana **PENDENTES**. Não declarar correção validada até execução e teste humano.
 - Próxima ação exata: Gus atualizar a cópia de teste com a branch `feat/offline-first-ficha`, executar `pnpm test` e `pnpm build`, e então repetir a Missão 06, seção 3, item 5 (alterações independentes SA/PV em abas diferentes). Revalidar conflito na mesma chave, PV Aplicar, SA/BI por botões, BI Desgarrado, dano/PV Temporários e falha de salvamento.
 - Fase 2 continua em andamento; Fase 3/Inventário ativo permanece bloqueada. Nenhuma alteração em `main`, merge, publicação ou deploy.
+
+## Patches mínimos e retentativa de SA — CI — 20/11/2026
+
+- **IMPLEMENTADO:** persistência de recursos por patches mínimos; PV direto só persiste ao clicar Aplicar; operações aplicadas de SA/BI e operações de PV persistem no momento da aplicação.
+- **IMPLEMENTADO:** falha no ajuste rápido de SA preserva o valor pretendido como pendente, bloqueia novos ajustes até resolução e oferece retentativa; confirmação visual somente após retorno positivo do salvamento.
+- **TESTADO AUTOMATICAMENTE:** HEAD `689376e9540d01ca9476bd235a22432a85aed361`, branch `feat/offline-first-ficha`. Workflow de bateria `44849055888` e build `44849055890` concluídos com **success**. Grupos de teste no log: todos com `fail 0`; TypeScript, Vite build e tipos dos cenários isolados aprovados.
+- **Avisos não bloqueantes:** bundle JS de 639,79 kB acima do limite de aviso de 500 kB; avisos de depreciação do Node.js 20 nas actions e do módulo `punycode`. Build aprovado apesar dos avisos.
+- **VALIDAÇÃO HUMANA: PENDENTE.** Missão 06, seção 3, item 5 deve ser repetida com SA em uma aba e PV na outra. A prova anterior com a implementação antiga bloqueou incorretamente a alteração independente.
+- **Próximo passo:** atualizar a cópia de teste para o HEAD indicado; verificar que SA e PV salvam sem conflito e que os dois valores permanecem após releitura. Depois testar novamente conflito na mesma chave e seguir os testes de recursos, um por vez.
+- Checkpoint: `docs/checkpoint-patches-minimos-retentativa-sa-2026-11-20.md`.
+- Fase 2 permanece em andamento; Fase 3/Inventário ativo bloqueada.
