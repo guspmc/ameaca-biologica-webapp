@@ -140,7 +140,7 @@ export default function RecursosFichaLocal({ dados, pvMaximo, saMaximo, biMaximo
     <p>Valores atuais são separados dos máximos derivados. {origemDados === 'servidor' ? 'Cada operação é enviada ao servidor e depende de confirmação.' : 'Cada operação é gravada neste dispositivo e depende de confirmação.'} Não registram descanso, rolagem, ação ou efeito automático.</p>
     <div className="ficha-local-grade">
       <div><small>PONTOS DE VIDA</small><strong>{recursos.pvAtual}/{pvMaximo}</strong><p>Temporários: {recursos.pvTemporarios}</p>
-        {pvMaximo > 0 && vulneravelPorPV(recursos.pvAtual, pvMaximo) && <p className="ficha-local-aviso">Vulnerável · PV atuais iguais ou inferiores a 1/5 dos PV máximimos.</p>}</div>
+        {pvMaximo > 0 && vulneravelPorPV(recursos.pvAtual, pvMaximo) && <p className="ficha-local-aviso">Vulnerável · PV atuais iguais ou inferiores a 1/5 dos PV máximos.</p>}</div>
       <div><small>SURTO DE ADRENALINA</small><strong>{recursos.saAtual}/{saMaximo}</strong><p>Gasto de SA é sempre uma escolha expressa.</p></div>
       <div><small>BIO-INFECÇÃO</small><strong>{recursos.biAtual}/{biMaximo}</strong><p>{fase}</p></div>
     </div>
