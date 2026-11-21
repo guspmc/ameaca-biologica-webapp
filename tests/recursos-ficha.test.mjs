@@ -100,3 +100,13 @@ test('Origem Desgarrado recebe PV Temporários ao aumentar BI, sem acumular valo
     ...base, biAtual: 3,
   });
 });
+
+test('ajuste rápido de SA preserva a operação pendente e permite retentativa após falha', async () => {
+  const ficha = await readFile(new URL('../src/FichaLocal.tsx', import.meta.url), 'utf8');
+  assert.match(ficha, /const \[ajusteSAPendente, setAjusteSAPendente\] = useState<number \| null>\(null\)/);
+  assert.match(ficha, /setAjusteSAPendente\(proximo\)/);
+  assert.match(ficha, /async function tentarSalvarAjusteSA\(\)/);
+  assert.match(ficha, /Ajuste de SA para \{ajusteSAPendente\}\/\{sa\} permanece pendente/);
+  assert.match(ficha, /Tentar salvar novamente/);
+  assert.match(ficha, /ajusteSAPendente !== null/);
+});
