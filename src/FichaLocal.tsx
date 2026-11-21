@@ -131,6 +131,7 @@ export default function FichaLocal({ nome, mesa, contextoId, dados, aoFechar, ao
   const ajusteSALock = useRef(false);
   const [erroAjusteSA, setErroAjusteSA] = useState('');
   const [statusAjusteSA, setStatusAjusteSA] = useState('');
+  const [ajusteSAPendente, setAjusteSAPendente] = useState<number | null>(null);
   const corpoRef = useRef<HTMLDivElement | null>(null);
   const salvandoExpostoRef = useRef(false);
   const chavePosicao = 'ameaca-biologica:ficha:posicao:v1:' + (contextoId ?? mesa + ':' + nome);
@@ -227,11 +228,8 @@ export default function FichaLocal({ nome, mesa, contextoId, dados, aoFechar, ao
     }
   }
 
-  async function ajustarSaldoSA(delta: number) {
+  async function salvarAjusteSA(proximo: number) {
     if (ajustandoSA || ajusteSALock.current) return;
-    const atual = recursosAtuais.saAtual;
-    const proximo = Math.min(sa, Math.max(0, atual + delta));
-    if (proximo === atual) return;
     ajusteSALock.current = true;
     setAjustandoSA(true);
     setErroAjusteSA('');
@@ -239,10 +237,25 @@ export default function FichaLocal({ nome, mesa, contextoId, dados, aoFechar, ao
     try {
       const salvo = await aoSalvarRecursos({ saAtual: proximo });
       if (!salvo) throw new Error('O salvamento não foi confirmado.');
+      setAjusteSAPendente(null);
       setStatusAjusteSA(`SA atualizado: ${proximo}/${sa}.`);
     } catch (problema) {
+      setAjusteSAPendente(proximo);
       setErroAjusteSA(problema instanceof Error ? problema.message : 'Não foi possível ajustar o SA.');
     } finally { ajusteSALock.current = false; setAjustandoSA(false); }
+  }
+
+  async function ajustarSaldoSA(delta: number) {
+    if (ajustandoSA || ajusteSALock.current || ajusteSAPendente !== null) return;
+    const atual = recursosAtuais.saAtual;
+    const proximo = Math.min(sa, Math.max(0, atual + delta));
+    if (proximo === atual) return;
+    await salvarAjusteSA(proximo);
+  }
+
+  async function tentarSalvarAjusteSA() {
+    if (ajusteSAPendente === null || ajustandoSA || ajusteSALock.current) return;
+    await salvarAjusteSA(ajusteSAPendente);
   }
 
   function abrirAdministracaoRecursos() {
@@ -460,11 +473,12 @@ export default function FichaLocal({ nome, mesa, contextoId, dados, aoFechar, ao
           <button type="button" className="ficha-local-recurso-atalho" onClick={abrirAdministracaoRecursos} aria-label={`Administrar PV: ${recursosAtuais.pvAtual} de ${pv}`}><span className="ficha-local-recurso-icone"><IconeFicha tipo="vida" /></span><small>PV</small><strong>{recursosAtuais.pvAtual}/{pv}</strong></button>
           <div className="ficha-local-recurso-sa">
             <button type="button" className="ficha-local-recurso-atalho" onClick={abrirAdministracaoRecursos} aria-label={`Administrar SA: ${recursosAtuais.saAtual} de ${sa}`}><span className="ficha-local-recurso-icone"><IconeFicha tipo="adrenalina" /></span><small>SA</small><strong>{recursosAtuais.saAtual}/{sa}</strong></button>
-            <div className="ficha-local-recurso-ajustes"><button type="button" disabled={ajustandoSA || recursosAtuais.saAtual <= 0} onClick={() => void ajustarSaldoSA(-1)} aria-label="Diminuir 1 SA">−1</button><button type="button" disabled={ajustandoSA || recursosAtuais.saAtual >= sa} onClick={() => void ajustarSaldoSA(1)} aria-label="Aumentar 1 SA">+1</button></div>
+            <div className="ficha-local-recurso-ajustes"><button type="button" disabled={ajustandoSA || ajusteSAPendente !== null || recursosAtuais.saAtual <= 0} onClick={() => void ajustarSaldoSA(-1)} aria-label="Diminuir 1 SA">−1</button><button type="button" disabled={ajustandoSA || ajusteSAPendente !== null || recursosAtuais.saAtual >= sa} onClick={() => void ajustarSaldoSA(1)} aria-label="Aumentar 1 SA">+1</button></div>
           </div>
           <button type="button" className="ficha-local-recurso-atalho" onClick={abrirAdministracaoRecursos} aria-label={`Administrar BI: ${biAtual} de ${bi}`}><span className="ficha-local-recurso-icone"><IconeFicha tipo="bio" /></span><small>BI</small><strong>{biAtual}/{bi}</strong></button>
         </div>
         {(erroAjusteSA || statusAjusteSA) && <p className={erroAjusteSA ? 'offline-erro' : 'offline-status'} role={erroAjusteSA ? 'alert' : 'status'}>{erroAjusteSA || statusAjusteSA}</p>}
+        {ajusteSAPendente !== null && <p className="offline-erro" role="alert">Ajuste de SA para {ajusteSAPendente}/{sa} permanece pendente e ainda não foi confirmado. <button type="button" disabled={ajustandoSA} onClick={() => void tentarSalvarAjusteSA()}>Tentar salvar novamente</button></p>}
         <RecursosFichaLocal origemDados={origemDados} autoSalvar={autoSalvar}
           dados={dados}
           pvMaximo={pv}
