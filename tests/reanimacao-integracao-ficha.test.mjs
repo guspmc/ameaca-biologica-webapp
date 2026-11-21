@@ -58,7 +58,8 @@ test('resumo da BI informa corretamente que Colapso Viral inicia Reanimação au
 test('PV Atuais não podem ser alterados diretamente durante Reanimação por 0 PV', () => {
   assert.match(ficha, /bloquearPV=\{recursosAtuais\.pvAtual === 0 \|\| reanimacaoPV0EmCurso\}/);
   assert.match(recursos, /bloquearPV\?: boolean/);
-  assert.match(recursos, /value=\{pvDigitado\} disabled=\{ocupado \|\| !!pendencia \|\| bloquearPV\}/);\n  assert.match(recursos, /if \(ocupado \|\| pendencia \|\| bloquearPV\) return/);
+  assert.match(recursos, /value=\{pvDigitado\} disabled=\{ocupado \|\| !!pendencia \|\| bloquearPV\}/);
+  assert.match(recursos, /if \(ocupado \|\| pendencia \|\| bloquearPV\) return/);
   assert.match(recursos, /disabled=\{ocupado \|\| !!pendencia \|\| bloquearPV \|\| recursos\.pvAtual/);
 });
 
